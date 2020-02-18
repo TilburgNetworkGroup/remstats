@@ -1,12 +1,12 @@
 Package: remstats
 Type: Package
-Title: What the package does (short line)
+Title: Computes relational event modeling statistics
 Version: 1.0
 Date: 2020-02-14
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Author: Marlyne Meijerink-Bosman
+Maintainer: Marlyne Meijerink-Bosman <m.l.meijerink@tilburguniversity.edu>
 Description: More about what it does (maybe more than one line)
-License: What license is it under?
+License: MIT + file LICENSE
 Imports: Rcpp (>= 1.0.2)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
