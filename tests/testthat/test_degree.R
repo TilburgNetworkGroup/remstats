@@ -3,7 +3,7 @@ context("degree output")
 require(remstats)
 
 test_that("dimensions degree output", {
-    # Test for directed relational events that don't consider event type
+    # Test for directed relational events
     data(edgelistD)
 
     out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
@@ -17,33 +17,12 @@ test_that("dimensions degree output", {
     stat5 <- degree(edgelist = el, riskset = rs, type = 5)
     stat6 <- degree(edgelist = el, riskset = rs, type = 6)
 
-    expect_output(str(stat1), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat2), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat3), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat4), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat5), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat6), "num[1:nrow(el), 1:nrow(el)]")
-
-    # Test for directed relational events that consider event type
-    data(edgelistDT)
-
-    out2 <- prepER(edgelistDT, NULL, TRUE, FALSE)
-    el2 <- out2$edgelist
-    rs2 <- out2$riskset
-
-    stat21 <- degree(edgelist = el2, riskset = rs2, type = 1)
-    stat22 <- degree(edgelist = el2, riskset = rs2, type = 2)
-    stat23 <- degree(edgelist = el2, riskset = rs2, type = 3)
-    stat24 <- degree(edgelist = el2, riskset = rs2, type = 4)
-    stat25 <- degree(edgelist = el2, riskset = rs2, type = 5)
-    stat26 <- degree(edgelist = el2, riskset = rs2, type = 6)
-
-    expect_output(str(stat21), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat22), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat23), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat24), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat25), "num[1:nrow(el), 1:nrow(el)]")
-    expect_output(str(stat26), "num[1:nrow(el), 1:nrow(el)]")
+    expect_output(str(stat1), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(stat2), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(stat3), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(stat4), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(stat5), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(stat6), "num[1:nrow(el), 1:nrow(rs)]")
 })
 
 test_that("content degree output", {

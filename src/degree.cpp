@@ -9,8 +9,8 @@ using namespace arma;
 //' 
 //' @param edgelist 3-column edgelist (time, sender, receiver)
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-//' @param type (1 = indegreeSnd, 2 = indegreeRec, 3 = outdegreeSnd, 
-//' 4 = outdegreeRec, 5 = totaldegreeSnd, 6 = totaldegreeRec) 
+//' @param type (1 = indegree_sender, 2 = indegree_receiver, 3 = outdegree_sender, 
+//' 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = totaldegree_receiver) 
 //'
 //' @return matrix (time, dyad)
 
@@ -29,7 +29,7 @@ arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
         //Receiver of the previous event
         arma::uword receiver = edgelist(i-1, 2); 
 
-        //indegreeSnd and totaldegreeSnd: Add one to the events that involve the previous receiver as sender      
+        //indegree_sender and totaldegree_sender: Add one to the events that involve the previous receiver as sender      
         if((type == 1) || (type == 5)) {
             // Positions in the riskset
             arma::uvec indices = find(riskset.col(0) == receiver);
@@ -37,7 +37,7 @@ arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
             thisrow(indices) +=1;
         }
 
-        //indegreeRec and totaldegreeRec: Add one to the events that involve the previous receiver as receiver      
+        //indegree_receiver and totaldegree_receiver: Add one to the events that involve the previous receiver as receiver      
         if((type == 2) || (type == 6)) {
             // Positions in the riskset
             arma::uvec indices = find(riskset.col(1) == receiver);
@@ -45,7 +45,7 @@ arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
             thisrow(indices) +=1;
         }
 
-        //outdegreeSnd and totaldegreeSnd: Add one to the events that involve the previous sender as sender      
+        //outdegree_sender and totaldegree_sender: Add one to the events that involve the previous sender as sender      
         if((type == 3) || (type == 5)) {
             // Positions in the riskset
             arma::uvec indices = find(riskset.col(0) == sender);
@@ -53,7 +53,7 @@ arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
             thisrow(indices) +=1;
         }
 
-        //outdegreeRec and totaldegreeRec: Add one to the events that involve the previous sender as receiver      
+        //outdegree_receiver and totaldegree_receiver: Add one to the events that involve the previous sender as receiver      
         if((type == 4) || (type == 6)) {
             // Positions in the riskset
             arma::uvec indices = find(riskset.col(1) == sender);

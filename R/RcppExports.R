@@ -7,8 +7,8 @@
 #' 
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-#' @param type (1 = indegreeSnd, 2 = indegreeRec, 3 = outdegreeSnd, 
-#' 4 = outdegreeRec, 5 = totaldegreeSnd, 6 = totaldegreeRec) 
+#' @param type (1 = indegree_sender, 2 = indegree_receiver, 3 = outdegree_sender, 
+#' 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = totaldegree_receiver) 
 #'
 #' @return matrix (time, dyad)
 NULL
@@ -31,22 +31,6 @@ inertia <- function(evls, riskset) {
     .Call(`_remstats_inertia`, evls, riskset)
 }
 
-rcpparma_hello_world <- function() {
-    .Call(`_remstats_rcpparma_hello_world`)
-}
-
-rcpparma_outerproduct <- function(x) {
-    .Call(`_remstats_rcpparma_outerproduct`, x)
-}
-
-rcpparma_innerproduct <- function(x) {
-    .Call(`_remstats_rcpparma_innerproduct`, x)
-}
-
-rcpparma_bothproducts <- function(x) {
-    .Call(`_remstats_rcpparma_bothproducts`, x)
-}
-
 #' reciprocity
 #'
 #' A function to compute the indegree, outdegree and total degree effects.
@@ -59,5 +43,21 @@ NULL
 
 reciprocity <- function(edgelist, riskset) {
     .Call(`_remstats_reciprocity`, edgelist, riskset)
+}
+
+#' triad
+#'
+#' A function to compute the triadic effects.
+#' 
+#' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+#' @param edgelist 3-column edgelist (time, sender, receiver)
+#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param type (1 = outgoing two-path)
+#'
+#' @return matrix (time, dyad)
+NULL
+
+triad <- function(actors, edgelist, riskset, type) {
+    .Call(`_remstats_triad`, actors, edgelist, riskset, type)
 }
 
