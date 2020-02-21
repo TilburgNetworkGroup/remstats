@@ -30,11 +30,21 @@ arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::u
         //Receiver of the previous event
         arma::uword receiver = edgelist(i-1, 2); 
 
-        // Update the adjacency matrix
+        //Update the adjacency matrix
         adj(sender - 1, receiver - 1) += 1;
 
-        // Statistic row
-        arma::rowvec thisrow(riskset.n_rows, fill::zeros);
+        //Actors that have a relation with the sender/receiver of the previous event
+        arma::uvec relActors1 = find(adj.row(sender-1) != 0);
+        arma::uvec relActors2 = find(adj.col(sender-1) != 0);
+        arma::uvec relActors3 = find(adj.row(receiver-1) != 0);
+        arma::uvec relActors4 = find(adj.col(receiver-1) != 0);
+        arma::uvec relActors = join_cols(relActors1, relActors2);
+        relActors = join_cols(relActors, relActors3);
+        relActors = join_cols(relActors, relActors4);
+        relActors = sort(unique(relActors));
+
+        //Copy the previous row
+        arma::rowvec thisrow = stat.row(i-1);
 
         //For loop over dyads
         for(arma::uword d = 0; d < riskset.n_rows; ++d) {
@@ -42,65 +52,70 @@ arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::u
             arma::uword senderD = riskset(d, 0);
             //Receiver of the dyad
             arma::uword receiverD = riskset(d, 1);
+            
+            //Only change their statistic if one of the actors has a relation to the sender/receiver of the previous event
+            if(any(relActors == (senderD - 1)) || 
+                any(relActors == (receiverD - 1))) {
 
-            //Outgoing communication senderD
-            arma::rowvec outSenderD = adj.row(senderD-1);
-            //Incoming communication senderD
-            arma::colvec inSenderD = adj.col(senderD-1);
-            //Outgoing communication receiverD
-            arma::rowvec outReceiverD = adj.row(receiverD-1);
-            //Incoming communication receiverD
-            arma::colvec inReceiverD = adj.col(receiverD-1);
+                //Outgoing communication senderD
+                arma::rowvec outSenderD = adj.row(senderD-1);
+                //Incoming communication senderD
+                arma::colvec inSenderD = adj.col(senderD-1);
+                //Outgoing communication receiverD
+                arma::rowvec outReceiverD = adj.row(receiverD-1);
+                //Incoming communication receiverD
+                arma::colvec inReceiverD = adj.col(receiverD-1);
 
-            //Saving space
-            arma::uword stat = 0;
+                //Saving space
+                arma::uword dyadstat = 0;
 
-            // Outbound two-path: i -> h -> j    
-            if(type == 1) {
-                //For loop over actors
-                for(arma::uword h = 0; h < max(actors); ++h) {
-                    if((h != (senderD-1)) && (h!= (receiverD-1))) {
-                        arma::vec thisactor = {outSenderD(h), inReceiverD(h)};
-                        stat += min(thisactor);                       
-                    }
-                }              
-            }
+                // Outbound two-path: i -> h -> j    
+                if(type == 1) {
+                    //For loop over actors
+                    for(arma::uword h = 0; h < max(actors); ++h) {
+                        if((h != (senderD-1)) && (h!= (receiverD-1))) {
+                            arma::vec thisactor = {outSenderD(h), inReceiverD(h)};
+                            dyadstat += min(thisactor);                       
+                        }
+                    }              
+                }
 
-            // Inbound two-path: i <- h <- j    
-            if(type == 2) {
-                //For loop over actors
-                for(arma::uword h = 0; h < max(actors); ++h) {
-                    if((h != (senderD-1)) && (h!= (receiverD-1))) {
-                        arma::vec thisactor = {inSenderD(h), outReceiverD(h)};
-                        stat += min(thisactor);                       
-                    }
-                }              
-            }
+                // Inbound two-path: i <- h <- j    
+                if(type == 2) {
+                    //For loop over actors
+                    for(arma::uword h = 0; h < max(actors); ++h) {
+                        if((h != (senderD-1)) && (h!= (receiverD-1))) {
+                            arma::vec thisactor = {inSenderD(h), outReceiverD(h)};
+                            dyadstat += min(thisactor);                       
+                        }
+                    }              
+                }
 
-            // Outbound shared partners: i -> h <- j    
-            if(type == 3) {
-                //For loop over actors
-                for(arma::uword h = 0; h < max(actors); ++h) {
-                    if((h != (senderD-1)) && (h!= (receiverD-1))) {
-                        arma::vec thisactor = {outSenderD(h), outReceiverD(h)};
-                        stat += min(thisactor);                       
-                    }
-                }              
-            }
+                // Outbound shared partners: i -> h <- j    
+                if(type == 3) {
+                    //For loop over actors
+                    for(arma::uword h = 0; h < max(actors); ++h) {
+                        if((h != (senderD-1)) && (h!= (receiverD-1))) {
+                            arma::vec thisactor = {outSenderD(h), outReceiverD(h)};
+                            dyadstat += min(thisactor);                       
+                        }
+                    }              
+                }
 
-            // Inbound shared partners: i <- h -> j    
-            if(type == 4) {
-                //For loop over actors
-                for(arma::uword h = 0; h < max(actors); ++h) {
-                    if((h != (senderD-1)) && (h!= (receiverD-1))) {
-                        arma::vec thisactor = {inSenderD(h), inReceiverD(h)};
-                        stat += min(thisactor);                       
-                    }
-                }              
-            }
+                // Inbound shared partners: i <- h -> j    
+                if(type == 4) {
+                    //For loop over actors
+                    for(arma::uword h = 0; h < max(actors); ++h) {
+                        if((h != (senderD-1)) && (h!= (receiverD-1))) {
+                            arma::vec thisactor = {inSenderD(h), inReceiverD(h)};
+                            dyadstat += min(thisactor);                       
+                        }
+                    }              
+                }
 
-            // Save the statistic for this dyad
-            thisrow(d) = stat;         
+                // Save the statistic for this dyad
+                thisrow(d) = dyadstat;  
+            }     
         }
         // Save the statistic for this timepoint
         stat.row(i) = thisrow;     
