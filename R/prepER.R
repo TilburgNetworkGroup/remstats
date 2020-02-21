@@ -47,6 +47,11 @@ prepER <- function(edgelist, riskset, directed, type) {
 	edgelist[,2] <- match(edgelist[,2], ac)
 	edgelist[,3] <- match(edgelist[,3], ac)
 	
+	# Sort the actors if the events are undirected
+	if(!directed) {
+		edgelist[,c(2,3)] <- t(apply(edgelist, 1, function(x) sort(x[c(2,3)])))
+	}
+	
 	# If the relational events should consider event type, let the types in the 
 	# edgelist run from 1 to # types.
 	if(type) {

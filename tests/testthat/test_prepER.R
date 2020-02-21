@@ -163,3 +163,34 @@ test_that("prepER output, edgelist input contains undirected relational events t
     # Test the match between event types in the edgelist and riskest
     expect_true(all(unique(el[,4]) %in% unique(rs[,3])))
 })
+
+test_that("prepER output; all events in the edgelist occur in the riskset", {
+    data(edgelistD) 
+    out <- prepER(edgelistD, riskset = NULL, directed = T, type = F)
+    el <- out$edgelist
+    rs <- out$riskset
+
+    expect_true(all(apply(el, 1, function(x) {
+	    length(which(rs[,1] == x[2] & rs[,2] == x[3])) > 0
+    })))
+
+    data(edgelistU) 
+    out <- prepER(edgelistU, riskset = NULL, directed = F, type = F)
+    el <- out$edgelist
+    rs <- out$riskset
+
+    expect_true(all(apply(el, 1, function(x) {
+	    length(which(rs[,1] == x[2] & rs[,2] == x[3])) > 0
+    })))
+
+    data(edgelistDT) 
+    out <- prepER(edgelistDT, riskset = NULL, directed = T, type = T)
+    el <- out$edgelist
+    rs <- out$riskset
+
+    expect_true(all(apply(el, 1, function(x) {
+	    length(which(rs[,1] == x[2] & rs[,2] == x[3] & rs[,3] == x[4])) > 0
+    })))
+
+
+})
