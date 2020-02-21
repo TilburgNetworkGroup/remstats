@@ -23,6 +23,8 @@
 #' @return evls [matrix], edgelist transformed in the format that is required 
 #' for estimation by relevent::rem() with in the first column the relational 
 #' event ID and in the second column the time.
+#' 
+#' @export
 
 remStats <- function(edgelist, effects, riskset = NULL, directed = TRUE, 
                      type = FALSE) {

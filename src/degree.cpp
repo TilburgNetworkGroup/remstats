@@ -9,11 +9,21 @@ using namespace arma;
 //' 
 //' @param edgelist 3-column edgelist (time, sender, receiver)
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-//' @param type (1 = indegree_sender, 2 = indegree_receiver, 3 = outdegree_sender, 
-//' 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = totaldegree_receiver) 
+//' @param type 1 = indegree_sender, 2 = indegree_receiver, 3 = 
+//' outdegree_sender, 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = 
+//' totaldegree_receiver 
 //'
-//' @return matrix (time, dyad)
-
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistD)
+//' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+//' el <- out$edgelist
+//' rs <- out$riskset
+//' indegree_sender <- degree(el, rs, type = 1)
+//'
+//' @export
+//'
 //[[Rcpp::export]]
 arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
     // Storage space and fill with zeros

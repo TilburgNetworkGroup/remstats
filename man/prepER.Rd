@@ -12,6 +12,11 @@ sender/actor 1 and receiver/actor 2 in the first three columns respectively.
 If the riskset contains typed relational events, the fourth column should 
 contain the event type.}
 
+\item{riskset}{optional argument. If supplied, [matrix] or [dataframe], 
+should minimally contain sender/actor 1 and receiver/actor 2 in the first 
+two columns, respectively. If it contains typed relational events, the third 
+column should contain the event type.}
+
 \item{directed}{[logical], are relational events in the riskset directional 
 (directed = TRUE) or undirectional (directed = FALSE).}
 
@@ -27,4 +32,11 @@ run from 1 to C.
 \description{
 A helper function to prepare the edgelist and riskset for and within 
 remstats().
+}
+\examples{
+data(edgelistD)
+out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
+el <- out$edgelist
+rs <- out$riskset
+
 }

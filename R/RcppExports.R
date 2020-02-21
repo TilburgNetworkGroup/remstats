@@ -7,12 +7,21 @@
 #' 
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-#' @param type (1 = indegree_sender, 2 = indegree_receiver, 3 = outdegree_sender, 
-#' 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = totaldegree_receiver) 
+#' @param type 1 = indegree_sender, 2 = indegree_receiver, 3 = 
+#' outdegree_sender, 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = 
+#' totaldegree_receiver 
 #'
-#' @return matrix (time, dyad)
-NULL
-
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistD)
+#' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' indegree_sender <- degree(el, rs, type = 1)
+#'
+#' @export
+#'
 degree <- function(edgelist, riskset, type) {
     .Call(`_remstats_degree`, edgelist, riskset, type)
 }
@@ -24,9 +33,18 @@ degree <- function(edgelist, riskset, type) {
 #' @param evls 2-column edgelist (event, time) in relevent::rem format.
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 #'
-#' @return matrix (time, dyad)
-NULL
-
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistD)
+#' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' evls <- prepEvls(el, rs, type = FALSE)
+#' stat <- inertia(evls, rs)
+#'
+#' @export
+#'
 inertia <- function(evls, riskset) {
     .Call(`_remstats_inertia`, evls, riskset)
 }
@@ -38,9 +56,17 @@ inertia <- function(evls, riskset) {
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 #'
-#' @return matrix (time, dyad)
-NULL
-
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistD)
+#' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' stat <- reciprocity(el, rs)
+#'
+#' @export
+#'
 reciprocity <- function(edgelist, riskset) {
     .Call(`_remstats_reciprocity`, edgelist, riskset)
 }
@@ -52,11 +78,21 @@ reciprocity <- function(edgelist, riskset) {
 #' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-#' @param type (1 = outgoing two-path)
+#' @param type (1 = outgoing two-path, 2 = incoming two-path, 3 = outbound 
+#' shared partners, 4 = inbound shared partners)
 #'
-#' @return matrix (time, dyad)
-NULL
-
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistD)
+#' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' ac <- sort(unique(c(rs[,1], rs[,2])))
+#' otp <- triad(ac, el, rs, type = 1)
+#'
+#' @export
+#'
 triad <- function(actors, edgelist, riskset, type) {
     .Call(`_remstats_triad`, actors, edgelist, riskset, type)
 }

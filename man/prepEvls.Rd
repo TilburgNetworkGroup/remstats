@@ -17,11 +17,11 @@ actor 1 and receiver/actor 2 in the first two columns, respectively. If it
 contains typed relational events, the third column should contain the event 
 type.}
 
-\item{type}{[logical], do relational events in the riskset consider an 
+\item{type}{[logical] do relational events in the riskset consider an 
 action type (type = TRUE) or not (type = FALSE, default).}
 }
 \value{
-evls [matrix], edgelist transformed in the format that is required 
+evls [matrix] edgelist transformed in the format that is required 
 for estimation by relevent::rem() with in the first column the relational 
 event ID and in the second column the time.
 }
@@ -29,4 +29,12 @@ event ID and in the second column the time.
 A helper function that matches events in the edgelist with events in the 
 riskset to create an evls, i.e., an edgelist in the format required by 
 relevent::rem.
+}
+\examples{
+data(edgelistD)
+out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
+el <- out$edgelist
+rs <- out$riskset
+evls <- prepEvls(el, rs, type = FALSE)
+
 }

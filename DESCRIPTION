@@ -3,12 +3,57 @@ Type: Package
 Title: Computes relational event modeling statistics
 Version: 1.0
 Date: 2020-02-14
-Author: Marlyne Meijerink-Bosman
+Authors@R: 
+    c(
+        person(
+            given = "Marlyne",
+            family = "Meijerink-Bosman",
+            role = c("aut", "cre"),
+            email = "m.l.meijerink@tilburguniversity.edu"),
+        person(
+            given = "Giuseppe",
+            family = "Arena",
+            role = "aut",
+            email = "g.arena@tilburguniversity.edu"),
+        person(
+            given = "Diana",
+            family = "Karimova",
+            role = "aut",
+            email = "d.karimova@tilburguniversity.edu"),
+        person(
+            given = "Rumana",
+            family = "Lakdawala",
+            role = "aut",
+            email = "r.j.lakdawala@tilburguniversity.edu"),
+        person(
+            given = "Mahdi",
+            family = "Shafiee Kamalabad",
+            role = "aut",
+            email = "m.shafiee@tilburguniversity.edu"),
+        person(
+            given = "Fabio",
+            family = "Generoso Vieira",
+            role = "aut",
+            email = "f.v.generosovieira@tilburguniversity.edu"),
+        person(
+            given = "Roger",
+            family = "Leenders",
+            role = "ctb",
+            email = "r.t.a.j.leenders@tilburguniversity.edu"),
+        person(
+            given = "Joris",
+            family = "Mulder",
+            role = "ctb",
+            email = "j.mulder3@tilburguniversity.edu")
+    )
 Maintainer: Marlyne Meijerink-Bosman <m.l.meijerink@tilburguniversity.edu>
-Description: More about what it does (maybe more than one line)
+Description: Computes relational event modeling statistics
 License: MIT + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 6.1.1
+Depends: R (>= 2.10)
 Imports: Rcpp (>= 1.0.2)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
     testthat
-RoxygenNote: 6.1.1
+

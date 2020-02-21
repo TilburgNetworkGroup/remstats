@@ -10,10 +10,21 @@ using namespace arma;
 //' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
 //' @param edgelist 3-column edgelist (time, sender, receiver)
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-//' @param type (1 = outgoing two-path)
+//' @param type (1 = outgoing two-path, 2 = incoming two-path, 3 = outbound 
+//' shared partners, 4 = inbound shared partners)
 //'
-//' @return matrix (time, dyad)
-
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistD)
+//' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+//' el <- out$edgelist
+//' rs <- out$riskset
+//' ac <- sort(unique(c(rs[,1], rs[,2])))
+//' otp <- triad(ac, el, rs, type = 1)
+//'
+//' @export
+//'
 //[[Rcpp::export]]
 arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::uword type) {
 

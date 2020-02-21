@@ -12,12 +12,21 @@
 #' actor 1 and receiver/actor 2 in the first two columns, respectively. If it 
 #' contains typed relational events, the third column should contain the event 
 #' type. 
-#' @param type [logical], do relational events in the riskset consider an 
+#' @param type [logical] do relational events in the riskset consider an 
 #' action type (type = TRUE) or not (type = FALSE, default). 
 #'
-#' @return evls [matrix], edgelist transformed in the format that is required 
+#' @return evls [matrix] edgelist transformed in the format that is required 
 #' for estimation by relevent::rem() with in the first column the relational 
 #' event ID and in the second column the time.
+#' 
+#' @examples
+#' data(edgelistD)
+#' out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' evls <- prepEvls(el, rs, type = FALSE)
+#' 
+#' @export
 
 prepEvls <- function(edgelist, riskset, type) {
     # Get the relational event IDs from the riskset

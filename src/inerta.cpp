@@ -10,8 +10,18 @@ using namespace arma;
 //' @param evls 2-column edgelist (event, time) in relevent::rem format.
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 //'
-//' @return matrix (time, dyad)
-
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistD)
+//' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+//' el <- out$edgelist
+//' rs <- out$riskset
+//' evls <- prepEvls(el, rs, type = FALSE)
+//' stat <- inertia(evls, rs)
+//'
+//' @export
+//'
 //[[Rcpp::export]]
 arma::mat inertia(arma::mat evls, arma::mat riskset) {
     // Storage space and fill with zeros

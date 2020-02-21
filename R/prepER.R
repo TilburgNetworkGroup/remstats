@@ -7,6 +7,10 @@
 #' sender/actor 1 and receiver/actor 2 in the first three columns respectively. 
 #' If the riskset contains typed relational events, the fourth column should 
 #' contain the event type. 
+#' @param riskset optional argument. If supplied, [matrix] or [dataframe], 
+#' should minimally contain sender/actor 1 and receiver/actor 2 in the first 
+#' two columns, respectively. If it contains typed relational events, the third 
+#' column should contain the event type. 
 #' @param directed [logical], are relational events in the riskset directional 
 #' (directed = TRUE) or undirectional (directed = FALSE).
 #' @param type [logical], do relational events in the riskset consider an 
@@ -15,6 +19,14 @@
 #' @return edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C. 
 #' @return riskset [matrix] with actor IDs that run from 1 to N and types that
 #' run from 1 to C. 
+#' 
+#' @examples 
+#' data(edgelistD)
+#' out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' 
+#' @export
 
 prepER <- function(edgelist, riskset, directed, type) {
     # Prepare the edgelist (let actor IDs run from 1 to N)

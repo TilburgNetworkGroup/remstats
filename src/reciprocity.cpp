@@ -10,8 +10,17 @@ using namespace arma;
 //' @param edgelist 3-column edgelist (time, sender, receiver)
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 //'
-//' @return matrix (time, dyad)
-
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistD)
+//' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+//' el <- out$edgelist
+//' rs <- out$riskset
+//' stat <- reciprocity(el, rs)
+//'
+//' @export
+//'
 //[[Rcpp::export]]
 arma::mat reciprocity(arma::mat edgelist, arma::mat riskset) {
     // Storage space and fill with zeros
