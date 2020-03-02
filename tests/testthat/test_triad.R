@@ -6,7 +6,8 @@ test_that("dimensions triad output", {
     # Test for directed relational events
     data(edgelistD)
 
-    out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
+    out <- prepER(edgelistD, riskset = NULL, actors = NULL, directed = TRUE, 
+        type = FALSE)
     el <- out$edgelist
     rs <- out$riskset
     ac <- unique(c(rs[,1], rs[,2]))
@@ -26,7 +27,8 @@ test_that("test content triad output with edgelistD", {
     # Test for directed relational events
     data(edgelistD)
 
-    out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
+    out <- prepER(edgelistD, riskset = NULL, actors = NULL, 
+        directed = TRUE, type = FALSE)
     el <- out$edgelist
     rs <- out$riskset
     ac <- unique(c(rs[,1], rs[,2]))

@@ -44,7 +44,8 @@ arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::u
         //Update the adjacency matrix
         adj(sender - 1, receiver - 1) += 1;
 
-        //Actors that have a relation with the sender/receiver of the previous event
+        //Actors that have a relation with the sender/receiver of the previous 
+        //event
         arma::uvec relActors1 = find(adj.row(sender-1) != 0);
         arma::uvec relActors2 = find(adj.col(sender-1) != 0);
         arma::uvec relActors3 = find(adj.row(receiver-1) != 0);
@@ -64,8 +65,9 @@ arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::u
             //Receiver of the dyad
             arma::uword receiverD = riskset(d, 1);
             
-            //Only change their statistic if one of the actors has a relation to the sender/receiver of the previous event
-            if(any(relActors == (senderD - 1)) || 
+            //Only change their statistic if both actors have a relation to the 
+            //sender/receiver of the previous event
+            if(any(relActors == (senderD - 1)) && 
                 any(relActors == (receiverD - 1))) {
 
                 //Outgoing communication senderD

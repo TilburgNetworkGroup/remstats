@@ -97,3 +97,28 @@ triad <- function(actors, edgelist, riskset, type) {
     .Call(`_remstats_triad`, actors, edgelist, riskset, type)
 }
 
+#' triadU
+#'
+#' A function to compute the shared partners effect for undirected relational 
+#' events.
+#'
+#' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+#' @param edgelist 3-column edgelist (time, sender, receiver)
+#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#'
+#' @return matrix (time x dyad)
+#' 
+#' @examples
+#' data(edgelistU)
+#' out <- prepER(edgelistU, riskset = NULL, directed =  FALSE, type = FALSE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' ac <- sort(unique(c(rs[,1], rs[,2])))
+#' otp <- triadU(ac, el, rs)
+#'
+#' @export
+#'
+triadU <- function(actors, edgelist, riskset) {
+    .Call(`_remstats_triadU`, actors, edgelist, riskset)
+}
+

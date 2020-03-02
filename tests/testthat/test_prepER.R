@@ -4,7 +4,8 @@ require(remstats)
 
 test_that("prepER output, edgelist input contains factor variables for sender and receivers", {
     data(edgelistF)
-    out <- prepER(edgelistF, riskset = NULL, directed = T, type = F)
+    out <- prepER(edgelistF, riskset = NULL, actors = NULL, directed = T, 
+        type = F)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -23,7 +24,8 @@ test_that("prepER output, edgelist input contains factor variables for sender an
 
 test_that("prepER output, edgelist input contains numeric variables for sender and receivers", {
     data(edgelistN)
-    out <- prepER(edgelistN, riskset = NULL, directed = T, type = F)
+    out <- prepER(edgelistN, riskset = NULL, actors = NULL, directed = T, 
+        type = F)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -42,7 +44,8 @@ test_that("prepER output, edgelist input contains numeric variables for sender a
 
 test_that("prepER output, edgelist input contains integer variables for sender and receivers", {
     data(edgelistI)
-    out <- prepER(edgelistI, riskset = NULL, directed = T, type = F)
+    out <- prepER(edgelistI, riskset = NULL, actors = NULL, directed = T, 
+        type = F)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -61,7 +64,8 @@ test_that("prepER output, edgelist input contains integer variables for sender a
 
 test_that("prepER output, edgelist input contains character variables for sender and receivers", {
     data(edgelistC)
-    out <- prepER(edgelistC, riskset = NULL, directed = T, type = F)
+    out <- prepER(edgelistC, riskset = NULL, actors = NULL, directed = T, 
+        type = F)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -80,7 +84,8 @@ test_that("prepER output, edgelist input contains character variables for sender
 
 test_that("prepER output, edgelist input contains directed relational events", {
     data(edgelistD)
-    out <- prepER(edgelistD, riskset = NULL, directed = T, type = F)
+    out <- prepER(edgelistD, riskset = NULL, actors = NULL, directed = T, 
+        type = F)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -99,7 +104,8 @@ test_that("prepER output, edgelist input contains directed relational events", {
 
 test_that("prepER output, edgelist input contains undirected relational events", {
     data(edgelistU)
-    out <- prepER(edgelistU, riskset = NULL, directed = F, type = F)
+    out <- prepER(edgelistU, riskset = NULL, actors = NULL, directed = F, 
+        type = F)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -118,7 +124,8 @@ test_that("prepER output, edgelist input contains undirected relational events",
 
 test_that("prepER output, edgelist input contains directed relational events that consider event type", {
     data(edgelistDT)
-    out <- prepER(edgelistDT, riskset = NULL, directed = T, type = T)
+    out <- prepER(edgelistDT, riskset = NULL, actors = NULL, directed = T, 
+        type = T)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -142,7 +149,8 @@ test_that("prepER output, edgelist input contains directed relational events tha
 
 test_that("prepER output, edgelist input contains undirected relational events that consider event type", {
     data(edgelistUT)
-    out <- prepER(edgelistUT, riskset = NULL, directed = F, type = T)
+    out <- prepER(edgelistUT, riskset = NULL, actors = NULL, directed = F, 
+        type = T)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -166,7 +174,8 @@ test_that("prepER output, edgelist input contains undirected relational events t
 
 test_that("prepER output; all events in the edgelist occur in the riskset", {
     data(edgelistD) 
-    out <- prepER(edgelistD, riskset = NULL, directed = T, type = F)
+    out <- prepER(edgelistD, riskset = NULL, actors = NULL, directed = T, 
+        type = F)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -175,7 +184,8 @@ test_that("prepER output; all events in the edgelist occur in the riskset", {
     })))
 
     data(edgelistU) 
-    out <- prepER(edgelistU, riskset = NULL, directed = F, type = F)
+    out <- prepER(edgelistU, riskset = NULL, actors = NULL, directed = F, 
+        type = F)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -184,7 +194,8 @@ test_that("prepER output; all events in the edgelist occur in the riskset", {
     })))
 
     data(edgelistDT) 
-    out <- prepER(edgelistDT, riskset = NULL, directed = T, type = T)
+    out <- prepER(edgelistDT, riskset = NULL, actors = NULL, directed = T, 
+        type = T)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -192,5 +203,14 @@ test_that("prepER output; all events in the edgelist occur in the riskset", {
 	    length(which(rs[,1] == x[2] & rs[,2] == x[3] & rs[,3] == x[4])) > 0
     })))
 
+    data(edgelistUT) 
+    out <- prepER(edgelistUT, riskset = NULL, actors = NULL, directed = F, 
+        type = T)
+    el <- out$edgelist
+    rs <- out$riskset
+
+    expect_true(all(apply(el, 1, function(x) {
+	    length(which(rs[,1] == x[2] & rs[,2] == x[3] & rs[,3] == x[4])) > 0
+    })))
 
 })

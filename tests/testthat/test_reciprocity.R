@@ -6,7 +6,8 @@ test_that("dimensions reciprocity output", {
     # Test for directed relational events 
     data(edgelistD)
 
-    out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
+    out <- prepER(edgelistD, riskset = NULL, actors = NULL, directed = TRUE, 
+        type = FALSE)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -19,7 +20,7 @@ test_that("content reciprocity output", {
     # Test for directed relational events 
     data(edgelistD)
 
-    out <- prepER(edgelistD, NULL, TRUE, FALSE)
+    out <- prepER(edgelistD, NULL, NULL, TRUE, FALSE)
     el <- out$edgelist
     rs <- out$riskset
 
