@@ -4,7 +4,8 @@
 \alias{prepER}
 \title{prepER}
 \usage{
-prepER(edgelist, riskset, directed, type)
+prepER(edgelist, directed = TRUE, type = FALSE, riskset = NULL,
+  actors = NULL)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
@@ -12,16 +13,20 @@ sender/actor 1 and receiver/actor 2 in the first three columns respectively.
 If the riskset contains typed relational events, the fourth column should 
 contain the event type.}
 
-\item{riskset}{optional argument. If supplied, [matrix] or [dataframe], 
-should minimally contain sender/actor 1 and receiver/actor 2 in the first 
-two columns, respectively. If it contains typed relational events, the third 
-column should contain the event type.}
-
 \item{directed}{[logical], are relational events in the riskset directional 
-(directed = TRUE) or undirectional (directed = FALSE).}
+(directed = TRUE, default) or undirectional (directed = FALSE).}
 
 \item{type}{[logical], do relational events in the riskset consider an 
-action type (type = TRUE) or not (type = FALSE).}
+action type (type = TRUE) or not (type = FALSE, default).}
+
+\item{riskset}{optional; [matrix] or [dataframe], should minimally contain 
+sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
+If it contains typed relational events, the third column should contain the 
+event type. If a riskset is not supplied, it is assumed that all possible 
+actors (and action types) are observed in the edgelist.}
+
+\item{actors}{optional; [vector], if supplied, should contain all actors 
+that can potentially interact. Used to create the riskset.}
 }
 \value{
 edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C.
@@ -35,7 +40,8 @@ remstats().
 }
 \examples{
 data(edgelistD)
-out <- prepER(edgelistD, riskset = NULL, directed = TRUE, type = FALSE)
+out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
+	riskset = NULL, actors = NULL)
 el <- out$edgelist
 rs <- out$riskset
 

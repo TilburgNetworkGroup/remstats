@@ -4,8 +4,8 @@
 \alias{remStats}
 \title{remStats}
 \usage{
-remStats(edgelist, effects, riskset = NULL, directed = TRUE,
-  type = FALSE)
+remStats(edgelist, effects, directed = TRUE, type = FALSE,
+  riskset = NULL, actors = NULL)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
@@ -15,17 +15,20 @@ contain the event type.}
 
 \item{effects}{[character vector], indicates the effects that are requested.}
 
+\item{directed}{[logical], are relational events in the riskset directional 
+(directed = TRUE, default) or undirectional (directed = FALSE).}
+
+\item{type}{[logical], do relational events in the riskset consider an 
+action type (type = TRUE) or not (type = FALSE, default).}
+
 \item{riskset}{optional; [matrix] or [dataframe], should minimally contain 
 sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
 If it contains typed relational events, the third column should contain the 
 event type. If a riskset is not supplied, it is assumed that all possible 
 actors (and action types) are observed in the edgelist.}
 
-\item{directed}{[logical], are relational events in the riskset directional 
-(directed = TRUE, default) or undirectional (directed = FALSE).}
-
-\item{type}{[logical], do relational events in the riskset consider an 
-action type (type = TRUE) or not (type = FALSE, default).}
+\item{actors}{optional; [vector], if supplied, should contain all actors 
+that can potentially interact. Used to create the riskset.}
 }
 \value{
 statistics [array], with three dimensions: timepoint x riskset x 
