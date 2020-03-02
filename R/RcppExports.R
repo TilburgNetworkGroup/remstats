@@ -15,7 +15,8 @@
 #'
 #' @examples
 #' data(edgelistD)
-#' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+#' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
+#'     riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' indegree_sender <- degree(el, rs, type = 1)
@@ -37,7 +38,8 @@ degree <- function(edgelist, riskset, type) {
 #'
 #' @examples
 #' data(edgelistD)
-#' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+#' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
+#'     riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' evls <- prepEvls(el, rs, type = FALSE)
@@ -60,7 +62,8 @@ inertia <- function(evls, riskset) {
 #'
 #' @examples
 #' data(edgelistD)
-#' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+#' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
+#'     riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' stat <- reciprocity(el, rs)
@@ -85,7 +88,8 @@ reciprocity <- function(edgelist, riskset) {
 #'
 #' @examples
 #' data(edgelistD)
-#' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+#' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
+#'     riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' ac <- sort(unique(c(rs[,1], rs[,2])))
@@ -110,7 +114,8 @@ triad <- function(actors, edgelist, riskset, type) {
 #' 
 #' @examples
 #' data(edgelistU)
-#' out <- prepER(edgelistU, riskset = NULL, directed =  FALSE, type = FALSE)
+#' out <- prepER(edgelist = edgelistU, directed = FALSE, type = FALSE, 
+#'     riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' ac <- sort(unique(c(rs[,1], rs[,2])))

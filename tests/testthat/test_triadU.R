@@ -3,9 +3,11 @@ context("triadU output")
 require(remstats)
 
 test_that("dimensions triadU output", {
+    # Test for undirected relational events
     data(edgelistU)
 
-    out <- prepER(edgelistD, riskset = NULL, directed = FALSE, type = FALSE)
+    out <- prepER(edgelistU, directed = FALSE, type = FALSE, riskset = NULL, 
+        actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
     ac <- unique(c(rs[,1], rs[,2]))
@@ -15,9 +17,11 @@ test_that("dimensions triadU output", {
 }) 
 
 test_that("content triadU output", {
+    # Test for undirected relational events
     data(edgelistU)
 
-    out <- prepER(edgelistD, riskset = NULL, directed = FALSE, type = FALSE)
+    out <- prepER(edgelistU, directed = FALSE, type = FALSE, riskset = NULL, 
+        actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
     ac <- unique(c(rs[,1], rs[,2]))

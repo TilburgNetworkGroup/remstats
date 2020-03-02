@@ -6,7 +6,8 @@ test_that("dimensions inertia output", {
     # Test for directed relational events 
     data(edgelistD)
 
-    out <- prepER(edgelistD, NULL, NULL, TRUE, FALSE)
+    out <- prepER(edgelistD, directed = TRUE, type = FALSE, riskset = NULL, 
+        actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -19,7 +20,8 @@ test_that("dimensions inertia output", {
     # Test for undirected relational events 
     data(edgelistU)
 
-    out2 <- prepER(edgelistU, NULL, NULL, FALSE, FALSE)
+    out2 <- prepER(edgelistU, directed = FALSE, type = FALSE, riskset = NULL, 
+        actors = NULL)
     el2 <- out2$edgelist
     rs2 <- out2$riskset
 
@@ -34,7 +36,8 @@ test_that("content inertia output", {
     # Test for directed relational events 
     data(edgelistD)
 
-    out <- prepER(edgelistD, NULL, NULL, TRUE, FALSE)
+    out <- prepER(edgelistD, directed = TRUE, type = FALSE, riskset = NULL, 
+        actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
 
@@ -50,7 +53,8 @@ test_that("content inertia output", {
     # Test for undirected relational events 
     data(edgelistU)
 
-    out2 <- prepER(edgelistU, NULL, NULL, FALSE, FALSE)
+    out2 <- prepER(edgelistU, directed = FALSE, type = FALSE, riskset = NULL, 
+        actors = NULL)
     el2 <- out2$edgelist
     rs2 <- out2$riskset
 

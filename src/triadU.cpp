@@ -16,7 +16,8 @@ using namespace arma;
 //' 
 //' @examples
 //' data(edgelistU)
-//' out <- prepER(edgelistU, riskset = NULL, directed =  FALSE, type = FALSE)
+//' out <- prepER(edgelist = edgelistU, directed = FALSE, type = FALSE, 
+//'     riskset = NULL, actors = NULL)
 //' el <- out$edgelist
 //' rs <- out$riskset
 //' ac <- sort(unique(c(rs[,1], rs[,2])))

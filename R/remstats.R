@@ -17,6 +17,8 @@
 #' If it contains typed relational events, the third column should contain the 
 #' event type. If a riskset is not supplied, it is assumed that all possible 
 #' actors (and action types) are observed in the edgelist.
+#' @param actors optional; [vector], if supplied, should contain all actors 
+#' that can potentially interact. Used to create the riskset. 
 #'
 #' @return statistics [array], with three dimensions: timepoint x riskset x 
 #' statistic. 
@@ -26,11 +28,11 @@
 #' 
 #' @export
 
-remStats <- function(edgelist, effects, riskset = NULL, directed = TRUE, 
-                     type = FALSE) {
+remStats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
+    riskset = NULL, actors = NULL) {
 
     # (1) Prepare the edgelist and riskset
-    out <- prepER(edgelist, riskset, directed, type)
+    out <- prepER(edgelist, directed, type, riskset, actors)
     el <- out$edgelist
     rs <- out$riskset
 	

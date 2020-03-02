@@ -17,7 +17,8 @@ using namespace arma;
 //'
 //' @examples
 //' data(edgelistD)
-//' out <- prepER(edgelistD, riskset = NULL, directed =  TRUE, type = FALSE)
+//' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
+//'     riskset = NULL, actors = NULL)
 //' el <- out$edgelist
 //' rs <- out$riskset
 //' indegree_sender <- degree(el, rs, type = 1)

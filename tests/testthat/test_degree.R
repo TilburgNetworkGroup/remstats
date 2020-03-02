@@ -6,8 +6,9 @@ test_that("dimensions degree output", {
     # Test for directed relational events
     data(edgelistD)
 
-    out <- prepER(edgelistD, riskset = NULL, actors = NULL, directed = TRUE, 
-        type = FALSE)
+    out <- prepER(edgelistD, directed = TRUE, type = FALSE, riskset = NULL, 
+        actors = NULL)
+
     el <- out$edgelist
     rs <- out$riskset
 
@@ -30,8 +31,8 @@ test_that("content degree output", {
     # Tests for directed relational events
     data(edgelistD)
 
-    out <- prepER(edgelistD, riskset = NULL, actors = NULL, directed = T, 
-        type = F)
+    out <- prepER(edgelistD, directed = TRUE, type = FALSE, riskset = NULL, 
+        actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
 

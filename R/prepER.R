@@ -7,16 +7,17 @@
 #' sender/actor 1 and receiver/actor 2 in the first three columns respectively. 
 #' If the riskset contains typed relational events, the fourth column should 
 #' contain the event type. 
-#' @param riskset optional argument. If supplied, [matrix] or [dataframe], 
-#' should minimally contain sender/actor 1 and receiver/actor 2 in the first 
-#' two columns, respectively. If it contains typed relational events, the third 
-#' column should contain the event type. 
-#' @param actors optional argument. If supplied, [vector], contains all actors 
-#' that can potentially interact used to create the riskset. 
 #' @param directed [logical], are relational events in the riskset directional 
 #' (directed = TRUE, default) or undirectional (directed = FALSE).
 #' @param type [logical], do relational events in the riskset consider an 
 #' action type (type = TRUE) or not (type = FALSE, default). 
+#' @param riskset optional; [matrix] or [dataframe], should minimally contain 
+#' sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
+#' If it contains typed relational events, the third column should contain the 
+#' event type. If a riskset is not supplied, it is assumed that all possible 
+#' actors (and action types) are observed in the edgelist.
+#' @param actors optional; [vector], if supplied, should contain all actors 
+#' that can potentially interact. Used to create the riskset. 
 #'
 #' @return edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C. 
 #' @return riskset [matrix] with actor IDs that run from 1 to N and types that
@@ -24,15 +25,15 @@
 #' 
 #' @examples 
 #' data(edgelistD)
-#' out <- prepER(edgelistD, riskset = NULL, actors = NULL, directed = TRUE, 
-#' 	type = FALSE)
+#' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
+#' 	riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' 
 #' @export
 
-prepER <- function(edgelist, riskset = NULL, actors = NULL, directed = TRUE, 
-	type = FALSE) {
+prepER <- function(edgelist, directed = TRUE, type = FALSE, riskset = NULL, 	
+	actors = NULL) {
 
 	# Obtain all actors from either ... 
 	if(is.null(actors)) {
