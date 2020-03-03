@@ -63,6 +63,7 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 	
 	# (5) Compute statistics
     stats <- remStatsC(eff, el, rs, evls, ac)
+    dimnames(stats)[[3]] <- eff
 
     # (6) Return output
     list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 
