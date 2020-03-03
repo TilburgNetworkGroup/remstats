@@ -29,7 +29,7 @@
 #' 
 #' @export
 
-prepEvls <- function(edgelist, riskset, type) {
+prepEvls <- function(edgelist, riskset, type = FALSE) {
     # Get the relational event IDs from the riskset
     if(!type) {
 		evls <- apply(edgelist, 1, function(x) {

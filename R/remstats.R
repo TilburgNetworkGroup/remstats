@@ -11,6 +11,10 @@
 #' (directed = TRUE, default) or undirectional (directed = FALSE).
 #' @param type [logical], do relational events in the riskset consider an 
 #' action type (type = TRUE) or not (type = FALSE, default). 
+#' @param timing [character value], indicates whether the full likelihood 
+#' (timing = "interval", default) or ordinal likelihod (timing = "ordinal") 
+#' will be used for estimation. If interval timing, a baseline statistic is 
+#' added to the statistic array.
 #'
 #' @param riskset optional; [matrix] or [dataframe], should minimally contain 
 #' sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
@@ -29,7 +33,7 @@
 #' @export
 
 remStats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    riskset = NULL, actors = NULL) {
+    timing = "interval", riskset = NULL, actors = NULL) {
 
     # (1) Prepare the edgelist and riskset
     out <- prepER(edgelist, directed, type, riskset, actors)
@@ -39,9 +43,15 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 	# (2) Prepare the evls (edgelist in relevent::rem() format)
     evls <- prepEvls(el, rs, type)
 
-	
+    # (3) Prepare the effects
+    all_effects <- c("inertia")
+    eff <- match(effects, all_effects)
+
+    # Add a baseline effect
+    if(timing == "interval") {eff <- c(0, eff)}
 	
 	# ... Compute and return statistics
+    stats <- remStatsC()
     
 
 }

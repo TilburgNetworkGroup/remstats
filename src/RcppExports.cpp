@@ -6,19 +6,6 @@
 
 using namespace Rcpp;
 
-// degree
-arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type);
-RcppExport SEXP _remstats_degree(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP typeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type type(typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(degree(edgelist, riskset, type));
-    return rcpp_result_gen;
-END_RCPP
-}
 // inertia
 arma::mat inertia(arma::mat evls, arma::mat riskset);
 RcppExport SEXP _remstats_inertia(SEXP evlsSEXP, SEXP risksetSEXP) {
@@ -43,6 +30,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// degree
+arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type);
+RcppExport SEXP _remstats_degree(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(degree(edgelist, riskset, type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // triad
 arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::uword type);
 RcppExport SEXP _remstats_triad(SEXP actorsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP typeSEXP) {
@@ -54,6 +54,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type type(typeSEXP);
     rcpp_result_gen = Rcpp::wrap(triad(actors, edgelist, riskset, type));
+    return rcpp_result_gen;
+END_RCPP
+}
+// remStatsC
+arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls);
+RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type effects(effectsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type evls(evlsSEXP);
+    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -72,10 +86,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_remstats_degree", (DL_FUNC) &_remstats_degree, 3},
     {"_remstats_inertia", (DL_FUNC) &_remstats_inertia, 2},
     {"_remstats_reciprocity", (DL_FUNC) &_remstats_reciprocity, 2},
+    {"_remstats_degree", (DL_FUNC) &_remstats_degree, 3},
     {"_remstats_triad", (DL_FUNC) &_remstats_triad, 4},
+    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 4},
     {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 3},
     {NULL, NULL, 0}
 };

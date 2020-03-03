@@ -4,7 +4,7 @@
 \alias{prepEvls}
 \title{prepEvls}
 \usage{
-prepEvls(edgelist, riskset, type)
+prepEvls(edgelist, riskset, type = FALSE)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 

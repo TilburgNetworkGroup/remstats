@@ -5,7 +5,7 @@
 \title{remStats}
 \usage{
 remStats(edgelist, effects, directed = TRUE, type = FALSE,
-  riskset = NULL, actors = NULL)
+  timing = "interval", riskset = NULL, actors = NULL)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
@@ -20,6 +20,11 @@ contain the event type.}
 
 \item{type}{[logical], do relational events in the riskset consider an 
 action type (type = TRUE) or not (type = FALSE, default).}
+
+\item{timing}{[character value], indicates whether the full likelihood 
+(timing = "interval", default) or ordinal likelihod (timing = "ordinal") 
+will be used for estimation. If interval timing, a baseline statistic is 
+added to the statistic array.}
 
 \item{riskset}{optional; [matrix] or [dataframe], should minimally contain 
 sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
