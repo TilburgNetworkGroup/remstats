@@ -31,7 +31,7 @@ test_that("content reciprocity output", {
     expect_equal(rowSums(stat), seq(0, nrow(el)-1))
     # Are the final counts all in the inertia statistic?
     evls <- prepEvls(el, rs, FALSE)
-    statInertia <- inertia(evls, rs)
+    statInertia <- inertia(evls, rs, rep(1, nrow(el)))
     expect_true(all(stat[nrow(el),] %in% statInertia[nrow(evls),]))
     # Is the statistic not equal to the inertia statistic?
     expect_true(!all(stat[nrow(el),] == statInertia[nrow(evls),]))

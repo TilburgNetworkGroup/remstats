@@ -13,7 +13,7 @@ test_that("dimensions inertia output", {
 
     evls <- prepEvls(el, rs, FALSE)
 
-    stat <- inertia(evls, rs)
+    stat <- inertia(evls, rs, rep(1, nrow(evls)))
 
     expect_output(str(stat), "num[1:nrow(evls), 1:nrow(rs)]")
 
@@ -27,7 +27,7 @@ test_that("dimensions inertia output", {
 
     evls2 <- prepEvls(el2, rs2, FALSE)
 
-    stat2 <- inertia(evls2, rs2)
+    stat2 <- inertia(evls2, rs2, rep(1, nrow(evls)))
 
     expect_output(str(stat2), "num[1:nrow(evls2), 1:nrow(rs2)]")
 })
@@ -43,7 +43,7 @@ test_that("content inertia output", {
 
     evls <- prepEvls(el, rs, FALSE)
 
-    stat <- inertia(evls, rs)
+    stat <- inertia(evls, rs, rep(1, nrow(evls)))
 
     # Do the rowsums run from 0 to M-1?
     expect_equal(rowSums(stat), seq(0, nrow(evls)-1))
@@ -60,7 +60,7 @@ test_that("content inertia output", {
 
     evls2 <- prepEvls(el2, rs2, FALSE)
 
-    stat2 <- inertia(evls2, rs2)
+    stat2 <- inertia(evls2, rs2, rep(1, nrow(evls)))
 
     # Do the rowsums run from 0 to M-1?
     expect_equal(rowSums(stat2), seq(0, nrow(evls2)-1))

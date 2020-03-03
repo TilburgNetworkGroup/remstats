@@ -6,7 +6,8 @@
 #' A function to compute the inertia effect.
 #'
 #' @param evls 2-column edgelist (event, time) in relevent::rem format.
-#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
+#' @param weights vector (length evls) 
 #'
 #' @return matrix (time x dyad)
 #'
@@ -21,8 +22,8 @@
 #'
 #' @export
 #'
-inertia <- function(evls, riskset) {
-    .Call(`_remstats_inertia`, evls, riskset)
+inertia <- function(evls, riskset, weights) {
+    .Call(`_remstats_inertia`, evls, riskset, weights)
 }
 
 #' reciprocity
@@ -111,12 +112,13 @@ triad <- function(actors, edgelist, riskset, type) {
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 #' @param evls 2-column edgelist (event, time) in relevent::rem format
 #' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+#' @param weights vector (length evls) 
 #'
 #' @return statistics 3-dimensional array (event time x risk set entry x 
 #'     statistic)
 #' 
-remStatsC <- function(effects, edgelist, riskset, evls, actors) {
-    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors)
+remStatsC <- function(effects, edgelist, riskset, evls, actors, weights) {
+    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, weights)
 }
 
 #' triadU

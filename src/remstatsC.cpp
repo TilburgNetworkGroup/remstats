@@ -14,13 +14,14 @@ using namespace arma;
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 //' @param evls 2-column edgelist (event, time) in relevent::rem format
 //' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+//' @param weights vector (length evls) 
 //'
 //' @return statistics 3-dimensional array (event time x risk set entry x 
 //'     statistic)
 //' 
 //[[Rcpp::export]]
 arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, 
-    arma::mat evls, arma::vec actors) {
+    arma::mat evls, arma::vec actors, arma::vec weights) {
 
     // Initialize saving space
     arma::cube statistics(edgelist.n_rows, riskset.n_rows, effects.n_elem);
@@ -40,7 +41,7 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
                 break;
             // Inertia
             case 1 :
-                stat = inertia(evls, riskset);
+                stat = inertia(evls, riskset, weights);
                 break;
             // Reciprocity
             case 2: 
@@ -85,6 +86,10 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
             // ISP
             case 16:
                 stat = triad(actors, edgelist, riskset, 4);
+                break;
+            // inertia_weighted
+            case 24:
+                stat = inertia(evls, riskset, weights);
                 break;
         }
             

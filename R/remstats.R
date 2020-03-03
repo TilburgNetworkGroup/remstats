@@ -23,6 +23,8 @@
 #' actors (and action types) are observed in the edgelist.
 #' @param actors optional; [vector], if supplied, should contain all actors 
 #' that can potentially interact. Used to create the riskset. 
+#' @param weights optional; [vector], if supplied, should be of length edgelist #' and contain the weights for the events in the edgelist (to compute 
+#' inertia_weighted)
 #'
 #' @return statistics [array], with three dimensions: timepoint x riskset x 
 #' statistic. 
@@ -33,7 +35,7 @@
 #' @export
 
 remStats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    timing = "interval", riskset = NULL, actors = NULL) {
+    timing = "interval", riskset = NULL, actors = NULL, weights = NULL) {
 
     # (1) Prepare the edgelist and riskset
     out <- prepER(edgelist, directed, type, riskset, actors)
@@ -55,15 +57,19 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
         "indegree_receiver", "outdegree_sender", "outdegree_receiver", 
         "totaldegree_sender", "totaldegree_receiver", "recency_send", 
         "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", 
-        "ISP")
+        "ISP", "shared_partners", "PSAB-BA", "PSAB_BY", "PSAB-XA", "PSAB-XB", 
+        "PSAB-XY", "PSAB-AY", "inertia_weighted")
     eff <- match(effects, all_effects)
 
     # Add a baseline effect
     if(timing == "interval") {eff <- c(0, eff)}
+
+    # Deal with event weights
+    if(is.null(weights)) {weights <- rep(1, nrow(el))}
 	
 	# (5) Compute statistics
-    stats <- remStatsC(eff, el, rs, evls, ac)
-    dimnames(stats)[[3]] <- eff
+    stats <- remStatsC(eff, el, rs, evls, ac, weights)
+    dimnames(stats)[[3]] <- c("baseline", effects)
 
     # (6) Return output
     list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 

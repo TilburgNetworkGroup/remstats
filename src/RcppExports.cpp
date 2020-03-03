@@ -7,14 +7,15 @@
 using namespace Rcpp;
 
 // inertia
-arma::mat inertia(arma::mat evls, arma::mat riskset);
-RcppExport SEXP _remstats_inertia(SEXP evlsSEXP, SEXP risksetSEXP) {
+arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights);
+RcppExport SEXP _remstats_inertia(SEXP evlsSEXP, SEXP risksetSEXP, SEXP weightsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type evls(evlsSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
-    rcpp_result_gen = Rcpp::wrap(inertia(evls, riskset));
+    Rcpp::traits::input_parameter< arma::vec >::type weights(weightsSEXP);
+    rcpp_result_gen = Rcpp::wrap(inertia(evls, riskset, weights));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -58,8 +59,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // remStatsC
-arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors);
-RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP) {
+arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors, arma::vec weights);
+RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP, SEXP weightsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -68,7 +69,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type evls(evlsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls, actors));
+    Rcpp::traits::input_parameter< arma::vec >::type weights(weightsSEXP);
+    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls, actors, weights));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -87,11 +89,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_remstats_inertia", (DL_FUNC) &_remstats_inertia, 2},
+    {"_remstats_inertia", (DL_FUNC) &_remstats_inertia, 3},
     {"_remstats_reciprocity", (DL_FUNC) &_remstats_reciprocity, 2},
     {"_remstats_degree", (DL_FUNC) &_remstats_degree, 3},
     {"_remstats_triad", (DL_FUNC) &_remstats_triad, 4},
-    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 5},
+    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 6},
     {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 3},
     {NULL, NULL, 0}
 };

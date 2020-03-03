@@ -8,7 +8,8 @@ using namespace arma;
 //' A function to compute the inertia effect.
 //'
 //' @param evls 2-column edgelist (event, time) in relevent::rem format.
-//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
+//' @param weights vector (length evls) 
 //'
 //' @return matrix (time x dyad)
 //'
@@ -24,7 +25,7 @@ using namespace arma;
 //' @export
 //'
 //[[Rcpp::export]]
-arma::mat inertia(arma::mat evls, arma::mat riskset) {
+arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights) {
     // Storage space and fill with zeros
     arma::mat stat(evls.n_rows, riskset.n_rows, fill::zeros);
 
@@ -34,8 +35,8 @@ arma::mat inertia(arma::mat evls, arma::mat riskset) {
         arma::rowvec thisrow = stat.row(i-1);
         //Get the (position of the) previous event
         arma::uword event = evls(i-1, 0) - 1.0;
-        //Add one to the previous event
-        thisrow(event) += 1;
+        //Add the weight of the previous event
+        thisrow(event) += weights(i-1);
         //Change the row in the statistic
         stat.row(i) = thisrow;
     }
