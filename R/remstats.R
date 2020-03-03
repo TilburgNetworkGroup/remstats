@@ -28,9 +28,20 @@
 #'
 #' @return statistics [array], with three dimensions: timepoint x riskset x 
 #' statistic. 
+#' @return edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C. 
+#' @return riskset [matrix], with actor IDs that run from 1 to N and types that
+#' run from 1 to C. 
 #' @return evls [matrix], edgelist transformed in the format that is required 
 #' for estimation by relevent::rem() with in the first column the relational 
 #' event ID and in the second column the time.
+#' @return actors [vector], all unique actor IDs
+#' 
+#' @examples 
+#' data(edgelistD)
+#' effects <- c("inertia", "indegree_receiver", "outdegree_sender")
+#' out <- remStats(edgelistD, effects)
+#' fit <- relevent::rem(out$evls, out$statistics)
+#' summary(fit)
 #' 
 #' @export
 

@@ -5,7 +5,8 @@
 \title{remStats}
 \usage{
 remStats(edgelist, effects, directed = TRUE, type = FALSE,
-  timing = "interval", riskset = NULL, actors = NULL)
+  timing = "interval", riskset = NULL, actors = NULL,
+  weights = NULL)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
@@ -34,15 +35,33 @@ actors (and action types) are observed in the edgelist.}
 
 \item{actors}{optional; [vector], if supplied, should contain all actors 
 that can potentially interact. Used to create the riskset.}
+
+\item{weights}{optional; [vector], if supplied, should be of length edgelist #' and contain the weights for the events in the edgelist (to compute 
+inertia_weighted)}
 }
 \value{
 statistics [array], with three dimensions: timepoint x riskset x 
 statistic.
 
+edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C.
+
+riskset [matrix], with actor IDs that run from 1 to N and types that
+run from 1 to C.
+
 evls [matrix], edgelist transformed in the format that is required 
 for estimation by relevent::rem() with in the first column the relational 
 event ID and in the second column the time.
+
+actors [vector], all unique actor IDs
 }
 \description{
 A function to compute statistics for a relational event sequence.
+}
+\examples{
+data(edgelistD)
+effects <- c("inertia", "indegree_receiver", "outdegree_sender")
+out <- remStats(edgelistD, effects)
+fit <- relevent::rem(out$evls, out$statistics)
+summary(fit)
+
 }

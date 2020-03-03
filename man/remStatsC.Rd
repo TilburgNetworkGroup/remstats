@@ -4,7 +4,7 @@
 \alias{remStatsC}
 \title{remStatsC}
 \usage{
-remStatsC(effects, edgelist, riskset, evls, actors)
+remStatsC(effects, edgelist, riskset, evls, actors, weights)
 }
 \arguments{
 \item{effects}{integer vector (effects)}
@@ -16,6 +16,8 @@ remStatsC(effects, edgelist, riskset, evls, actors)
 \item{evls}{2-column edgelist (event, time) in relevent::rem format}
 
 \item{actors}{vector with numeric actor IDs (correspod to edgelist, riskset)}
+
+\item{weights}{vector (length evls)}
 }
 \value{
 statistics 3-dimensional array (event time x risk set entry x 

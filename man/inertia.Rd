@@ -4,12 +4,14 @@
 \alias{inertia}
 \title{inertia}
 \usage{
-inertia(evls, riskset)
+inertia(evls, riskset, weights)
 }
 \arguments{
 \item{evls}{2-column edgelist (event, time) in relevent::rem format.}
 
-\item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2)}
+\item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2).}
+
+\item{weights}{vector (length evls)}
 }
 \value{
 matrix (time x dyad)
