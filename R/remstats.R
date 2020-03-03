@@ -39,19 +39,32 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     out <- prepER(edgelist, directed, type, riskset, actors)
     el <- out$edgelist
     rs <- out$riskset
+
+    # (2) Prepare the actors
+    if(is.null(actors)) {
+        ac <- sort(unique(c(rs[,1], rs[,2])))
+    } else {
+        ac <- sort(actors[,1])
+    }
 	
-	# (2) Prepare the evls (edgelist in relevent::rem() format)
+	# (3) Prepare the evls (edgelist in relevent::rem() format)
     evls <- prepEvls(el, rs, type)
 
-    # (3) Prepare the effects
-    all_effects <- c("inertia")
+    # (4) Prepare the effects
+    all_effects <- c("inertia", "reciprocity", "indegree_sender", 
+        "indegree_receiver", "outdegree_sender", "outdegree_receiver", 
+        "totaldegree_sender", "totaldegree_receiver", "recency_send", 
+        "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", 
+        "ISP")
     eff <- match(effects, all_effects)
 
     # Add a baseline effect
     if(timing == "interval") {eff <- c(0, eff)}
 	
-	# ... Compute and return statistics
-    stats <- remStatsC()
-    
+	# (5) Compute statistics
+    stats <- remStatsC(eff, el, rs, evls, ac)
 
+    # (6) Return output
+    list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 
+        actors = ac)
 }
