@@ -37,3 +37,28 @@ test_that("remStatsC output for directed dyadic relational events", {
     expect_equal(stats[,,13], triad(ac, el, rs, 4))
     expect_equal(stats[,,14], stats[,,2])
 })
+
+test_that("remStatsC output for undirected dyadic relational events", {
+    # Test for undirected relational events
+    data(edgelistU)
+
+    out <- prepER(edgelistU, directed = FALSE)
+    el <- out$edgelist
+    rs <- out$riskset
+    ac <- sort(unique(c(rs[,1], rs[,2])))
+
+    evls <- prepEvls(el, rs)
+
+    effects <- c(0, 1, 24)
+
+    stats <- remStatsC(effects, el, rs, evls, ac, rep(1, nrow(evls))) 
+
+    # Dimensions
+    expect_output(str(stats), 
+    "num[1:nrow(evls), 1:nrow(rs), 1:length(effects)]")
+
+    # Output
+    expect_true(all(stats[,,1]==1))
+    expect_equal(stats[,,2], inertia(evls, rs, rep(1, nrow(evls))))
+    expect_equal(stats[,,3], stats[,,2])
+})
