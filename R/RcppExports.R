@@ -102,25 +102,7 @@ triad <- function(actors, edgelist, riskset, type) {
     .Call(`_remstats_triad`, actors, edgelist, riskset, type)
 }
 
-#' remStatsC
-#'
-#' A function to compute statistics and combine the statistics in an array
-#' prepared for estimation of a REM with relevent::rem()
-#' 
-#' @param effects integer vector (effects)
-#' @param edgelist 3-column edgelist (time, sender, receiver)
-#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-#' @param evls 2-column edgelist (event, time) in relevent::rem format
-#' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
-#' @param weights vector (length evls) 
-#'
-#' @return statistics 3-dimensional array (event time x risk set entry x 
-#'     statistic)
-#' 
-remStatsC <- function(effects, edgelist, riskset, evls, actors, weights) {
-    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, weights)
-}
-
+#' TO DO: Merge with triad()??
 #' triadU
 #'
 #' A function to compute the shared partners effect for undirected relational 
@@ -145,5 +127,24 @@ remStatsC <- function(effects, edgelist, riskset, evls, actors, weights) {
 #'
 triadU <- function(actors, edgelist, riskset) {
     .Call(`_remstats_triadU`, actors, edgelist, riskset)
+}
+
+#' remStatsC
+#'
+#' A function to compute statistics and combine the statistics in an array
+#' prepared for estimation of a REM with relevent::rem()
+#' 
+#' @param effects integer vector (effects)
+#' @param edgelist 3-column edgelist (time, sender, receiver)
+#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param evls 2-column edgelist (event, time) in relevent::rem format
+#' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+#' @param weights vector (length evls) 
+#'
+#' @return statistics 3-dimensional array (event time x risk set entry x 
+#'     statistic)
+#' 
+remStatsC <- function(effects, edgelist, riskset, evls, actors, weights) {
+    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, weights)
 }
 

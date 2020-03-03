@@ -87,6 +87,10 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
             case 16:
                 stat = triad(actors, edgelist, riskset, 4);
                 break;
+            // shared_partners
+            case 17:
+                stat = triadU(actors, edgelist, riskset);
+                break;
             // inertia_weighted
             case 24:
                 stat = inertia(evls, riskset, weights);
