@@ -110,11 +110,13 @@ triad <- function(actors, edgelist, riskset, type) {
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 #' @param evls 2-column edgelist (event, time) in relevent::rem format
-#' 
-#' @export
+#' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
 #'
-remStatsC <- function(effects, edgelist, riskset, evls) {
-    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls)
+#' @return statistics 3-dimensional array (event time x risk set entry x 
+#'     statistic)
+#' 
+remStatsC <- function(effects, edgelist, riskset, evls, actors) {
+    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors)
 }
 
 #' triadU

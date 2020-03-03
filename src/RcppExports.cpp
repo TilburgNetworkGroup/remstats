@@ -58,8 +58,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // remStatsC
-arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls);
-RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP) {
+arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors);
+RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -67,7 +67,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type evls(evlsSEXP);
-    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls));
+    Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
+    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls, actors));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -90,7 +91,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_reciprocity", (DL_FUNC) &_remstats_reciprocity, 2},
     {"_remstats_degree", (DL_FUNC) &_remstats_degree, 3},
     {"_remstats_triad", (DL_FUNC) &_remstats_triad, 4},
-    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 4},
+    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 5},
     {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 3},
     {NULL, NULL, 0}
 };
