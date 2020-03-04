@@ -69,7 +69,7 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
         "totaldegree_sender", "totaldegree_receiver", "recency_send", 
         "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", 
         "ISP", "shared_partners", "PSAB-BA", "PSAB_BY", "PSAB-XA", "PSAB-XB", 
-        "PSAB-XY", "PSAB-AY", "inertia_weighted", "unique_sp")
+        "PSAB-XY", "PSAB-AY", "inertia_weighted", "reciprocity_weighted", "unique_sp")
     eff <- match(effects, all_effects)
 
     # Add a baseline effect

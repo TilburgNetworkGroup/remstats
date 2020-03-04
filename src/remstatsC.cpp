@@ -98,7 +98,7 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
                 stat = inertia(evls, riskset, weights);
                 break;
             // unique_sp
-            case 25:
+            case 26:
                 stat = triadU(actors, edgelist, riskset, TRUE);
                 break;
         }
