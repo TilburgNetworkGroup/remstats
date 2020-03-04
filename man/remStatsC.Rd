@@ -4,7 +4,8 @@
 \alias{remStatsC}
 \title{remStatsC}
 \usage{
-remStatsC(effects, edgelist, riskset, evls, actors, weights)
+remStatsC(effects, edgelist, riskset, evls, actors, sender_values,
+  receiver_values, weights)
 }
 \description{
 A function to compute statistics and combine the statistics in an array
@@ -18,6 +19,8 @@ param:
 [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
 [evls] 2-column edgelist (event, time) in relevent::rem format
 [actors] vector with numeric actor IDs (correspod to edgelist, riskset)
+[sender_values] matrix (id, time, sender covariate values)
+[receiver_values] matrix(id, time, receiver covariate values)
 [weights] vector (length evls)
 
 return:

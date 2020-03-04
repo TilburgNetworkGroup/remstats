@@ -29,7 +29,7 @@ out <- prepER(edgelist = edgelistU, directed = FALSE, type = FALSE,
     riskset = NULL, actors = NULL)
 el <- out$edgelist
 rs <- out$riskset
-ac <- sort(unique(c(rs[,1], rs[,2])))
+ac <- out$actors[,1]
 stat <- triadU(ac, el, rs, unique_sp = FALSE)
 
 }

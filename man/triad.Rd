@@ -28,7 +28,7 @@ out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE,
     riskset = NULL, actors = NULL)
 el <- out$edgelist
 rs <- out$riskset
-ac <- sort(unique(c(rs[,1], rs[,2])))
+ac <- out$actors[,1]
 otp <- triad(ac, el, rs, type = 1)
 
 }
