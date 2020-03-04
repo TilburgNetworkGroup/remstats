@@ -23,6 +23,7 @@
 #' rs <- out$rs
 #' ac <- out$ac
 #' covar$id <- ac$id[match(covar$id, ac$name)]
+#' covar <- as.matrix(covar)
 #' stat <- actorStat(values = covar[,c(1:3)], type = 1, edgelist = el, 
 #'     riskset = rs)
 #'
