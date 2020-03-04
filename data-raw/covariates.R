@@ -4,7 +4,7 @@ set.seed(54688)
 
 # Time-varying covariate information
 # Set up the data-frame
-covar <- data.frame(id = rep(1:26, each = 3), 
+covar <- data.frame(id = rep(letters, each = 3), 
     time = rep(c(0, 5, 10), times = 26),
     x1 = round(runif(26*3, -2, 2), 1), 
     x2 = round(rnorm(26*3, 0, 2)))
@@ -22,9 +22,8 @@ covar$time <- ifelse(covar$time != 0,
 covar$time <- round(covar$time, 2)
 rownames(covar) <- NULL
 names(covar) <- c("id", "change_time", "x1", "x2")
-covar <- as.matrix(covar)
 
-usethis::use_data(covar)
+usethis::use_data(covar, overwrite = TRUE)
 
 
 
