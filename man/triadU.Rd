@@ -4,21 +4,24 @@
 \alias{triadU}
 \title{triadU}
 \usage{
-triadU(actors, edgelist, riskset)
+triadU(actors, edgelist, riskset, unique_sp)
 }
 \arguments{
-\item{actors}{vector with numeric actor IDs (correspod to edgelist, riskset)}
+\item{actors}{vector with numeric actor IDs (correspond to edgelist,
+riskset)}
 
 \item{edgelist}{3-column edgelist (time, sender, receiver)}
 
 \item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2)}
+
+\item{uinque_sp}{logical value}
 }
 \value{
 matrix (time x dyad)
 }
 \description{
-A function to compute the shared partners effect for undirected relational 
-events.
+A function to compute the (unique) shared partners effect for undirected 
+relational events.
 }
 \examples{
 data(edgelistU)
@@ -27,6 +30,6 @@ out <- prepER(edgelist = edgelistU, directed = FALSE, type = FALSE,
 el <- out$edgelist
 rs <- out$riskset
 ac <- sort(unique(c(rs[,1], rs[,2])))
-otp <- triadU(ac, el, rs)
+stat <- triadU(ac, el, rs, unique_sp = FALSE)
 
 }

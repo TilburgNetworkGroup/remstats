@@ -1,7 +1,7 @@
 #' prepER
 #'
 #' A helper function to prepare the edgelist and riskset for and within 
-#' remstats().
+#' remStats().
 #' 
 #' @param edgelist [matrix] or [dataframe], should minimally contain the time, 
 #' sender/actor 1 and receiver/actor 2 in the first three columns respectively. 

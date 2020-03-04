@@ -26,6 +26,6 @@ out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE,
 el <- out$edgelist
 rs <- out$riskset
 evls <- prepEvls(el, rs, type = FALSE)
-stat <- inertia(evls, rs)
+stat <- inertia(evls, rs, weights = rep(1, nrow(el)))
 
 }

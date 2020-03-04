@@ -59,7 +59,7 @@ test_that("Output remstats for dyadic undirected relational events", {
     # Test for undirected relational events
     data("edgelistU")
 
-    effects = c("inertia", "inertia_weighted")
+    effects = c("inertia", "shared_partners", "inertia_weighted", "unique_sp")
     out <- remStats(edgelistU, effects, directed = FALSE)
 
     # General output
@@ -73,7 +73,11 @@ test_that("Output remstats for dyadic undirected relational events", {
     expect_true(all(out$statistics[,,1]==1))
     expect_equal(out$statistics[,,2], 
         inertia(out$evls, out$riskset, rep(1, nrow(edgelistD))))
-    expect_equal(out$statistics[,,3], out$statistics[,,2])
+    expect_equal(out$statistics[,,3], 
+        triadU(out$actors, out$edgelist, out$riskset, FALSE))  
+    expect_equal(out$statistics[,,4], out$statistics[,,2])
+     expect_equal(out$statistics[,,5], 
+        triadU(out$actors, out$edgelist, out$riskset, TRUE  ))
 
     # Edgelist 
     expect_output(str(out$edgelist), "num[1:nrow(edgelistD), 1:3]")

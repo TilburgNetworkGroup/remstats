@@ -59,15 +59,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // triadU
-arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset);
-RcppExport SEXP _remstats_triadU(SEXP actorsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP) {
+arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset, bool unique_sp);
+RcppExport SEXP _remstats_triadU(SEXP actorsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP unique_spSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
-    rcpp_result_gen = Rcpp::wrap(triadU(actors, edgelist, riskset));
+    Rcpp::traits::input_parameter< bool >::type unique_sp(unique_spSEXP);
+    rcpp_result_gen = Rcpp::wrap(triadU(actors, edgelist, riskset, unique_sp));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -93,7 +94,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_reciprocity", (DL_FUNC) &_remstats_reciprocity, 2},
     {"_remstats_degree", (DL_FUNC) &_remstats_degree, 3},
     {"_remstats_triad", (DL_FUNC) &_remstats_triad, 4},
-    {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 3},
+    {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 4},
     {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 6},
     {NULL, NULL, 0}
 };

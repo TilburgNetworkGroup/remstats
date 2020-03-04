@@ -49,7 +49,7 @@ test_that("remStatsC output for undirected dyadic relational events", {
 
     evls <- prepEvls(el, rs)
 
-    effects <- c(0, 1, 24)
+    effects <- c(0, 1, 17, 24, 25)
 
     stats <- remStatsC(effects, el, rs, evls, ac, rep(1, nrow(evls))) 
 
@@ -60,5 +60,7 @@ test_that("remStatsC output for undirected dyadic relational events", {
     # Output
     expect_true(all(stats[,,1]==1))
     expect_equal(stats[,,2], inertia(evls, rs, rep(1, nrow(evls))))
-    expect_equal(stats[,,3], stats[,,2])
+    expect_equal(stats[,,3], triadU(ac, el, rs, FALSE))
+    expect_equal(stats[,,4], stats[,,2])
+    expect_equal(stats[,,5], triadU(ac, el, rs, TRUE))
 })

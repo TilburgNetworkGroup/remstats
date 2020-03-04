@@ -18,7 +18,7 @@
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' evls <- prepEvls(el, rs, type = FALSE)
-#' stat <- inertia(evls, rs)
+#' stat <- inertia(evls, rs, weights = rep(1, nrow(el)))
 #'
 #' @export
 #'
@@ -102,15 +102,16 @@ triad <- function(actors, edgelist, riskset, type) {
     .Call(`_remstats_triad`, actors, edgelist, riskset, type)
 }
 
-#' TO DO: Merge with triad()??
 #' triadU
 #'
-#' A function to compute the shared partners effect for undirected relational 
-#' events.
+#' A function to compute the (unique) shared partners effect for undirected 
+#' relational events.
 #'
-#' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+#' @param actors vector with numeric actor IDs (correspond to edgelist,
+#' riskset)
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param uinque_sp logical value
 #'
 #' @return matrix (time x dyad)
 #' 
@@ -121,28 +122,30 @@ triad <- function(actors, edgelist, riskset, type) {
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' ac <- sort(unique(c(rs[,1], rs[,2])))
-#' otp <- triadU(ac, el, rs)
+#' stat <- triadU(ac, el, rs, unique_sp = FALSE)
 #'
 #' @export
 #'
-triadU <- function(actors, edgelist, riskset) {
-    .Call(`_remstats_triadU`, actors, edgelist, riskset)
+triadU <- function(actors, edgelist, riskset, unique_sp) {
+    .Call(`_remstats_triadU`, actors, edgelist, riskset, unique_sp)
 }
 
 #' remStatsC
 #'
 #' A function to compute statistics and combine the statistics in an array
-#' prepared for estimation of a REM with relevent::rem()
+#' prepared for estimation of a REM with relevent::rem(). Used internally 
+#' in remStats. 
 #' 
-#' @param effects integer vector (effects)
-#' @param edgelist 3-column edgelist (time, sender, receiver)
-#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-#' @param evls 2-column edgelist (event, time) in relevent::rem format
-#' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
-#' @param weights vector (length evls) 
+#' param:
+#' [effects] integer vector (effects)
+#' [edgelist] 3-column edgelist (time, sender, receiver)
+#' [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
+#' [evls] 2-column edgelist (event, time) in relevent::rem format
+#' [actors] vector with numeric actor IDs (correspod to edgelist, riskset)
+#' [weights] vector (length evls) 
 #'
-#' @return statistics 3-dimensional array (event time x risk set entry x 
-#'     statistic)
+#' return:
+#' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 #' 
 remStatsC <- function(effects, edgelist, riskset, evls, actors, weights) {
     .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, weights)

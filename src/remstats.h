@@ -3,6 +3,10 @@
 using namespace Rcpp;
 using namespace arma;
 
+/*
+TO DO: R wrapper function so that a default value for weights can be set?
+*/
+
 //' inertia
 //'
 //' A function to compute the inertia effect.
@@ -20,7 +24,7 @@ using namespace arma;
 //' el <- out$edgelist
 //' rs <- out$riskset
 //' evls <- prepEvls(el, rs, type = FALSE)
-//' stat <- inertia(evls, rs)
+//' stat <- inertia(evls, rs, weights = rep(1, nrow(el)))
 //'
 //' @export
 //'
@@ -305,15 +309,21 @@ arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::u
     return(stat);
 }
 
-//' TO DO: Merge with triad()??
+/* 
+TO DO: Merge with triad()??
+TO DO: R wrapper function so a default value for unique can be set?
+*/
+
 //' triadU
 //'
-//' A function to compute the shared partners effect for undirected relational 
-//' events.
+//' A function to compute the (unique) shared partners effect for undirected 
+//' relational events.
 //'
-//' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+//' @param actors vector with numeric actor IDs (correspond to edgelist,
+//' riskset)
 //' @param edgelist 3-column edgelist (time, sender, receiver)
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+//' @param uinque_sp logical value
 //'
 //' @return matrix (time x dyad)
 //' 
@@ -324,12 +334,13 @@ arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::u
 //' el <- out$edgelist
 //' rs <- out$riskset
 //' ac <- sort(unique(c(rs[,1], rs[,2])))
-//' otp <- triadU(ac, el, rs)
+//' stat <- triadU(ac, el, rs, unique_sp = FALSE)
 //'
 //' @export
 //'
 //[[Rcpp::export]]
-arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset) {
+arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset, 
+    bool unique_sp) {
 
     //Storage space
     //(1) Adjacency matrix 
@@ -345,6 +356,9 @@ arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset) {
         
         //Update the adjacency matrix
         adj(actor1 - 1, actor2 - 1) += 1;  
+        
+        //If "unique_sp" is requested, dichotomize the adjacency matrix
+        if(unique_sp) {adj.replace(2, 1);}
 
         //Actors that have a relation with the actors involved in the previous 
         //event

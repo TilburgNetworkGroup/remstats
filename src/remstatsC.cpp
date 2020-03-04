@@ -7,17 +7,19 @@ using namespace arma;
 //' remStatsC
 //'
 //' A function to compute statistics and combine the statistics in an array
-//' prepared for estimation of a REM with relevent::rem()
+//' prepared for estimation of a REM with relevent::rem(). Used internally 
+//' in remStats. 
 //' 
-//' @param effects integer vector (effects)
-//' @param edgelist 3-column edgelist (time, sender, receiver)
-//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-//' @param evls 2-column edgelist (event, time) in relevent::rem format
-//' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
-//' @param weights vector (length evls) 
+//' param:
+//' [effects] integer vector (effects)
+//' [edgelist] 3-column edgelist (time, sender, receiver)
+//' [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
+//' [evls] 2-column edgelist (event, time) in relevent::rem format
+//' [actors] vector with numeric actor IDs (correspod to edgelist, riskset)
+//' [weights] vector (length evls) 
 //'
-//' @return statistics 3-dimensional array (event time x risk set entry x 
-//'     statistic)
+//' return:
+//' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 //' 
 //[[Rcpp::export]]
 arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, 
@@ -89,11 +91,15 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
                 break;
             // shared_partners
             case 17:
-                stat = triadU(actors, edgelist, riskset);
+                stat = triadU(actors, edgelist, riskset, FALSE);
                 break;
             // inertia_weighted
             case 24:
                 stat = inertia(evls, riskset, weights);
+                break;
+            // unique_sp
+            case 25:
+                stat = triadU(actors, edgelist, riskset, TRUE);
                 break;
         }
             

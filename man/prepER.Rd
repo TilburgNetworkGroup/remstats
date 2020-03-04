@@ -36,7 +36,7 @@ run from 1 to C.
 }
 \description{
 A helper function to prepare the edgelist and riskset for and within 
-remstats().
+remStats().
 }
 \examples{
 data(edgelistD)
