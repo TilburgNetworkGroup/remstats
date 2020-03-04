@@ -16,6 +16,8 @@ using namespace arma;
 //' [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
 //' [evls] 2-column edgelist (event, time) in relevent::rem format
 //' [actors] vector with numeric actor IDs (correspod to edgelist, riskset)
+//' [sender_values] matrix (id, time, sender covariate values)
+//' [receiver_values] matrix(id, time, receiver covariate values)
 //' [weights] vector (length evls) 
 //'
 //' return:
@@ -23,10 +25,19 @@ using namespace arma;
 //' 
 //[[Rcpp::export]]
 arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, 
-    arma::mat evls, arma::vec actors, arma::vec weights) {
+    arma::mat evls, arma::vec actors, arma::mat sender_values, 
+    arma::mat receiver_values, arma::vec weights) {
 
     // Initialize saving space
     arma::cube statistics(edgelist.n_rows, riskset.n_rows, effects.n_elem);
+
+    // Counters
+    arma::uword sc = 0;
+    arma::uword rc = 0;
+
+    // Initialize indices
+    arma::uvec indS = {0, 0, 0};
+    arma::uvec indR = {0, 0, 0};
 
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
@@ -41,64 +52,80 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
             case 0 :
                 stat.fill(1);
                 break;
-            // Inertia
+            // sender_effect
             case 1 :
+                //stat = actorStat(sender_values, 1, edgelist, riskset);
+                indS = {0, 1, sc+2};
+                stat = actorStat(sender_values.cols(indS), 1,
+                    edgelist, riskset);
+                sc += 1;
+                break;
+            // receiver_effect
+            case 2 :
+                //stat = actorStat(receiver_values, 2, edgelist, riskset);
+                indR = {0, 1, rc+2};
+                stat = actorStat(receiver_values.cols(indR), 2, 
+                    edgelist, riskset);
+                rc += 1;
+                break;
+            // inertia
+            case 3 :
                 stat = inertia(evls, riskset, weights);
                 break;
-            // Reciprocity
-            case 2: 
+            // inertia_weighted
+            case 4:
+                stat = inertia(evls, riskset, weights);
+                break;
+            // reciprocity
+            case 5: 
                 stat = reciprocity(edgelist, riskset);
                 break;
-            // Indegree_sender
-            case 3:
+            // indegree_sender
+            case 7:
                 stat = degree(edgelist, riskset, 1);
                 break;
-            // Indegree_receiver
-            case 4:
+            // indegree_receiver
+            case 8:
                 stat = degree(edgelist, riskset, 2);
                 break;
-            // Outdegree_sender
-            case 5:
+            // outdegree_sender
+            case 9:
                stat = degree(edgelist, riskset, 3);
                 break;
-            // Outdegree_receiver
-            case 6:
+            // outdegree_receiver
+            case 10:
                 stat = degree(edgelist, riskset, 4);
                 break;
-            // Totaldegree_sender
-            case 7:
+            // totaldegree_sender
+            case 11:
                 stat = degree(edgelist, riskset, 5);
                 break;
-            // Totaldegree_receiver
-            case 8:
+            // totaldegree_receiver
+            case 12:
                 stat = degree(edgelist, riskset, 6);
                 break;
             // OTP
-            case 13:
+            case 17:
                 stat = triad(actors, edgelist, riskset, 1);
                 break;
             // ITP
-            case 14:
+            case 18:
                 stat = triad(actors, edgelist, riskset, 2);
                 break;
             // OSP
-            case 15:
+            case 19:
                 stat = triad(actors, edgelist, riskset, 3);
                 break;
             // ISP
-            case 16:
+            case 20:
                 stat = triad(actors, edgelist, riskset, 4);
                 break;
             // shared_partners
-            case 17:
+            case 21:
                 stat = triadU(actors, edgelist, riskset, FALSE);
                 break;
-            // inertia_weighted
-            case 24:
-                stat = inertia(evls, riskset, weights);
-                break;
             // unique_sp
-            case 26:
+            case 22:
                 stat = triadU(actors, edgelist, riskset, TRUE);
                 break;
         }

@@ -6,24 +6,20 @@
 \usage{
 remStatsC(effects, edgelist, riskset, evls, actors, weights)
 }
-\arguments{
-\item{effects}{integer vector (effects)}
-
-\item{edgelist}{3-column edgelist (time, sender, receiver)}
-
-\item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2)}
-
-\item{evls}{2-column edgelist (event, time) in relevent::rem format}
-
-\item{actors}{vector with numeric actor IDs (correspod to edgelist, riskset)}
-
-\item{weights}{vector (length evls)}
-}
-\value{
-statistics 3-dimensional array (event time x risk set entry x 
-    statistic)
-}
 \description{
 A function to compute statistics and combine the statistics in an array
-prepared for estimation of a REM with relevent::rem()
+prepared for estimation of a REM with relevent::rem(). Used internally 
+in remStats.
+}
+\details{
+param:
+[effects] integer vector (effects)
+[edgelist] 3-column edgelist (time, sender, receiver)
+[riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
+[evls] 2-column edgelist (event, time) in relevent::rem format
+[actors] vector with numeric actor IDs (correspod to edgelist, riskset)
+[weights] vector (length evls)
+
+return:
+[statistics] 3-dimensional array (event time x risk set entry x statistic)
 }

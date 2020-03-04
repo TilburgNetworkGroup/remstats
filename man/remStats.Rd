@@ -6,7 +6,7 @@
 \usage{
 remStats(edgelist, effects, directed = TRUE, type = FALSE,
   timing = "interval", riskset = NULL, actors = NULL,
-  weights = NULL)
+  sender_effect = NULL, receiver_effect = NULL, weights = NULL)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
@@ -35,6 +35,16 @@ actors (and action types) are observed in the edgelist.}
 
 \item{actors}{optional; [vector], if supplied, should contain all actors 
 that can potentially interact. Used to create the riskset.}
+
+\item{sender_effect}{optional; [matrix], covariate values for a sender 
+effect. First column should contain actor ids, second column the times at 
+which the values change (can be set to zero for time-invariant covariates) 
+and in subsequent columns the unique covariate variables.}
+
+\item{receiver_effect}{optional; [matrix], covariate values for a receiver 
+effect. First column should contain actor ids, second column the times at 
+which the values change (can be set to zero for time-invariant covariates) 
+and in subsequent columns the unique covariate variables.}
 
 \item{weights}{optional; [vector], if supplied, should be of length edgelist #' and contain the weights for the events in the edgelist (to compute 
 inertia_weighted)}

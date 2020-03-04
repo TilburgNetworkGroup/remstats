@@ -9,7 +9,7 @@ test_that("remStatsC output for directed dyadic relational events", {
     out <- prepER(edgelistD)
     el <- out$edgelist
     rs <- out$riskset
-    ac <- sort(unique(c(rs[,1], rs[,2])))
+    ac <- out$actors[,1]
 
     evls <- prepEvls(el, rs)
 
@@ -45,7 +45,7 @@ test_that("remStatsC output for undirected dyadic relational events", {
     out <- prepER(edgelistU, directed = FALSE)
     el <- out$edgelist
     rs <- out$riskset
-    ac <- sort(unique(c(rs[,1], rs[,2])))
+    ac <- out$actors[,1]
 
     evls <- prepEvls(el, rs)
 

@@ -23,6 +23,14 @@
 #' actors (and action types) are observed in the edgelist.
 #' @param actors optional; [vector], if supplied, should contain all actors 
 #' that can potentially interact. Used to create the riskset. 
+#' @param sender_effect optional; [matrix], covariate values for a sender 
+#' effect. First column should contain actor ids, second column the times at 
+#' which the values change (can be set to zero for time-invariant covariates) 
+#' and in subsequent columns the unique covariate variables. 
+#' @param receiver_effect optional; [matrix], covariate values for a receiver 
+#' effect. First column should contain actor ids, second column the times at 
+#' which the values change (can be set to zero for time-invariant covariates) 
+#' and in subsequent columns the unique covariate variables. 
 #' @param weights optional; [vector], if supplied, should be of length edgelist #' and contain the weights for the events in the edgelist (to compute 
 #' inertia_weighted)
 #'
@@ -46,43 +54,48 @@
 #' @export
 
 remStats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    timing = "interval", riskset = NULL, actors = NULL, weights = NULL) {
+    timing = "interval", riskset = NULL, actors = NULL, sender_effect = NULL, receiver_effect = NULL, weights = NULL) {
 
-    # (1) Prepare the edgelist and riskset
+    # (1) Prepare the edgelist, riskset and actors
     out <- prepER(edgelist, directed, type, riskset, actors)
     el <- out$edgelist
     rs <- out$riskset
+    ac <- out$actors
 
-    # (2) Prepare the actors
-    if(is.null(actors)) {
-        ac <- sort(unique(c(rs[,1], rs[,2])))
-    } else {
-        ac <- sort(actors[,1])
-    }
-	
-	# (3) Prepare the evls (edgelist in relevent::rem() format)
+ 	# (2) Prepare the evls (edgelist in relevent::rem() format)
     evls <- prepEvls(el, rs, type)
 
-    # (4) Prepare the effects
-    all_effects <- c("inertia", "reciprocity", "indegree_sender", 
-        "indegree_receiver", "outdegree_sender", "outdegree_receiver", 
-        "totaldegree_sender", "totaldegree_receiver", "recency_send", 
-        "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", 
-        "ISP", "shared_partners", "PSAB-BA", "PSAB_BY", "PSAB-XA", "PSAB-XB", 
-        "PSAB-XY", "PSAB-AY", "inertia_weighted", "reciprocity_weighted", "unique_sp")
+    # (3) Prepare the effects
+    all_effects <- c("sender_effect", "receiver_effect", "inertia", 
+        "inertia_weighted", "reciprocity", "reciprocity_weighted","indegree_sender", "indegree_receiver", "outdegree_sender", "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", "recency_send", "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", "ISP", "shared_partners", "unique_sp", "PSAB-BA", "PSAB_BY", "PSAB-XA", "PSAB-XB",  "PSAB-XY", "PSAB-AY")
     eff <- match(effects, all_effects)
 
     # Add a baseline effect
     if(timing == "interval") {eff <- c(0, eff)}
 
-    # Deal with event weights
+    # Deal with sender and receiver effects 
+    # If requested
+    if(any(eff==1)) {
+        eff <- append(eff[-which(eff==1)], rep(1, ncol(sender_effect)-2), 
+            which(eff==1)-1)
+    }
+    if(any(eff==2)) {
+        eff <- append(eff[-which(eff==2)], rep(2, ncol(receiver_effect)-2), 
+            which(eff==2)-1)
+    }
+    # If not requested
+    if(is.null(sender_effect)) {sender_effect <- matrix(0, 1, 1)}
+    if(is.null(receiver_effect)) {receiver_effect <- matrix(0, 1, 1)}
+
+    # Deal with event weights if not requested
     if(is.null(weights)) {weights <- rep(1, nrow(el))}
 	
-	# (5) Compute statistics
-    stats <- remStatsC(eff, el, rs, evls, ac, weights)
-    dimnames(stats)[[3]] <- c("baseline", effects)
+	# (4) Compute statistics
+    stats <- remStatsC(eff, el, rs, evls, ac, sender_effect, receiver_effect, 
+        weights)
+    #! dimnames(stats)[[3]] <- c("baseline", effects)
 
-    # (6) Return output
+    # (5) Return output
     list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 
         actors = ac)
 }

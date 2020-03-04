@@ -10,7 +10,7 @@ test_that("dimensions triad output", {
         actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
-    ac <- unique(c(rs[,1], rs[,2]))
+    ac <- out$actors[,1]
 
     stat1 <- triad(actors = ac, edgelist = el, riskset = rs, type = 1)
     stat2 <- triad(actors = ac, edgelist = el, riskset = rs, type = 2)
@@ -31,7 +31,7 @@ test_that("test content triad output with edgelistD", {
         actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
-    ac <- unique(c(rs[,1], rs[,2]))
+    ac <- out$actors[,1]
 
     stat1 <- triad(actors = ac, edgelist = el, riskset = rs, type = 1)
     stat2 <- triad(actors = ac, edgelist = el, riskset = rs, type = 2)

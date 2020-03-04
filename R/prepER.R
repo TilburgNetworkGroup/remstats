@@ -22,6 +22,7 @@
 #' @return edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C. 
 #' @return riskset [matrix] with actor IDs that run from 1 to N and types that
 #' run from 1 to C. 
+#' @return actors [dataframe] with actor IDs and names
 #' 
 #' @examples 
 #' data(edgelistD)
@@ -29,6 +30,7 @@
 #' 	riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
+#' ac <- out$actors
 #' 
 #' @export
 
@@ -127,6 +129,7 @@ prepER <- function(edgelist, directed = TRUE, type = FALSE, riskset = NULL,
 	rownames(edgelist) <- NULL
 
   # Output
-  list(edgelist = as.matrix(edgelist), riskset = as.matrix(riskset))
+  list(edgelist = as.matrix(edgelist), riskset = as.matrix(riskset), 
+  	actors = data.frame(id = 1:length(ac), name = ac))
 }
 

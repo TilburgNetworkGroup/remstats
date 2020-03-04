@@ -3,6 +3,106 @@
 using namespace Rcpp;
 using namespace arma;
 
+//' actorStat
+//'
+//' A function to transform exogenous actor covariate variables in the format ..
+//' requested for estimation with relevent::rem(). 
+//'
+//' @param values 3-column matrix (id, change time, value). Actor ids should 
+//' correspond to actor ids in the edgelist and riskset. Change time is zero 
+//' for all entries if the covariate is time invariate. 
+//' @param type 1 = sender effect, 2 = receiver effect
+//' @param edgelist 3-column edgelist (time, sender, receiver)
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistD)
+//' data(covar)
+//' out <- prepER(edgelist = edgelistD)
+//' el <- out$edgelist
+//' rs <- out$rs
+//' ac <- out$ac
+//' covar$id <- ac$id[match(covar$id, ac$name)]
+//' stat <- actorStat(values = covar[,c(1:3)], type = 1, edgelist = el, 
+//'     riskset = rs)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat actorStat(arma::mat values, arma::uword type, arma::mat edgelist, 
+    arma::mat riskset) {
+    // Storage space and fill with zeros
+    arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // Set the first row 
+    // For loop over dyads
+    for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+        // Find the relevant actor
+        arma::uword actor = 0;
+        if(type == 1) {actor = riskset(i, 0);} // Sender
+        if(type == 2) {actor = riskset(i, 1);} // Receiver
+
+        // Find the value for this actor
+        arma::uvec index = find(values.col(0) == actor && values.col(1) == 0);
+        double value = values(index(0), 2);
+
+        // Save the value
+        stat(0, i) = value;
+    }
+
+    // Find the unique change timepoints
+    arma::vec changetimes = sort(unique(values.col(1)));
+    changetimes = changetimes(find(changetimes!=0));
+    arma::uword counter = 0;
+
+    // For loop over the sequence
+    for(arma::uword m = 1; m < edgelist.n_rows; ++m) {
+        // Copy the previous row
+        arma::rowvec thisrow = stat.row(m-1);
+
+        // Update the statistic if required
+        // Do not update after the last changetime
+        if(counter < changetimes.n_elem) {
+            // Update if the time of the event is larger than the current 
+            // changetime
+            if(edgelist(m, 0) > changetimes(counter)) {
+                // Check whether a changetime needs to be skipped (i.e., when a 
+                // multiple changes occur between events)
+                while((counter < (changetimes.n_elem - 1)) && 
+                    (edgelist(m, 0) > changetimes(counter+1))) {counter+=1;}  
+                
+                // For loop over dyads
+                for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+                    // Find the relevant actor
+                    arma::uword actor = 0;
+                    if(type == 1) {actor = riskset(i, 0);} // Sender
+                    if(type == 2) {actor = riskset(i, 1);} // Receiver
+
+                    // Find the value for this actor 
+                    arma::uvec index = find((values.col(0) == actor) && 
+                        (values.col(1) == changetimes(counter)));
+                    // Update if a new value exists
+                    if(index.n_elem == 1) {
+                        double value = values(index(0), 2);
+                        thisrow(i) = value;
+                    }                 
+                }
+
+                //Update the counter
+                counter+=1;
+            }
+        }
+            
+        // Save the row
+        stat.row(m) = thisrow;
+    }
+
+    // Output
+    return stat; 
+}
+
 /*
 TO DO: R wrapper function so that a default value for weights can be set?
 */
@@ -192,7 +292,7 @@ arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
 //'     riskset = NULL, actors = NULL)
 //' el <- out$edgelist
 //' rs <- out$riskset
-//' ac <- sort(unique(c(rs[,1], rs[,2])))
+//' ac <- out$actors[,1]
 //' otp <- triad(ac, el, rs, type = 1)
 //'
 //' @export
@@ -333,7 +433,7 @@ TO DO: R wrapper function so a default value for unique can be set?
 //'     riskset = NULL, actors = NULL)
 //' el <- out$edgelist
 //' rs <- out$riskset
-//' ac <- sort(unique(c(rs[,1], rs[,2])))
+//' ac <- out$actors[,1]
 //' stat <- triadU(ac, el, rs, unique_sp = FALSE)
 //'
 //' @export

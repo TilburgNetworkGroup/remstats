@@ -33,6 +33,8 @@ edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from
 
 riskset [matrix] with actor IDs that run from 1 to N and types that
 run from 1 to C.
+
+actors [dataframe] with actor IDs and names
 }
 \description{
 A helper function to prepare the edgelist and riskset for and within 
@@ -44,5 +46,6 @@ out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE,
 	riskset = NULL, actors = NULL)
 el <- out$edgelist
 rs <- out$riskset
+ac <- out$actors
 
 }

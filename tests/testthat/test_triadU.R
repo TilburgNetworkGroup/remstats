@@ -10,7 +10,7 @@ test_that("dimensions triadU output, shared_partners effect", {
         actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
-    ac <- unique(c(rs[,1], rs[,2]))
+    ac <- out$actors[,1]
 
     stat <- triadU(actors = ac, edgelist = el, riskset = rs, FALSE)
     expect_output(str(stat), "num[1:nrow(el), 1:nrow(rs)]")
@@ -24,7 +24,7 @@ test_that("content triadU output, shared_partners effect", {
         actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
-    ac <- unique(c(rs[,1], rs[,2]))
+    ac <- out$actors[,1]
 
     stat <- triadU(actors = ac, edgelist = el, riskset = rs, FALSE)
 
@@ -53,7 +53,7 @@ test_that("dimensions triadU output, unique_sp effect", {
         actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
-    ac <- unique(c(rs[,1], rs[,2]))
+    ac <- out$actors[,1]
 
     stat <- triadU(actors = ac, edgelist = el, riskset = rs, TRUE)
     expect_output(str(stat), "num[1:nrow(el), 1:nrow(rs)]")
@@ -67,7 +67,7 @@ test_that("content triadU output, unique_sp effect", {
         actors = NULL)
     el <- out$edgelist
     rs <- out$riskset
-    ac <- unique(c(rs[,1], rs[,2]))
+    ac <- out$actors[,1]
 
     stat <- triadU(actors = ac, edgelist = el, riskset = rs, TRUE)
 
