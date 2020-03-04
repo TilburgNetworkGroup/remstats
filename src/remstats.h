@@ -25,6 +25,7 @@ using namespace arma;
 //' rs <- out$rs
 //' ac <- out$ac
 //' covar$id <- ac$id[match(covar$id, ac$name)]
+//' covar <- as.matrix(covar)
 //' stat <- actorStat(values = covar[,c(1:3)], type = 1, edgelist = el, 
 //'     riskset = rs)
 //'
@@ -68,30 +69,29 @@ arma::mat actorStat(arma::mat values, arma::uword type, arma::mat edgelist,
             // Update if the time of the event is larger than the current 
             // changetime
             if(edgelist(m, 0) > changetimes(counter)) {
-                // Check whether a changetime needs to be skipped (i.e., when a 
-                // multiple changes occur between events)
-                while((counter < (changetimes.n_elem - 1)) && 
-                    (edgelist(m, 0) > changetimes(counter+1))) {counter+=1;}  
-                
-                // For loop over dyads
-                for(arma::uword i = 0; i < riskset.n_rows; ++i) {
-                    // Find the relevant actor
-                    arma::uword actor = 0;
-                    if(type == 1) {actor = riskset(i, 0);} // Sender
-                    if(type == 2) {actor = riskset(i, 1);} // Receiver
+                // Update all changes in between
+                while((counter < changetimes.n_elem) && 
+                    (edgelist(m, 0) > changetimes(counter))) {
+                        // For loop over dyads
+                        for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+                            // Find the relevant actor
+                            arma::uword actor = 0;
+                            if(type == 1) {actor = riskset(i, 0);} // Sender
+                            if(type == 2) {actor = riskset(i, 1);} // Receiver
 
-                    // Find the value for this actor 
-                    arma::uvec index = find((values.col(0) == actor) && 
-                        (values.col(1) == changetimes(counter)));
-                    // Update if a new value exists
-                    if(index.n_elem == 1) {
-                        double value = values(index(0), 2);
-                        thisrow(i) = value;
-                    }                 
-                }
-
-                //Update the counter
-                counter+=1;
+                            // Find the value for this actor 
+                            arma::uvec index = find((values.col(0) == actor) 
+                                && (values.col(1) == changetimes(counter)));
+                            // Update if a new value exists
+                            if(index.n_elem == 1) {
+                                double value = values(index(0), 2);
+                                thisrow(i) = value;
+                            }                 
+                        }
+                    
+                    //Update the counter
+                    counter+=1;
+                }  
             }
         }
             
