@@ -78,10 +78,14 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     if(any(eff==1)) {
         eff <- append(eff[-which(eff==1)], rep(1, ncol(sender_effect)-2), 
             which(eff==1)-1)
+        sender_effect$id <- ac$id[match(sender_effect$id, ac$name)]
+        sender_effect <- as.matrix(sender_effect)
     }
     if(any(eff==2)) {
         eff <- append(eff[-which(eff==2)], rep(2, ncol(receiver_effect)-2), 
             which(eff==2)-1)
+        receiver_effect$id <- ac$id[match(receiver_effect$id, ac$name)]
+        receiver_effect <- as.matrix(receiver_effect)
     }
     # If not requested
     if(is.null(sender_effect)) {sender_effect <- matrix(0, 1, 1)}
@@ -91,9 +95,9 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     if(is.null(weights)) {weights <- rep(1, nrow(el))}
 	
 	# (4) Compute statistics
-    stats <- remStatsC(eff, el, rs, evls, ac, sender_effect, receiver_effect, 
+    stats <- remStatsC(eff, el, rs, evls, ac[,1], sender_effect, receiver_effect, 
         weights)
-    #! dimnames(stats)[[3]] <- c("baseline", effects)
+    dimnames(stats)[[3]] <- c("baseline", all_effects[eff])
 
     # (5) Return output
     list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 
