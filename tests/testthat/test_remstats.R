@@ -11,9 +11,8 @@ test_that("Output remstats for dyadic directed relational events", {
         "mean", "min", "max", "both_equal_to", "inertia", "inertia_weighted", 
         "reciprocity", "indegree_sender", "indegree_receiver", 
         "outdegree_sender", "outdegree_receiver", "totaldegree_sender", 
-        "totaldegree_receiver", "OTP", "ITP", "OSP", "ISP")
-    effects <- sample(effects, length(effects)) # Randomize order
-
+        "totaldegree_receiver", "OTP", "ITP", "OSP", "ISP", "sender_effect2*inertia", "max*reciprocity")
+    
     covariates <- list(sender_effect = covar, 
         receiver_effect = covar[,c(1:3)], 
 		same = covar[,c(1:2, 4)],
@@ -60,6 +59,10 @@ test_that("Output remstats for dyadic directed relational events", {
         triad(out$actors[,1], out$edgelist, out$riskset, 3))
     expect_equal(out$statistics[,,"ISP"], 
         triad(out$actors[,1], out$edgelist, out$riskset, 4))   
+    expect_equal(out$statistics[,,"sender_effect2*inertia"],
+        out$statistics[,,3]*out$statistics[,,"inertia"])
+    expect_equal(out$statistics[,,"max*reciprocity"],
+        out$statistics[,,"max"]*out$statistics[,,"reciprocity"])
 
     # Edgelist 
     expect_output(str(out$edgelist), "num[1:nrow(edgelistD), 1:3]")

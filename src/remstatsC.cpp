@@ -27,13 +27,14 @@ using namespace arma;
 //'     7: [both_equal_to] matrix(id, time, covariate values)
 //' [weights] vector (length evls) 
 //' [equal_val] vector (length ncol both_equal_to minus 2)
+//' [int_positions] matrix (effect 1, effect 2)
 //'
 //' return:
 //' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 //' 
 //[[Rcpp::export]]
 arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, 
-    arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::vec weights, arma::vec equal_val) {
+    arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::vec weights, arma::vec equal_val, arma::mat int_positions) {
 
     // Initialize saving space
     arma::cube statistics(edgelist.n_rows, riskset.n_rows, effects.n_elem);
@@ -68,6 +69,10 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
     arma::uvec mi_ind = {0, 0, 0};
     arma::uvec ma_ind = {0, 0, 0};
     arma::uvec bet_ind = {0, 0, 0};
+
+    // Prepare interaction effects
+    // Counter
+    arma::uword int_counter = 0;
 
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
@@ -196,6 +201,12 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
             // unique_sp
             case 28:
                 stat = triadU(actors, edgelist, riskset, TRUE);
+                break;
+            // interaction effects
+            case 999:
+                stat = statistics.slice(int_positions(int_counter, 0))% 
+                    statistics.slice(int_positions(int_counter, 1));
+                int_counter += 1;
                 break;
         }
             

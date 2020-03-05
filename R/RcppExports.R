@@ -219,11 +219,12 @@ triadU <- function(actors, edgelist, riskset, unique_sp) {
 #'     7: [both_equal_to] matrix(id, time, covariate values)
 #' [weights] vector (length evls) 
 #' [equal_val] vector (length ncol both_equal_to minus 2)
+#' [int_positions] matrix (effect 1, effect 2)
 #'
 #' return:
 #' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 #' 
-remStatsC <- function(effects, edgelist, riskset, evls, actors, covariates, weights, equal_val) {
-    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, covariates, weights, equal_val)
+remStatsC <- function(effects, edgelist, riskset, evls, actors, covariates, weights, equal_val, int_positions) {
+    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, covariates, weights, equal_val, int_positions)
 }
 

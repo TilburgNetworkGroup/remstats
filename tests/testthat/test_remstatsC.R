@@ -17,7 +17,7 @@ test_that("remStatsC output for directed dyadic relational events", {
     covar$id <- ac$id[match(covar$id, ac$name)]
     covar <- as.matrix(covar)
 
-    effects <- c(0, 1, 1, 2, 3, 4, 4, 5, 6, 7, 8, 9:11, 13:18, 23:26)
+    effects <- c(0, 1, 1, 2, 3, 4, 4, 5, 6, 7, 8, 9:11, 13:18, 23:26, 999, 999)
     covariates <- list(sender_effect = covar, 
         receiver_effect = covar[,c(1:3)],
 		same = covar[,c(1:2, 4)],
@@ -26,9 +26,11 @@ test_that("remStatsC output for directed dyadic relational events", {
 		max = covar[,c(1:3)],
 		min = covar[,c(1:3)],
 		both_equal_to = covar[,c(1:2, 4)])
+    int_positions <- matrix(c(2, 12, 2, 14), byrow = TRUE, ncol = 2)
+    int_positions <- int_positions-1
 
     stats <- remStatsC(effects, el, rs, evls, ac[,1], covariates, 
-									 rep(1, nrow(evls)), 0) 
+        rep(1, nrow(evls)), 0, int_positions = int_positions) 
 
     # Dimensions
     expect_output(str(stats), 
@@ -83,6 +85,10 @@ test_that("remStatsC output for directed dyadic relational events", {
     expect_equal(stats[,,23], triad(ac[,1], el, rs, 3))
     # ISP
     expect_equal(stats[,,24], triad(ac[,1], el, rs, 4))
+    # sender effect x inertia
+    expect_equal(stats[,,25], stats[,,2]*stats[,,12])
+    # sender effect x reciprocity
+    expect_equal(stats[,,26], stats[,,2]*stats[,,14])
 })
 
 test_that("remStatsC output for undirected dyadic relational events", {
@@ -112,7 +118,7 @@ test_that("remStatsC output for undirected dyadic relational events", {
         both_equal_to = covar[,c(1:2, 4)])
 
     stats <- remStatsC(effects, el, rs, evls, ac[,1], covariates, 
-                                        rep(1, nrow(evls)), 0) 
+        rep(1, nrow(evls)), 0, int_positions = matrix(0, 1, 1)) 
 
     # Dimensions
     expect_output(str(stats), 

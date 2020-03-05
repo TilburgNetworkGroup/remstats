@@ -83,7 +83,7 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
         "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", 
         "ISP", "shared_partners", "unique_sp", "PSAB-BA", "PSAB_BY", "PSAB-XA", 
         "PSAB-XB",  "PSAB-XY", "PSAB-AY")
-    eff <- match(effects, all_effects)
+    eff <- match(effects[!grepl("\\*", effects)], all_effects)
 
     # Add a baseline effect
     if(timing == "interval") {eff <- c(0, eff)}
@@ -166,6 +166,39 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
         covariates$same, covariates$difference, covariates$mean, 
         covariates$min, covariates$max, covariates$both_equal_to)
 
+    # Prepare interaction effects
+    if(any(grepl("\\*", effects))) {
+        # Which are the interaction effects?
+        int_effects <- effects[grepl("\\*", effects)]
+        int_effects <- sapply(int_effects, function(x) {
+            strsplit(x, split = "\\*")
+        })
+        int_effects <- matrix(unlist(int_effects), byrow = T, ncol = 2)
+        
+        # Get positions interaction effects
+        findpos <- function(value, effects) {
+            if(grepl("[0-9]", value)) {
+                temp <- strsplit(value, split = "[0-9]")[[1]]	
+                pos <- which(effects == temp)[1]
+                temp2 <- strsplit(value, split = "[a-z]")[[1]]
+                correction <- suppressWarnings(as.numeric(temp2)[!is.na(as.numeric(temp2))])
+                pos + correction-1
+            } else {
+                which(effects == value)
+            }
+        }
+	
+ 	    temp_effects <- c("baseline", all_effects[eff])
+        int_positions <- t(apply(int_effects, 1, function(x) {
+            cbind(findpos(x[1], temp_effects), findpos(x[2], temp_effects))
+        }))
+        int_positions <- int_positions-1
+	    # Case 999 in remstatsC refers to interaction effects
+	    eff <- c(eff, rep(999, nrow(int_effects)))
+    } else {
+        int_positions <- matrix(0, 1, 1)
+    }
+
     # Deal with event weights if not requested
     if(is.null(weights)) {weights <- rep(1, nrow(el))}
 
@@ -175,9 +208,10 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 	# (4) Compute statistics
     stats <- remStatsC(effects = eff, edgelist = el, riskset = rs, evls = evls, 
         actors = ac[,1], covariates = covar, weights = weights, equal_val = 
-        equal_val)
+        equal_val, int_positions = int_positions)
 
-    dimnames(stats)[[3]] <- c("baseline", all_effects[eff])
+    dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
+        effects[grepl("\\*", effects)])
 
     # (5) Return output
     list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 
