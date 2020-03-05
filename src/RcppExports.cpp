@@ -20,6 +20,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// dyadstat
+arma::dmat dyadstat(arma::dmat values, arma::uword type, arma::mat edgelist, arma::mat riskset, arma::uword equal_val);
+RcppExport SEXP _remstats_dyadstat(SEXP valuesSEXP, SEXP typeSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP equal_valSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::dmat >::type values(valuesSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type equal_val(equal_valSEXP);
+    rcpp_result_gen = Rcpp::wrap(dyadstat(values, type, edgelist, riskset, equal_val));
+    return rcpp_result_gen;
+END_RCPP
+}
 // inertia
 arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights);
 RcppExport SEXP _remstats_inertia(SEXP evlsSEXP, SEXP risksetSEXP, SEXP weightsSEXP) {
@@ -107,6 +122,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_remstats_actorStat", (DL_FUNC) &_remstats_actorStat, 4},
+    {"_remstats_dyadstat", (DL_FUNC) &_remstats_dyadstat, 5},
     {"_remstats_inertia", (DL_FUNC) &_remstats_inertia, 3},
     {"_remstats_reciprocity", (DL_FUNC) &_remstats_reciprocity, 2},
     {"_remstats_degree", (DL_FUNC) &_remstats_degree, 3},

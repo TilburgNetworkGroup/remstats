@@ -3,7 +3,7 @@
 
 #' actorStat
 #'
-#' A function to transform exogenous actor covariate variables in the format ..
+#' A function to transform exogenous actor covariate variables in the format 
 #' requested for estimation with relevent::rem(). 
 #'
 #' @param values 3-column matrix (id, change time, value). Actor ids should 
@@ -20,8 +20,8 @@
 #' data(covar)
 #' out <- prepER(edgelist = edgelistD)
 #' el <- out$edgelist
-#' rs <- out$rs
-#' ac <- out$ac
+#' rs <- out$riskset
+#' ac <- out$actors
 #' covar$id <- ac$id[match(covar$id, ac$name)]
 #' covar <- as.matrix(covar)
 #' stat <- actorStat(values = covar[,c(1:3)], type = 1, edgelist = el, 
@@ -31,6 +31,40 @@
 #'
 actorStat <- function(values, type, edgelist, riskset) {
     .Call(`_remstats_actorStat`, values, type, edgelist, riskset)
+}
+
+#' dyadstat
+#'
+#' A function to transform exogenous actor covariate variables in dyad 
+#' statistics.
+#'
+#' @param values 3-column matrix (id, change time, value). Actor ids should 
+#' correspond to actor ids in the edgelist and riskset. Change time is zero 
+#' for all entries if the covariate is time invariate. 
+#' @param type 1 = same, 2 = difference, 3 = mean, 4 = min, 5 = max, 
+#' 6 = both equal to
+#' @param edgelist 3-column edgelist (time, sender, receiver)
+#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
+#' @param equal_val value
+#'
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistU)
+#' data(covar)
+#' out <- prepER(edgelist = edgelistU, directed = FALSE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' ac <- out$actors    
+#' covar$id <- ac$id[match(covar$id, ac$name)]
+#' covar <- as.matrix(covar)
+#' stat <- dyadstat(values = covar[,c(1:3)], type = 1, edgelist = el, 
+#'     riskset = rs, NA)
+#'
+#' @export
+#'
+dyadstat <- function(values, type, edgelist, riskset, equal_val) {
+    .Call(`_remstats_dyadstat`, values, type, edgelist, riskset, equal_val)
 }
 
 #' inertia

@@ -5,7 +5,7 @@ using namespace arma;
 
 //' actorStat
 //'
-//' A function to transform exogenous actor covariate variables in the format ..
+//' A function to transform exogenous actor covariate variables in the format 
 //' requested for estimation with relevent::rem(). 
 //'
 //' @param values 3-column matrix (id, change time, value). Actor ids should 
@@ -22,8 +22,8 @@ using namespace arma;
 //' data(covar)
 //' out <- prepER(edgelist = edgelistD)
 //' el <- out$edgelist
-//' rs <- out$rs
-//' ac <- out$ac
+//' rs <- out$riskset
+//' ac <- out$actors
 //' covar$id <- ac$id[match(covar$id, ac$name)]
 //' covar <- as.matrix(covar)
 //' stat <- actorStat(values = covar[,c(1:3)], type = 1, edgelist = el, 
@@ -101,6 +101,157 @@ arma::mat actorStat(arma::mat values, arma::uword type, arma::mat edgelist,
 
     // Output
     return stat; 
+}
+
+//' dyadstat
+//'
+//' A function to transform exogenous actor covariate variables in dyad 
+//' statistics.
+//'
+//' @param values 3-column matrix (id, change time, value). Actor ids should 
+//' correspond to actor ids in the edgelist and riskset. Change time is zero 
+//' for all entries if the covariate is time invariate. 
+//' @param type 1 = same, 2 = difference, 3 = mean, 4 = min, 5 = max, 
+//' 6 = both equal to
+//' @param edgelist 3-column edgelist (time, sender, receiver)
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
+//' @param equal_val value
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistU)
+//' data(covar)
+//' out <- prepER(edgelist = edgelistU, directed = FALSE)
+//' el <- out$edgelist
+//' rs <- out$riskset
+//' ac <- out$actors    
+//' covar$id <- ac$id[match(covar$id, ac$name)]
+//' covar <- as.matrix(covar)
+//' stat <- dyadstat(values = covar[,c(1:3)], type = 1, edgelist = el, 
+//'     riskset = rs, NA)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::dmat dyadstat(arma::dmat values, arma::uword type, arma::mat edgelist, 
+    arma::mat riskset, arma::uword equal_val) {
+    // Storage space for the statistic 
+    arma::dmat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // Storage space for the current covariate values
+    arma::dvec current_ac1(riskset.n_rows, fill::zeros);
+    arma::dvec current_ac2(riskset.n_rows, fill::zeros);
+    
+    // Set the first row 
+    // For loop over dyads
+    for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+        // Find the relevant actors
+        arma::uword actor1 = riskset(i, 0);
+        arma::uword actor2 = riskset(i, 1);
+
+        // Find the values for these actor
+        arma::uvec index1 = find(values.col(0) == actor1 && values.col(1) == 0);
+        current_ac1(i) = values(index1(0), 2);
+        arma::uvec index2 = find(values.col(0) == actor2 && values.col(1) == 0);
+        current_ac2(i) = values(index2(0), 2);
+
+        // Are these values equal?
+        if(type == 1) {stat(0, i) = (current_ac1(i)==current_ac2(i));}
+        // What is the difference between these values?
+        if(type == 2) {stat(0, i) = current_ac1(i)-current_ac2(i);}
+       
+        arma::dvec both = {current_ac1(i), current_ac2(i)};
+        //What is the mean value?
+        if(type == 3) {stat(0, i) = mean(both);}
+        // What is the minimum value?
+        if(type == 4) {stat(0, i) = min(both);}
+        // What is the maximum value?
+        if(type == 5) {stat(0, i) = max(both);}
+        // Are both equal to this value?
+        if(type == 6) {stat(0, i) = ((current_ac1(i) == equal_val) && 
+            (current_ac2(i) == equal_val));}
+    }
+
+    // Find the unique change timepoints
+    arma::vec changetimes = sort(unique(values.col(1)));
+    changetimes = changetimes(find(changetimes!=0));
+    arma::uword counter = 0;
+
+    // For loop over the sequence
+    for(arma::uword m = 1; m < edgelist.n_rows; ++m) {
+        // Copy the previous row
+        arma::drowvec thisrow = stat.row(m-1);
+
+        // Update the statistic if required
+        // Do not update after the last changetime
+        if(counter < changetimes.n_elem) {
+            // Update if the time of the event is larger than the current 
+            // changetime
+            if(edgelist(m, 0) > changetimes(counter)) {
+                // Update all changes in between
+                while((counter < changetimes.n_elem) && 
+                    (edgelist(m, 0) > changetimes(counter))) {
+                        
+                        // For loop over dyads
+                        for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+                            // Find the relevant actor
+                            arma::uword actor1 = riskset(i, 0);
+                            arma::uword actor2 = riskset(i, 1);
+
+                            // Find the values for these actor
+                            arma::uvec index1 = find((values.col(0) == actor1) 
+                                && (values.col(1) == changetimes(counter)));
+                            arma::uvec index2 = find((values.col(0) == actor2) 
+                                && (values.col(1) == changetimes(counter)));
+                            
+                            // Update if a new value exists
+                            if((index1.n_elem == 1) || (index2.n_elem == 1)) {
+                                if(index1.n_elem == 1) {
+                                    current_ac1(i) = values(index1(0), 2);
+                                } 
+                                if(index2.n_elem == 1) {
+                                    current_ac2(i) = values(index2(0), 2);
+                                } 
+                           
+                                // Are these values equal?
+                                if(type == 1) {thisrow(i) = 
+                                    (current_ac1(i)==current_ac2(i));}
+                                // What is the difference between 
+                                // these values?
+                                if(type == 2) {thisrow(i) = 
+                                    current_ac1(i)-current_ac2(i);}
+                            
+                                arma::dvec both = {current_ac1(i), 
+                                    current_ac2(i)};
+                                //What is the mean value?
+                                if(type == 3) {thisrow(i) = mean(both);}
+                                // What is the minimum value?
+                                if(type == 4) {thisrow(i) = min(both);}
+                                // What is the maximum value?
+                                if(type == 5) {thisrow(i) = max(both);}
+                                // Are both equal to this value?
+                                if(type == 6) {thisrow(i) = 
+                                    ((current_ac1(i) == equal_val) && 
+                                        (current_ac2(i) == equal_val));}
+                            }               
+                        }
+                    
+                    //Update the counter
+                    counter+=1;
+                }  
+            }
+        }
+            
+        // Save the row
+        stat.row(m) = thisrow;
+    }
+
+    // Transform difference to absolute difference
+    if(type == 2) {stat = abs(stat);}
+
+    //Output
+    return(stat);
 }
 
 /*
