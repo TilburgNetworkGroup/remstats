@@ -102,8 +102,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // remStatsC
-arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::vec weights, arma::vec equal_val, arma::mat int_positions);
-RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP, SEXP covariatesSEXP, SEXP weightsSEXP, SEXP equal_valSEXP, SEXP int_positionsSEXP) {
+arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::mat event_effect, arma::vec weights, arma::vec equal_val, arma::mat int_positions);
+RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP, SEXP covariatesSEXP, SEXP event_effectSEXP, SEXP weightsSEXP, SEXP equal_valSEXP, SEXP int_positionsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -113,10 +113,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type evls(evlsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type covariates(covariatesSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type event_effect(event_effectSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type equal_val(equal_valSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type int_positions(int_positionsSEXP);
-    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls, actors, covariates, weights, equal_val, int_positions));
+    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -129,7 +130,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_degree", (DL_FUNC) &_remstats_degree, 3},
     {"_remstats_triad", (DL_FUNC) &_remstats_triad, 4},
     {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 4},
-    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 9},
+    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 10},
     {NULL, NULL, 0}
 };
 

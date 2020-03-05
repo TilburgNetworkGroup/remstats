@@ -25,6 +25,7 @@ using namespace arma;
 //'     5: [min] matrix(id, time, covariate values)
 //'     6: [max] matrix(id, time, covariate values)
 //'     7: [both_equal_to] matrix(id, time, covariate values)
+//' [event_effect] matrix (event effect per column)
 //' [weights] vector (length evls) 
 //' [equal_val] vector (length ncol both_equal_to minus 2)
 //' [int_positions] matrix (effect 1, effect 2)
@@ -34,7 +35,9 @@ using namespace arma;
 //' 
 //[[Rcpp::export]]
 arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, 
-    arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::vec weights, arma::vec equal_val, arma::mat int_positions) {
+    arma::mat evls, arma::vec actors, Rcpp::List covariates, 
+    arma::mat event_effect, arma::vec weights, arma::vec equal_val, 
+    arma::mat int_positions) {
 
     // Initialize saving space
     arma::cube statistics(edgelist.n_rows, riskset.n_rows, effects.n_elem);
@@ -69,6 +72,10 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
     arma::uvec mi_ind = {0, 0, 0};
     arma::uvec ma_ind = {0, 0, 0};
     arma::uvec bet_ind = {0, 0, 0};
+
+    // Prepare event effects
+    // Counter
+    arma::uword e_counter = 0;
 
     // Prepare interaction effects
     // Counter
@@ -142,64 +149,68 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
                     edgelist, riskset, equal_val(bet_counter));
                 bet_counter += 1;
                 break;
-            // inertia
+            // event_effect
             case 9 :
+                stat.each_col() = event_effect.col(e_counter);
+                e_counter += 1;
+            // inertia
+            case 10 :
                 stat = inertia(evls, riskset, weights);
                 break;
             // inertia_weighted
-            case 10:
+            case 11:
                 stat = inertia(evls, riskset, weights);
                 break;
             // reciprocity
-            case 11: 
+            case 12: 
                 stat = reciprocity(edgelist, riskset);
                 break;
             // indegree_sender
-            case 13:
+            case 14:
                 stat = degree(edgelist, riskset, 1);
                 break;
             // indegree_receiver
-            case 14:
+            case 15:
                 stat = degree(edgelist, riskset, 2);
                 break;
             // outdegree_sender
-            case 15:
+            case 16:
                stat = degree(edgelist, riskset, 3);
                 break;
             // outdegree_receiver
-            case 16:
+            case 17:
                 stat = degree(edgelist, riskset, 4);
                 break;
             // totaldegree_sender
-            case 17:
+            case 18:
                 stat = degree(edgelist, riskset, 5);
                 break;
             // totaldegree_receiver
-            case 18:
+            case 19:
                 stat = degree(edgelist, riskset, 6);
                 break;
             // OTP
-            case 23:
+            case 24:
                 stat = triad(actors, edgelist, riskset, 1);
                 break;
             // ITP
-            case 24:
+            case 25:
                 stat = triad(actors, edgelist, riskset, 2);
                 break;
             // OSP
-            case 25:
+            case 26:
                 stat = triad(actors, edgelist, riskset, 3);
                 break;
             // ISP
-            case 26:
+            case 27:
                 stat = triad(actors, edgelist, riskset, 4);
                 break;
             // shared_partners
-            case 27:
+            case 28:
                 stat = triadU(actors, edgelist, riskset, FALSE);
                 break;
             // unique_sp
-            case 28:
+            case 29:
                 stat = triadU(actors, edgelist, riskset, TRUE);
                 break;
             // interaction effects

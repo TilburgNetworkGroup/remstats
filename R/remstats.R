@@ -31,6 +31,8 @@
 #' second column the time at which covariate values change (can be set to zero 
 #' for time-invariant covariates) and in subsequent columns the unique 
 #' covariate variables for which the respective effect is requested. 
+#' @param event_effect optional; matrix with the values for when an 
+#' event_effect is requested: one column of length edgelist per event_effect. 
 #' @param weights optional; [vector], if supplied, should be of length edgelist 
 #' and contain the weights for the events in the edgelist (to compute 
 #' inertia_weighted)
@@ -62,8 +64,7 @@
 #' @export
 
 remStats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    timing = "interval", riskset = NULL, actors = NULL, covariates = NULL, 
-    weights = NULL, equal_val = NULL) {
+    timing = "interval", riskset = NULL, actors = NULL, covariates = NULL, event_effect = NULL, weights = NULL, equal_val = NULL) {
 
     # Prepare the edgelist, riskset and actors
     out <- prepER(edgelist, directed, type, riskset, actors)
@@ -76,13 +77,13 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 
     # Prepare the effects
     all_effects <- c("sender_effect", "receiver_effect", "same", "difference", 
-        "mean", "min", "max", "both_equal_to", "inertia", "inertia_weighted", 
-        "reciprocity", "reciprocity_weighted","indegree_sender",
-        "indegree_receiver", "outdegree_sender", "outdegree_receiver", 
-        "totaldegree_sender", "totaldegree_receiver", "recency_send", 
-        "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", 
-        "ISP", "shared_partners", "unique_sp", "PSAB-BA", "PSAB_BY", "PSAB-XA", 
-        "PSAB-XB",  "PSAB-XY", "PSAB-AY")
+        "mean", "min", "max", "both_equal_to", "event_effect", "inertia", 
+        "inertia_weighted", "reciprocity", "reciprocity_weighted",
+        "indegree_sender", "indegree_receiver", "outdegree_sender", 
+        "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", 
+        "recency_send", "recency_receive", "rrank_send", "rrank_receive", 
+        "OTP", "ITP", "OSP", "ISP", "shared_partners", "unique_sp", "PSAB-BA", 
+        "PSAB_BY", "PSAB-XA", "PSAB-XB",  "PSAB-XY", "PSAB-AY")
     eff <- match(effects[!grepl("\\*", effects)], all_effects)
 
     # Add a baseline effect
@@ -166,6 +167,16 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
         covariates$same, covariates$difference, covariates$mean, 
         covariates$min, covariates$max, covariates$both_equal_to)
 
+    # Prepare event effects
+    # If requested
+    if(any(eff==9)) {
+        eff <- append(eff[-which(eff==9)], 
+            rep(1, ncol(event_effect)), which(eff==9)-1)
+        event_effect <- as.matrix(event_effect)
+    } else {
+        event_effect <- matrix(0, 1, 1)
+    }
+
     # Prepare interaction effects
     if(any(grepl("\\*", effects))) {
         # Which are the interaction effects?
@@ -207,8 +218,8 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 	
 	# (4) Compute statistics
     stats <- remStatsC(effects = eff, edgelist = el, riskset = rs, evls = evls, 
-        actors = ac[,1], covariates = covar, weights = weights, equal_val = 
-        equal_val, int_positions = int_positions)
+        actors = ac[,1], covariates = covar, event_effect = event_effect, 
+        weights = weights, equal_val = equal_val, int_positions = int_positions)
 
     dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
         effects[grepl("\\*", effects)])
