@@ -7,13 +7,24 @@ test_that("Output remstats for dyadic directed relational events", {
     data("edgelistD")
     data(covar)
 
-    effects <- c("inertia", "reciprocity", "indegree_sender",
-        "indegree_receiver", "outdegree_sender", "outdegree_receiver", 
-		"totaldegree_sender", "totaldegree_receiver", "OTP", "ITP", "OSP", 
-		"ISP", "inertia_weighted", "sender_effect", "receiver_effect")
+    effects <- c("sender_effect", "receiver_effect", "same", "difference", 
+        "mean", "min", "max", "both_equal_to", "inertia", "inertia_weighted", 
+        "reciprocity", "indegree_sender", "indegree_receiver", 
+        "outdegree_sender", "outdegree_receiver", "totaldegree_sender", 
+        "totaldegree_receiver", "OTP", "ITP", "OSP", "ISP")
+    effects <- sample(effects, length(effects)) # Randomize order
 
-    out <- remStats(edgelistD, effects, sender_effect = covar, 
-        receiver_effect = covar[,c(1:3)])
+    covariates <- list(sender_effect = covar, 
+        receiver_effect = covar[,c(1:3)], 
+		same = covar[,c(1:2, 4)],
+        difference = covar,
+        mean = covar[,c(1:3)],
+        min = covar[,c(1:3)],
+        max = covar[,c(1:3)],
+        both_equal_to = covar[,c(1:2, 4)])
+
+    out <- remStats(edgelist = edgelistD, effects = effects, 
+        covariates = covariates, equal_val = 0)
 
     # General output
     expect_output(str(out), "List of 5")
@@ -21,25 +32,34 @@ test_that("Output remstats for dyadic directed relational events", {
     # Statistics
     expect_output(str(out$statistics), 
         "num[1:nrow(edgelistD), 1:nrow(out$riskset), 1:length(effects)]")
-    expect_true(all(out$statistics[,,1]==1))
-    expect_equal(out$statistics[,,2], 
+
+    expect_true(all(out$statistics[,,"baseline"]==1))
+    expect_equal(out$statistics[,,"inertia"], 
         inertia(out$evls, out$riskset, rep(1, nrow(edgelistD))))
-    expect_equal(out$statistics[,,3], reciprocity(out$edgelist, out$riskset))
-    expect_equal(out$statistics[,,4], degree(out$edgelist, out$riskset, 1))
-    expect_equal(out$statistics[,,5], degree(out$edgelist, out$riskset, 2))
-    expect_equal(out$statistics[,,6], degree(out$edgelist, out$riskset, 3))
-    expect_equal(out$statistics[,,7], degree(out$edgelist, out$riskset, 4))
-    expect_equal(out$statistics[,,8], degree(out$edgelist, out$riskset, 5))
-    expect_equal(out$statistics[,,9], degree(out$edgelist, out$riskset, 6))
-    expect_equal(out$statistics[,,10], 
+    expect_equal(out$statistics[,,"inertia_weighted"], 
+        out$statistics[,,"inertia"])
+    expect_equal(out$statistics[,,"reciprocity"], 
+        reciprocity(out$edgelist, out$riskset))
+    expect_equal(out$statistics[,,"indegree_sender"], 
+        degree(out$edgelist, out$riskset, 1))
+    expect_equal(out$statistics[,,"indegree_receiver"], 
+        degree(out$edgelist, out$riskset, 2))
+    expect_equal(out$statistics[,,"outdegree_sender"], 
+        degree(out$edgelist, out$riskset, 3))
+    expect_equal(out$statistics[,,"outdegree_receiver"], 
+        degree(out$edgelist, out$riskset, 4))
+    expect_equal(out$statistics[,,"totaldegree_sender"], 
+        degree(out$edgelist, out$riskset, 5))
+    expect_equal(out$statistics[,,"totaldegree_receiver"], 
+        degree(out$edgelist, out$riskset, 6))
+    expect_equal(out$statistics[,,"OTP"], 
         triad(out$actors[,1], out$edgelist, out$riskset, 1))
-    expect_equal(out$statistics[,,11], 
+    expect_equal(out$statistics[,,"ITP"], 
         triad(out$actors[,1], out$edgelist, out$riskset, 2))
-    expect_equal(out$statistics[,,12], 
+    expect_equal(out$statistics[,,"OSP"], 
         triad(out$actors[,1], out$edgelist, out$riskset, 3))
-    expect_equal(out$statistics[,,13], 
-        triad(out$actors[,1], out$edgelist, out$riskset, 4))
-    expect_equal(out$statistics[,,14], out$statistics[,,2])
+    expect_equal(out$statistics[,,"ISP"], 
+        triad(out$actors[,1], out$edgelist, out$riskset, 4))   
 
     # Edgelist 
     expect_output(str(out$edgelist), "num[1:nrow(edgelistD), 1:3]")
@@ -60,7 +80,7 @@ test_that("Output remstats for dyadic undirected relational events", {
     data("edgelistU")
 
     effects = c("inertia", "shared_partners", "inertia_weighted", "unique_sp")
-    out <- remStats(edgelistU, effects, directed = FALSE)
+    out <- remStats(edgelist = edgelistU, effects = effects, directed = FALSE)
 
     # General output
     expect_output(str(out), "List of 5")
@@ -70,13 +90,14 @@ test_that("Output remstats for dyadic undirected relational events", {
         "num[1:nrow(edgelistD), 1:nrow(out$riskset), 1:length(effects)]")
     expect_equal(dimnames(out$statistics)[[3]], c("baseline", effects))
 
-    expect_true(all(out$statistics[,,1]==1))
-    expect_equal(out$statistics[,,2], 
+    expect_true(all(out$statistics[,,"baseline"]==1))
+    expect_equal(out$statistics[,,"inertia"], 
         inertia(out$evls, out$riskset, rep(1, nrow(edgelistD))))
-    expect_equal(out$statistics[,,3], 
+    expect_equal(out$statistics[,,"shared_partners"], 
         triadU(out$actors[,1], out$edgelist, out$riskset, FALSE))  
-    expect_equal(out$statistics[,,4], out$statistics[,,2])
-     expect_equal(out$statistics[,,5], 
+    expect_equal(out$statistics[,,"inertia_weighted"], 
+        out$statistics[,,"inertia"])
+     expect_equal(out$statistics[,,"unique_sp"], 
         triadU(out$actors[,1], out$edgelist, out$riskset, TRUE  ))
 
     # Edgelist 

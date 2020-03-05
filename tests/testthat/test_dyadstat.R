@@ -31,15 +31,11 @@ test_that("dimensions dyadstat output", {
 
     # Test for undirected relational events
     data(edgelistU)
-    data(covar)
 
     out <- prepER(edgelistU, directed = FALSE)
     el <- out$edgelist
     rs <- out$riskset
     ac <- out$actors
-
-    covar$id <- ac$id[match(covar$id, ac$name)]
-    covar <- as.matrix(covar)
 
     stat1 <- dyadstat(values = covar[,c(1:2, 4)], type = 1, el, rs, 0)
     stat2 <- dyadstat(values = covar[,c(1:3)], type = 2, el, rs, 0)
@@ -111,15 +107,11 @@ test_that("starting values dyadstat output", {
 
     # Test for undirected relational events
     data(edgelistU)
-    data(covar)
 
     out <- prepER(edgelistU, directed = FALSE)
     el <- out$edgelist
     rs <- out$riskset
     ac <- out$actors
-
-    covar$id <- ac$id[match(covar$id, ac$name)]
-    covar <- as.matrix(covar)
 
     stat1 <- dyadstat(values = covar[,c(1:2, 4)], type = 1, el, rs, 0)
     stat2 <- dyadstat(values = covar[,c(1:3)], type = 2, el, rs, 0)

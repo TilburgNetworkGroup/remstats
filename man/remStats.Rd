@@ -6,7 +6,7 @@
 \usage{
 remStats(edgelist, effects, directed = TRUE, type = FALSE,
   timing = "interval", riskset = NULL, actors = NULL,
-  sender_effect = NULL, receiver_effect = NULL, weights = NULL)
+  covariates = NULL, weights = NULL, equal_val = NULL)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
@@ -36,18 +36,21 @@ actors (and action types) are observed in the edgelist.}
 \item{actors}{optional; [vector], if supplied, should contain all actors 
 that can potentially interact. Used to create the riskset.}
 
-\item{sender_effect}{optional; [matrix], covariate values for a sender 
-effect. First column should contain actor ids, second column the times at 
-which the values change (can be set to zero for time-invariant covariates) 
-and in subsequent columns the unique covariate variables.}
-
-\item{receiver_effect}{optional; [matrix], covariate values for a receiver 
-effect. First column should contain actor ids, second column the times at 
-which the values change (can be set to zero for time-invariant covariates) 
-and in subsequent columns the unique covariate variables.}
+\item{covariates}{optional; [List] with the covariate values for when a 
+sender_effect, receiver_effect, same, difference, mean, min, max, or 
+both_equal_to effect are requested. Covariate values should be supplied to 
+an element with the name equal to the requested effect. Covariate values 
+should be supplied in a matrix with in the first column the actor IDs, the 
+second column the time at which covariate values change (can be set to zero 
+for time-invariant covariates) and in subsequent columns the unique 
+covariate variables for which the respective effect is requested.}
 
 \item{weights}{optional; [vector], if supplied, should be of length edgelist #' and contain the weights for the events in the edgelist (to compute 
 inertia_weighted)}
+
+\item{equal_val}{optional; [vector]. Required if the "both_equal_to" effect 
+is requested. Denotes the value(s) to which both covariate values of the 
+actors in a dyad should be equal.}
 }
 \value{
 statistics [array], with three dimensions: timepoint x riskset x 

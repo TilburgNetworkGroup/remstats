@@ -102,8 +102,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // remStatsC
-arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors, arma::mat sender_values, arma::mat receiver_values, arma::vec weights);
-RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP, SEXP sender_valuesSEXP, SEXP receiver_valuesSEXP, SEXP weightsSEXP) {
+arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::vec weights, arma::vec equal_val);
+RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP, SEXP covariatesSEXP, SEXP weightsSEXP, SEXP equal_valSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -112,10 +112,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type evls(evlsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sender_values(sender_valuesSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type receiver_values(receiver_valuesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type covariates(covariatesSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type weights(weightsSEXP);
-    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls, actors, sender_values, receiver_values, weights));
+    Rcpp::traits::input_parameter< arma::vec >::type equal_val(equal_valSEXP);
+    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls, actors, covariates, weights, equal_val));
     return rcpp_result_gen;
 END_RCPP
 }

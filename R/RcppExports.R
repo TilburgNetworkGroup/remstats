@@ -208,14 +208,22 @@ triadU <- function(actors, edgelist, riskset, unique_sp) {
 #' [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
 #' [evls] 2-column edgelist (event, time) in relevent::rem format
 #' [actors] vector with numeric actor IDs (correspod to edgelist, riskset)
-#' [sender_values] matrix (id, time, sender covariate values)
-#' [receiver_values] matrix(id, time, receiver covariate values)
+#' [covariates] List with matrices
+#'     0: [sender_values] matrix (id, time, covariate values)
+#'     1: [receiver_values] matrix(id, time, covariate values)
+#'     2: [same] matrix(id, time, covariate values)
+#'     3: [difference] matrix(id, time, covariate values)
+#'     4: [mean] matrix(id, time, covariate values)
+#'     5: [min] matrix(id, time, covariate values)
+#'     6: [max] matrix(id, time, covariate values)
+#'     7: [both_equal_to] matrix(id, time, covariate values)
 #' [weights] vector (length evls) 
+#' [equal_val] vector (length ncol both_equal_to minus 2)
 #'
 #' return:
 #' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 #' 
-remStatsC <- function(effects, edgelist, riskset, evls, actors, sender_values, receiver_values, weights) {
-    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, sender_values, receiver_values, weights)
+remStatsC <- function(effects, edgelist, riskset, evls, actors, covariates, weights, equal_val) {
+    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, covariates, weights, equal_val)
 }
 
