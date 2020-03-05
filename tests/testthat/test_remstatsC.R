@@ -66,7 +66,7 @@ test_that("remStatsC output for directed dyadic relational events", {
     # inertia 
     expect_equal(stats[,,13], inertia(evls, rs, rep(1, nrow(evls))))
     # inertia_weighted
-    expect_equal(stats[,,14], stats[,,12])
+    expect_equal(stats[,,14], stats[,,13])
     # reciprocity
     expect_equal(stats[,,15], reciprocity(el, rs))
     # indegree_sender

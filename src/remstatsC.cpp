@@ -88,7 +88,7 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
             
         // Initialize saving space
         arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
-            
+        
         switch(effect) {
             // Baseline 
             case 0 :
@@ -153,6 +153,7 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
             case 9 :
                 stat.each_col() = event_effect.col(e_counter);
                 e_counter += 1;
+                break;
             // inertia
             case 10 :
                 stat = inertia(evls, riskset, weights);

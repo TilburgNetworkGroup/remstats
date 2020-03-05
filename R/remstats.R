@@ -64,7 +64,8 @@
 #' @export
 
 remStats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    timing = "interval", riskset = NULL, actors = NULL, covariates = NULL, event_effect = NULL, weights = NULL, equal_val = NULL) {
+    timing = "interval", riskset = NULL, actors = NULL, covariates = NULL, 
+    event_effect = NULL, weights = NULL, equal_val = NULL) {
 
     # Prepare the edgelist, riskset and actors
     out <- prepER(edgelist, directed, type, riskset, actors)
@@ -170,9 +171,9 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     # Prepare event effects
     # If requested
     if(any(eff==9)) {
-        eff <- append(eff[-which(eff==9)], 
-            rep(1, ncol(event_effect)), which(eff==9)-1)
         event_effect <- as.matrix(event_effect)
+        eff <- append(eff[-which(eff==9)], 
+            rep(9, ncol(event_effect)), which(eff==9)-1)
     } else {
         event_effect <- matrix(0, 1, 1)
     }
