@@ -74,6 +74,7 @@ dyadstat <- function(values, type, edgelist, riskset, equal_val) {
 #' @param evls 2-column edgelist (event, time) in relevent::rem format.
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
 #' @param weights vector (length evls) 
+#' @param standardize logical 
 #'
 #' @return matrix (time x dyad)
 #'
@@ -84,12 +85,12 @@ dyadstat <- function(values, type, edgelist, riskset, equal_val) {
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' evls <- prepEvls(el, rs, type = FALSE)
-#' stat <- inertia(evls, rs, weights = rep(1, nrow(el)))
+#' stat <- inertia(evls, rs, weights = rep(1, nrow(el)), FALSE)
 #'
 #' @export
 #'
-inertia <- function(evls, riskset, weights) {
-    .Call(`_remstats_inertia`, evls, riskset, weights)
+inertia <- function(evls, riskset, weights, standardize) {
+    .Call(`_remstats_inertia`, evls, riskset, weights, standardize)
 }
 
 #' reciprocity
@@ -98,6 +99,7 @@ inertia <- function(evls, riskset, weights) {
 #' 
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param standardize logical 
 #'
 #' @return matrix (time x dyad)
 #'
@@ -107,12 +109,12 @@ inertia <- function(evls, riskset, weights) {
 #'     riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
-#' stat <- reciprocity(el, rs)
+#' stat <- reciprocity(el, rs, FALSE)
 #'
 #' @export
 #'
-reciprocity <- function(edgelist, riskset) {
-    .Call(`_remstats_reciprocity`, edgelist, riskset)
+reciprocity <- function(edgelist, riskset, standardize) {
+    .Call(`_remstats_reciprocity`, edgelist, riskset, standardize)
 }
 
 #' degree
@@ -124,6 +126,7 @@ reciprocity <- function(edgelist, riskset) {
 #' @param type 1 = indegree_sender, 2 = indegree_receiver, 3 = 
 #' outdegree_sender, 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = 
 #' totaldegree_receiver 
+#' @param standardize logical 
 #'
 #' @return matrix (time x dyad)
 #'
@@ -133,12 +136,13 @@ reciprocity <- function(edgelist, riskset) {
 #'     riskset = NULL, actors = NULL)
 #' el <- out$edgelist
 #' rs <- out$riskset
-#' indegree_sender <- degree(el, rs, type = 1)
+#' indegree_sender <- degree(edgelist = el, riskset = rs, type = 1, 
+#'     standardize = FALSE)
 #'
 #' @export
 #'
-degree <- function(edgelist, riskset, type) {
-    .Call(`_remstats_degree`, edgelist, riskset, type)
+degree <- function(edgelist, riskset, type, standardize) {
+    .Call(`_remstats_degree`, edgelist, riskset, type, standardize)
 }
 
 #' triad
@@ -150,6 +154,7 @@ degree <- function(edgelist, riskset, type) {
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 #' @param type (1 = outgoing two-path, 2 = incoming two-path, 3 = outbound 
 #' shared partners, 4 = inbound shared partners)
+#' @param standardize logical 
 #'
 #' @return matrix (time x dyad)
 #'
@@ -160,12 +165,12 @@ degree <- function(edgelist, riskset, type) {
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' ac <- out$actors[,1]
-#' otp <- triad(ac, el, rs, type = 1)
+#' otp <- triad(ac, el, rs, type = 1, standardize = FALSE)
 #'
 #' @export
 #'
-triad <- function(actors, edgelist, riskset, type) {
-    .Call(`_remstats_triad`, actors, edgelist, riskset, type)
+triad <- function(actors, edgelist, riskset, type, standardize) {
+    .Call(`_remstats_triad`, actors, edgelist, riskset, type, standardize)
 }
 
 #' triadU
@@ -177,7 +182,8 @@ triad <- function(actors, edgelist, riskset, type) {
 #' riskset)
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-#' @param uinque_sp logical value
+#' @param unique_sp logical value
+#' @param standardize logical value
 #'
 #' @return matrix (time x dyad)
 #' 
@@ -188,12 +194,12 @@ triad <- function(actors, edgelist, riskset, type) {
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' ac <- out$actors[,1]
-#' stat <- triadU(ac, el, rs, unique_sp = FALSE)
+#' stat <- triadU(ac, el, rs, unique_sp = FALSE, standardize = FALSE)
 #'
 #' @export
 #'
-triadU <- function(actors, edgelist, riskset, unique_sp) {
-    .Call(`_remstats_triadU`, actors, edgelist, riskset, unique_sp)
+triadU <- function(actors, edgelist, riskset, unique_sp, standardize) {
+    .Call(`_remstats_triadU`, actors, edgelist, riskset, unique_sp, standardize)
 }
 
 #' remStatsC
@@ -204,6 +210,8 @@ triadU <- function(actors, edgelist, riskset, unique_sp) {
 #' 
 #' param:
 #' [effects] integer vector (effects)
+#' [standardize] logical, indicates whether statistics for endogenous effects 
+#' should be standardized
 #' [edgelist] 3-column edgelist (time, sender, receiver)
 #' [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
 #' [evls] 2-column edgelist (event, time) in relevent::rem format
@@ -225,7 +233,7 @@ triadU <- function(actors, edgelist, riskset, unique_sp) {
 #' return:
 #' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 #' 
-remStatsC <- function(effects, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions) {
-    .Call(`_remstats_remStatsC`, effects, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions)
+remStatsC <- function(effects, standardize, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions) {
+    .Call(`_remstats_remStatsC`, effects, standardize, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions)
 }
 

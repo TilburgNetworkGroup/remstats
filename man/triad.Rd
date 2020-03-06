@@ -4,7 +4,7 @@
 \alias{triad}
 \title{triad}
 \usage{
-triad(actors, edgelist, riskset, type)
+triad(actors, edgelist, riskset, type, standardize)
 }
 \arguments{
 \item{actors}{vector with numeric actor IDs (correspod to edgelist, riskset)}
@@ -15,6 +15,8 @@ triad(actors, edgelist, riskset, type)
 
 \item{type}{(1 = outgoing two-path, 2 = incoming two-path, 3 = outbound 
 shared partners, 4 = inbound shared partners)}
+
+\item{standardize}{logical}
 }
 \value{
 matrix (time x dyad)
@@ -29,6 +31,6 @@ out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE,
 el <- out$edgelist
 rs <- out$riskset
 ac <- out$actors[,1]
-otp <- triad(ac, el, rs, type = 1)
+otp <- triad(ac, el, rs, type = 1, standardize = FALSE)
 
 }

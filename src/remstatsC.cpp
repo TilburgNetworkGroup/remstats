@@ -12,6 +12,8 @@ using namespace arma;
 //' 
 //' param:
 //' [effects] integer vector (effects)
+//' [standardize] logical, indicates whether statistics for endogenous effects 
+//' should be standardized
 //' [edgelist] 3-column edgelist (time, sender, receiver)
 //' [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
 //' [evls] 2-column edgelist (event, time) in relevent::rem format
@@ -34,8 +36,8 @@ using namespace arma;
 //' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 //' 
 //[[Rcpp::export]]
-arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, 
-    arma::mat evls, arma::vec actors, Rcpp::List covariates, 
+arma::cube remStatsC(arma::vec effects, bool standardize, arma::mat edgelist, 
+    arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, 
     arma::mat event_effect, arma::vec weights, arma::vec equal_val, 
     arma::mat int_positions) {
 
@@ -156,63 +158,63 @@ arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset,
                 break;
             // inertia
             case 10 :
-                stat = inertia(evls, riskset, weights);
+                stat = inertia(evls, riskset, weights, standardize);
                 break;
             // inertia_weighted
             case 11:
-                stat = inertia(evls, riskset, weights);
+                stat = inertia(evls, riskset, weights, standardize);
                 break;
             // reciprocity
             case 12: 
-                stat = reciprocity(edgelist, riskset);
+                stat = reciprocity(edgelist, riskset, standardize);
                 break;
             // indegree_sender
             case 14:
-                stat = degree(edgelist, riskset, 1);
+                stat = degree(edgelist, riskset, 1, standardize);
                 break;
             // indegree_receiver
             case 15:
-                stat = degree(edgelist, riskset, 2);
+                stat = degree(edgelist, riskset, 2, standardize);
                 break;
             // outdegree_sender
             case 16:
-               stat = degree(edgelist, riskset, 3);
+               stat = degree(edgelist, riskset, 3, standardize);
                 break;
             // outdegree_receiver
             case 17:
-                stat = degree(edgelist, riskset, 4);
+                stat = degree(edgelist, riskset, 4, standardize);
                 break;
             // totaldegree_sender
             case 18:
-                stat = degree(edgelist, riskset, 5);
+                stat = degree(edgelist, riskset, 5, standardize);
                 break;
             // totaldegree_receiver
             case 19:
-                stat = degree(edgelist, riskset, 6);
+                stat = degree(edgelist, riskset, 6, standardize);
                 break;
             // OTP
             case 24:
-                stat = triad(actors, edgelist, riskset, 1);
+                stat = triad(actors, edgelist, riskset, 1, standardize);
                 break;
             // ITP
             case 25:
-                stat = triad(actors, edgelist, riskset, 2);
+                stat = triad(actors, edgelist, riskset, 2, standardize);
                 break;
             // OSP
             case 26:
-                stat = triad(actors, edgelist, riskset, 3);
+                stat = triad(actors, edgelist, riskset, 3, standardize);
                 break;
             // ISP
             case 27:
-                stat = triad(actors, edgelist, riskset, 4);
+                stat = triad(actors, edgelist, riskset, 4, standardize);
                 break;
             // shared_partners
             case 28:
-                stat = triadU(actors, edgelist, riskset, FALSE);
+                stat = triadU(actors, edgelist, riskset, FALSE, standardize);
                 break;
             // unique_sp
             case 29:
-                stat = triadU(actors, edgelist, riskset, TRUE);
+                stat = triadU(actors, edgelist, riskset, TRUE, standardize);
                 break;
             // interaction effects
             case 999:

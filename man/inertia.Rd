@@ -4,7 +4,7 @@
 \alias{inertia}
 \title{inertia}
 \usage{
-inertia(evls, riskset, weights)
+inertia(evls, riskset, weights, standardize)
 }
 \arguments{
 \item{evls}{2-column edgelist (event, time) in relevent::rem format.}
@@ -12,6 +12,8 @@ inertia(evls, riskset, weights)
 \item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2).}
 
 \item{weights}{vector (length evls)}
+
+\item{standardize}{logical}
 }
 \value{
 matrix (time x dyad)
@@ -26,6 +28,6 @@ out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE,
 el <- out$edgelist
 rs <- out$riskset
 evls <- prepEvls(el, rs, type = FALSE)
-stat <- inertia(evls, rs, weights = rep(1, nrow(el)))
+stat <- inertia(evls, rs, weights = rep(1, nrow(el)), FALSE)
 
 }

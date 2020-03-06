@@ -4,7 +4,7 @@
 \alias{degree}
 \title{degree}
 \usage{
-degree(edgelist, riskset, type)
+degree(edgelist, riskset, type, standardize)
 }
 \arguments{
 \item{edgelist}{3-column edgelist (time, sender, receiver)}
@@ -14,6 +14,8 @@ degree(edgelist, riskset, type)
 \item{type}{1 = indegree_sender, 2 = indegree_receiver, 3 = 
 outdegree_sender, 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = 
 totaldegree_receiver}
+
+\item{standardize}{logical}
 }
 \value{
 matrix (time x dyad)
@@ -27,6 +29,7 @@ out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE,
     riskset = NULL, actors = NULL)
 el <- out$edgelist
 rs <- out$riskset
-indegree_sender <- degree(el, rs, type = 1)
+indegree_sender <- degree(edgelist = el, riskset = rs, type = 1, 
+    standardize = FALSE)
 
 }

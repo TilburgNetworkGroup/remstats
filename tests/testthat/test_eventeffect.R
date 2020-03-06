@@ -17,7 +17,10 @@ test_that("event_effect in remStatsC", {
     event_effect <- as.matrix(sample(c(0, 1), nrow(el), replace = TRUE))
     covariates <- rep(list(matrix(0, 1, 1)), 8)
 
-    stats <- remStatsC(effects = effects, edgelist = el, riskset = rs, evls = evls, actors = ac[,1], covariates = covariates, event_effect = event_effect, weights = rep(1, nrow(evls)), equal_val = 0, int_positions = matrix(0, 1, 1))
+    stats <- remStatsC(effects = effects, standardize = FALSE, edgelist = el, 
+        riskset = rs, evls = evls, actors = ac[,1], covariates = covariates, 
+        event_effect = event_effect, weights = rep(1, nrow(evls)), 
+        equal_val = 0, int_positions = matrix(0, 1, 1))
 
     expect_equal(stats[,1,1], stats[,2,1])
     expect_equal(as.matrix(stats[,1,1]), event_effect)

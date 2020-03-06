@@ -4,12 +4,14 @@
 \alias{reciprocity}
 \title{reciprocity}
 \usage{
-reciprocity(edgelist, riskset)
+reciprocity(edgelist, riskset, standardize)
 }
 \arguments{
 \item{edgelist}{3-column edgelist (time, sender, receiver)}
 
 \item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2)}
+
+\item{standardize}{logical}
 }
 \value{
 matrix (time x dyad)
@@ -23,6 +25,6 @@ out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE,
     riskset = NULL, actors = NULL)
 el <- out$edgelist
 rs <- out$riskset
-stat <- reciprocity(el, rs)
+stat <- reciprocity(el, rs, FALSE)
 
 }

@@ -265,6 +265,7 @@ TO DO: R wrapper function so that a default value for weights can be set?
 //' @param evls 2-column edgelist (event, time) in relevent::rem format.
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
 //' @param weights vector (length evls) 
+//' @param standardize logical 
 //'
 //' @return matrix (time x dyad)
 //'
@@ -275,12 +276,13 @@ TO DO: R wrapper function so that a default value for weights can be set?
 //' el <- out$edgelist
 //' rs <- out$riskset
 //' evls <- prepEvls(el, rs, type = FALSE)
-//' stat <- inertia(evls, rs, weights = rep(1, nrow(el)))
+//' stat <- inertia(evls, rs, weights = rep(1, nrow(el)), FALSE)
 //'
 //' @export
 //'
 //[[Rcpp::export]]
-arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights) {
+arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights, 
+    bool standardize) {
     // Storage space and fill with zeros
     arma::mat stat(evls.n_rows, riskset.n_rows, fill::zeros);
 
@@ -296,6 +298,16 @@ arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights) {
         stat.row(i) = thisrow;
     }
 
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < evls.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
     // Output
     return stat;
 }
@@ -306,6 +318,7 @@ arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights) {
 //' 
 //' @param edgelist 3-column edgelist (time, sender, receiver)
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+//' @param standardize logical 
 //'
 //' @return matrix (time x dyad)
 //'
@@ -315,12 +328,12 @@ arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights) {
 //'     riskset = NULL, actors = NULL)
 //' el <- out$edgelist
 //' rs <- out$riskset
-//' stat <- reciprocity(el, rs)
+//' stat <- reciprocity(el, rs, FALSE)
 //'
 //' @export
 //'
 //[[Rcpp::export]]
-arma::mat reciprocity(arma::mat edgelist, arma::mat riskset) {
+arma::mat reciprocity(arma::mat edgelist, arma::mat riskset, bool standardize) {
     // Storage space and fill with zeros
     arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
 
@@ -344,6 +357,16 @@ arma::mat reciprocity(arma::mat edgelist, arma::mat riskset) {
         stat.row(i) = thisrow;
     }
 
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
     // Output
     return stat;
 }
@@ -357,6 +380,7 @@ arma::mat reciprocity(arma::mat edgelist, arma::mat riskset) {
 //' @param type 1 = indegree_sender, 2 = indegree_receiver, 3 = 
 //' outdegree_sender, 4 = outdegree_receiver, 5 = totaldegree_sender, 6 = 
 //' totaldegree_receiver 
+//' @param standardize logical 
 //'
 //' @return matrix (time x dyad)
 //'
@@ -366,12 +390,14 @@ arma::mat reciprocity(arma::mat edgelist, arma::mat riskset) {
 //'     riskset = NULL, actors = NULL)
 //' el <- out$edgelist
 //' rs <- out$riskset
-//' indegree_sender <- degree(el, rs, type = 1)
+//' indegree_sender <- degree(edgelist = el, riskset = rs, type = 1, 
+//'     standardize = FALSE)
 //'
 //' @export
 //'
 //[[Rcpp::export]]
-arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
+arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type, 
+    bool standardize) {
     // Storage space and fill with zeros
     arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
 
@@ -421,6 +447,16 @@ arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
         stat.row(i) = thisrow;
     }
 
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
     // Output
     return stat;
 }
@@ -434,6 +470,7 @@ arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
 //' @param type (1 = outgoing two-path, 2 = incoming two-path, 3 = outbound 
 //' shared partners, 4 = inbound shared partners)
+//' @param standardize logical 
 //'
 //' @return matrix (time x dyad)
 //'
@@ -444,12 +481,12 @@ arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type) {
 //' el <- out$edgelist
 //' rs <- out$riskset
 //' ac <- out$actors[,1]
-//' otp <- triad(ac, el, rs, type = 1)
+//' otp <- triad(ac, el, rs, type = 1, standardize = FALSE)
 //'
 //' @export
 //'
 //[[Rcpp::export]]
-arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::uword type) {
+arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::uword type, bool standardize) {
 
     //Storage space
     //(1) Adjacency matrix 
@@ -556,6 +593,17 @@ arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::u
         // Save the statistic for this timepoint
         stat.row(i) = thisrow;     
     }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
     // Output
     return(stat);
 }
@@ -574,7 +622,8 @@ TO DO: R wrapper function so a default value for unique can be set?
 //' riskset)
 //' @param edgelist 3-column edgelist (time, sender, receiver)
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-//' @param uinque_sp logical value
+//' @param unique_sp logical value
+//' @param standardize logical value
 //'
 //' @return matrix (time x dyad)
 //' 
@@ -585,13 +634,13 @@ TO DO: R wrapper function so a default value for unique can be set?
 //' el <- out$edgelist
 //' rs <- out$riskset
 //' ac <- out$actors[,1]
-//' stat <- triadU(ac, el, rs, unique_sp = FALSE)
+//' stat <- triadU(ac, el, rs, unique_sp = FALSE, standardize = FALSE)
 //'
 //' @export
 //'
 //[[Rcpp::export]]
 arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset, 
-    bool unique_sp) {
+    bool unique_sp, bool standardize) {
 
     //Storage space
     //(1) Adjacency matrix 
@@ -666,6 +715,17 @@ arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset,
         //Save the statistic for this timepoint
         stat.row(i) = thisrow;
     }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
     //Output
     return(stat);
 }

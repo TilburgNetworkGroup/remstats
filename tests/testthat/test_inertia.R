@@ -13,7 +13,8 @@ test_that("dimensions inertia output", {
 
     evls <- prepEvls(el, rs, FALSE)
 
-    stat <- inertia(evls, rs, rep(1, nrow(evls)))
+    stat <- inertia(evls = evls, riskset = rs, weights = rep(1, nrow(evls)), 
+        standardize = TRUE)
 
     expect_output(str(stat), "num[1:nrow(evls), 1:nrow(rs)]")
 
@@ -27,7 +28,8 @@ test_that("dimensions inertia output", {
 
     evls2 <- prepEvls(el2, rs2, FALSE)
 
-    stat2 <- inertia(evls2, rs2, rep(1, nrow(evls)))
+    stat2 <- inertia(evls = evls2, riskset = rs2, weights = rep(1, nrow(evls)),
+        standardize = TRUE)
 
     expect_output(str(stat2), "num[1:nrow(evls2), 1:nrow(rs2)]")
 })
@@ -43,7 +45,8 @@ test_that("content inertia output", {
 
     evls <- prepEvls(el, rs, FALSE)
 
-    stat <- inertia(evls, rs, rep(1, nrow(evls)))
+    stat <- inertia(evls = evls, riskset = rs, weights = rep(1, nrow(evls)), 
+        standardize = FALSE)
 
     # Do the rowsums run from 0 to M-1?
     expect_equal(rowSums(stat), seq(0, nrow(evls)-1))
@@ -60,10 +63,32 @@ test_that("content inertia output", {
 
     evls2 <- prepEvls(el2, rs2, FALSE)
 
-    stat2 <- inertia(evls2, rs2, rep(1, nrow(evls)))
+    stat2 <- inertia(evls = evls2, riskset = rs2, weights = rep(1, nrow(evls)), 
+        standardize = FALSE)
 
     # Do the rowsums run from 0 to M-1?
     expect_equal(rowSums(stat2), seq(0, nrow(evls2)-1))
     # Is the final row equal to the adjacency table?
     expect_true(all(table(factor(evls2[1:(nrow(evls2)-1),1], levels = 1:nrow(rs2))) == stat2[nrow(evls2),]))
+})
+
+test_that("Standardization inertia", {
+    # Test for directed relational events 
+    data(edgelistD)
+
+    out <- prepER(edgelistD, directed = TRUE, type = FALSE, riskset = NULL, 
+        actors = NULL)
+    el <- out$edgelist
+    rs <- out$riskset
+
+    evls <- prepEvls(el, rs, FALSE)
+
+    stat <- inertia(evls = evls, riskset = rs, weights = rep(1, nrow(evls)), 
+        standardize = FALSE)
+    stat2 <- inertia(evls = evls, riskset = rs, weights = rep(1, nrow(evls)), 
+        standardize = TRUE)
+
+    test <- rbind(stat[1,], 
+        t(apply(stat[-1,], 1, function(x) (x-mean(x))/sd(x))))
+    expect_equal(test, stat2)
 })

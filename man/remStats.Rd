@@ -5,8 +5,9 @@
 \title{remStats}
 \usage{
 remStats(edgelist, effects, directed = TRUE, type = FALSE,
-  timing = "interval", riskset = NULL, actors = NULL,
-  covariates = NULL, weights = NULL, equal_val = NULL)
+  timing = "interval", standardize = FALSE, riskset = NULL,
+  actors = NULL, covariates = NULL, event_effect = NULL,
+  weights = NULL, equal_val = NULL)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
@@ -27,6 +28,9 @@ action type (type = TRUE) or not (type = FALSE, default).}
 will be used for estimation. If interval timing, a baseline statistic is 
 added to the statistic array.}
 
+\item{standardize}{[logical], indicates whether endogenous effects should be 
+standardized (default = FALSE)}
+
 \item{riskset}{optional; [matrix] or [dataframe], should minimally contain 
 sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
 If it contains typed relational events, the third column should contain the 
@@ -45,7 +49,11 @@ second column the time at which covariate values change (can be set to zero
 for time-invariant covariates) and in subsequent columns the unique 
 covariate variables for which the respective effect is requested.}
 
-\item{weights}{optional; [vector], if supplied, should be of length edgelist #' and contain the weights for the events in the edgelist (to compute 
+\item{event_effect}{optional; matrix with the values for when an 
+event_effect is requested: one column of length edgelist per event_effect.}
+
+\item{weights}{optional; [vector], if supplied, should be of length edgelist 
+and contain the weights for the events in the edgelist (to compute 
 inertia_weighted)}
 
 \item{equal_val}{optional; [vector]. Required if the "both_equal_to" effect 
@@ -56,7 +64,8 @@ actors in a dyad should be equal.}
 statistics [array], with three dimensions: timepoint x riskset x 
 statistic.
 
-edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C.
+edgelist [matrix] with actor IDs that run from 1 to N and types that 
+run from 1 to C.
 
 riskset [matrix], with actor IDs that run from 1 to N and types that
 run from 1 to C.
@@ -72,8 +81,11 @@ A function to compute statistics for a relational event sequence.
 }
 \examples{
 data(edgelistD)
-effects <- c("inertia", "indegree_receiver", "outdegree_sender")
-out <- remStats(edgelistD, effects)
+data(covar)
+effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver", 
+ "outdegree_sender")
+covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
+out <- remStats(edgelistD, effects, covariates = covariates, equal_val = 0)
 fit <- relevent::rem(out$evls, out$statistics)
 summary(fit)
 

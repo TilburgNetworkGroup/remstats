@@ -15,6 +15,8 @@
 #' (timing = "interval", default) or ordinal likelihod (timing = "ordinal") 
 #' will be used for estimation. If interval timing, a baseline statistic is 
 #' added to the statistic array.
+#' @param standardize [logical], indicates whether endogenous effects should be 
+#' standardized (default = FALSE)
 #'
 #' @param riskset optional; [matrix] or [dataframe], should minimally contain 
 #' sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
@@ -64,8 +66,7 @@
 #' @export
 
 remStats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    timing = "interval", riskset = NULL, actors = NULL, covariates = NULL, 
-    event_effect = NULL, weights = NULL, equal_val = NULL) {
+    timing = "interval", standardize = FALSE, riskset = NULL, actors = NULL, covariates = NULL, event_effect = NULL, weights = NULL, equal_val = NULL) {
 
     # Prepare the edgelist, riskset and actors
     out <- prepER(edgelist, directed, type, riskset, actors)
@@ -218,9 +219,10 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     if(is.null(equal_val)) {equal_val <- 0}
 	
 	# (4) Compute statistics
-    stats <- remStatsC(effects = eff, edgelist = el, riskset = rs, evls = evls, 
-        actors = ac[,1], covariates = covar, event_effect = event_effect, 
-        weights = weights, equal_val = equal_val, int_positions = int_positions)
+    stats <- remStatsC(effects = eff, standardize = standardize, edgelist = el, 
+        riskset = rs, evls = evls, actors = ac[,1], covariates = covar, 
+        event_effect = event_effect, weights = weights, equal_val = equal_val, 
+        int_positions = int_positions)
 
     dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
         effects[grepl("\\*", effects)])

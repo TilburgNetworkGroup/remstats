@@ -36,46 +36,49 @@ BEGIN_RCPP
 END_RCPP
 }
 // inertia
-arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights);
-RcppExport SEXP _remstats_inertia(SEXP evlsSEXP, SEXP risksetSEXP, SEXP weightsSEXP) {
+arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights, bool standardize);
+RcppExport SEXP _remstats_inertia(SEXP evlsSEXP, SEXP risksetSEXP, SEXP weightsSEXP, SEXP standardizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type evls(evlsSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type weights(weightsSEXP);
-    rcpp_result_gen = Rcpp::wrap(inertia(evls, riskset, weights));
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(inertia(evls, riskset, weights, standardize));
     return rcpp_result_gen;
 END_RCPP
 }
 // reciprocity
-arma::mat reciprocity(arma::mat edgelist, arma::mat riskset);
-RcppExport SEXP _remstats_reciprocity(SEXP edgelistSEXP, SEXP risksetSEXP) {
+arma::mat reciprocity(arma::mat edgelist, arma::mat riskset, bool standardize);
+RcppExport SEXP _remstats_reciprocity(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP standardizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
-    rcpp_result_gen = Rcpp::wrap(reciprocity(edgelist, riskset));
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(reciprocity(edgelist, riskset, standardize));
     return rcpp_result_gen;
 END_RCPP
 }
 // degree
-arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type);
-RcppExport SEXP _remstats_degree(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP typeSEXP) {
+arma::mat degree(arma::mat edgelist, arma::mat riskset, arma::uword type, bool standardize);
+RcppExport SEXP _remstats_degree(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP typeSEXP, SEXP standardizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type type(typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(degree(edgelist, riskset, type));
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(degree(edgelist, riskset, type, standardize));
     return rcpp_result_gen;
 END_RCPP
 }
 // triad
-arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::uword type);
-RcppExport SEXP _remstats_triad(SEXP actorsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP typeSEXP) {
+arma::mat triad(arma::vec actors, arma::mat edgelist, arma::mat riskset, arma::uword type, bool standardize);
+RcppExport SEXP _remstats_triad(SEXP actorsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP typeSEXP, SEXP standardizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -83,13 +86,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type type(typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(triad(actors, edgelist, riskset, type));
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(triad(actors, edgelist, riskset, type, standardize));
     return rcpp_result_gen;
 END_RCPP
 }
 // triadU
-arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset, bool unique_sp);
-RcppExport SEXP _remstats_triadU(SEXP actorsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP unique_spSEXP) {
+arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset, bool unique_sp, bool standardize);
+RcppExport SEXP _remstats_triadU(SEXP actorsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP unique_spSEXP, SEXP standardizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -97,17 +101,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< bool >::type unique_sp(unique_spSEXP);
-    rcpp_result_gen = Rcpp::wrap(triadU(actors, edgelist, riskset, unique_sp));
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(triadU(actors, edgelist, riskset, unique_sp, standardize));
     return rcpp_result_gen;
 END_RCPP
 }
 // remStatsC
-arma::cube remStatsC(arma::vec effects, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::mat event_effect, arma::vec weights, arma::vec equal_val, arma::mat int_positions);
-RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP, SEXP covariatesSEXP, SEXP event_effectSEXP, SEXP weightsSEXP, SEXP equal_valSEXP, SEXP int_positionsSEXP) {
+arma::cube remStatsC(arma::vec effects, bool standardize, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::mat event_effect, arma::vec weights, arma::vec equal_val, arma::mat int_positions);
+RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP standardizeSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP, SEXP covariatesSEXP, SEXP event_effectSEXP, SEXP weightsSEXP, SEXP equal_valSEXP, SEXP int_positionsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type effects(effectsSEXP);
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type evls(evlsSEXP);
@@ -117,7 +123,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type equal_val(equal_valSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type int_positions(int_positionsSEXP);
-    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions));
+    rcpp_result_gen = Rcpp::wrap(remStatsC(effects, standardize, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -125,12 +131,12 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_remstats_actorStat", (DL_FUNC) &_remstats_actorStat, 4},
     {"_remstats_dyadstat", (DL_FUNC) &_remstats_dyadstat, 5},
-    {"_remstats_inertia", (DL_FUNC) &_remstats_inertia, 3},
-    {"_remstats_reciprocity", (DL_FUNC) &_remstats_reciprocity, 2},
-    {"_remstats_degree", (DL_FUNC) &_remstats_degree, 3},
-    {"_remstats_triad", (DL_FUNC) &_remstats_triad, 4},
-    {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 4},
-    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 10},
+    {"_remstats_inertia", (DL_FUNC) &_remstats_inertia, 4},
+    {"_remstats_reciprocity", (DL_FUNC) &_remstats_reciprocity, 3},
+    {"_remstats_degree", (DL_FUNC) &_remstats_degree, 4},
+    {"_remstats_triad", (DL_FUNC) &_remstats_triad, 5},
+    {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 5},
+    {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 11},
     {NULL, NULL, 0}
 };
 

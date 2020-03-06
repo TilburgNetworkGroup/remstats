@@ -4,7 +4,7 @@
 \alias{triadU}
 \title{triadU}
 \usage{
-triadU(actors, edgelist, riskset, unique_sp)
+triadU(actors, edgelist, riskset, unique_sp, standardize)
 }
 \arguments{
 \item{actors}{vector with numeric actor IDs (correspond to edgelist,
@@ -14,7 +14,9 @@ riskset)}
 
 \item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2)}
 
-\item{uinque_sp}{logical value}
+\item{unique_sp}{logical value}
+
+\item{standardize}{logical value}
 }
 \value{
 matrix (time x dyad)
@@ -30,6 +32,6 @@ out <- prepER(edgelist = edgelistU, directed = FALSE, type = FALSE,
 el <- out$edgelist
 rs <- out$riskset
 ac <- out$actors[,1]
-stat <- triadU(ac, el, rs, unique_sp = FALSE)
+stat <- triadU(ac, el, rs, unique_sp = FALSE, standardize = FALSE)
 
 }
