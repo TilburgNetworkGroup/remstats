@@ -1,4 +1,4 @@
-context("remStats")
+context("remstats")
 
 require(remstats)
 
@@ -22,7 +22,7 @@ test_that("Output remstats for dyadic directed relational events", {
         max = covar[,c(1:3)],
         both_equal_to = covar[,c(1:2, 4)])
 
-    out <- remStats(edgelist = edgelistD, effects = effects, 
+    out <- remstats(edgelist = edgelistD, effects = effects, 
         covariates = covariates, equal_val = 0)
 
     # General output
@@ -84,7 +84,7 @@ test_that("Output remstats for dyadic undirected relational events", {
     data("edgelistU")
 
     effects = c("inertia", "shared_partners", "inertia_weighted", "unique_sp")
-    out <- remStats(edgelist = edgelistU, effects = effects, directed = FALSE)
+    out <- remstats(edgelist = edgelistU, effects = effects, directed = FALSE)
 
     # General output
     expect_output(str(out), "List of 5")

@@ -1,4 +1,4 @@
-context("remstatsMWC")
+context("remstatsMWCpp")
 
 require(remstats)
 
@@ -34,18 +34,18 @@ covar <- as.matrix(covar)
 covariates <- rep(list(matrix(0, 1, 1)), 8)
 
 # Tests
-test_that("remstatsMWC sender_effect", {
+test_that("remstatsMWCpp sender_effect", {
     effects <- c(0, 1, 1)
     covariates[[1]] <- covar
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, equal_val = 0, 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -69,18 +69,18 @@ test_that("remstatsMWC sender_effect", {
     expect_true(!all(stats2[1,,3] == stats[1,,3]))
 })
 
-test_that("remstatsMWC receiver_effect", {
+test_that("remstatsMWCpp receiver_effect", {
     effects <- c(0, 2, 2)
     covariates[[2]] <- covar
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, equal_val = 0, 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -104,18 +104,18 @@ test_that("remstatsMWC receiver_effect", {
     expect_true(!all(stats2[1,,3] == stats[1,,3]))
 })
 
-test_that("remstatsMWC same effect", {
+test_that("remstatsMWCpp same effect", {
     effects <- c(0, 3, 3)
     covariates[[3]] <- covar
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, equal_val = 0, 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -143,18 +143,18 @@ test_that("remstatsMWC same effect", {
     expect_true(!all(stats2[1,,3] == stats[1,,3]))
 })
 
-test_that("remstatsMWC difference effect", {
+test_that("remstatsMWCpp difference effect", {
     effects <- c(0, 4, 4)
     covariates[[4]] <- covar
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, equal_val = 0, 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -182,18 +182,18 @@ test_that("remstatsMWC difference effect", {
     expect_true(!all(stats2[1,,3] == stats[1,,3]))
 })
 
-test_that("remstatsMWC mean effect", {
+test_that("remstatsMWCpp mean effect", {
     effects <- c(0, 5, 5)
     covariates[[5]] <- covar
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, equal_val = 0, 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -221,18 +221,18 @@ test_that("remstatsMWC mean effect", {
     expect_true(!all(stats2[1,,3] == stats[1,,3]))
 })
 
-test_that("remstatsMWC min effect", {
+test_that("remstatsMWCpp min effect", {
     effects <- c(0, 6, 6)    
     covariates[[6]] <- covar
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, equal_val = 0, 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -260,18 +260,18 @@ test_that("remstatsMWC min effect", {
     expect_true(!all(stats2[1,,3] == stats[1,,3]))
 })
 
-test_that("remstatsMWC max effect", {
+test_that("remstatsMWCpp max effect", {
     effects <- c(0, 7, 7)
     covariates[[7]] <- covar
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, equal_val = 0, 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -299,18 +299,18 @@ test_that("remstatsMWC max effect", {
     expect_true(!all(stats2[1,,3] == stats[1,,3]))
 })
 
-test_that("remstatsMWC both_equal_to effect", {
+test_that("remstatsMWCpp both_equal_to effect", {
     effects <- c(0, 8, 8)
     covariates[[8]] <- covar
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, equal_val = c(0,0), 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -338,19 +338,19 @@ test_that("remstatsMWC both_equal_to effect", {
     expect_true(!all(stats2[1,,3] == stats[1,,3]))
 })
 
-test_that("remstatsMWC event_effect", {
+test_that("remstatsMWCpp event_effect", {
     effects <- c(0, 9)
     event_effect1 <- as.matrix(sample(c(0,1), nrow(w1_el), replace = TRUE))
     event_effect2 <- as.matrix(sample(c(0,1), nrow(w2_el), replace = TRUE))
 
-    stats <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = event_effect1, full_weights = 0, equal_val = 0, 
         int_positions = matrix(0, 1, 1))
     
-    stats2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stats2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -370,19 +370,19 @@ test_that("remstatsMWC event_effect", {
     expect_true(all(diff(colSums(stats2[,,2]))==0))
 })
 
-test_that("remstatsMWC inertia", {
+test_that("remstatsMWCpp inertia", {
     effects <- 10
 
     full_weights <- rep(1, nrow(full_evls))
 
-    stat <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stat <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = full_weights, 
         equal_val = 0, int_positions = matrix(0, 1, 1))
     
-    stat2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stat2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -402,19 +402,19 @@ test_that("remstatsMWC inertia", {
     expect_true(!all(diff(rowSums(stat2[,,1]))==1))
 })
 
-test_that("remstatsMWC inertia_weighted", {
+test_that("remstatsMWCpp inertia_weighted", {
     effects <- 11
 
     full_weights <- rep(1, nrow(full_evls))
 
-    stat <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stat <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = full_weights, 
         equal_val = 0, int_positions = matrix(0, 1, 1))
     
-    stat2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stat2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -433,17 +433,17 @@ test_that("remstatsMWC inertia_weighted", {
     expect_equal(stat2[,,1], comp2)
 })
 
-test_that("remstatsMWC shared_partners", {
+test_that("remstatsMWCpp shared_partners", {
     effects <- 28
 
-    stat <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stat <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, 
         equal_val = 0, int_positions = matrix(0, 1, 1))
     
-    stat2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stat2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 
@@ -459,17 +459,17 @@ test_that("remstatsMWC shared_partners", {
     expect_equal(stat[,,1], comp[1:nrow(stat),])
 })
 
-test_that("remstatsMWC unique_sp", {
+test_that("remstatsMWCpp unique_sp", {
     effects <- 29
 
-    stat <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stat <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w1_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w1_evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), full_weights = 0, 
         equal_val = 0, int_positions = matrix(0, 1, 1))
     
-    stat2 <- remStatsMWC(effects = effects, standardize = FALSE, 
+    stat2 <- remstatsMWCpp(effects = effects, standardize = FALSE, 
         full_edgelist = full_el, window_edgelist = w2_el, 
         window_length = 100, riskset = rs, full_evls = full_evls, 
         window_evls = w2_evls, actors = ac[,1], covariates = covariates, 

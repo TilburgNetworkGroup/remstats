@@ -1,8 +1,8 @@
-context("event_effect in remStatsC")
+context("event_effect in remstatsCpp")
 
 require(remstats)
 
-test_that("event_effect in remStatsC", {
+test_that("event_effect in remstatsCpp", {
     # Test for directed relational events
     data(edgelistD)
 
@@ -17,7 +17,7 @@ test_that("event_effect in remStatsC", {
     event_effect <- as.matrix(sample(c(0, 1), nrow(el), replace = TRUE))
     covariates <- rep(list(matrix(0, 1, 1)), 8)
 
-    stats <- remStatsC(effects = effects, standardize = FALSE, edgelist = el, 
+    stats <- remstatsCpp(effects = effects, standardize = FALSE, edgelist = el, 
         riskset = rs, evls = evls, actors = ac[,1], covariates = covariates, 
         event_effect = event_effect, weights = rep(1, nrow(evls)), 
         equal_val = 0, int_positions = matrix(0, 1, 1))

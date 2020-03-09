@@ -41,10 +41,6 @@ test_that("content triadU output, shared_partners effect", {
     expect_equal(stat, stat1+stat2+stat3+stat4)
 })
 
-context("triadU output")
-
-require(remstats)
-
 test_that("dimensions triadU output, unique_sp effect", {
     # Test for undirected relational events
     data(edgelistU)

@@ -4,11 +4,11 @@
 using namespace Rcpp;
 using namespace arma;
 
-//' remStatsC
+//' remstatsCpp
 //'
 //' A function to compute statistics and combine the statistics in an array
 //' prepared for estimation of a REM with relevent::rem(). Used internally 
-//' in remStats. 
+//' in remstats. 
 //' 
 //' param:
 //' [effects] integer vector (effects)
@@ -36,7 +36,7 @@ using namespace arma;
 //' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 //' 
 //[[Rcpp::export]]
-arma::cube remStatsC(arma::vec effects, bool standardize, arma::mat edgelist, 
+arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist, 
     arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, 
     arma::mat event_effect, arma::vec weights, arma::vec equal_val, 
     arma::mat int_positions) {
@@ -232,11 +232,11 @@ arma::cube remStatsC(arma::vec effects, bool standardize, arma::mat edgelist,
     return statistics;
 }
 
-//' remStatsMWC
+//' remstatsMWCpp
 //'
 //' A function to compute statistics and combine the statistics in an array
 //' prepared for estimation of a moving window REM with relevent::rem(). Used 
-//' internally in remStatsMW. 
+//' internally in remstatsMW. 
 //' 
 //' @param effects integer vector (effects)
 //' @param standardize logical, indicates whether statistics for endogenous 
@@ -266,7 +266,7 @@ arma::cube remStatsC(arma::vec effects, bool standardize, arma::mat edgelist,
 //' [statistics] 3-dimensional array (event time x risk set entry x statistic)
 //' 
 //[[Rcpp::export]]
-arma::cube remStatsMWC(arma::vec effects, bool standardize, 
+arma::cube remstatsMWCpp(arma::vec effects, bool standardize, 
     arma::mat full_edgelist, arma::mat window_edgelist, double window_length, 
     arma::mat riskset, arma::mat full_evls, arma::mat window_evls, 
     arma::vec actors, Rcpp::List covariates, arma::mat event_effect, 

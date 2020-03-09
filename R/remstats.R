@@ -1,4 +1,4 @@
-#' remStats
+#' remstats
 #'
 #' A function to compute statistics for a relational event sequence. 
 #' 
@@ -59,13 +59,13 @@
 #' effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver", 
 #'  "outdegree_sender")
 #' covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
-#' out <- remStats(edgelistD, effects, covariates = covariates, equal_val = 0)
+#' out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
 #' fit <- relevent::rem(out$evls, out$statistics)
 #' summary(fit)
 #' 
 #' @export
 
-remStats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
+remstats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
     timing = "interval", standardize = FALSE, riskset = NULL, actors = NULL, covariates = NULL, event_effect = NULL, weights = NULL, equal_val = NULL) {
 
     # Prepare the edgelist, riskset and actors
@@ -206,7 +206,7 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
             cbind(findpos(x[1], temp_effects), findpos(x[2], temp_effects))
         }))
         int_positions <- int_positions-1
-	    # Case 999 in remstatsC refers to interaction effects
+	    # Case 999 in remstatsCpp refers to interaction effects
 	    eff <- c(eff, rep(999, nrow(int_effects)))
     } else {
         int_positions <- matrix(0, 1, 1)
@@ -219,10 +219,10 @@ remStats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     if(is.null(equal_val)) {equal_val <- 0}
 	
 	# (4) Compute statistics
-    stats <- remStatsC(effects = eff, standardize = standardize, edgelist = el, 
-        riskset = rs, evls = evls, actors = ac[,1], covariates = covar, 
-        event_effect = event_effect, weights = weights, equal_val = equal_val, 
-        int_positions = int_positions)
+    stats <- remstatsCpp(effects = eff, standardize = standardize, 
+        edgelist = el, riskset = rs, evls = evls, actors = ac[,1], 
+        covariates = covar, event_effect = event_effect, weights = weights, 
+        equal_val = equal_val, int_positions = int_positions)
 
     dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
         effects[grepl("\\*", effects)])

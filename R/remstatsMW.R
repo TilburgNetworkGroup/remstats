@@ -1,4 +1,4 @@
-#' remStatsMW
+#' remstatsMW
 #'
 #' A function to compute statistics for a relational event sequence when 
 #' fitting with a moving window REM. Endogenous statistics are computed based 
@@ -62,13 +62,13 @@
 #' effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver", 
 #'  "outdegree_sender")
 #' covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
-#' out <- remStats(edgelistD, effects, covariates = covariates, equal_val = 0)
+#' out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
 #' fit <- relevent::rem(out$evls, out$statistics)
 #' summary(fit)
 #' 
 #' @export
 
-remStatsMW <- function(full_edgelist, window_edgelist, effects, window_length, 
+remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length, 
     riskset, directed = TRUE, type = FALSE, timing = "interval", 
     standardize = FALSE, covariates = NULL, event_effect = NULL, 
     full_weights = NULL, equal_val = NULL) {
@@ -229,7 +229,7 @@ remStatsMW <- function(full_edgelist, window_edgelist, effects, window_length,
     if(is.null(equal_val)) {equal_val <- 0}
 	
 	# (4) Compute statistics
-    stats <- remStatsMWC(effects = eff, standardize = standardize,  
+    stats <- remstatsMWCpp(effects = eff, standardize = standardize,  
         full_edgelist = full_el, window_edgelist = window_el, 
         window_length = window_length, riskset = rs, full_evls = full_evls, 
         window_evls = window_evls, actors = ac[,1], covariates = covar, 

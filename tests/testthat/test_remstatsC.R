@@ -1,8 +1,8 @@
-context("remStatsC")
+context("remstatsCpp")
 
 require(remstats)
 
-test_that("remStatsC output for directed dyadic relational events", {
+test_that("remstatsCpp output for directed dyadic relational events", {
     # Test for directed relational events
     data(edgelistD)
     data(covar)
@@ -31,7 +31,7 @@ test_that("remStatsC output for directed dyadic relational events", {
     int_positions <- matrix(c(2, 13, 2, 15), byrow = TRUE, ncol = 2)
     int_positions <- int_positions-1
 
-    stats <- remStatsC(effects = effects, standardize = FALSE, edgelist = el, 
+    stats <- remstatsCpp(effects = effects, standardize = FALSE, edgelist = el, 
         riskset = rs, evls = evls, actors = ac[,1], covariates = covariates, 
         event_effect = event_effect, weights = rep(1, nrow(evls)), 
         equal_val = 0, int_positions = int_positions) 
@@ -96,7 +96,7 @@ test_that("remStatsC output for directed dyadic relational events", {
     expect_equal(stats[,,27], stats[,,2]*stats[,,15])
 })
 
-test_that("remStatsC output for undirected dyadic relational events", {
+test_that("remstatsCpp output for undirected dyadic relational events", {
     # Test for undirected relational events
     data(edgelistU)
     data(covar)
@@ -122,7 +122,7 @@ test_that("remStatsC output for undirected dyadic relational events", {
         min = covar[,c(1:3)],
         both_equal_to = covar[,c(1:2, 4)])
 
-    stats <- remStatsC(effects = effects, standardize = FALSE, edgelist = el, 
+    stats <- remstatsCpp(effects = effects, standardize = FALSE, edgelist = el, 
         riskset = rs, evls = evls, actors = ac[,1], covariates = covariates, 
         event_effect = matrix(0, 1, 1), weights = rep(1, nrow(evls)), 
         equal_val = 0, int_positions = matrix(0, 1, 1)) 

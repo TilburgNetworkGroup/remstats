@@ -3,6 +3,8 @@
 using namespace Rcpp;
 using namespace arma;
 
+// TO DO: Create R wrapper functions for these cpp functions and export those instead of the ones below.
+
 //' actorStat
 //'
 //' A function to transform exogenous actor covariate variables in the format 
@@ -317,83 +319,6 @@ arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights,
     // Standardize effect if requested
     if(standardize) {
         for(arma::uword i = 0; i < evls.n_rows; ++ i) {
-            if(stddev(stat.row(i)) > 0) {
-                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
-                    stddev(stat.row(i));
-            }
-        }
-    }
-
-    // Output
-    return stat;
-}
-
-//' inertiaMW
-//'
-//' A function to compute the inertia effect.
-//'
-//' @param full_evls 2-column edgelist (event, time) in relevent::rem format.
-//' @param window_evls 2-column edgelist (event, time) in relevent::rem format.
-//' @param window_length numeric value.
-//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
-//' @param full_weights vector (length full_evls). 
-//' @param standardize logical. 
-//'
-//' @return matrix (time x dyad)
-//'
-//' @examples
-//' data(edgelistU)
-//' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
-//' window_edgelist <- edgelistU[edgelistU$time > windows$start[2] & 
-//'     edgelistU$time <= windows$end[2],]
-//' out <- prepER(edgelist = edgelistU, directed = FALSE)
-//' full_el <- out$edgelist
-//' rs <- out$riskset
-//' ac <- out$actors
-//' out <- prepER(window_edgelist, directed = FALSE, actors = ac[,2])
-//' window_el <- out$edgelist
-//' full_evls <- prepEvls(full_el, rs)
-//' window_evls <- prepEvls(window_el, rs)
-//' stat <- inertiaMW(full_evls = full_evls, window_evls = window_evls, 
-//' window_length = 100, riskset = rs, full_weights = rep(1, nrow(el)), 
-//' standardize = FALSE)
-//'
-//' @export
-//'
-//[[Rcpp::export]]
-arma::mat inertiaMW(arma::mat full_evls, arma::mat window_evls, 
-    double window_length, arma::mat riskset, arma::vec full_weights, 
-    bool standardize) {
-    // Storage space and fill with zeros
-    arma::mat stat(window_evls.n_rows, riskset.n_rows, fill::zeros);
-
-    // For loop over the events that fall within the window
-    for(arma::uword i = 0; i < window_evls.n_rows; ++i) {
-        // Determine the past 
-        double time = window_evls(i,1);
-        arma::uvec indices = find((full_evls.col(1) > (time - window_length)) 
-            && (full_evls.col(1) < time));
-        arma::mat past = full_evls.rows(indices);
-        arma::mat past_weights = full_weights(indices);
-
-        // Create storage space 
-        arma::rowvec thisrow(riskset.n_rows, fill::zeros);
-
-        // For loop over dyads
-        for(arma::uword r = 0; r < riskset.n_rows; ++r) {
-            // Determine the intensity of past interactions
-            arma::uvec indices2 = find(past.col(0) == r+1);
-            arma::vec past_intensity = past_weights(indices2);
-            thisrow(r) = sum(past_intensity);
-        }
-
-        //Change the row in the statistic
-        stat.row(i) = thisrow;
-    }
-
-    // Standardize effect if requested
-    if(standardize) {
-        for(arma::uword i = 0; i < window_evls.n_rows; ++ i) {
             if(stddev(stat.row(i)) > 0) {
                 stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
                     stddev(stat.row(i));
@@ -821,6 +746,83 @@ arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset,
 
     //Output
     return(stat);
+}
+
+//' inertiaMW
+//'
+//' A function to compute the inertia effect.
+//'
+//' @param full_evls 2-column edgelist (event, time) in relevent::rem format.
+//' @param window_evls 2-column edgelist (event, time) in relevent::rem format.
+//' @param window_length numeric value.
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
+//' @param full_weights vector (length full_evls). 
+//' @param standardize logical. 
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistU)
+//' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+//' window_edgelist <- edgelistU[edgelistU$time > windows$start[2] & 
+//'     edgelistU$time <= windows$end[2],]
+//' out <- prepER(edgelist = edgelistU, directed = FALSE)
+//' full_el <- out$edgelist
+//' rs <- out$riskset
+//' ac <- out$actors
+//' out <- prepER(window_edgelist, directed = FALSE, actors = ac[,2])
+//' window_el <- out$edgelist
+//' full_evls <- prepEvls(full_el, rs)
+//' window_evls <- prepEvls(window_el, rs)
+//' stat <- inertiaMW(full_evls = full_evls, window_evls = window_evls, 
+//' window_length = 100, riskset = rs, full_weights = rep(1, nrow(el)), 
+//' standardize = FALSE)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat inertiaMW(arma::mat full_evls, arma::mat window_evls, 
+    double window_length, arma::mat riskset, arma::vec full_weights, 
+    bool standardize) {
+    // Storage space and fill with zeros
+    arma::mat stat(window_evls.n_rows, riskset.n_rows, fill::zeros);
+
+    // For loop over the events that fall within the window
+    for(arma::uword i = 0; i < window_evls.n_rows; ++i) {
+        // Determine the past 
+        double time = window_evls(i,1);
+        arma::uvec indices = find((full_evls.col(1) > (time - window_length)) 
+            && (full_evls.col(1) < time));
+        arma::mat past = full_evls.rows(indices);
+        arma::mat past_weights = full_weights(indices);
+
+        // Create storage space 
+        arma::rowvec thisrow(riskset.n_rows, fill::zeros);
+
+        // For loop over dyads
+        for(arma::uword r = 0; r < riskset.n_rows; ++r) {
+            // Determine the intensity of past interactions
+            arma::uvec indices2 = find(past.col(0) == r+1);
+            arma::vec past_intensity = past_weights(indices2);
+            thisrow(r) = sum(past_intensity);
+        }
+
+        //Change the row in the statistic
+        stat.row(i) = thisrow;
+    }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < window_evls.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
+    // Output
+    return stat;
 }
 
 //' triadUMW
