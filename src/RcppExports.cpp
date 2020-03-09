@@ -49,6 +49,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// inertiaMW
+arma::mat inertiaMW(arma::mat full_evls, arma::mat window_evls, double window_length, arma::mat riskset, arma::vec full_weights, bool standardize);
+RcppExport SEXP _remstats_inertiaMW(SEXP full_evlsSEXP, SEXP window_evlsSEXP, SEXP window_lengthSEXP, SEXP risksetSEXP, SEXP full_weightsSEXP, SEXP standardizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type full_evls(full_evlsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type window_evls(window_evlsSEXP);
+    Rcpp::traits::input_parameter< double >::type window_length(window_lengthSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type full_weights(full_weightsSEXP);
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(inertiaMW(full_evls, window_evls, window_length, riskset, full_weights, standardize));
+    return rcpp_result_gen;
+END_RCPP
+}
 // reciprocity
 arma::mat reciprocity(arma::mat edgelist, arma::mat riskset, bool standardize);
 RcppExport SEXP _remstats_reciprocity(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP standardizeSEXP) {
@@ -106,6 +122,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// triadUMW
+arma::mat triadUMW(arma::vec actors, arma::mat full_edgelist, arma::mat window_edgelist, double window_length, arma::mat riskset, bool unique_sp, bool standardize);
+RcppExport SEXP _remstats_triadUMW(SEXP actorsSEXP, SEXP full_edgelistSEXP, SEXP window_edgelistSEXP, SEXP window_lengthSEXP, SEXP risksetSEXP, SEXP unique_spSEXP, SEXP standardizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type full_edgelist(full_edgelistSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type window_edgelist(window_edgelistSEXP);
+    Rcpp::traits::input_parameter< double >::type window_length(window_lengthSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< bool >::type unique_sp(unique_spSEXP);
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(triadUMW(actors, full_edgelist, window_edgelist, window_length, riskset, unique_sp, standardize));
+    return rcpp_result_gen;
+END_RCPP
+}
 // remStatsC
 arma::cube remStatsC(arma::vec effects, bool standardize, arma::mat edgelist, arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, arma::mat event_effect, arma::vec weights, arma::vec equal_val, arma::mat int_positions);
 RcppExport SEXP _remstats_remStatsC(SEXP effectsSEXP, SEXP standardizeSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP evlsSEXP, SEXP actorsSEXP, SEXP covariatesSEXP, SEXP event_effectSEXP, SEXP weightsSEXP, SEXP equal_valSEXP, SEXP int_positionsSEXP) {
@@ -127,16 +160,43 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// remStatsMWC
+arma::cube remStatsMWC(arma::vec effects, bool standardize, arma::mat full_edgelist, arma::mat window_edgelist, double window_length, arma::mat riskset, arma::mat full_evls, arma::mat window_evls, arma::vec actors, Rcpp::List covariates, arma::mat event_effect, arma::vec full_weights, arma::vec equal_val, arma::mat int_positions);
+RcppExport SEXP _remstats_remStatsMWC(SEXP effectsSEXP, SEXP standardizeSEXP, SEXP full_edgelistSEXP, SEXP window_edgelistSEXP, SEXP window_lengthSEXP, SEXP risksetSEXP, SEXP full_evlsSEXP, SEXP window_evlsSEXP, SEXP actorsSEXP, SEXP covariatesSEXP, SEXP event_effectSEXP, SEXP full_weightsSEXP, SEXP equal_valSEXP, SEXP int_positionsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type effects(effectsSEXP);
+    Rcpp::traits::input_parameter< bool >::type standardize(standardizeSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type full_edgelist(full_edgelistSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type window_edgelist(window_edgelistSEXP);
+    Rcpp::traits::input_parameter< double >::type window_length(window_lengthSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type full_evls(full_evlsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type window_evls(window_evlsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type covariates(covariatesSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type event_effect(event_effectSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type full_weights(full_weightsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type equal_val(equal_valSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type int_positions(int_positionsSEXP);
+    rcpp_result_gen = Rcpp::wrap(remStatsMWC(effects, standardize, full_edgelist, window_edgelist, window_length, riskset, full_evls, window_evls, actors, covariates, event_effect, full_weights, equal_val, int_positions));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_remstats_actorStat", (DL_FUNC) &_remstats_actorStat, 4},
     {"_remstats_dyadstat", (DL_FUNC) &_remstats_dyadstat, 5},
     {"_remstats_inertia", (DL_FUNC) &_remstats_inertia, 4},
+    {"_remstats_inertiaMW", (DL_FUNC) &_remstats_inertiaMW, 6},
     {"_remstats_reciprocity", (DL_FUNC) &_remstats_reciprocity, 3},
     {"_remstats_degree", (DL_FUNC) &_remstats_degree, 4},
     {"_remstats_triad", (DL_FUNC) &_remstats_triad, 5},
     {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 5},
+    {"_remstats_triadUMW", (DL_FUNC) &_remstats_triadUMW, 7},
     {"_remstats_remStatsC", (DL_FUNC) &_remstats_remStatsC, 11},
+    {"_remstats_remStatsMWC", (DL_FUNC) &_remstats_remStatsMWC, 14},
     {NULL, NULL, 0}
 };
 
