@@ -125,11 +125,35 @@ prepER <- function(edgelist, directed = TRUE, type = FALSE, riskset = NULL,
 		}
 	}
 	
-	# Remove rownames
+	# Prepare output
 	rownames(edgelist) <- NULL
+	class(edgelist[,2]) <- "numeric"
+	class(edgelist[,3]) <- "numeric"
+	if(directed) {
+		colnames(edgelist)[1:3] <- c("time", "sender", "receiver")
+	} else {
+		colnames(edgelist)[1:3] <- c("time", "actor1", "actor2")
+	}
+	if(type) {
+		colnames(edgelist)[4] <- "type"
+	}
 
-  # Output
-  list(edgelist = as.matrix(edgelist), riskset = as.matrix(riskset), 
-  	actors = data.frame(id = 1:length(ac), name = ac))
+	rownames(riskset) <- NULL
+	class(riskset[,1]) <- "numeric"
+	class(riskset[,2]) <- "numeric"
+	if(directed) {
+		colnames(riskset)[1:2] <- c("sender", "receiver")
+	} else {
+		colnames(riskset)[1:2] <- c("actor1", "actor2")
+	}
+	if(type) {
+		colnames(riskset)[3] <- "type"
+	}
+
+  	# Output
+  	list(
+		  edgelist = as.matrix(edgelist), 
+		  riskset = as.matrix(riskset), 
+		  actors = data.frame(id = 1:length(ac), name = ac))
 }
 
