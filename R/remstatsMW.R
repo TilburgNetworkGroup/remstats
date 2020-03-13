@@ -1,12 +1,18 @@
-#' remstats
+#' remstatsMW
 #'
-#' A function to compute statistics for a relational event sequence. 
+#' A function to compute statistics for a relational event sequence when 
+#' fitting with a moving window REM. Endogenous statistics are computed based 
+#' on past events that may fall without the window.  
 #' 
-#' @param edgelist [matrix] or [dataframe], should minimally contain the time, 
-#' sender/actor 1 and receiver/actor 2 in the first three columns respectively. 
-#' If the riskset contains typed relational events, the fourth column should 
-#' contain the event type. 
+#' @param full_edgelist [matrix] or [dataframe], should minimally contain the 
+#' time, sender/actor 1 and receiver/actor 2 in the first three columns 
+#' respectively. If the riskset contains typed relational events, the fourth 
+#' column should contain the event type. 
+#' @param window_edgelist [matrix] or [dataframe]. See full_edgelist, with only 
+#' the events that fall within the window for which a REM is estimated. 
 #' @param effects [character vector], indicates the effects that are requested.
+#' @param window_length [numeric value], indicates the length of the window in 
+#' time units. 
 #' @param directed [logical], are relational events in the riskset directional 
 #' (directed = TRUE, default) or undirectional (directed = FALSE).
 #' @param type [logical], do relational events in the riskset consider an 
@@ -35,8 +41,8 @@
 #' covariate variables for which the respective effect is requested. 
 #' @param event_effect optional; matrix with the values for when an 
 #' event_effect is requested: one column of length edgelist per event_effect. 
-#' @param weights optional; [vector], if supplied, should be of length edgelist 
-#' and contain the weights for the events in the edgelist (to compute 
+#' @param full_weights optional; [vector], if supplied, should be of length 
+#' edgelist and contain the weights for the events in the edgelist (to compute 
 #' inertia_weighted)
 #' @param equal_val optional; [vector]. Required if the "both_equal_to" effect 
 #' is requested. Denotes the value(s) to which both covariate values of the 
@@ -56,24 +62,36 @@
 #' @examples 
 #' data(edgelistD)
 #' data(covar)
+#' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+#' window_edgelist <- edgelistD[edgelistD$time > windows$start[2] &
+#'      edgelistD$time <= windows$end[2],]
 #' effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver", 
 #'  "outdegree_sender")
 #' covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
-#' out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
+#' out <- remstatsMW(full_edgelist = edgelistD, window_edgelist = 
+#'      window_edgelist, effects = effects, window_length = 100, 
+#'      covariates = covariates, equal_val = 0)
 #' 
 #' @export
 
-remstats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    timing = "interval", standardize = FALSE, riskset = NULL, actors = NULL, covariates = NULL, event_effect = NULL, weights = NULL, equal_val = NULL) {
+remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length, 
+    directed = TRUE, type = FALSE, timing = "interval", standardize = FALSE, 
+    riskset = NULL, actors = NULL, covariates = NULL, event_effect = NULL, 
+    full_weights = NULL, equal_val = NULL) {
 
     # Prepare the edgelist, riskset and actors
-    out <- prepER(edgelist, directed, type, riskset, actors)
-    el <- out$edgelist
+    out <- prepER(full_edgelist, directed, type, riskset, actors)
+    full_el <- out$edgelist
     rs <- out$riskset
     ac <- out$actors
 
+    out <- prepER(window_edgelist, directed, type, riskset = rs, 
+        actors = ac[,2])
+    window_el <- out$edgelist
+
  	# Prepare the evls (edgelist in relevent::rem() format)
-    evls <- prepEvls(el, rs, type)
+    full_evls <- prepEvls(full_el, rs, type)
+    window_evls <- prepEvls(window_el, rs, type)
 
     # Prepare the effects
     all_effects <- c("sender_effect", "receiver_effect", "same", "difference",  
@@ -208,27 +226,29 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
             cbind(findpos(x[1], temp_effects), findpos(x[2], temp_effects))
         }))
         int_positions <- int_positions-1
-	    # Case 999 in remstatsCpp refers to interaction effects
+	    # Case 999 in remstatsC refers to interaction effects
 	    eff <- c(eff, rep(999, nrow(int_effects)))
     } else {
         int_positions <- matrix(0, 1, 1)
     }
 
     # Deal with event weights if not requested
-    if(is.null(weights)) {weights <- rep(1, nrow(el))}
+    if(is.null(full_weights)) {full_weights <- rep(1, nrow(full_el))}
 
     # Deal with equal_val if not requested
     if(is.null(equal_val)) {equal_val <- 0}
 	
-    # (4) Compute statistics
-    stats <- remstatsCpp(effects = eff, standardize = standardize, 
-        edgelist = el, riskset = rs, actors = ac[,1], covariates = covar, 
-        event_effect = event_effect, types = types, weights = weights, 
-        equal_val = equal_val, int_positions = int_positions)
+	# (4) Compute statistics
+    stats <- remstatsMWCpp(effects = eff, standardize = standardize,  
+        full_edgelist = full_el, window_edgelist = window_el, 
+        window_length = window_length, riskset = rs, actors = ac[,1], 
+        covariates = covar, event_effect = event_effect, types = types, 
+        full_weights = full_weights, equal_val = equal_val, int_positions = 
+        int_positions)
 
     dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
         effects[grepl("\\*", effects)])
-    
+
     if(any(dimnames(stats)[[3]] == "type_effect")) {
     	for(i in 1:length(types)) {
     		dimnames(stats)[[3]][which(dimnames(stats)[[3]] == "type_effect")[1]] <- 
@@ -238,6 +258,7 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     }
 
     # (5) Return output
-    list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 
-        actors = ac)
+    list(statistics = stats, full_edgelist = full_el, 
+        window_edgelist = window_el, riskset = rs, full_evls = full_evls, 
+        window_evls = window_evls, actors = ac)
 }

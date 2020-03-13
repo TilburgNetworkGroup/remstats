@@ -3,7 +3,9 @@
 using namespace Rcpp;
 using namespace arma;
 
-//' actorStat
+// TO DO: Create R wrapper functions for these cpp functions and export those instead of the ones below.
+
+//' actorstat
 //'
 //' A function to transform exogenous actor covariate variables in the format 
 //' requested for estimation with relevent::rem(). 
@@ -26,13 +28,13 @@ using namespace arma;
 //' ac <- out$actors
 //' covar$id <- ac$id[match(covar$id, ac$name)]
 //' covar <- as.matrix(covar)
-//' stat <- actorStat(values = covar[,c(1:3)], type = 1, edgelist = el, 
+//' stat <- actorstat(values = covar[,c(1:3)], type = 1, edgelist = el, 
 //'     riskset = rs)
 //'
 //' @export
 //'
 //[[Rcpp::export]]
-arma::mat actorStat(arma::mat values, arma::uword type, arma::mat edgelist, 
+arma::mat actorstat(arma::mat values, arma::uword type, arma::mat edgelist, 
     arma::mat riskset) {
     // Storage space and fill with zeros
     arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
@@ -59,9 +61,17 @@ arma::mat actorStat(arma::mat values, arma::uword type, arma::mat edgelist,
     arma::uword counter = 0;
 
     // For loop over the sequence
-    for(arma::uword m = 1; m < edgelist.n_rows; ++m) {
-        // Copy the previous row
-        arma::rowvec thisrow = stat.row(m-1);
+    for(arma::uword m = 0; m < edgelist.n_rows; ++m) {
+        // Saving space
+        arma::rowvec thisrow(riskset.n_rows);
+        
+        if(m == 0) {
+            // Copy the current row
+            thisrow = stat.row(m);
+        } else {
+            // Copy the previous row
+            thisrow = stat.row(m-1);
+        }
 
         // Update the statistic if required
         // Do not update after the last changetime
@@ -179,9 +189,17 @@ arma::dmat dyadstat(arma::dmat values, arma::uword type, arma::mat edgelist,
     arma::uword counter = 0;
 
     // For loop over the sequence
-    for(arma::uword m = 1; m < edgelist.n_rows; ++m) {
-        // Copy the previous row
-        arma::drowvec thisrow = stat.row(m-1);
+    for(arma::uword m = 0; m < edgelist.n_rows; ++m) {
+        // Saving space
+        arma::rowvec thisrow(riskset.n_rows);
+        
+        if(m == 0) {
+            // Copy the current row
+            thisrow = stat.row(m);
+        } else {
+            // Copy the previous row
+            thisrow = stat.row(m-1);
+        }
 
         // Update the statistic if required
         // Do not update after the last changetime
@@ -254,86 +272,30 @@ arma::dmat dyadstat(arma::dmat values, arma::uword type, arma::mat edgelist,
     return(stat);
 }
 
-/*
-TO DO: R wrapper function so that a default value for weights can be set?
-*/
-
 //' inertia
 //'
 //' A function to compute the inertia effect.
-//'
-//' @param evls 2-column edgelist (event, time) in relevent::rem format.
-//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
-//' @param weights vector (length evls) 
-//' @param standardize logical 
-//'
-//' @return matrix (time x dyad)
-//'
-//' @examples
-//' data(edgelistD)
-//' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
-//'     riskset = NULL, actors = NULL)
-//' el <- out$edgelist
-//' rs <- out$riskset
-//' evls <- prepEvls(el, rs, type = FALSE)
-//' stat <- inertia(evls, rs, weights = rep(1, nrow(el)), FALSE)
-//'
-//' @export
-//'
-//[[Rcpp::export]]
-arma::mat inertia(arma::mat evls, arma::mat riskset, arma::vec weights, 
-    bool standardize) {
-    // Storage space and fill with zeros
-    arma::mat stat(evls.n_rows, riskset.n_rows, fill::zeros);
-
-    // For loop over the sequence
-    for(arma::uword i = 1; i < evls.n_rows; ++i) {
-        //Copy the previous row
-        arma::rowvec thisrow = stat.row(i-1);
-        //Get the (position of the) previous event
-        arma::uword event = evls(i-1, 0) - 1.0;
-        //Add the weight of the previous event
-        thisrow(event) += weights(i-1);
-        //Change the row in the statistic
-        stat.row(i) = thisrow;
-    }
-
-    // Standardize effect if requested
-    if(standardize) {
-        for(arma::uword i = 0; i < evls.n_rows; ++ i) {
-            if(stddev(stat.row(i)) > 0) {
-                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
-                    stddev(stat.row(i));
-            }
-        }
-    }
-
-    // Output
-    return stat;
-}
-
-//' reciprocity
-//'
-//' A function to compute the indegree, outdegree and total degree effects.
 //' 
 //' @param edgelist 3-column edgelist (time, sender, receiver)
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+//' @param weights vector (length edgelist) 
 //' @param standardize logical 
 //'
 //' @return matrix (time x dyad)
 //'
 //' @examples
 //' data(edgelistD)
-//' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
-//'     riskset = NULL, actors = NULL)
-//' el <- out$edgelist
-//' rs <- out$riskset
-//' stat <- reciprocity(el, rs, FALSE)
+//' out <- prepER(edgelist = edgelistD)
+//' edgelist <- out$edgelist
+//' riskset <- out$riskset
+//' equal_weights <- rep(1, nrow(edgelist))
+//' stat <- inertia(edgelist, riskset, equal_weights, standardize = FALSE)
 //'
 //' @export
 //'
 //[[Rcpp::export]]
-arma::mat reciprocity(arma::mat edgelist, arma::mat riskset, bool standardize) {
+arma::mat inertia(arma::mat edgelist, arma::mat riskset, arma::vec weights, 
+    bool standardize) {
     // Storage space and fill with zeros
     arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
 
@@ -347,11 +309,73 @@ arma::mat reciprocity(arma::mat edgelist, arma::mat riskset, bool standardize) {
         //Receiver of the previous event
         arma::uword receiver = edgelist(i-1, 2); 
 
-        //Find the reciprocal event
-        arma::uvec indices = find(riskset.col(0) == receiver && riskset.col(1) == sender);
+        //Find the dyad's position in the riskset
+        arma::uvec dyad = find(riskset.col(0) == sender && 
+            riskset.col(1) == receiver);
         
-        //Add one to the reciprocal event
-        thisrow(indices) +=1;
+        //Add the intensity to the dyad's intensity count
+        thisrow(dyad) += weights(i-1);
+
+        //Change the row in the statistic
+        stat.row(i) = thisrow;
+    }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
+    // Output
+    return stat;
+}
+
+//' reciprocity
+//'
+//' A function to compute reciprocity.
+//' 
+//' @param edgelist 3-column edgelist (time, sender, receiver)
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+//' @param weights vector (length edgelist) 
+//' @param standardize logical 
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistD)
+//' out <- prepER(edgelist = edgelistD)
+//' edgelist <- out$edgelist
+//' riskset <- out$riskset
+//' equal_weights <- rep(1, nrow(edgelist))
+//' stat <- reciprocity(edgelist, riskset, equal_weights, standardize = FALSE)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat reciprocity(arma::mat edgelist, arma::mat riskset, arma::vec weights,
+    bool standardize) {
+    // Storage space and fill with zeros
+    arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // For loop over the sequence
+    for(arma::uword i = 1; i < edgelist.n_rows; ++i) {
+        //Copy the previous row
+        arma::rowvec thisrow = stat.row(i-1);
+
+        //Sender of the previous event
+        arma::uword sender = edgelist(i-1, 1);
+        //Receiver of the previous event
+        arma::uword receiver = edgelist(i-1, 2); 
+
+        //Find the reciprocal dyad
+        arma::uvec dyad = find(riskset.col(0) == receiver && riskset.col(1) == sender);
+        
+        //Add the intensity to the reciprocal dyad
+        thisrow(dyad) += weights(i-1);
 
         //Change the row in the statistic
         stat.row(i) = thisrow;
@@ -719,6 +743,652 @@ arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset,
     // Standardize effect if requested
     if(standardize) {
         for(arma::uword i = 0; i < edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
+    //Output
+    return(stat);
+}
+
+//' inertiaMW
+//'
+//' A function to compute the inertia effect.
+//'
+//' @param full_edgelist 3-column edgelist (time, sender, receiver)
+//' @param window_edgelist 3-column edgelist (time, sender, receiver)
+//' @param window_length numeric value.
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
+//' @param full_weights vector (length full_edgelist). 
+//' @param standardize logical. 
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+//' data(edgelistU)
+//' window_edgelist <- edgelistU[edgelistU$time > windows$start[2] & 
+//'     edgelistU$time <= windows$end[2],]
+//' out <- prepER(edgelist = edgelistU, directed = FALSE)
+//' full_el <- out$edgelist
+//' rs <- out$riskset
+//' ac <- out$actors
+//' out <- prepER(window_edgelist, directed = FALSE, actors = ac[,2])
+//' window_el <- out$edgelist
+//' stat <- inertiaMW(full_edgelist = full_el, window_edgelist = window_el, 
+//'     window_length = 100, riskset = rs, 
+//'     full_weights = rep(1, nrow(full_el)), standardize = FALSE)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat inertiaMW(arma::mat full_edgelist, arma::mat window_edgelist, 
+    double window_length, arma::mat riskset, arma::vec full_weights, 
+    bool standardize) {
+    // Storage space and fill with zeros
+    arma::mat stat(window_edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // For loop over the events that fall within the window
+    for(arma::uword i = 0; i < window_edgelist.n_rows; ++i) {
+        // Determine the past 
+        double time = window_edgelist(i,0);
+        arma::uvec indices = 
+            find((full_edgelist.col(0) > (time - window_length)) && 
+            (full_edgelist.col(0) < time));
+        arma::mat past = full_edgelist.rows(indices);
+        arma::mat past_weights = full_weights(indices);
+
+        // Create storage space 
+        arma::rowvec thisrow(riskset.n_rows, fill::zeros);
+
+        // For loop over dyads
+        for(arma::uword r = 0; r < riskset.n_rows; ++r) {
+            //Sender and receiver of the dyad
+            arma::uword sender = riskset(r, 0);
+            arma::uword receiver = riskset(r, 1); 
+
+            // Determine the intensity of past interactions
+            arma::uvec indices2 = find(past.col(1) == sender && 
+                past.col(2) == receiver);
+            arma::vec past_intensity = past_weights(indices2);
+            thisrow(r) = sum(past_intensity);
+        }
+
+        //Change the row in the statistic
+        stat.row(i) = thisrow;
+    }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < window_edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
+    // Output
+    return stat;
+}
+
+//' triadUMW
+//'
+//' A function to compute the (unique) shared partners effect for undirected 
+//' relational events when fitting a moving window REM.
+//'
+//' @param actors vector with numeric actor IDs (correspond to edgelist,
+//' riskset)
+//' @param full_edgelist 3-column edgelist (time, sender, receiver)
+//' @param window_edgelist 3-column edgelist (time, sender, receiver)
+//' @param window_length numeric value.
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+//' @param unique_sp logical value
+//' @param standardize logical value
+//'
+//' @return matrix (time x dyad)
+//' 
+//' @examples
+//' data(edgelistU)
+//' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+//' window_edgelist <- edgelistU[edgelistU$time > windows$start[2] & 
+//'     edgelistU$time <= windows$end[2],]
+//' out <- prepER(edgelist = edgelistU, directed = FALSE)
+//' full_el <- out$edgelist
+//' rs <- out$riskset
+//' ac <- out$actors
+//' out <- prepER(window_edgelist, directed = FALSE, actors = ac[,2])
+//' window_el <- out$edgelist
+//' stat <- triadUMW(actors = ac[,1], full_edgelist = full_el, 
+//'     window_edgelist = window_el, window_length = 100, riskset = rs, 
+//'     unique_sp = FALSE, standardize = FALSE)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat triadUMW(arma::vec actors, arma::mat full_edgelist, 
+    arma::mat window_edgelist, double window_length, arma::mat riskset, 
+    bool unique_sp, bool standardize) {
+
+    //Storage space
+    //Statistic matrix (output))
+    arma::mat stat(window_edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // For loop over the events that fall within the window
+    for(arma::uword i = 0; i < window_edgelist.n_rows; ++i) {
+        // Determine the past 
+        double time = window_edgelist(i,0);
+        arma::uvec indices = 
+            find((full_edgelist.col(0) > (time - window_length)) && (full_edgelist.col(0) < time));
+        arma::mat past = full_edgelist.rows(indices);
+
+        // Create storage space
+        arma::rowvec thisrow(riskset.n_rows, fill::zeros);
+        arma::mat adj(max(actors), max(actors), fill::zeros);
+
+        // Fill adjacency matrix based on the past
+        for(arma::uword j = 0; j < past.n_rows; ++ j) {
+            //Actors of the event
+            arma::uword actor1 = past(j, 1);  
+            arma::uword actor2 = past(j, 2);  
+            //Update the adjacency matrix
+            adj(actor1 - 1, actor2 - 1) += 1; 
+
+            //If "unique_sp" is requested, dichotomize the adjacency matrix
+            if(unique_sp) {adj.replace(2, 1);}
+        }
+        
+        //For loop over dyads
+        for(arma::uword d = 0; d < riskset.n_rows; ++d) {
+            //Actors in the dyad
+            arma::uword actor1D = riskset(d, 0);
+            arma::uword actor2D = riskset(d, 1);
+
+            //Communications actor1D
+            arma::rowvec com1Actor1Dtemp = adj.row(actor1D-1);
+            arma::colvec com1Actor1D = conv_to<colvec>::from(com1Actor1Dtemp);
+            arma::colvec com2Actor1D = adj.col(actor1D-1);
+            arma::vec comActor1D = com1Actor1D + com2Actor1D;
+            //Communications actor2D
+            arma::rowvec com1Actor2Dtemp = adj.row(actor2D-1);
+            arma::colvec com1Actor2D = conv_to<colvec>::from(com1Actor2Dtemp);
+            arma::colvec com2Actor2D = adj.col(actor2D-1);
+            arma::vec comActor2D = com1Actor2D + com2Actor2D;
+
+            //Saving space
+            arma::uword dyadstat = 0;
+
+            //For loop over actors 
+            for(arma::uword h = 0; h < max(actors); ++h) {
+                if((h != (actor1D-1)) && (h != (actor2D-1))) {
+                    arma::vec thisactor = {comActor1D(h), comActor2D(h)};
+                    dyadstat += min(thisactor);        
+                }
+            }
+
+            //Save the statistic for this dyad
+            thisrow(d) = dyadstat;
+        }
+        //Save the statistic for this timepoint
+        stat.row(i) = thisrow;
+    }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < window_edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
+    //Output
+    return(stat);
+}
+
+//' typestat
+//'
+//' A function to compute a type effect/type dummy. 
+//' @param edgelist 4-column edgelist (time, sender, receiver, type)
+//' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type)
+//' @param type numeric value
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistDT)
+//' out <- prepER(edgelist = edgelistDT, type = TRUE)
+//' edgelist <- out$edgelist
+//' riskset <- out$riskset
+//' types <- unique(edgelist[,4])
+//' stat <- typestat(edgelist, riskset, types[1])
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat typestat(arma::mat edgelist, arma::mat riskset, arma::uword type) {
+    // Storage space and fill with zeros
+    arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
+    arma::rowvec onerow(riskset.n_rows, fill::zeros);
+
+    // Find event types in the riskset
+    arma::uvec indices = find(riskset.col(2) == type);
+    // Replace the zeros for these events with ones
+    onerow(indices).replace(0,1);
+    // Copy the row for each event
+    stat.each_row() = onerow;
+
+    // Output
+    return(stat);
+}
+
+
+//' inertia_type
+//'
+//' A function to compute the inertia_type effect.
+//' 
+//' @param edgelist 4-column edgelist (time, sender, receiver, type)
+//' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type)
+//' @param weights vector (length edgelist) 
+//' @param standardize logical 
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistDT)
+//' out <- prepER(edgelist = edgelistDT, type = TRUE)
+//' edgelist <- out$edgelist
+//' riskset <- out$riskset
+//' equal_weights <- rep(1, nrow(edgelist))
+//' stat <- inertia_type(edgelist, riskset, equal_weights, standardize = FALSE)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat inertia_type(arma::mat edgelist, arma::mat riskset, 
+    arma::vec weights, bool standardize) {
+    // Storage space and fill with zeros
+    arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // For loop over the sequence
+    for(arma::uword i = 1; i < edgelist.n_rows; ++i) {
+        //Copy the previous row
+        arma::rowvec thisrow = stat.row(i-1);
+
+        //Sender of the previous event
+        arma::uword sender = edgelist(i-1, 1);
+        //Receiver of the previous event
+        arma::uword receiver = edgelist(i-1, 2); 
+        //Type of the previous event
+        arma::uword type = edgelist(i-1, 3);
+
+        //Find the dyad's position in the riskset
+        arma::uvec dyad = find(riskset.col(0) == sender && 
+            riskset.col(1) == receiver && riskset.col(2) == type);
+        
+        //Add the intensity to the dyad's intensity count
+        thisrow(dyad) += weights(i-1);
+
+        //Change the row in the statistic
+        stat.row(i) = thisrow;
+    }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
+    // Output
+    return stat;
+}
+
+//' inertia_typeMW
+//'
+//' A function to compute the inertia_type effect for a moving window REM.
+//'
+//' @param full_edgelist 4-column edgelist (time, sender, receiver, type).
+//' @param window_edgelist 4-column edgelist (time, sender, receiver, type).
+//' @param window_length numeric value.
+//' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type).
+//' @param full_weights vector (length full_edgelist). 
+//' @param standardize logical. 
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+//' data(edgelistUT)
+//' window_edgelist <- edgelistUT[edgelistUT$time > windows$start[2] & 
+//'     edgelistUT$time <= windows$end[2],]
+//' out <- prepER(edgelist = edgelistUT, directed = FALSE, type = TRUE)
+//' full_el <- out$edgelist
+//' rs <- out$riskset
+//' ac <- out$actors
+//' out <- prepER(window_edgelist, directed = FALSE, type = TRUE, 
+//'    actors = ac[,2])
+//' window_el <- out$edgelist
+//' equal_weights <- rep(1, nrow(full_el))
+//' stat <- inertia_typeMW(full_edgelist = full_el, window_edgelist = 
+//'     window_el, window_length = 100, riskset = rs, 
+//'     full_weights = equal_weights, standardize = FALSE)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat inertia_typeMW(arma::mat full_edgelist, arma::mat window_edgelist, 
+    double window_length, arma::mat riskset, arma::vec full_weights, 
+    bool standardize) {
+    // Storage space and fill with zeros
+    arma::mat stat(window_edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // For loop over the events that fall within the window
+    for(arma::uword i = 0; i < window_edgelist.n_rows; ++i) {
+        // Determine the past 
+        double time = window_edgelist(i,0);
+        arma::uvec indices = 
+            find((full_edgelist.col(0) > (time - window_length)) && 
+            (full_edgelist.col(0) < time));
+        arma::mat past = full_edgelist.rows(indices);
+        arma::mat past_weights = full_weights(indices);
+
+        // Create storage space 
+        arma::rowvec thisrow(riskset.n_rows, fill::zeros);
+
+        // For loop over dyads
+        for(arma::uword r = 0; r < riskset.n_rows; ++r) {
+            //Sender, receiver and dyad type
+            arma::uword sender = riskset(r, 0);
+            arma::uword receiver = riskset(r, 1); 
+            arma::uword type = riskset(r, 2);
+
+            // Determine the intensity of past interactions
+            arma::uvec indices2 = find(past.col(1) == sender && 
+                past.col(2) == receiver && past.col(3) == type);
+            arma::vec past_intensity = past_weights(indices2);
+            thisrow(r) = sum(past_intensity);
+        }
+
+        //Change the row in the statistic
+        stat.row(i) = thisrow;
+    }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < window_edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
+    // Output
+    return stat;
+}
+
+//' triadU_type
+//'
+//' A function to compute the (unique) shared partners effect for undirected 
+//' relational events with types. 
+//'
+//' @param actors vector with numeric actor IDs (correspond to edgelist,
+//' riskset)
+//' @param edgelist 4-column edgelist (time, sender, receiver, type)
+//' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type)
+//' @param unique_sp logical value
+//' @param standardize logical value
+//'
+//' @return matrix (time x dyad)
+//' 
+//' @examples
+//' data(edgelistUT)
+//' out <- prepER(edgelist = edgelistUT, directed = FALSE, type = TRUE)
+//' el <- out$edgelist
+//' rs <- out$riskset
+//' ac <- out$actors[,1]
+//' stat <- triadU_type(ac, el, rs, unique_sp = FALSE, standardize = FALSE)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat triadU_type(arma::vec actors, arma::mat edgelist, arma::mat riskset, 
+    bool unique_sp, bool standardize) {
+
+    //Storage space
+    //(1) List with adjacency matrices per type
+    arma::vec types = unique(riskset.col(2));
+    arma::mat adj(max(actors), max(actors), fill::zeros);
+    Rcpp::List adj_list = List::create(adj, adj);
+    for(arma::uword i = 2; i < types.n_elem; ++i) {
+        adj_list.push_back(adj);
+    }
+    
+    //(2) Statistic matrix (output))
+    arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
+   
+    //For loop over the sequence
+    for(arma::uword i = 1; i < edgelist.n_rows; ++i) {
+        //Actors of the previous event
+        arma::uword actor1 = edgelist(i-1, 1);  
+        arma::uword actor2 = edgelist(i-1, 2);  
+        //Type of the previous event
+        arma::uword type = edgelist(i-1, 3);
+        
+        //Update the adjacency matrix
+        arma::uvec indextype = find(types==type);
+        arma::mat update_adj = adj_list[indextype(0)];
+        update_adj(actor1 - 1, actor2 - 1) += 1; 
+        if(unique_sp) {update_adj.replace(2, 1);} 
+        adj_list[indextype(0)] = update_adj; 
+        
+        //Actors that have a relation with the actors involved in the previous 
+        //event
+        arma::uvec relActors1 = find(update_adj.row(actor1-1) != 0);  
+        arma::uvec relActors2 = find(update_adj.col(actor1-1) != 0);  
+        arma::uvec relActors3 = find(update_adj.row(actor2-1) != 0);  
+        arma::uvec relActors4 = find(update_adj.col(actor2-1) != 0);  
+        arma::uvec relActors = join_cols(relActors1, relActors2);
+        relActors = join_cols(relActors, relActors3); 
+        relActors = join_cols(relActors, relActors4); 
+        relActors = sort(unique(relActors));          
+
+        //Copy the previous row
+        arma::rowvec thisrow = stat.row(i-1);
+
+        //For loop over dyads
+        for(arma::uword d = 0; d < riskset.n_rows; ++d) {
+            //Actors and type
+            arma::uword actor1D = riskset(d, 0);
+            arma::uword actor2D = riskset(d, 1);
+            arma::uword typeD = riskset(d, 2);
+
+            arma::uvec indextype2 = find(types==typeD);
+            arma::mat adjD = adj_list[indextype2(0)];
+
+            //Only change their statistic if both actors have a relation to the 
+            //actors involved in the previous event
+            if(any(relActors == (actor1D - 1)) &&
+                any(relActors == (actor2D - 1))) {
+
+                    //Communications actor1D
+                    arma::rowvec com1Actor1Dtemp = adjD.row(actor1D-1);
+                    arma::colvec com1Actor1D = conv_to<colvec>::from(com1Actor1Dtemp);
+                    arma::colvec com2Actor1D = adjD.col(actor1D-1);
+                    arma::vec comActor1D = com1Actor1D + com2Actor1D;
+                    //Communications actor2D
+                    arma::rowvec com1Actor2Dtemp = adjD.row(actor2D-1);
+                    arma::colvec com1Actor2D = conv_to<colvec>::from(com1Actor2Dtemp);
+                    arma::colvec com2Actor2D = adjD.col(actor2D-1);
+                    arma::vec comActor2D = com1Actor2D + com2Actor2D;
+
+                    //Saving space
+                    arma::uword dyadstat = 0;
+
+                    //For loop over actors 
+                    for(arma::uword h = 0; h < max(actors); ++h) {
+                        if((h != (actor1D-1)) && (h != (actor2D-1))) {
+                            arma::vec thisactor = {comActor1D(h), comActor2D(h)};
+                            dyadstat += min(thisactor);        
+                        }
+                    }
+
+                    //Save the statistic for this dyad
+                    thisrow(d) = dyadstat;
+                }
+        }
+
+        //Save the statistic for this timepoint
+        stat.row(i) = thisrow;
+    }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < edgelist.n_rows; ++ i) {
+            if(stddev(stat.row(i)) > 0) {
+                stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
+                    stddev(stat.row(i));
+            }
+        }
+    }
+
+    //Output
+    return(stat);
+}
+
+//' triadU_typeMW
+//'
+//' A function to compute the (unique) shared partners effect for undirected 
+//' relational events with types for a moving window REM. 
+//'
+//' @param actors vector with numeric actor IDs (correspond to edgelist,
+//' riskset)
+//' @param full_edgelist 4-column edgelist (time, sender, receiver, type)
+//' @param window_edgelist 4-column edgelist (time, sender, receiver, type)
+//' @param window_length numeric value.
+//' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type)
+//' @param unique_sp logical value
+//' @param standardize logical value
+//'
+//' @return matrix (time x dyad)
+//' 
+//' @examples
+//' data(edgelistUT)
+//' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+//' window_edgelist <- edgelistUT[edgelistUT$time > windows$start[2] & 
+//'     edgelistUT$time <= windows$end[2],]
+//' out <- prepER(edgelist = edgelistUT, directed = FALSE, type = TRUE)
+//' full_el <- out$edgelist
+//' rs <- out$riskset
+//' ac <- out$actors
+//' out <- prepER(window_edgelist, directed = FALSE, type = TRUE, 
+//'     actors = ac[,2])
+//' window_el <- out$edgelist
+//' stat <- triadU_typeMW(ac[,1], full_edgelist = full_el, 
+//'     window_edgelist = window_el, window_length = 100, riskset = rs, 
+//'     unique_sp = FALSE, standardize = FALSE)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat triadU_typeMW(arma::vec actors, arma::mat full_edgelist, 
+    arma::mat window_edgelist, double window_length, arma::mat riskset, 
+    bool unique_sp, bool standardize) {
+
+    //Storage space
+    //Statistic matrix (output))
+    arma::mat stat(window_edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // Event types
+    arma::vec types = unique(riskset.col(2));
+   
+    // For loop over the events that fall within the window
+    for(arma::uword i = 1; i < window_edgelist.n_rows; ++i) {
+        // Determine the past 
+        double time = window_edgelist(i,0);
+        arma::uvec indices = 
+            find((full_edgelist.col(0) > (time - window_length)) && (full_edgelist.col(0) < time));
+        arma::mat past = full_edgelist.rows(indices);
+
+        // Create storage space
+        arma::rowvec thisrow(riskset.n_rows, fill::zeros);
+        arma::mat adj(max(actors), max(actors), fill::zeros);
+        Rcpp::List adj_list = List::create(adj, adj);
+        for(arma::uword j = 2; j < types.n_elem; ++j) {
+            adj_list.push_back(adj);
+        }
+
+        // Fill adjacency matrices based on the past
+        for(arma::uword j = 0; j < past.n_rows; ++ j) {
+            //Actors and type of the event
+            arma::uword actor1 = past(j, 1);  
+            arma::uword actor2 = past(j, 2);  
+            arma::uword type = past(j, 3);
+            
+            //Update the adjacency matrix
+            arma::uvec index = find(types == type);
+            arma::mat update_adj = adj_list[index(0)];
+            update_adj(actor1 - 1, actor2 - 1) += 1; 
+
+            //If "unique_sp" is requested, dichotomize the adjacency matrix
+            if(unique_sp) {update_adj.replace(2, 1);}
+
+            //Save the updated adjacency matrix
+            adj_list[index(0)] = update_adj; 
+        }
+
+        //For loop over dyads
+        for(arma::uword d = 0; d < riskset.n_rows; ++d) {
+            //Actors and type in the dyad
+            arma::uword actor1D = riskset(d, 0);
+            arma::uword actor2D = riskset(d, 1);
+            arma::uword typeD = riskset(d, 2);
+
+            //Get the adjacency matrix for this type
+            arma::uvec index2 = find(types==typeD);
+            arma::mat adjD = adj_list[index2(0)];
+
+            //Communications actor1D
+            arma::rowvec com1Actor1Dtemp = adjD.row(actor1D-1);
+            arma::colvec com1Actor1D = conv_to<colvec>::from(com1Actor1Dtemp);
+            arma::colvec com2Actor1D = adjD.col(actor1D-1);
+            arma::vec comActor1D = com1Actor1D + com2Actor1D;
+            //Communications actor2D
+            arma::rowvec com1Actor2Dtemp = adjD.row(actor2D-1);
+            arma::colvec com1Actor2D = conv_to<colvec>::from(com1Actor2Dtemp);
+            arma::colvec com2Actor2D = adjD.col(actor2D-1);
+            arma::vec comActor2D = com1Actor2D + com2Actor2D;
+
+            //Saving space
+            arma::uword dyadstat = 0;
+
+            //For loop over actors 
+            for(arma::uword h = 0; h < max(actors); ++h) {
+                if((h != (actor1D-1)) && (h != (actor2D-1))) {
+                    arma::vec thisactor = {comActor1D(h), comActor2D(h)};
+                    dyadstat += min(thisactor);        
+                }
+            }
+
+            //Save the statistic for this dyad
+            thisrow(d) = dyadstat;
+        }
+
+        //Save the statistic for this timepoint
+        stat.row(i) = thisrow;
+    }
+
+    // Standardize effect if requested
+    if(standardize) {
+        for(arma::uword i = 0; i < window_edgelist.n_rows; ++ i) {
             if(stddev(stat.row(i)) > 0) {
                 stat.row(i) = (stat.row(i)-mean(stat.row(i)))/
                     stddev(stat.row(i));

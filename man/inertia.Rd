@@ -4,14 +4,14 @@
 \alias{inertia}
 \title{inertia}
 \usage{
-inertia(evls, riskset, weights, standardize)
+inertia(edgelist, riskset, weights, standardize)
 }
 \arguments{
-\item{evls}{2-column edgelist (event, time) in relevent::rem format.}
+\item{edgelist}{3-column edgelist (time, sender, receiver)}
 
-\item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2).}
+\item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2)}
 
-\item{weights}{vector (length evls)}
+\item{weights}{vector (length edgelist)}
 
 \item{standardize}{logical}
 }
@@ -23,11 +23,10 @@ A function to compute the inertia effect.
 }
 \examples{
 data(edgelistD)
-out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
-    riskset = NULL, actors = NULL)
-el <- out$edgelist
-rs <- out$riskset
-evls <- prepEvls(el, rs, type = FALSE)
-stat <- inertia(evls, rs, weights = rep(1, nrow(el)), FALSE)
+out <- prepER(edgelist = edgelistD)
+edgelist <- out$edgelist
+riskset <- out$riskset
+equal_weights <- rep(1, nrow(edgelist))
+stat <- inertia(edgelist, riskset, equal_weights, standardize = FALSE)
 
 }

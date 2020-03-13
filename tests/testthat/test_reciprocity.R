@@ -1,62 +1,84 @@
-context("reciprocity output")
+context("reciprocity")
 
-require(remstats)
+library(remstats)
 
-test_that("dimensions reciprocity output", {
-    # Test for directed relational events 
-    data(edgelistD)
+# Prepare for directed relational events
+data(edgelistD)
 
-    out <- prepER(edgelistD, directed = TRUE, type = FALSE, riskset = NULL, 
-        actors = NULL)
-    el <- out$edgelist
-    rs <- out$riskset
+out <- prepER(edgelistD)
+el <- out$edgelist
+rs <- out$riskset
+ac <- out$actors
 
-    stat <- reciprocity(el, rs, standardize = FALSE)
+# Prepare for directed relational events with types
+data(edgelistDT)
 
-    expect_output(str(stat), "num[1:nrow(evls), 1:nrow(rs)]")
+out2 <- prepER(edgelistDT, type = TRUE)
+el2 <- out2$edgelist
+rs2 <- out2$riskset
+
+# Weights 
+equal_weights <- rep(1, nrow(el))
+weights <- rnorm(nrow(el), 0, 1)
+
+# Statistics
+statA <- reciprocity(edgelist = el, riskset = rs, weights = equal_weights, 
+    standardize = FALSE)
+statB <- reciprocity(edgelist = el, riskset = rs, weights = weights, 
+    standardize = FALSE)
+statC <- reciprocity(edgelist = el2, riskset = rs2, weights = equal_weights, 
+    standardize = FALSE)
+statD <- reciprocity(edgelist = el2, riskset = rs2, weights = weights, 
+    standardize = FALSE)
+
+statA_std <- reciprocity(edgelist = el, riskset = rs, weights = equal_weights, 
+    standardize = TRUE)
+
+# Tests
+test_that("dimensions", {
+    expect_output(str(statA), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(statB), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(statC), "num[1:nrow(el2), 1:nrow(rs2)]")
+    expect_output(str(statD), "num[1:nrow(el2), 1:nrow(rs2)]")
+
+    expect_output(str(statA_std), "num[1:nrow(el), 1:nrow(rs)]")
 })
 
-test_that("content reciprocity output", {
-    # Test for directed relational events 
-    data(edgelistD)
+test_that("the statistics are equal for dyads regardless of type", {
+    expect_equal(statC[,1:650], statA) 
+    expect_equal(statD[,1:650], statB) 
 
-    out <- prepER(edgelistD, directed = TRUE, type = FALSE, riskset = NULL, 
-        actors = NULL)
-    el <- out$edgelist
-    rs <- out$riskset
+    expect_equal(statC[,1:650], statC[,651:1300])
+    expect_equal(statC[,1:650], statC[,1301:1950])
 
-    stat <- reciprocity(el, rs, standardize = FALSE)
-
-    # Do the rowsums run from 0 to M-1?
-    expect_equal(rowSums(stat), seq(0, nrow(el)-1))
-    # Are the final counts all in the inertia statistic?
-    evls <- prepEvls(el, rs, FALSE)
-    statInertia <- inertia(evls, rs, rep(1, nrow(el)), FALSE)
-    expect_true(all(stat[nrow(el),] %in% statInertia[nrow(evls),]))
-    # Is the statistic not equal to the inertia statistic?
-    expect_true(!all(stat[nrow(el),] == statInertia[nrow(evls),]))
-    # Check for a random event
-    event <- el[sample(1:nrow(el), 1),]
-    sender <- event[2]
-    receiver <- event[3]
-    count <- length(which((el[1:(nrow(el)-1),2] == sender) & (el[1:(nrow(el)-1),3] == receiver)))
-    reciprocal <- which(rs[,1] == receiver & rs[,2] == sender)
-    expect_true(count==stat[nrow(evls), reciprocal])
+    expect_equal(statD[,1:650], statD[,651:1300])
+    expect_equal(statD[,1:650], statD[,1301:1950])
 })
 
-test_that("Standardization reciprocity", {
-    # Test for directed relational events 
-    data(edgelistD)
+test_that("the rowsums for the raw reciprocity counts sum from 0 to the total 
+    number of events (M) - 1", {
 
-    out <- prepER(edgelistD, directed = TRUE, type = FALSE, riskset = NULL, 
-        actors = NULL)
-    el <- out$edgelist
-    rs <- out$riskset
+    expect_equal(rowSums(statA), seq(0, nrow(el)-1))
+    expect_equal(rowSums(statC), seq(0, nrow(el2)-1)*3) # with types
+})
 
-    stat <- reciprocity(edgelist = el, riskset = rs, standardize = FALSE)
-    stat2 <- reciprocity(edgelist = el, riskset = rs, standardize = TRUE)
+test_that("the rowsums for the weighted reciprocity count is equal to the cumulative sum of the weights", {
+
+    expect_equal(rowSums(statB), c(0, cumsum(weights[-nrow(el)])))
+    expect_equal(rowSums(statD), c(0, cumsum(weights[-nrow(el2)]))*3)
+})
+
+test_that("compare the raw reciprocity counts with the raw inertia counts", {
+    stat_inertia <- inertia(edgelist = el, riskset = rs, weights = 
+        equal_weights, standardize = FALSE)
     
-    test <- rbind(stat[1,], 
-        t(apply(stat[-1,], 1, function(x) (x-mean(x))/sd(x))))
-    expect_equal(test, stat2)
+    expect_true(all(statA %in% stat_inertia))
+    expect_true(!all(statA == stat_inertia))
+})
+
+test_that("standardization", {
+    compare <- rbind(statA[1,], 
+        t(apply(statA[-1,], 1, function(x) (x-mean(x))/sd(x))))
+
+    expect_equal(compare, statA_std)
 })

@@ -4,12 +4,14 @@
 \alias{reciprocity}
 \title{reciprocity}
 \usage{
-reciprocity(edgelist, riskset, standardize)
+reciprocity(edgelist, riskset, weights, standardize)
 }
 \arguments{
 \item{edgelist}{3-column edgelist (time, sender, receiver)}
 
 \item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2)}
+
+\item{weights}{vector (length edgelist)}
 
 \item{standardize}{logical}
 }
@@ -17,14 +19,14 @@ reciprocity(edgelist, riskset, standardize)
 matrix (time x dyad)
 }
 \description{
-A function to compute the indegree, outdegree and total degree effects.
+A function to compute reciprocity.
 }
 \examples{
 data(edgelistD)
-out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
-    riskset = NULL, actors = NULL)
-el <- out$edgelist
-rs <- out$riskset
-stat <- reciprocity(el, rs, FALSE)
+out <- prepER(edgelist = edgelistD)
+edgelist <- out$edgelist
+riskset <- out$riskset
+equal_weights <- rep(1, nrow(edgelist))
+stat <- reciprocity(edgelist, riskset, equal_weights, standardize = FALSE)
 
 }
