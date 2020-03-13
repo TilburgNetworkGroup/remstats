@@ -13,10 +13,6 @@
 #' @param effects [character vector], indicates the effects that are requested.
 #' @param window_length [numeric value], indicates the length of the window in 
 #' time units. 
-#' @param riskset [matrix] or [dataframe], should minimally contain 
-#' sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
-#' If it contains typed relational events, the third column should contain the 
-#' event type. 
 #' @param directed [logical], are relational events in the riskset directional 
 #' (directed = TRUE, default) or undirectional (directed = FALSE).
 #' @param type [logical], do relational events in the riskset consider an 
@@ -28,6 +24,13 @@
 #' @param standardize [logical], indicates whether endogenous effects should be 
 #' standardized (default = FALSE)
 #'
+#' @param riskset optional; [matrix] or [dataframe], should minimally contain 
+#' sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
+#' If it contains typed relational events, the third column should contain the 
+#' event type. If a riskset is not supplied, it is assumed that all possible 
+#' actors (and action types) are observed in the edgelist.
+#' @param actors optional; [vector], if supplied, should contain all actors 
+#' that can potentially interact. Used to create the riskset. 
 #' @param covariates optional; [List] with the covariate values for when a 
 #' sender_effect, receiver_effect, same, difference, mean, min, max, or 
 #' both_equal_to effect are requested. Covariate values should be supplied to 
@@ -59,22 +62,25 @@
 #' @examples 
 #' data(edgelistD)
 #' data(covar)
+#' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+#' window_edgelist <- edgelistD[edgelistD$time > windows$start[2] &
+#'      edgelistD$time <= windows$end[2],]
 #' effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver", 
 #'  "outdegree_sender")
 #' covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
-#' out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
-#' fit <- relevent::rem(out$evls, out$statistics)
-#' summary(fit)
+#' out <- remstatsMW(full_edgelist = edgelistD, window_edgelist = 
+#'      window_edgelist, effects = effects, window_length = 100, 
+#'      covariates = covariates, equal_val = 0)
 #' 
 #' @export
 
 remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length, 
-    riskset, directed = TRUE, type = FALSE, timing = "interval", 
-    standardize = FALSE, covariates = NULL, event_effect = NULL, 
+    directed = TRUE, type = FALSE, timing = "interval", standardize = FALSE, 
+    riskset = NULL, actors = NULL, covariates = NULL, event_effect = NULL, 
     full_weights = NULL, equal_val = NULL) {
 
     # Prepare the edgelist, riskset and actors
-    out <- prepER(full_edgelist, directed, type, riskset, actors = NULL)
+    out <- prepER(full_edgelist, directed, type, riskset, actors)
     full_el <- out$edgelist
     rs <- out$riskset
     ac <- out$actors
@@ -88,14 +94,8 @@ remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length,
     window_evls <- prepEvls(window_el, rs, type)
 
     # Prepare the effects
-    all_effects <- c("sender_effect", "receiver_effect", "same", "difference", 
-        "mean", "min", "max", "both_equal_to", "event_effect", "inertia", 
-        "inertia_weighted", "reciprocity", "reciprocity_weighted",
-        "indegree_sender", "indegree_receiver", "outdegree_sender", 
-        "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", 
-        "recency_send", "recency_receive", "rrank_send", "rrank_receive", 
-        "OTP", "ITP", "OSP", "ISP", "shared_partners", "unique_sp", "PSAB-BA", 
-        "PSAB_BY", "PSAB-XA", "PSAB-XB",  "PSAB-XY", "PSAB-AY")
+    all_effects <- c("sender_effect", "receiver_effect", "same", "difference",  
+        "mean", "min", "max", "both_equal_to", "event_effect", "type_effect", "inertia", "inertia_weighted", "inertia_type", "inertia_type_weighted", "reciprocity", "reciprocity_weighted", "indegree_sender", "indegree_receiver", "outdegree_sender", "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", "recency_send", "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", "ISP", "shared_partners", "unique_sp", "shared_partners_type", "unique_sp_type", "PSAB-BA", "PSAB_BY", "PSAB-XA", "PSAB-XB",  "PSAB-XY", "PSAB-AY")
     eff <- match(effects[!grepl("\\*", effects)], all_effects)
 
     # Add a baseline effect
@@ -189,6 +189,16 @@ remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length,
         event_effect <- matrix(0, 1, 1)
     }
 
+    # Prepare type effects
+    if(any(eff==10)) {
+        types <- sort(unique(c(rs[,3])))
+        types <- types[-1]
+        eff <- append(eff[-which(eff==10)], 
+            rep(10, length(types)), which(eff==10)-1)
+    } else {
+        types <- 0
+    }
+
     # Prepare interaction effects
     if(any(grepl("\\*", effects))) {
         # Which are the interaction effects?
@@ -223,7 +233,7 @@ remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length,
     }
 
     # Deal with event weights if not requested
-    if(is.null(full_weights)) {full_weights <- rep(1, nrow(el))}
+    if(is.null(full_weights)) {full_weights <- rep(1, nrow(full_el))}
 
     # Deal with equal_val if not requested
     if(is.null(equal_val)) {equal_val <- 0}
@@ -231,15 +241,24 @@ remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length,
 	# (4) Compute statistics
     stats <- remstatsMWCpp(effects = eff, standardize = standardize,  
         full_edgelist = full_el, window_edgelist = window_el, 
-        window_length = window_length, riskset = rs, full_evls = full_evls, 
-        window_evls = window_evls, actors = ac[,1], covariates = covar, 
-        event_effect = event_effect, full_weights = full_weights, 
-        equal_val = equal_val, int_positions = int_positions)
+        window_length = window_length, riskset = rs, actors = ac[,1], 
+        covariates = covar, event_effect = event_effect, types = types, 
+        full_weights = full_weights, equal_val = equal_val, int_positions = 
+        int_positions)
 
     dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
         effects[grepl("\\*", effects)])
 
+    if(any(dimnames(stats)[[3]] == "type_effect")) {
+    	for(i in 1:length(types)) {
+    		dimnames(stats)[[3]][which(dimnames(stats)[[3]] == "type_effect")[1]] <- 
+    			paste(dimnames(stats)[[3]][which(dimnames(stats)[[3]] == "type_effect")[1]], "_",
+    					types[i], sep = "")
+    	}
+    }
+
     # (5) Return output
-    list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 
-        actors = ac)
+    list(statistics = stats, full_edgelist = full_el, 
+        window_edgelist = window_el, riskset = rs, full_evls = full_evls, 
+        window_evls = window_evls, actors = ac)
 }

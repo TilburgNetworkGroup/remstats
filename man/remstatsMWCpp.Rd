@@ -5,8 +5,8 @@
 \title{remstatsMWCpp}
 \usage{
 remstatsMWCpp(effects, standardize, full_edgelist, window_edgelist,
-  window_length, riskset, full_evls, window_evls, actors, covariates,
-  event_effect, full_weights, equal_val, int_positions)
+  window_length, riskset, actors, covariates, event_effect, types,
+  full_weights, equal_val, int_positions)
 }
 \arguments{
 \item{effects}{integer vector (effects)}
@@ -18,11 +18,9 @@ effects should be standardized}
 
 \item{window_edgelist}{3-column edgelist (time, sender, receiver)}
 
+\item{window_length}{numeric value.}
+
 \item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2)}
-
-\item{full_evls}{2-column edgelist (event, time) in relevent::rem format}
-
-\item{window_evls}{2-column edgelist (event, time) in relevent::rem format}
 
 \item{actors}{vector with numeric actor IDs (correspod to edgelist, riskset)}
 
@@ -38,16 +36,17 @@ effects should be standardized}
 
 \item{event_effect}{matrix (event effect per column)}
 
+\item{types}{vector}
+
 \item{full_weights}{vector (length evls)}
 
 \item{equal_val}{vector (length ncol both_equal_to minus 2)}
 
-\item{int_positions}{matrix (effect 1, effect 2)
-
-return:
-[statistics] 3-dimensional array (event time x risk set entry x statistic)}
-
-\item{window_lenght}{numeric value.}
+\item{int_positions}{matrix (effect 1, effect 2)}
+}
+\value{
+statistics 3-dimensional array (event time x risk set entry x 
+statistic)
 }
 \description{
 A function to compute statistics and combine the statistics in an array

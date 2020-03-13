@@ -31,6 +31,7 @@ A function to compute the (unique) shared partners effect for undirected
 relational events when fitting a moving window REM.
 }
 \examples{
+data(edgelistU)
 windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
 window_edgelist <- edgelistU[edgelistU$time > windows$start[2] & 
     edgelistU$time <= windows$end[2],]
@@ -40,7 +41,7 @@ rs <- out$riskset
 ac <- out$actors
 out <- prepER(window_edgelist, directed = FALSE, actors = ac[,2])
 window_el <- out$edgelist
-stat <- triadU(actors = ac[,1], full_edgelist = full_el, 
+stat <- triadUMW(actors = ac[,1], full_edgelist = full_el, 
     window_edgelist = window_el, window_length = 100, riskset = rs, 
     unique_sp = FALSE, standardize = FALSE)
 

@@ -10,15 +10,13 @@ using namespace arma;
 //' prepared for estimation of a REM with relevent::rem(). Used internally 
 //' in remstats. 
 //' 
-//' param:
-//' [effects] integer vector (effects)
-//' [standardize] logical, indicates whether statistics for endogenous effects 
-//' should be standardized
-//' [edgelist] 3-column edgelist (time, sender, receiver)
-//' [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
-//' [evls] 2-column edgelist (event, time) in relevent::rem format
-//' [actors] vector with numeric actor IDs (correspod to edgelist, riskset)
-//' [covariates] List with matrices
+//' @param effects integer vector (effects)
+//' @param standardize logical, indicates whether statistics for endogenous 
+//' effects should be standardized
+//' @param edgelist 3-column edgelist (time, sender, receiver)
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+//' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+//' @param covariates List with matrices
 //'     0: [sender_values] matrix (id, time, covariate values)
 //'     1: [receiver_values] matrix(id, time, covariate values)
 //'     2: [same] matrix(id, time, covariate values)
@@ -27,18 +25,19 @@ using namespace arma;
 //'     5: [min] matrix(id, time, covariate values)
 //'     6: [max] matrix(id, time, covariate values)
 //'     7: [both_equal_to] matrix(id, time, covariate values)
-//' [event_effect] matrix (event effect per column)
-//' [weights] vector (length evls) 
-//' [equal_val] vector (length ncol both_equal_to minus 2)
-//' [int_positions] matrix (effect 1, effect 2)
+//' @param event_effect matrix (event effect per column)
+//' @param types vector
+//' @param weights vector (length evls) 
+//' @param equal_val vector (length ncol both_equal_to minus 2)
+//' @param int_positions matrix (effect 1, effect 2)
 //'
-//' return:
-//' [statistics] 3-dimensional array (event time x risk set entry x statistic)
+//' @return statistics 3-dimensional array (event time x risk set entry x 
+//' statistic)
 //' 
 //[[Rcpp::export]]
 arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist, 
-    arma::mat riskset, arma::mat evls, arma::vec actors, Rcpp::List covariates, 
-    arma::mat event_effect, arma::vec weights, arma::vec equal_val, 
+    arma::mat riskset, arma::vec actors, Rcpp::List covariates, 
+    arma::mat event_effect, arma::vec types, arma::vec weights, arma::vec equal_val, 
     arma::mat int_positions) {
 
     // Initialize saving space
@@ -79,6 +78,10 @@ arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist,
     // Counter
     arma::uword e_counter = 0;
 
+    // Prepare type effects
+    // Counter
+    arma::uword t_counter = 0;
+
     // Prepare interaction effects
     // Counter
     arma::uword int_counter = 0;
@@ -99,14 +102,14 @@ arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist,
             // sender_effect 
             case 1 :
                 se_ind = {0, 1, se_counter+2};
-                stat = actorStat(sender_values.cols(se_ind), 1,
+                stat = actorstat(sender_values.cols(se_ind), 1,
                     edgelist, riskset);
                 se_counter += 1;
                 break;
             // receiver_effect
             case 2 :
                 re_ind = {0, 1, re_counter+2};
-                stat = actorStat(receiver_values.cols(re_ind), 2, 
+                stat = actorstat(receiver_values.cols(re_ind), 2, 
                     edgelist, riskset);
                 re_counter += 1;
                 break;
@@ -156,65 +159,92 @@ arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist,
                 stat.each_col() = event_effect.col(e_counter);
                 e_counter += 1;
                 break;
+            // type_effect
+            case 10:
+                stat = typestat(edgelist, riskset, types(t_counter));
+                t_counter += 1;
+                break;
             // inertia
-            case 10 :
-                stat = inertia(evls, riskset, weights, standardize);
+            case 11 :
+                stat = inertia(edgelist, riskset, weights, standardize);
                 break;
             // inertia_weighted
-            case 11:
-                stat = inertia(evls, riskset, weights, standardize);
+            case 12:
+                stat = inertia(edgelist, riskset, weights, standardize);
+                break;
+            // inertia_type
+            case 13:
+                stat = inertia_type(edgelist, riskset, weights, standardize);
+                break;
+            // inertia_type_weighted
+            case 14:
+                stat = inertia_type(edgelist, riskset, weights, standardize);
                 break;
             // reciprocity
-            case 12: 
-                stat = reciprocity(edgelist, riskset, standardize);
+            case 15: 
+                stat = reciprocity(edgelist, riskset, weights, standardize);
+                break;
+            // reciprocity_weighted
+            case 16: 
+                stat = reciprocity(edgelist, riskset, weights, standardize);
                 break;
             // indegree_sender
-            case 14:
+            case 17:
                 stat = degree(edgelist, riskset, 1, standardize);
                 break;
             // indegree_receiver
-            case 15:
+            case 18:
                 stat = degree(edgelist, riskset, 2, standardize);
                 break;
             // outdegree_sender
-            case 16:
+            case 19:
                stat = degree(edgelist, riskset, 3, standardize);
                 break;
             // outdegree_receiver
-            case 17:
+            case 20:
                 stat = degree(edgelist, riskset, 4, standardize);
                 break;
             // totaldegree_sender
-            case 18:
+            case 21:
                 stat = degree(edgelist, riskset, 5, standardize);
                 break;
             // totaldegree_receiver
-            case 19:
+            case 22:
                 stat = degree(edgelist, riskset, 6, standardize);
                 break;
             // OTP
-            case 24:
+            case 27:
                 stat = triad(actors, edgelist, riskset, 1, standardize);
                 break;
             // ITP
-            case 25:
+            case 28:
                 stat = triad(actors, edgelist, riskset, 2, standardize);
                 break;
             // OSP
-            case 26:
+            case 29:
                 stat = triad(actors, edgelist, riskset, 3, standardize);
                 break;
             // ISP
-            case 27:
+            case 30:
                 stat = triad(actors, edgelist, riskset, 4, standardize);
                 break;
             // shared_partners
-            case 28:
+            case 31:
                 stat = triadU(actors, edgelist, riskset, FALSE, standardize);
                 break;
             // unique_sp
-            case 29:
+            case 32:
                 stat = triadU(actors, edgelist, riskset, TRUE, standardize);
+                break;
+            // shared_partners_type
+            case 33:
+                stat = triadU_type(actors, edgelist, riskset, FALSE, 
+                    standardize);
+                break;
+            // unique_sp_type
+            case 34:
+                stat = triadU_type(actors, edgelist, riskset, TRUE, 
+                    standardize);
                 break;
             // interaction effects
             case 999:
@@ -243,10 +273,8 @@ arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist,
 //' effects should be standardized
 //' @param full_edgelist 3-column edgelist (time, sender, receiver)
 //' @param window_edgelist 3-column edgelist (time, sender, receiver)
-//' @param window_lenght numeric value.
+//' @param window_length numeric value.
 //' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-//' @param full_evls 2-column edgelist (event, time) in relevent::rem format
-//' @param window_evls 2-column edgelist (event, time) in relevent::rem format
 //' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
 //' @param covariates List with matrices
 //'     0: [sender_values] matrix (id, time, covariate values)
@@ -258,19 +286,20 @@ arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist,
 //'     6: [max] matrix(id, time, covariate values)
 //'     7: [both_equal_to] matrix(id, time, covariate values)
 //' @param event_effect matrix (event effect per column)
+//' @param types vector
 //' @param full_weights vector (length evls) 
 //' @param equal_val vector (length ncol both_equal_to minus 2)
 //' @param int_positions matrix (effect 1, effect 2)
 //'
-//' return:
-//' [statistics] 3-dimensional array (event time x risk set entry x statistic)
+//' @return statistics 3-dimensional array (event time x risk set entry x 
+//' statistic)
 //' 
 //[[Rcpp::export]]
 arma::cube remstatsMWCpp(arma::vec effects, bool standardize, 
     arma::mat full_edgelist, arma::mat window_edgelist, double window_length, 
-    arma::mat riskset, arma::mat full_evls, arma::mat window_evls, 
-    arma::vec actors, Rcpp::List covariates, arma::mat event_effect, 
-    arma::vec full_weights, arma::vec equal_val, arma::mat int_positions) {
+    arma::mat riskset, arma::vec actors, Rcpp::List covariates, 
+    arma::mat event_effect, arma::vec types, arma::vec full_weights, 
+    arma::vec equal_val, arma::mat int_positions) {
 
     // Initialize saving space
     arma::cube statistics(window_edgelist.n_rows, riskset.n_rows, 
@@ -311,6 +340,10 @@ arma::cube remstatsMWCpp(arma::vec effects, bool standardize,
     // Counter
     arma::uword e_counter = 0;
 
+    // Prepare type effects
+    // Counter
+    arma::uword t_counter = 0;
+
     // Prepare interaction effects
     // Counter
     arma::uword int_counter = 0;
@@ -331,14 +364,14 @@ arma::cube remstatsMWCpp(arma::vec effects, bool standardize,
             // sender_effect 
             case 1 :
                 se_ind = {0, 1, se_counter+2};
-                stat = actorStat(sender_values.cols(se_ind), 1,
+                stat = actorstat(sender_values.cols(se_ind), 1,
                     window_edgelist, riskset);
                 se_counter += 1;
                 break;
             // receiver_effect
             case 2 :
                 re_ind = {0, 1, re_counter+2};
-                stat = actorStat(receiver_values.cols(re_ind), 2, 
+                stat = actorstat(receiver_values.cols(re_ind), 2, 
                     window_edgelist, riskset);
                 re_counter += 1;
                 break;
@@ -389,23 +422,48 @@ arma::cube remstatsMWCpp(arma::vec effects, bool standardize,
                 stat.each_col() = event_effect.col(e_counter);
                 e_counter += 1;
                 break;
+            // type_effect
+            case 10:
+                stat = typestat(window_edgelist, riskset, types(t_counter));
+                t_counter += 1;
+                break;
             // inertia
-            case 10 :
-                stat = inertiaMW(full_evls, window_evls, window_length, 
+            case 11 :
+                stat = inertiaMW(full_edgelist, window_edgelist, window_length, 
                     riskset, full_weights, standardize);
                 break;
             // inertia_weighted
-            case 11:
-                stat = inertiaMW(full_evls, window_evls, window_length, 
+            case 12:
+                stat = inertiaMW(full_edgelist, window_edgelist, window_length, 
                     riskset, full_weights, standardize);
                 break;
+            // inertia_type
+            case 13:
+                stat = inertia_typeMW(full_edgelist, window_edgelist, 
+                    window_length, riskset, full_weights, standardize);
+                break;
+            // inertia_type_weighted
+            case 14:
+                stat = inertia_typeMW(full_edgelist, window_edgelist, 
+                    window_length, riskset, full_weights, standardize);
+                break;
             // shared_partners
-            case 28:
+            case 31:
                 stat = triadUMW(actors, full_edgelist, window_edgelist, window_length, riskset, FALSE, standardize);
                 break;
             // unique_sp
-            case 29:
+            case 32:
                 stat = triadUMW(actors, full_edgelist, window_edgelist, window_length, riskset, TRUE, standardize);
+                break;
+            // shared_partners_type
+            case 33:
+                stat = triadU_typeMW(actors, full_edgelist, window_edgelist, 
+                    window_length, riskset, FALSE, standardize);
+                break;
+            // unique_sp_type
+            case 34:
+                stat = triadU_typeMW(actors, full_edgelist, window_edgelist, 
+                    window_length, riskset, TRUE, standardize);
                 break;
             // interaction effects
             case 999:

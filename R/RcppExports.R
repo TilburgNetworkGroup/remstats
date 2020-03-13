@@ -7,15 +7,13 @@
 #' prepared for estimation of a REM with relevent::rem(). Used internally 
 #' in remstats. 
 #' 
-#' param:
-#' [effects] integer vector (effects)
-#' [standardize] logical, indicates whether statistics for endogenous effects 
-#' should be standardized
-#' [edgelist] 3-column edgelist (time, sender, receiver)
-#' [riskset] 2-column riskset (sender/actor 1, receiver/actor 2)
-#' [evls] 2-column edgelist (event, time) in relevent::rem format
-#' [actors] vector with numeric actor IDs (correspod to edgelist, riskset)
-#' [covariates] List with matrices
+#' @param effects integer vector (effects)
+#' @param standardize logical, indicates whether statistics for endogenous 
+#' effects should be standardized
+#' @param edgelist 3-column edgelist (time, sender, receiver)
+#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
+#' @param covariates List with matrices
 #'     0: [sender_values] matrix (id, time, covariate values)
 #'     1: [receiver_values] matrix(id, time, covariate values)
 #'     2: [same] matrix(id, time, covariate values)
@@ -24,16 +22,17 @@
 #'     5: [min] matrix(id, time, covariate values)
 #'     6: [max] matrix(id, time, covariate values)
 #'     7: [both_equal_to] matrix(id, time, covariate values)
-#' [event_effect] matrix (event effect per column)
-#' [weights] vector (length evls) 
-#' [equal_val] vector (length ncol both_equal_to minus 2)
-#' [int_positions] matrix (effect 1, effect 2)
+#' @param event_effect matrix (event effect per column)
+#' @param types vector
+#' @param weights vector (length evls) 
+#' @param equal_val vector (length ncol both_equal_to minus 2)
+#' @param int_positions matrix (effect 1, effect 2)
 #'
-#' return:
-#' [statistics] 3-dimensional array (event time x risk set entry x statistic)
+#' @return statistics 3-dimensional array (event time x risk set entry x 
+#' statistic)
 #' 
-remstatsCpp <- function(effects, standardize, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions) {
-    .Call(`_remstats_remstatsCpp`, effects, standardize, edgelist, riskset, evls, actors, covariates, event_effect, weights, equal_val, int_positions)
+remstatsCpp <- function(effects, standardize, edgelist, riskset, actors, covariates, event_effect, types, weights, equal_val, int_positions) {
+    .Call('_remstats_remstatsCpp', PACKAGE = 'remstats', effects, standardize, edgelist, riskset, actors, covariates, event_effect, types, weights, equal_val, int_positions)
 }
 
 #' remstatsMWCpp
@@ -47,10 +46,8 @@ remstatsCpp <- function(effects, standardize, edgelist, riskset, evls, actors, c
 #' effects should be standardized
 #' @param full_edgelist 3-column edgelist (time, sender, receiver)
 #' @param window_edgelist 3-column edgelist (time, sender, receiver)
-#' @param window_lenght numeric value.
+#' @param window_length numeric value.
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
-#' @param full_evls 2-column edgelist (event, time) in relevent::rem format
-#' @param window_evls 2-column edgelist (event, time) in relevent::rem format
 #' @param actors vector with numeric actor IDs (correspod to edgelist, riskset)
 #' @param covariates List with matrices
 #'     0: [sender_values] matrix (id, time, covariate values)
@@ -62,21 +59,19 @@ remstatsCpp <- function(effects, standardize, edgelist, riskset, evls, actors, c
 #'     6: [max] matrix(id, time, covariate values)
 #'     7: [both_equal_to] matrix(id, time, covariate values)
 #' @param event_effect matrix (event effect per column)
+#' @param types vector
 #' @param full_weights vector (length evls) 
 #' @param equal_val vector (length ncol both_equal_to minus 2)
 #' @param int_positions matrix (effect 1, effect 2)
 #'
-#' return:
-#' [statistics] 3-dimensional array (event time x risk set entry x statistic)
+#' @return statistics 3-dimensional array (event time x risk set entry x 
+#' statistic)
 #' 
-remstatsMWCpp <- function(effects, standardize, full_edgelist, window_edgelist, window_length, riskset, full_evls, window_evls, actors, covariates, event_effect, full_weights, equal_val, int_positions) {
-    .Call(`_remstats_remstatsMWCpp`, effects, standardize, full_edgelist, window_edgelist, window_length, riskset, full_evls, window_evls, actors, covariates, event_effect, full_weights, equal_val, int_positions)
+remstatsMWCpp <- function(effects, standardize, full_edgelist, window_edgelist, window_length, riskset, actors, covariates, event_effect, types, full_weights, equal_val, int_positions) {
+    .Call('_remstats_remstatsMWCpp', PACKAGE = 'remstats', effects, standardize, full_edgelist, window_edgelist, window_length, riskset, actors, covariates, event_effect, types, full_weights, equal_val, int_positions)
 }
 
-#' TO DO: Create R wrapper functions for these cpp functions and export those instead of the ones below.
-NULL
-
-#' actorStat
+#' actorstat
 #'
 #' A function to transform exogenous actor covariate variables in the format 
 #' requested for estimation with relevent::rem(). 
@@ -99,13 +94,13 @@ NULL
 #' ac <- out$actors
 #' covar$id <- ac$id[match(covar$id, ac$name)]
 #' covar <- as.matrix(covar)
-#' stat <- actorStat(values = covar[,c(1:3)], type = 1, edgelist = el, 
+#' stat <- actorstat(values = covar[,c(1:3)], type = 1, edgelist = el, 
 #'     riskset = rs)
 #'
 #' @export
 #'
-actorStat <- function(values, type, edgelist, riskset) {
-    .Call(`_remstats_actorStat`, values, type, edgelist, riskset)
+actorstat <- function(values, type, edgelist, riskset) {
+    .Call('_remstats_actorstat', PACKAGE = 'remstats', values, type, edgelist, riskset)
 }
 
 #' dyadstat
@@ -139,57 +134,57 @@ actorStat <- function(values, type, edgelist, riskset) {
 #' @export
 #'
 dyadstat <- function(values, type, edgelist, riskset, equal_val) {
-    .Call(`_remstats_dyadstat`, values, type, edgelist, riskset, equal_val)
+    .Call('_remstats_dyadstat', PACKAGE = 'remstats', values, type, edgelist, riskset, equal_val)
 }
 
 #' inertia
 #'
 #' A function to compute the inertia effect.
-#'
-#' @param evls 2-column edgelist (event, time) in relevent::rem format.
-#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
-#' @param weights vector (length evls) 
+#' 
+#' @param edgelist 3-column edgelist (time, sender, receiver)
+#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param weights vector (length edgelist) 
 #' @param standardize logical 
 #'
 #' @return matrix (time x dyad)
 #'
 #' @examples
 #' data(edgelistD)
-#' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
-#'     riskset = NULL, actors = NULL)
-#' el <- out$edgelist
-#' rs <- out$riskset
-#' evls <- prepEvls(el, rs, type = FALSE)
-#' stat <- inertia(evls, rs, weights = rep(1, nrow(el)), FALSE)
+#' out <- prepER(edgelist = edgelistD)
+#' edgelist <- out$edgelist
+#' riskset <- out$riskset
+#' equal_weights <- rep(1, nrow(edgelist))
+#' stat <- inertia(edgelist, riskset, equal_weights, standardize = FALSE)
 #'
 #' @export
 #'
-inertia <- function(evls, riskset, weights, standardize) {
-    .Call(`_remstats_inertia`, evls, riskset, weights, standardize)
+inertia <- function(edgelist, riskset, weights, standardize) {
+    .Call('_remstats_inertia', PACKAGE = 'remstats', edgelist, riskset, weights, standardize)
 }
 
 #' reciprocity
 #'
-#' A function to compute the indegree, outdegree and total degree effects.
+#' A function to compute reciprocity.
 #' 
 #' @param edgelist 3-column edgelist (time, sender, receiver)
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param weights vector (length edgelist) 
 #' @param standardize logical 
 #'
 #' @return matrix (time x dyad)
 #'
 #' @examples
 #' data(edgelistD)
-#' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
-#'     riskset = NULL, actors = NULL)
-#' el <- out$edgelist
-#' rs <- out$riskset
-#' stat <- reciprocity(el, rs, FALSE)
+#' out <- prepER(edgelist = edgelistD)
+#' edgelist <- out$edgelist
+#' riskset <- out$riskset
+#' equal_weights <- rep(1, nrow(edgelist))
+#' stat <- reciprocity(edgelist, riskset, equal_weights, standardize = FALSE)
 #'
 #' @export
 #'
-reciprocity <- function(edgelist, riskset, standardize) {
-    .Call(`_remstats_reciprocity`, edgelist, riskset, standardize)
+reciprocity <- function(edgelist, riskset, weights, standardize) {
+    .Call('_remstats_reciprocity', PACKAGE = 'remstats', edgelist, riskset, weights, standardize)
 }
 
 #' degree
@@ -217,7 +212,7 @@ reciprocity <- function(edgelist, riskset, standardize) {
 #' @export
 #'
 degree <- function(edgelist, riskset, type, standardize) {
-    .Call(`_remstats_degree`, edgelist, riskset, type, standardize)
+    .Call('_remstats_degree', PACKAGE = 'remstats', edgelist, riskset, type, standardize)
 }
 
 #' triad
@@ -245,7 +240,7 @@ degree <- function(edgelist, riskset, type, standardize) {
 #' @export
 #'
 triad <- function(actors, edgelist, riskset, type, standardize) {
-    .Call(`_remstats_triad`, actors, edgelist, riskset, type, standardize)
+    .Call('_remstats_triad', PACKAGE = 'remstats', actors, edgelist, riskset, type, standardize)
 }
 
 #' triadU
@@ -274,25 +269,25 @@ triad <- function(actors, edgelist, riskset, type, standardize) {
 #' @export
 #'
 triadU <- function(actors, edgelist, riskset, unique_sp, standardize) {
-    .Call(`_remstats_triadU`, actors, edgelist, riskset, unique_sp, standardize)
+    .Call('_remstats_triadU', PACKAGE = 'remstats', actors, edgelist, riskset, unique_sp, standardize)
 }
 
 #' inertiaMW
 #'
 #' A function to compute the inertia effect.
 #'
-#' @param full_evls 2-column edgelist (event, time) in relevent::rem format.
-#' @param window_evls 2-column edgelist (event, time) in relevent::rem format.
+#' @param full_edgelist 3-column edgelist (time, sender, receiver)
+#' @param window_edgelist 3-column edgelist (time, sender, receiver)
 #' @param window_length numeric value.
 #' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2).
-#' @param full_weights vector (length full_evls). 
+#' @param full_weights vector (length full_edgelist). 
 #' @param standardize logical. 
 #'
 #' @return matrix (time x dyad)
 #'
 #' @examples
-#' data(edgelistU)
 #' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+#' data(edgelistU)
 #' window_edgelist <- edgelistU[edgelistU$time > windows$start[2] & 
 #'     edgelistU$time <= windows$end[2],]
 #' out <- prepER(edgelist = edgelistU, directed = FALSE)
@@ -301,16 +296,14 @@ triadU <- function(actors, edgelist, riskset, unique_sp, standardize) {
 #' ac <- out$actors
 #' out <- prepER(window_edgelist, directed = FALSE, actors = ac[,2])
 #' window_el <- out$edgelist
-#' full_evls <- prepEvls(full_el, rs)
-#' window_evls <- prepEvls(window_el, rs)
-#' stat <- inertiaMW(full_evls = full_evls, window_evls = window_evls, 
-#' window_length = 100, riskset = rs, full_weights = rep(1, nrow(el)), 
-#' standardize = FALSE)
+#' stat <- inertiaMW(full_edgelist = full_el, window_edgelist = window_el, 
+#'     window_length = 100, riskset = rs, 
+#'     full_weights = rep(1, nrow(full_el)), standardize = FALSE)
 #'
 #' @export
 #'
-inertiaMW <- function(full_evls, window_evls, window_length, riskset, full_weights, standardize) {
-    .Call(`_remstats_inertiaMW`, full_evls, window_evls, window_length, riskset, full_weights, standardize)
+inertiaMW <- function(full_edgelist, window_edgelist, window_length, riskset, full_weights, standardize) {
+    .Call('_remstats_inertiaMW', PACKAGE = 'remstats', full_edgelist, window_edgelist, window_length, riskset, full_weights, standardize)
 }
 
 #' triadUMW
@@ -330,6 +323,7 @@ inertiaMW <- function(full_evls, window_evls, window_length, riskset, full_weigh
 #' @return matrix (time x dyad)
 #' 
 #' @examples
+#' data(edgelistU)
 #' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
 #' window_edgelist <- edgelistU[edgelistU$time > windows$start[2] & 
 #'     edgelistU$time <= windows$end[2],]
@@ -339,13 +333,163 @@ inertiaMW <- function(full_evls, window_evls, window_length, riskset, full_weigh
 #' ac <- out$actors
 #' out <- prepER(window_edgelist, directed = FALSE, actors = ac[,2])
 #' window_el <- out$edgelist
-#' stat <- triadU(actors = ac[,1], full_edgelist = full_el, 
+#' stat <- triadUMW(actors = ac[,1], full_edgelist = full_el, 
 #'     window_edgelist = window_el, window_length = 100, riskset = rs, 
 #'     unique_sp = FALSE, standardize = FALSE)
 #'
 #' @export
 #'
 triadUMW <- function(actors, full_edgelist, window_edgelist, window_length, riskset, unique_sp, standardize) {
-    .Call(`_remstats_triadUMW`, actors, full_edgelist, window_edgelist, window_length, riskset, unique_sp, standardize)
+    .Call('_remstats_triadUMW', PACKAGE = 'remstats', actors, full_edgelist, window_edgelist, window_length, riskset, unique_sp, standardize)
+}
+
+#' typestat
+#'
+#' A function to compute a type effect/type dummy. 
+#' @param edgelist 4-column edgelist (time, sender, receiver, type)
+#' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type)
+#' @param type numeric value
+#'
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistDT)
+#' out <- prepER(edgelist = edgelistDT, type = TRUE)
+#' edgelist <- out$edgelist
+#' riskset <- out$riskset
+#' types <- unique(edgelist[,4])
+#' stat <- typestat(edgelist, riskset, types[1])
+#'
+#' @export
+#'
+typestat <- function(edgelist, riskset, type) {
+    .Call('_remstats_typestat', PACKAGE = 'remstats', edgelist, riskset, type)
+}
+
+#' inertia_type
+#'
+#' A function to compute the inertia_type effect.
+#' 
+#' @param edgelist 4-column edgelist (time, sender, receiver, type)
+#' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type)
+#' @param weights vector (length edgelist) 
+#' @param standardize logical 
+#'
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistDT)
+#' out <- prepER(edgelist = edgelistDT, type = TRUE)
+#' edgelist <- out$edgelist
+#' riskset <- out$riskset
+#' equal_weights <- rep(1, nrow(edgelist))
+#' stat <- inertia_type(edgelist, riskset, equal_weights, standardize = FALSE)
+#'
+#' @export
+#'
+inertia_type <- function(edgelist, riskset, weights, standardize) {
+    .Call('_remstats_inertia_type', PACKAGE = 'remstats', edgelist, riskset, weights, standardize)
+}
+
+#' inertia_typeMW
+#'
+#' A function to compute the inertia_type effect for a moving window REM.
+#'
+#' @param full_edgelist 4-column edgelist (time, sender, receiver, type).
+#' @param window_edgelist 4-column edgelist (time, sender, receiver, type).
+#' @param window_length numeric value.
+#' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type).
+#' @param full_weights vector (length full_edgelist). 
+#' @param standardize logical. 
+#'
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+#' data(edgelistUT)
+#' window_edgelist <- edgelistUT[edgelistUT$time > windows$start[2] & 
+#'     edgelistUT$time <= windows$end[2],]
+#' out <- prepER(edgelist = edgelistUT, directed = FALSE, type = TRUE)
+#' full_el <- out$edgelist
+#' rs <- out$riskset
+#' ac <- out$actors
+#' out <- prepER(window_edgelist, directed = FALSE, type = TRUE, 
+#'    actors = ac[,2])
+#' window_el <- out$edgelist
+#' equal_weights <- rep(1, nrow(full_el))
+#' stat <- inertia_typeMW(full_edgelist = full_el, window_edgelist = 
+#'     window_el, window_length = 100, riskset = rs, 
+#'     full_weights = equal_weights, standardize = FALSE)
+#'
+#' @export
+#'
+inertia_typeMW <- function(full_edgelist, window_edgelist, window_length, riskset, full_weights, standardize) {
+    .Call('_remstats_inertia_typeMW', PACKAGE = 'remstats', full_edgelist, window_edgelist, window_length, riskset, full_weights, standardize)
+}
+
+#' triadU_type
+#'
+#' A function to compute the (unique) shared partners effect for undirected 
+#' relational events with types. 
+#'
+#' @param actors vector with numeric actor IDs (correspond to edgelist,
+#' riskset)
+#' @param edgelist 4-column edgelist (time, sender, receiver, type)
+#' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type)
+#' @param unique_sp logical value
+#' @param standardize logical value
+#'
+#' @return matrix (time x dyad)
+#' 
+#' @examples
+#' data(edgelistUT)
+#' out <- prepER(edgelist = edgelistUT, directed = FALSE, type = TRUE)
+#' el <- out$edgelist
+#' rs <- out$riskset
+#' ac <- out$actors[,1]
+#' stat <- triadU_type(ac, el, rs, unique_sp = FALSE, standardize = FALSE)
+#'
+#' @export
+#'
+triadU_type <- function(actors, edgelist, riskset, unique_sp, standardize) {
+    .Call('_remstats_triadU_type', PACKAGE = 'remstats', actors, edgelist, riskset, unique_sp, standardize)
+}
+
+#' triadU_typeMW
+#'
+#' A function to compute the (unique) shared partners effect for undirected 
+#' relational events with types for a moving window REM. 
+#'
+#' @param actors vector with numeric actor IDs (correspond to edgelist,
+#' riskset)
+#' @param full_edgelist 4-column edgelist (time, sender, receiver, type)
+#' @param window_edgelist 4-column edgelist (time, sender, receiver, type)
+#' @param window_length numeric value.
+#' @param riskset 3-column riskset (sender/actor 1, receiver/actor 2, type)
+#' @param unique_sp logical value
+#' @param standardize logical value
+#'
+#' @return matrix (time x dyad)
+#' 
+#' @examples
+#' data(edgelistUT)
+#' windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+#' window_edgelist <- edgelistUT[edgelistUT$time > windows$start[2] & 
+#'     edgelistUT$time <= windows$end[2],]
+#' out <- prepER(edgelist = edgelistUT, directed = FALSE, type = TRUE)
+#' full_el <- out$edgelist
+#' rs <- out$riskset
+#' ac <- out$actors
+#' out <- prepER(window_edgelist, directed = FALSE, type = TRUE, 
+#'     actors = ac[,2])
+#' window_el <- out$edgelist
+#' stat <- triadU_typeMW(ac[,1], full_edgelist = full_el, 
+#'     window_edgelist = window_el, window_length = 100, riskset = rs, 
+#'     unique_sp = FALSE, standardize = FALSE)
+#'
+#' @export
+#'
+triadU_typeMW <- function(actors, full_edgelist, window_edgelist, window_length, riskset, unique_sp, standardize) {
+    .Call('_remstats_triadU_typeMW', PACKAGE = 'remstats', actors, full_edgelist, window_edgelist, window_length, riskset, unique_sp, standardize)
 }
 

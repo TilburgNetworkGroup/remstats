@@ -60,8 +60,6 @@
 #'  "outdegree_sender")
 #' covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
 #' out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
-#' fit <- relevent::rem(out$evls, out$statistics)
-#' summary(fit)
 #' 
 #' @export
 
@@ -78,14 +76,8 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     evls <- prepEvls(el, rs, type)
 
     # Prepare the effects
-    all_effects <- c("sender_effect", "receiver_effect", "same", "difference", 
-        "mean", "min", "max", "both_equal_to", "event_effect", "inertia", 
-        "inertia_weighted", "reciprocity", "reciprocity_weighted",
-        "indegree_sender", "indegree_receiver", "outdegree_sender", 
-        "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", 
-        "recency_send", "recency_receive", "rrank_send", "rrank_receive", 
-        "OTP", "ITP", "OSP", "ISP", "shared_partners", "unique_sp", "PSAB-BA", 
-        "PSAB_BY", "PSAB-XA", "PSAB-XB",  "PSAB-XY", "PSAB-AY")
+    all_effects <- c("sender_effect", "receiver_effect", "same", "difference",  
+        "mean", "min", "max", "both_equal_to", "event_effect", "type_effect", "inertia", "inertia_weighted", "inertia_type", "inertia_type_weighted", "reciprocity", "reciprocity_weighted", "indegree_sender", "indegree_receiver", "outdegree_sender", "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", "recency_send", "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", "ISP", "shared_partners", "unique_sp", "shared_partners_type", "unique_sp_type", "PSAB-BA", "PSAB_BY", "PSAB-XA", "PSAB-XB",  "PSAB-XY", "PSAB-AY")
     eff <- match(effects[!grepl("\\*", effects)], all_effects)
 
     # Add a baseline effect
@@ -179,6 +171,16 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
         event_effect <- matrix(0, 1, 1)
     }
 
+    # Prepare type effects
+    if(any(eff==10)) {
+        types <- sort(unique(c(rs[,3])))
+        types <- types[-1]
+        eff <- append(eff[-which(eff==10)], 
+            rep(10, length(types)), which(eff==10)-1)
+    } else {
+        types <- 0
+    }
+
     # Prepare interaction effects
     if(any(grepl("\\*", effects))) {
         # Which are the interaction effects?
@@ -218,14 +220,22 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     # Deal with equal_val if not requested
     if(is.null(equal_val)) {equal_val <- 0}
 	
-	# (4) Compute statistics
+    # (4) Compute statistics
     stats <- remstatsCpp(effects = eff, standardize = standardize, 
-        edgelist = el, riskset = rs, evls = evls, actors = ac[,1], 
-        covariates = covar, event_effect = event_effect, weights = weights, 
+        edgelist = el, riskset = rs, actors = ac[,1], covariates = covar, 
+        event_effect = event_effect, types = types, weights = weights, 
         equal_val = equal_val, int_positions = int_positions)
 
     dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
         effects[grepl("\\*", effects)])
+    
+    if(any(dimnames(stats)[[3]] == "type_effect")) {
+    	for(i in 1:length(types)) {
+    		dimnames(stats)[[3]][which(dimnames(stats)[[3]] == "type_effect")[1]] <- 
+    			paste(dimnames(stats)[[3]][which(dimnames(stats)[[3]] == "type_effect")[1]], "_",
+    					types[i], sep = "")
+    	}
+    }
 
     # (5) Return output
     list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 

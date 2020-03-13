@@ -4,19 +4,19 @@
 \alias{inertiaMW}
 \title{inertiaMW}
 \usage{
-inertiaMW(full_evls, window_evls, window_length, riskset, full_weights,
-  standardize)
+inertiaMW(full_edgelist, window_edgelist, window_length, riskset,
+  full_weights, standardize)
 }
 \arguments{
-\item{full_evls}{2-column edgelist (event, time) in relevent::rem format.}
+\item{full_edgelist}{3-column edgelist (time, sender, receiver)}
 
-\item{window_evls}{2-column edgelist (event, time) in relevent::rem format.}
+\item{window_edgelist}{3-column edgelist (time, sender, receiver)}
 
 \item{window_length}{numeric value.}
 
 \item{riskset}{2-column riskset (sender/actor 1, receiver/actor 2).}
 
-\item{full_weights}{vector (length full_evls).}
+\item{full_weights}{vector (length full_edgelist).}
 
 \item{standardize}{logical.}
 }
@@ -27,8 +27,8 @@ matrix (time x dyad)
 A function to compute the inertia effect.
 }
 \examples{
-data(edgelistU)
 windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+data(edgelistU)
 window_edgelist <- edgelistU[edgelistU$time > windows$start[2] & 
     edgelistU$time <= windows$end[2],]
 out <- prepER(edgelist = edgelistU, directed = FALSE)
@@ -37,10 +37,8 @@ rs <- out$riskset
 ac <- out$actors
 out <- prepER(window_edgelist, directed = FALSE, actors = ac[,2])
 window_el <- out$edgelist
-full_evls <- prepEvls(full_el, rs)
-window_evls <- prepEvls(window_el, rs)
-stat <- inertiaMW(full_evls = full_evls, window_evls = window_evls, 
-window_length = 100, riskset = rs, full_weights = rep(1, nrow(el)), 
-standardize = FALSE)
+stat <- inertiaMW(full_edgelist = full_el, window_edgelist = window_el, 
+    window_length = 100, riskset = rs, 
+    full_weights = rep(1, nrow(full_el)), standardize = FALSE)
 
 }

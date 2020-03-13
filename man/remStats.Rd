@@ -86,7 +86,5 @@ effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver",
  "outdegree_sender")
 covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
 out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
-fit <- relevent::rem(out$evls, out$statistics)
-summary(fit)
 
 }

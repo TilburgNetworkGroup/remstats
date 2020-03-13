@@ -4,10 +4,11 @@
 \alias{remstatsMW}
 \title{remstatsMW}
 \usage{
-remstatsMW(full_edgelist, window_edgelist, effects, window_length, riskset,
+remstatsMW(full_edgelist, window_edgelist, effects, window_length,
   directed = TRUE, type = FALSE, timing = "interval",
-  standardize = FALSE, covariates = NULL, event_effect = NULL,
-  full_weights = NULL, equal_val = NULL)
+  standardize = FALSE, riskset = NULL, actors = NULL,
+  covariates = NULL, event_effect = NULL, full_weights = NULL,
+  equal_val = NULL)
 }
 \arguments{
 \item{full_edgelist}{[matrix] or [dataframe], should minimally contain the 
@@ -23,11 +24,6 @@ the events that fall within the window for which a REM is estimated.}
 \item{window_length}{[numeric value], indicates the length of the window in 
 time units.}
 
-\item{riskset}{[matrix] or [dataframe], should minimally contain 
-sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
-If it contains typed relational events, the third column should contain the 
-event type.}
-
 \item{directed}{[logical], are relational events in the riskset directional 
 (directed = TRUE, default) or undirectional (directed = FALSE).}
 
@@ -41,6 +37,15 @@ added to the statistic array.}
 
 \item{standardize}{[logical], indicates whether endogenous effects should be 
 standardized (default = FALSE)}
+
+\item{riskset}{optional; [matrix] or [dataframe], should minimally contain 
+sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
+If it contains typed relational events, the third column should contain the 
+event type. If a riskset is not supplied, it is assumed that all possible 
+actors (and action types) are observed in the edgelist.}
+
+\item{actors}{optional; [vector], if supplied, should contain all actors 
+that can potentially interact. Used to create the riskset.}
 
 \item{covariates}{optional; [List] with the covariate values for when a 
 sender_effect, receiver_effect, same, difference, mean, min, max, or 
@@ -86,11 +91,14 @@ on past events that may fall without the window.
 \examples{
 data(edgelistD)
 data(covar)
+windows <- data.frame(start = seq(0, 900, 75), end = seq(100, 1000, 75))
+window_edgelist <- edgelistD[edgelistD$time > windows$start[2] &
+     edgelistD$time <= windows$end[2],]
 effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver", 
  "outdegree_sender")
 covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
-out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
-fit <- relevent::rem(out$evls, out$statistics)
-summary(fit)
+out <- remstatsMW(full_edgelist = edgelistD, window_edgelist = 
+     window_edgelist, effects = effects, window_length = 100, 
+     covariates = covariates, equal_val = 0)
 
 }

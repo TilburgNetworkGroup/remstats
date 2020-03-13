@@ -1,57 +1,69 @@
-context("actorStat output")
+context("actorstat")
 
-require(remstats)
+library(remstats)
 
-test_that("dimensions actorStat output", {
-    # Test for directed relational events
-    data(edgelistD)
-    data(covar)
+# Prepare for directed relational events
+data(edgelistD)
 
-    out <- prepER(edgelistD)
-    el <- out$edgelist
-    rs <- out$riskset
-    ac <- out$actors
+out <- prepER(edgelistD)
+el <- out$edgelist
+rs <- out$riskset
+ac <- out$actors
 
-    covar$id <- ac$id[match(covar$id, ac$name)]
-    covar <- as.matrix(covar)
+# Prepare for directed relational events with types
+data(edgelistDT)
 
-    stat1 <- actorStat(values = covar[,c(1:3)], type = 1, el, rs)
-    stat2 <- actorStat(values = covar[,c(1:2, 4)], type = 2, el, rs)
-    
-    expect_output(str(stat1), "num[1:nrow(el), 1:nrow(rs)]")
-    expect_output(str(stat2), "num[1:nrow(el), 1:nrow(rs)]") 
+out2 <- prepER(edgelistDT, type = TRUE)
+el2 <- out2$edgelist
+rs2 <- out2$riskset
+
+# Prepare covariates
+data(covar)
+
+covar$id <- ac$id[match(covar$id, ac$name)]
+covar <- as.matrix(covar)
+zero_values <- covar[covar[,2]==0,]
+
+# Statistics
+statA <- actorstat(values = covar[,c(1:3)], type = 1, edgelist = el,
+    riskset = rs) # Sender effect
+statB <- actorstat(values = covar[,c(1, 2, 4)], type = 2, edgelist = el,
+    riskset = rs) # Receiver effect
+
+statC <- actorstat(values = covar[,c(1:3)], type = 1, edgelist = el2,
+    riskset = rs2) # Sender effect
+statD <- actorstat(values = covar[,c(1, 2, 4)], type = 2, edgelist = el2,
+    riskset = rs2) # Receiver effect
+
+# Tests
+test_that("dimensions", {
+    expect_output(str(statA), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(statB), "num[1:nrow(el), 1:nrow(rs)]")
+    expect_output(str(statC), "num[1:nrow(el2), 1:nrow(rs2)]")
+    expect_output(str(statD), "num[1:nrow(el2), 1:nrow(rs2)]")
 })
 
-test_that("content actorStat output", {
-    # Test for directed relational events
-    data(edgelistD)
-    data(covar)
+test_that("the starting values for the statitics", {
+    expect_true(all(zero_values[,3] %in% statA[1,]))
+    expect_true(all(zero_values[,4] %in% statB[1,]))
+    expect_true(all(zero_values[,3] %in% statC[1,]))
+    expect_true(all(zero_values[,4] %in% statD[1,]))
+})
 
-    out <- prepER(edgelistD)
-    el <- out$edgelist
-    rs <- out$riskset
-    ac <- out$actors
+test_that("the statistics change over time", {
+    expect_true(!all(diff(rowSums(statA))==0))
+    expect_true(!all(diff(rowSums(statB))==0))
+    expect_true(!all(diff(rowSums(statC))==0))
+    expect_true(!all(diff(rowSums(statD))==0))
+})
 
-    covar$id <- ac$id[match(covar$id, ac$name)]
-    covar <- as.matrix(covar)
+test_that("the statistics are equal for dyads regardless of type", {
+    expect_equal(statC[,1:650], statA)
+    expect_equal(statD[,1:650], statB)
 
-    stat1 <- actorStat(values = covar[,c(1:3)], type = 1, el, rs)
-    stat2 <- actorStat(values = covar[,c(1:2, 4)], type = 2, el, rs)
+    expect_equal(statC[,1:650], statC[,651:1300])
+    expect_equal(statC[,1:650], statC[,1301:1950])
 
-    # Test whether all starting values are accounted for
-    expect_true(all(stat1[1,] %in% covar[covar[,2]==0,3]))
-    expect_true(all(covar[covar[,2]==0,3] %in% stat1[1,]))
-    expect_true(all(stat2[1,] %in% covar[covar[,2]==0,4]))
-    expect_true(all(covar[covar[,2]==0,4] %in% stat2[1,]))   
-
-    # Test for two dyads their values
-    expect_true(all(stat1[,1] %in% covar[covar[,1]==rs[1,1], 3]))
-    expect_true(all(covar[covar[,1]==rs[1,1], 3] %in% stat1[,1]))
-    expect_true(all(stat1[,15] %in% covar[covar[,1]==rs[15,1], 3]))
-    expect_true(all(covar[covar[,1]==rs[15,1], 3] %in% stat1[,15]))
-
-    expect_true(all(stat2[,1] %in% covar[covar[,1]==rs[1,2], 4]))
-    expect_true(all(covar[covar[,1]==rs[1,2], 4] %in% stat2[,1]))
-    expect_true(all(stat2[,15] %in% covar[covar[,1]==rs[15,2], 4]))
-    expect_true(all(covar[covar[,1]==rs[15,2], 4] %in% stat2[,15]))
+    expect_equal(statD[,1:650], statD[,651:1300])
+    expect_equal(statD[,1:650], statD[,1301:1950])
 })
