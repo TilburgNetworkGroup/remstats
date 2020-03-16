@@ -66,9 +66,9 @@ test_that("actor effects in remstats", {
     covar$id <- statsA$actors$id[match(covar$id, statsA$actors$name)]
     covar <- as.matrix(covar)
 
-    expect_equal(statsA$statistics[,,"sender_effect"], 
+    expect_equal(statsA$statistics[,,"sender_effect_x2"], 
         actorstat(values = covar[,c(1,2,4)], type = 1, edgelist = statsA$edgelist, riskset = statsA$riskset))
-    expect_equal(statsA$statistics[,,"receiver_effect"], 
+    expect_equal(statsA$statistics[,,"receiver_effect_x2"], 
         actorstat(values = covar[,c(1,2,4)], type = 2, edgelist = statsA$edgelist, riskset = statsA$riskset))
 })
 
@@ -76,60 +76,60 @@ test_that("dyad effects in remstats", {
     covar$id <- statsA$actors$id[match(covar$id, statsA$actors$name)]
     covar <- as.matrix(covar)
 
-    expect_equal(statsA$statistics[,,"same"], 
+    expect_equal(statsA$statistics[,,"same_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 1, edgelist = statsA$edgelist, riskset = statsA$riskset, equal_val = 0))
-    expect_equal(statsA$statistics[,,"difference"], 
+    expect_equal(statsA$statistics[,,"difference_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 2, edgelist = statsA$edgelist, riskset = statsA$riskset, equal_val = 0))
-    expect_equal(statsA$statistics[,,"mean"], 
+    expect_equal(statsA$statistics[,,"mean_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 3, edgelist = statsA$edgelist, riskset = statsA$riskset, equal_val = 0))
-    expect_equal(statsA$statistics[,,"min"], 
+    expect_equal(statsA$statistics[,,"min_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 4, edgelist = statsA$edgelist, riskset = statsA$riskset, equal_val = 0))
-    expect_equal(statsA$statistics[,,"max"], 
+    expect_equal(statsA$statistics[,,"max_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 5, edgelist = statsA$edgelist, riskset = statsA$riskset, equal_val = 0))
-    expect_equal(statsA$statistics[,,"both_equal_to"], 
+    expect_equal(statsA$statistics[,,"both_equal_to_x20"], 
         dyadstat(values = covar[,c(1,2,4)], type = 6, edgelist = statsA$edgelist, riskset = statsA$riskset, equal_val = 0))
     
-    expect_equal(statsB$statistics[,,"same"], 
+    expect_equal(statsB$statistics[,,"same_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 1, edgelist = statsB$edgelist, riskset = statsB$riskset, equal_val = 0))
-    expect_equal(statsB$statistics[,,"difference"], 
+    expect_equal(statsB$statistics[,,"difference_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 2, edgelist = statsB$edgelist, riskset = statsB$riskset, equal_val = 0))
-    expect_equal(statsB$statistics[,,"mean"], 
+    expect_equal(statsB$statistics[,,"mean_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 3, edgelist = statsB$edgelist, riskset = statsB$riskset, equal_val = 0))
-    expect_equal(statsB$statistics[,,"min"], 
+    expect_equal(statsB$statistics[,,"min_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 4, edgelist = statsB$edgelist, riskset = statsB$riskset, equal_val = 0))
-    expect_equal(statsB$statistics[,,"max"], 
+    expect_equal(statsB$statistics[,,"max_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 5, edgelist = statsB$edgelist, riskset = statsB$riskset, equal_val = 0))
-    expect_equal(statsB$statistics[,,"both_equal_to"], 
+    expect_equal(statsB$statistics[,,"both_equal_to_x20"], 
         dyadstat(values = covar[,c(1,2,4)], type = 6, edgelist = statsB$edgelist, riskset = statsB$riskset, equal_val = 0))
 
-    expect_equal(statsC$statistics[,,"same"], 
+    expect_equal(statsC$statistics[,,"same_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 1, edgelist = statsC$edgelist, riskset = statsC$riskset, equal_val = 0))
-    expect_equal(statsC$statistics[,,"difference"], 
+    expect_equal(statsC$statistics[,,"difference_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 2, edgelist = statsC$edgelist, riskset = statsC$riskset, equal_val = 0))
-    expect_equal(statsC$statistics[,,"mean"], 
+    expect_equal(statsC$statistics[,,"mean_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 3, edgelist = statsC$edgelist, riskset = statsC$riskset, equal_val = 0))
-    expect_equal(statsC$statistics[,,"min"], 
+    expect_equal(statsC$statistics[,,"min_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 4, edgelist = statsC$edgelist, riskset = statsC$riskset, equal_val = 0))
-    expect_equal(statsC$statistics[,,"max"], 
+    expect_equal(statsC$statistics[,,"max_x2"], 
         dyadstat(values = covar[,c(1,2,4)], type = 5, edgelist = statsC$edgelist, riskset = statsC$riskset, equal_val = 0))
-    expect_equal(statsC$statistics[,,"both_equal_to"], 
+    expect_equal(statsC$statistics[,,"both_equal_to_x20"], 
         dyadstat(values = covar[,c(1,2,4)], type = 6, edgelist = statsC$edgelist, riskset = statsC$riskset, equal_val = 0))
 })
 
 test_that("event effect in remstats", {
-    expect_equal(statsA$statistics[,1,"event_effect"], 
-        statsA$statistics[,2,"event_effect"])
-    expect_equal(statsA$statistics[,1,"event_effect"], 
+    expect_equal(statsA$statistics[,1,"event_effect1"], 
+        statsA$statistics[,2,"event_effect1"])
+    expect_equal(statsA$statistics[,1,"event_effect1"], 
         event_effect)
     
-    expect_equal(statsB$statistics[,1,"event_effect"], 
-        statsB$statistics[,2,"event_effect"])
-    expect_equal(statsB$statistics[,1,"event_effect"], 
+    expect_equal(statsB$statistics[,1,"event_effect1"], 
+        statsB$statistics[,2,"event_effect1"])
+    expect_equal(statsB$statistics[,1,"event_effect1"], 
         event_effect)
     
-    expect_equal(statsC$statistics[,1,"event_effect"], 
-        statsC$statistics[,2,"event_effect"])
-    expect_equal(statsC$statistics[,1,"event_effect"], 
+    expect_equal(statsC$statistics[,1,"event_effect1"], 
+        statsC$statistics[,2,"event_effect1"])
+    expect_equal(statsC$statistics[,1,"event_effect1"], 
         event_effect)
 })
 
@@ -225,15 +225,15 @@ test_that("triad effects in remstats", {
 })
 
 test_that("interaction effects in remstats", {
-    expect_equal(statsA$statistics[,,"sender_effect*inertia"],
-    statsA$statistics[,,"sender_effect"]*statsA$statistics[,,"inertia"])
-    expect_equal(statsA$statistics[,,"same*inertia"],
-    statsA$statistics[,,"same"]*statsA$statistics[,,"inertia"])
+    expect_equal(statsA$statistics[,,"sender_effect_x2*inertia"],
+    statsA$statistics[,,"sender_effect_x2"]*statsA$statistics[,,"inertia"])
+    expect_equal(statsA$statistics[,,"same_x2*inertia"],
+    statsA$statistics[,,"same_x2"]*statsA$statistics[,,"inertia"])
 
-    expect_equal(statsB$statistics[,,"same*inertia"],
-    statsB$statistics[,,"same"]*statsB$statistics[,,"inertia"])
+    expect_equal(statsB$statistics[,,"same_x2*inertia"],
+    statsB$statistics[,,"same_x2"]*statsB$statistics[,,"inertia"])
 
-    expect_equal(statsC$statistics[,,"same*inertia"],
-    statsC$statistics[,,"same"]*statsC$statistics[,,"inertia"])
+    expect_equal(statsC$statistics[,,"same_x2*inertia"],
+    statsC$statistics[,,"same_x2"]*statsC$statistics[,,"inertia"])
 })
 

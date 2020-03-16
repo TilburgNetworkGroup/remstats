@@ -18,6 +18,7 @@
 #' actors (and action types) are observed in the edgelist.
 #' @param actors optional; [vector], if supplied, should contain all actors 
 #' that can potentially interact. Used to create the riskset. 
+#' @param types optional; [vector], if supplied, should contain all event types.
 #'
 #' @return edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C. 
 #' @return riskset [matrix] with actor IDs that run from 1 to N and types that
@@ -26,8 +27,7 @@
 #' 
 #' @examples 
 #' data(edgelistD)
-#' out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
-#' 	riskset = NULL, actors = NULL)
+#' out <- prepER(edgelist = edgelistD)
 #' el <- out$edgelist
 #' rs <- out$riskset
 #' ac <- out$actors
@@ -35,7 +35,7 @@
 #' @export
 
 prepER <- function(edgelist, directed = TRUE, type = FALSE, riskset = NULL, 	
-	actors = NULL) {
+	actors = NULL, types = NULL) {
 
 	# Obtain all actors from either ... 
 	if(is.null(actors)) {
@@ -55,7 +55,7 @@ prepER <- function(edgelist, directed = TRUE, type = FALSE, riskset = NULL,
 			}
 		}
 	} else {
-		# (3) ... the supplied actors. 
+		# (3) ... or the supplied actors. 
 		ac <- sort(actors)
 	}
 
@@ -71,18 +71,27 @@ prepER <- function(edgelist, directed = TRUE, type = FALSE, riskset = NULL,
 	# If the relational events should consider event type, let the types in the 
 	# edgelist run from 1 to # types.
 	if(type) {
-		if(is.null(riskset)) {
-			if(class(edgelist[,4]) == "factor") {
-				ty <- sort(levels(edgelist[,4]))
+
+		if(is.null(types)) {
+			# Obtain all actors from either ...
+			if(is.null(riskset)) {
+				# (1) .. the edgelist,
+				if(class(edgelist[,4]) == "factor") {
+					ty <- sort(levels(edgelist[,4]))
+				} else {
+					ty <- sort(unique(edgelist[,4]))
+				}
 			} else {
-				ty <- sort(unique(edgelist[,4]))
+				# (2) ... the riskset,
+				if(class(riskset[,3]) == "factor") {
+					ty <- sort(levels(riskset[,3]))
+				} else {
+					ty <- sort(unique(riskset[,3]))
+				}
 			}
 		} else {
-			if(class(riskset[,3]) == "factor") {
-				ty <- sort(levels(riskset[,3]))
-			} else {
-				ty <- sort(unique(riskset[,3]))
-			}
+			# (3) ... or the supplied types.
+			ty <- sort(types)
 		}
 		edgelist[,4] <- match(edgelist[,4], ty)
 	}
@@ -151,9 +160,17 @@ prepER <- function(edgelist, directed = TRUE, type = FALSE, riskset = NULL,
 	}
 
   	# Output
-  	list(
+	if(type) {
+		list(
+		  edgelist = as.matrix(edgelist), 
+		  riskset = as.matrix(riskset), 
+		  actors = data.frame(id = 1:length(ac), name = ac),
+		  types = data.frame(id = 1:length(ty), name = ty))
+	} else {
+		list(
 		  edgelist = as.matrix(edgelist), 
 		  riskset = as.matrix(riskset), 
 		  actors = data.frame(id = 1:length(ac), name = ac))
+	}
 }
 

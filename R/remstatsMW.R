@@ -84,9 +84,16 @@ remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length,
     full_el <- out$edgelist
     rs <- out$riskset
     ac <- out$actors
+    if(type) {ty <- out$types}
 
-    out <- prepER(window_edgelist, directed, type, riskset = rs, 
-        actors = ac[,2])
+    if(type) {
+        out <- prepER(window_edgelist, directed, type, riskset = rs, 
+            actors = ac[,2], types = ty[,2])
+    } else {
+        out <- prepER(window_edgelist, directed, type, riskset = rs, 
+            actors = ac[,2])
+    }
+    
     window_el <- out$edgelist
 
  	# Prepare the evls (edgelist in relevent::rem() format)
@@ -245,19 +252,239 @@ remstatsMW <- function(full_edgelist, window_edgelist, effects, window_length,
         covariates = covar, event_effect = event_effect, types = types, 
         full_weights = full_weights, equal_val = equal_val, int_positions = 
         int_positions)
-
-    dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
-        effects[grepl("\\*", effects)])
-
-    if(any(dimnames(stats)[[3]] == "type_effect")) {
-    	for(i in 1:length(types)) {
-    		dimnames(stats)[[3]][which(dimnames(stats)[[3]] == "type_effect")[1]] <- 
-    			paste(dimnames(stats)[[3]][which(dimnames(stats)[[3]] == "type_effect")[1]], "_",
-    					types[i], sep = "")
-    	}
-    }
-
+    
     # (5) Return output
+	# Prepare dimnames statsistics
+	dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
+        effects[grepl("\\*", effects)])
+	
+	if(any(grepl("\\*", dimnames(stats)[[3]]))) {
+		multeff <- c("sender_effect", "receiver_effect", "same", "difference",
+            "mean", "min", "max", "both_equal_to", "event_effect", 
+            "type_effect")
+		intdimpos <- sapply(multeff, function(x) {grepl(x, int_effects)})
+	}
+	
+	intnames <- list()
+	
+	if(any(dimnames(stats)[[3]] == "sender_effect")) {
+		pos <- which(dimnames(stats)[[3]] == "sender_effect")
+		if(is.null(colnames(covariates$sender_effect))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("sender_effect_x", 1:length(pos), sep = "") 
+			if(any(intdimpos[,1])) {
+				intnames[[1]] <- 
+                    paste("sender_effect_x", 1:length(pos), sep = "")  
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("sender_effect_", 
+					colnames(covariates$sender_effect)[3:(2+length(pos))], 
+                    sep = "")	
+			if(any(intdimpos[,1])) {
+				intnames[[1]] <- 
+                    paste("sender_effect_", 
+                        colnames(covariates$sender_effect)[3:(2+length(pos))], 
+                        sep = "")	
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "receiver_effect")) {
+		pos <- which(dimnames(stats)[[3]] == "receiver_effect")
+		if(is.null(colnames(covariates$receiver_effect))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("receiver_effect_x", 1:length(pos), sep = "") 
+			if(any(intdimpos[,2])) {
+				intnames[[2]] <- 
+                    paste("receiver_effect_x", 1:length(pos), sep = "") 
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("receiver_effect_", 
+					colnames(covariates$receiver_effect)[3:(2+length(pos))], 
+                    sep = "")	
+			if(any(intdimpos[,2])) {
+				intnames[[2]] <- 
+                    paste("receiver_effect_", 
+					colnames(covariates$receiver_effect)[3:(2+length(pos))], 
+                    sep = "")	
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "same")) {
+		pos <- which(dimnames(stats)[[3]] == "same")
+		if(is.null(colnames(covariates$same))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("same_x", 1:length(pos), sep = "") 
+			if(any(intdimpos[,3])) {
+				intnames[[3]] <- paste("same_x", 1:length(pos), sep = "") 
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("same_", colnames(covariates$same)[3:(2+length(pos))], 
+                    sep = "")	
+			if(any(intdimpos[,3])) {
+				intnames[[3]] <- 
+                    paste("same_", 
+                        colnames(covariates$same)[3:(2+length(pos))], sep = "")	
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "difference")) {
+		pos <- which(dimnames(stats)[[3]] == "difference")
+		if(is.null(colnames(covariates$difference))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("difference_x", 1:length(pos), sep = "") 
+			if(any(intdimpos[,4])) {
+				intnames[[4]] <- paste("difference_x", 1:length(pos), sep = "") 
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("difference_", 
+                    colnames(covariates$difference)[3:(2+length(pos))], 
+                    sep = "")	
+			if(any(intdimpos[,4])) {
+				intnames[[4]] <- 
+                    paste("difference_", 
+                        colnames(covariates$difference)[3:(2+length(pos))], 
+                        sep = "")	
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "mean")) {
+		pos <- which(dimnames(stats)[[3]] == "mean")
+		if(is.null(colnames(covariates$mean))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("mean_x", 1:length(pos), sep = "") 
+			if(any(intdimpos[,5])) {
+				intnames[[5]] <- paste("mean_x", 1:length(pos), sep = "") 
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("mean_", 
+					colnames(covariates$mean)[3:(2+length(pos))], sep = "")	
+			if(any(intdimpos[,5])) {
+				intnames[[5]] <- 	
+                    paste("mean_", 
+					colnames(covariates$mean)[3:(2+length(pos))], sep = "")	
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "min")) {
+		pos <- which(dimnames(stats)[[3]] == "min")
+		if(is.null(colnames(covariates$min))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("min_x", 1:length(pos), sep = "") 
+			if(any(intdimpos[,6])) {
+				intnames[[6]] <- paste("min_x", 1:length(pos), sep = "") 
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("min_", 
+					colnames(covariates$min)[3:(2+length(pos))], sep = "")
+			if(any(intdimpos[,6])) {
+				intnames[[6]] <-
+                    paste("min_", colnames(covariates$min)[3:(2+length(pos))], 
+                        sep = "")
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "max")) {
+		pos <- which(dimnames(stats)[[3]] == "max")
+		if(is.null(colnames(covariates$max))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("max_x", 1:length(pos), sep = "") 
+			if(any(intdimpos[,7])) {
+				intnames[[7]] <- paste("max_x", 1:length(pos), sep = "") 
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("max_", 
+						colnames(covariates$max)[3:(2+length(pos))], sep = "")	
+			if(any(intdimpos[,7])) {
+				intnames[[7]] <- 
+                    paste("max_", colnames(covariates$max)[3:(2+length(pos))], 
+                        sep = "")
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "both_equal_to")) {
+		pos <- which(dimnames(stats)[[3]] == "both_equal_to")
+		if(is.null(colnames(covariates$both_equal_to))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("both_equal_to", equal_val, 1:length(pos), sep = "") 
+			if(any(intdimpos[,8])) {
+				intnames[[8]] <- 
+                    paste("both_equal_to", equal_val, 1:length(pos), sep = "") 
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("both_equal_to_", 
+					colnames(covariates$both_equal_to)[3:(2+length(pos))], 
+                    equal_val, sep = "")	
+			if(any(intdimpos[,8])) {
+				intnames[[8]] <- 
+                    paste("both_equal_to_", 
+					    colnames(covariates$both_equal_to)[3:(2+length(pos))], 
+                        equal_val, sep = "")	
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "event_effect")) {
+		pos <- which(dimnames(stats)[[3]] == "event_effect")
+		if(is.null(colnames(event_effect))) {
+			dimnames(stats)[[3]][pos] <- 
+                paste("event_effect", 1:length(pos), sep = "") 
+			if(any(intdimpos[,9])) {
+				intnames[[9]] <- paste("event_effect", 1:length(pos), sep = "") 
+			}
+		} else {
+			dimnames(stats)[[3]][pos] <- 
+				paste("event_effect_", colnames(event_effect), sep = "")	
+			if(any(intdimpos[,9])) {
+				intnames[[9]] <- 
+                    paste("event_effect_", colnames(event_effect), sep = "")
+			}
+		}
+	}
+	
+	if(any(dimnames(stats)[[3]] == "type_effect")) {
+		for(i in 1:length(types)) {
+			pos <- which(dimnames(stats)[[3]] == "type_effect")[1]
+			dimnames(stats)[[3]][pos] <- 
+				paste("type_effect_", ty[i+1,1], sep = "")
+		}
+		if(any(intdimpos[,10])) {
+			intnames[[10]] <- paste("type_effect_", sort(ty[,1])[-1], sep = "") 
+		}
+	}
+	
+	if(any(grepl("\\*", dimnames(stats)[[3]]))) {
+		for(i in 1:nrow(intdimpos)) {
+			if(any(intdimpos[i,])) {
+				temp <- strsplit(int_effects[i], split = "[a-z]")[[1]]
+				pos <- suppressWarnings(as.numeric(temp)[!is.na(as.numeric(temp))])
+				if(length(pos) == 0) {
+					int_effects[i] <- intnames[[which(intdimpos[i,])]]		
+				} else {
+					int_effects[i] <- intnames[[which(intdimpos[i,])]][pos]		
+				}		
+			}
+		}
+		
+		dimnames(stats)[[3]][which(grepl("\\*", dimnames(stats)[[3]]))] <- 
+			paste(int_effects[,1], "*", int_effects[,2], sep = "")
+	}
+
+    # Output
     list(statistics = stats, full_edgelist = full_el, 
         window_edgelist = window_el, riskset = rs, full_evls = full_evls, 
         window_evls = window_evls, actors = ac)
