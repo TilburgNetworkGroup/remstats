@@ -229,61 +229,89 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 
     # (5) Return output
 	# Prepare dimnames statsistics
+    # Bind "baseline" with all main effects and the interaction effects
 	dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
         effects[grepl("\\*", effects)])
 	
+    # Deal with interaction effects for which one of the main effects can 
+    # appear multiple times in the dimnames (i.e., two sender_effects)
 	if(any(grepl("\\*", dimnames(stats)[[3]]))) {
 		multeff <- c("sender_effect", "receiver_effect", "same", "difference",
             "mean", "min", "max", "both_equal_to", "event_effect", 
             "type_effect")
+        # Matrix with on the rows the interaction effects and on the columns 
+        # the "multeff". Entries are TRUE when the multeff appears in this 
+        # interaction effect and FALSE if not.
 		intdimpos <- sapply(multeff, function(x) {grepl(x, int_effects)})
+	} else {
+        # Set intdimpos to null if there are no interaction effects
+		intdimpos <- NULL
 	}
 	
+    # Saving space
 	intnames <- list()
 	
+    # Prepare the dimnames for sender_effect(s)
 	if(any(dimnames(stats)[[3]] == "sender_effect")) {
+        # Get the position of the sender effects
 		pos <- which(dimnames(stats)[[3]] == "sender_effect")
+        # If the variables in covariates don't have a name, set their names 
+        # equal to x1 ... xn
 		if(is.null(colnames(covariates$sender_effect))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("sender_effect_x", 1:length(pos), sep = "") 
-			if(any(intdimpos[,1])) {
-				intnames[[1]] <- 
-                    paste("sender_effect_x", 1:length(pos), sep = "")  
+            # If there are interaction effects...
+			if(!is.null(intdimpos)) {
+                # and any of these effects includes a sender_effect...
+				if(any(intdimpos[,1])) {
+                    # save the new name for the sender_effect
+					intnames[[1]] <- 
+						paste("sender_effect_x", 1:length(pos), sep = "")  
+				}	
 			}
 		} else {
+            # If the variables in covariates$sender_effect do have a name, use 
+            # these names
 			dimnames(stats)[[3]][pos] <- 
 				paste("sender_effect_", 
 					colnames(covariates$sender_effect)[3:(2+length(pos))], 
                     sep = "")	
-			if(any(intdimpos[,1])) {
+			if(!is.null(intdimpos)) {
+                if(any(intdimpos[,1])) {
 				intnames[[1]] <- 
                     paste("sender_effect_", 
                         colnames(covariates$sender_effect)[3:(2+length(pos))], 
                         sep = "")	
-			}
+			    }
+            }  
 		}
 	}
 	
+    # Same as above for the other effects
 	if(any(dimnames(stats)[[3]] == "receiver_effect")) {
 		pos <- which(dimnames(stats)[[3]] == "receiver_effect")
 		if(is.null(colnames(covariates$receiver_effect))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("receiver_effect_x", 1:length(pos), sep = "") 
-			if(any(intdimpos[,2])) {
-				intnames[[2]] <- 
+			if(!is.null(intdimpos)) {
+                if(any(intdimpos[,2])) {
+				    intnames[[2]] <- 
                     paste("receiver_effect_x", 1:length(pos), sep = "") 
-			}
+			    }
+            } 
 		} else {
 			dimnames(stats)[[3]][pos] <- 
 				paste("receiver_effect_", 
 					colnames(covariates$receiver_effect)[3:(2+length(pos))], 
                     sep = "")	
-			if(any(intdimpos[,2])) {
-				intnames[[2]] <- 
-                    paste("receiver_effect_", 
-					colnames(covariates$receiver_effect)[3:(2+length(pos))], 
-                    sep = "")	
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,2])) {
+                    intnames[[2]] <- 
+                        paste("receiver_effect_", 
+                        colnames(covariates$receiver_effect)[3:(2+length(pos))], 
+                        sep = "")	
+                }
+            }
 		}
 	}
 	
@@ -292,18 +320,22 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 		if(is.null(colnames(covariates$same))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("same_x", 1:length(pos), sep = "") 
-			if(any(intdimpos[,3])) {
-				intnames[[3]] <- paste("same_x", 1:length(pos), sep = "") 
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,3])) {
+                    intnames[[3]] <- paste("same_x", 1:length(pos), sep = "") 
+                }
+            }
 		} else {
 			dimnames(stats)[[3]][pos] <- 
 				paste("same_", colnames(covariates$same)[3:(2+length(pos))], 
                     sep = "")	
-			if(any(intdimpos[,3])) {
-				intnames[[3]] <- 
-                    paste("same_", 
-                        colnames(covariates$same)[3:(2+length(pos))], sep = "")	
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,3])) {
+                    intnames[[3]] <- 
+                        paste("same_", 
+                            colnames(covariates$same)[3:(2+length(pos))], sep = "")	
+                }
+            }
 		}
 	}
 	
@@ -312,20 +344,24 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 		if(is.null(colnames(covariates$difference))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("difference_x", 1:length(pos), sep = "") 
-			if(any(intdimpos[,4])) {
-				intnames[[4]] <- paste("difference_x", 1:length(pos), sep = "") 
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,4])) {
+                    intnames[[4]] <- paste("difference_x", 1:length(pos), sep = "") 
+                }
+            }
 		} else {
 			dimnames(stats)[[3]][pos] <- 
 				paste("difference_", 
                     colnames(covariates$difference)[3:(2+length(pos))], 
                     sep = "")	
-			if(any(intdimpos[,4])) {
-				intnames[[4]] <- 
-                    paste("difference_", 
-                        colnames(covariates$difference)[3:(2+length(pos))], 
-                        sep = "")	
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,4])) {
+                    intnames[[4]] <- 
+                        paste("difference_", 
+                            colnames(covariates$difference)[3:(2+length(pos))], 
+                            sep = "")	
+                }
+            }
 		}
 	}
 	
@@ -334,18 +370,22 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 		if(is.null(colnames(covariates$mean))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("mean_x", 1:length(pos), sep = "") 
-			if(any(intdimpos[,5])) {
-				intnames[[5]] <- paste("mean_x", 1:length(pos), sep = "") 
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,5])) {
+                    intnames[[5]] <- paste("mean_x", 1:length(pos), sep = "") 
+                }
+            }
 		} else {
 			dimnames(stats)[[3]][pos] <- 
 				paste("mean_", 
 					colnames(covariates$mean)[3:(2+length(pos))], sep = "")	
-			if(any(intdimpos[,5])) {
-				intnames[[5]] <- 	
-                    paste("mean_", 
-					colnames(covariates$mean)[3:(2+length(pos))], sep = "")	
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,5])) {
+                    intnames[[5]] <- 	
+                        paste("mean_", 
+                        colnames(covariates$mean)[3:(2+length(pos))], sep = "")	
+                }
+            }
 		}
 	}
 	
@@ -354,18 +394,22 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 		if(is.null(colnames(covariates$min))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("min_x", 1:length(pos), sep = "") 
-			if(any(intdimpos[,6])) {
-				intnames[[6]] <- paste("min_x", 1:length(pos), sep = "") 
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,6])) {
+                    intnames[[6]] <- paste("min_x", 1:length(pos), sep = "") 
+                }
+            }
 		} else {
 			dimnames(stats)[[3]][pos] <- 
 				paste("min_", 
 					colnames(covariates$min)[3:(2+length(pos))], sep = "")
-			if(any(intdimpos[,6])) {
-				intnames[[6]] <-
-                    paste("min_", colnames(covariates$min)[3:(2+length(pos))], 
-                        sep = "")
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,6])) {
+                    intnames[[6]] <-
+                        paste("min_", colnames(covariates$min)[3:(2+length(pos))], 
+                            sep = "")
+                }
+            }
 		}
 	}
 	
@@ -374,18 +418,22 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 		if(is.null(colnames(covariates$max))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("max_x", 1:length(pos), sep = "") 
-			if(any(intdimpos[,7])) {
-				intnames[[7]] <- paste("max_x", 1:length(pos), sep = "") 
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,7])) {
+                    intnames[[7]] <- paste("max_x", 1:length(pos), sep = "") 
+                }
+            }
 		} else {
 			dimnames(stats)[[3]][pos] <- 
 				paste("max_", 
 						colnames(covariates$max)[3:(2+length(pos))], sep = "")	
-			if(any(intdimpos[,7])) {
-				intnames[[7]] <- 
-                    paste("max_", colnames(covariates$max)[3:(2+length(pos))], 
-                        sep = "")
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,7])) {
+                    intnames[[7]] <- 
+                        paste("max_", colnames(covariates$max)[3:(2+length(pos))], 
+                            sep = "")
+                }
+            }
 		}
 	}
 	
@@ -394,21 +442,25 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 		if(is.null(colnames(covariates$both_equal_to))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("both_equal_to", equal_val, 1:length(pos), sep = "") 
-			if(any(intdimpos[,8])) {
-				intnames[[8]] <- 
-                    paste("both_equal_to", equal_val, 1:length(pos), sep = "") 
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,8])) {
+                    intnames[[8]] <- 
+                        paste("both_equal_to", equal_val, 1:length(pos), sep = "") 
+                }
+            }
 		} else {
 			dimnames(stats)[[3]][pos] <- 
 				paste("both_equal_to_", 
 					colnames(covariates$both_equal_to)[3:(2+length(pos))], 
                     equal_val, sep = "")	
-			if(any(intdimpos[,8])) {
-				intnames[[8]] <- 
-                    paste("both_equal_to_", 
-					    colnames(covariates$both_equal_to)[3:(2+length(pos))], 
-                        equal_val, sep = "")	
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,8])) {
+                    intnames[[8]] <- 
+                        paste("both_equal_to_", 
+                            colnames(covariates$both_equal_to)[3:(2+length(pos))], 
+                            equal_val, sep = "")	
+                }
+            }
 		}
 	}
 	
@@ -417,16 +469,20 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 		if(is.null(colnames(event_effect))) {
 			dimnames(stats)[[3]][pos] <- 
                 paste("event_effect", 1:length(pos), sep = "") 
-			if(any(intdimpos[,9])) {
-				intnames[[9]] <- paste("event_effect", 1:length(pos), sep = "") 
-			}
+            if(!is.null(intdimpos)) {
+                if(any(intdimpos[,9])) {
+                    intnames[[9]] <- paste("event_effect", 1:length(pos), sep = "") 
+                }
+            }
 		} else {
 			dimnames(stats)[[3]][pos] <- 
-				paste("event_effect_", colnames(event_effect), sep = "")	
-			if(any(intdimpos[,9])) {
-				intnames[[9]] <- 
-                    paste("event_effect_", colnames(event_effect), sep = "")
-			}
+				paste("event_effect_", colnames(event_effect), sep = "")
+            if(!is.null(intdimpos)) {	
+                if(any(intdimpos[,9])) {
+                    intnames[[9]] <- 
+                        paste("event_effect_", colnames(event_effect), sep = "")
+                }
+            }
 		}
 	}
 	
@@ -436,9 +492,11 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
 			dimnames(stats)[[3]][pos] <- 
 				paste("type_effect_", ty[i+1,1], sep = "")
 		}
-		if(any(intdimpos[,10])) {
-			intnames[[10]] <- paste("type_effect_", sort(ty[,1])[-1], sep = "") 
-		}
+        if(!is.null(intdimpos)) {
+            if(any(intdimpos[,10])) {
+                intnames[[10]] <- paste("type_effect_", sort(ty[,1])[-1], sep = "") 
+            }
+        }
 	}
 	
 	if(any(grepl("\\*", dimnames(stats)[[3]]))) {

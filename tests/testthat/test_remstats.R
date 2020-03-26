@@ -14,6 +14,8 @@ data(covar)
 effectsD <- c("sender_effect", "receiver_effect", "same", "difference",  
         "mean", "min", "max", "both_equal_to", "event_effect", "inertia", "inertia_weighted", "reciprocity", "reciprocity_weighted", "indegree_sender", "indegree_receiver", "outdegree_sender", "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", "OTP", "ITP", "OSP", "ISP", "sender_effect*inertia", "same*inertia")
 
+effectsD2 <- c("sender_effect", "reciprocity")
+
 effectsU <- c("same", "difference",  "mean", "min", "max", "both_equal_to", 
     "event_effect", "inertia", "inertia_weighted", "shared_partners", "unique_sp", "same*inertia")
 
@@ -34,6 +36,8 @@ equal_weights <- rep(1, nrow(edgelistD))
 # Statistics
 statsA <- remstats(edgelistD, effects = effectsD, covariates = covariates, 
     event_effect = event_effect, weights = equal_weights, equal_val = 0)
+statsA2 <- remstats(edgelistD, effects = effectsD2, covariates = covariates, 
+    event_effect = event_effect, weights = equal_weights, equal_val = 0)
 statsB <- remstats(edgelistU, effects = effectsU, directed = FALSE, 
     covariates = covariates, event_effect = event_effect, weights = equal_weights, equal_val = 0)
 statsC <- remstats(edgelistUT, effects = effectsUT, directed = FALSE, 
@@ -45,6 +49,7 @@ single_statA <- remstats(edgelistD, effects = "inertia",
 # Tests
 test_that("dimensions of the output of remstats", {
     expect_output(str(statsA), "List of 5")
+    expect_output(str(statsA2), "List of 5")
     expect_output(str(statsB), "List of 5")
     expect_output(str(statsC), "List of 5")
     expect_output(str(single_statA), "List of 5")
