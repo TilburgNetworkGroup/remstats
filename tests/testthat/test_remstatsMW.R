@@ -20,10 +20,14 @@ edgelistUTw2 <- edgelistUT[edgelistUT$time > windows$start[2] &
 
 # Effects
 effectsD <- c("sender_effect", "receiver_effect", "same", "difference",  
-        "mean", "min", "max", "both_equal_to", "event_effect", "inertia", "inertia_weighted", "sender_effect*inertia", "same*inertia")
+        "mean", "min", "max", "both_equal_to", "event_effect", "inertia", 
+        "PSAB-BA", "PSAB-BY", "PSAB-XA", "PSAB-XB", "PSAB-XY", "PSAB-AY", 
+        "inertia_weighted", "sender_effect*inertia", "same*inertia")
 
 effectsUT <- c("same", "difference",  "mean", "min", "max", "both_equal_to", 
-    "event_effect", "type_effect", "inertia", "inertia_weighted", "inertia_type", "inertia_type_weighted", "shared_partners", "unique_sp", "shared_partners_type", "unique_sp_type", "same*inertia")
+    "event_effect", "type_effect", "inertia", "inertia_weighted", 
+    "inertia_type", "inertia_type_weighted", "shared_partners", "unique_sp", 
+    "shared_partners_type", "unique_sp_type", "same*inertia")
 
 # Covariates 
 covariates <- rep(list(covar[,c(1,2,4)]), 8)
@@ -153,6 +157,21 @@ test_that("triad effects in remstats", {
         full_edgelist = statsB$full_edgelist, 
         window_edgelist = statsB$window_edgelist, window_length = 100, 
         riskset = statsB$riskset, unique_sp = TRUE, FALSE))
+})
+
+test_that("pshifts in remstats", {
+    expect_equal(statsA$statistics[,,"PSAB-BA"],
+        pshift(edgelist = statsA$window_edgelist, riskset = statsA$riskset, 1))
+    expect_equal(statsA$statistics[,,"PSAB-BY"],
+        pshift(edgelist = statsA$window_edgelist, riskset = statsA$riskset, 2))
+    expect_equal(statsA$statistics[,,"PSAB-XA"],
+        pshift(edgelist = statsA$window_edgelist, riskset = statsA$riskset, 3))
+    expect_equal(statsA$statistics[,,"PSAB-XB"],
+        pshift(edgelist = statsA$window_edgelist, riskset = statsA$riskset, 4))
+    expect_equal(statsA$statistics[,,"PSAB-XY"],
+        pshift(edgelist = statsA$window_edgelist, riskset = statsA$riskset, 5))
+    expect_equal(statsA$statistics[,,"PSAB-AY"],
+        pshift(edgelist = statsA$window_edgelist, riskset = statsA$riskset, 6))
 })
 
 test_that("interaction effects in remstats", {

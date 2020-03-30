@@ -64,7 +64,8 @@
 #' @export
 
 remstats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    timing = "interval", standardize = FALSE, riskset = NULL, actors = NULL, covariates = NULL, event_effect = NULL, weights = NULL, equal_val = NULL) {
+    timing = "interval", standardize = FALSE, riskset = NULL, actors = NULL, 
+    covariates = NULL, event_effect = NULL, weights = NULL, equal_val = NULL) {
 
     # Prepare the edgelist, riskset and actors
     out <- prepER(edgelist, directed, type, riskset, actors)
@@ -73,12 +74,20 @@ remstats <- function(edgelist, effects, directed = TRUE, type = FALSE,
     ac <- out$actors
     if(type) {ty <- out$types}
 
- 	# Prepare the evls (edgelist in relevent::rem() format)
+    # Prepare the evls (edgelist in relevent::rem() format)
     evls <- prepEvls(el, rs, type)
 
     # Prepare the effects
     all_effects <- c("sender_effect", "receiver_effect", "same", "difference",  
-        "mean", "min", "max", "both_equal_to", "event_effect", "type_effect", "inertia", "inertia_weighted", "inertia_type", "inertia_type_weighted", "reciprocity", "reciprocity_weighted", "indegree_sender", "indegree_receiver", "outdegree_sender", "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", "recency_send", "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", "ISP", "shared_partners", "unique_sp", "shared_partners_type", "unique_sp_type", "PSAB-BA", "PSAB_BY", "PSAB-XA", "PSAB-XB",  "PSAB-XY", "PSAB-AY")
+        "mean", "min", "max", "both_equal_to", "event_effect", "type_effect", 
+        "inertia", "inertia_weighted", "inertia_type", "inertia_type_weighted", 
+        "reciprocity", "reciprocity_weighted", "indegree_sender", 
+        "indegree_receiver", "outdegree_sender", "outdegree_receiver", 
+        "totaldegree_sender", "totaldegree_receiver", "recency_send", 
+        "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", 
+        "ISP", "shared_partners", "unique_sp", "shared_partners_type", 
+        "unique_sp_type", "PSAB-BA", "PSAB-BY", "PSAB-XA", "PSAB-XB",  
+        "PSAB-XY", "PSAB-AY")
     eff <- match(effects[!grepl("\\*", effects)], all_effects)
 
     # Add a baseline effect

@@ -272,6 +272,28 @@ triadU <- function(actors, edgelist, riskset, unique_sp, standardize) {
     .Call('_remstats_triadU', PACKAGE = 'remstats', actors, edgelist, riskset, unique_sp, standardize)
 }
 
+#' pshift
+#'
+#' A function to compute Gibson's (2003) dyadic participation shifts. 
+#'
+#' @param edgelist 3-column edgelist (time, sender, receiver)
+#' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+#' @param type (1 = AB-BA, 2 = AB-BY, 3 = AB-XA, 4 = AB-XB, 5 = AB-XY, 
+#' 6 = AB-AY)
+#'
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistD)
+#' out <- prepER(edgelistD)
+#' ABBA <- pshift(edgelist = out$edgelist, riskset = out$riskest, type = 1)
+#'
+#' @export
+#'
+pshift <- function(edgelist, riskset, type) {
+    .Call('_remstats_pshift', PACKAGE = 'remstats', edgelist, riskset, type)
+}
+
 #' inertiaMW
 #'
 #' A function to compute the inertia effect.

@@ -151,6 +151,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pshift
+arma::mat pshift(arma::mat edgelist, arma::mat riskset, int type);
+RcppExport SEXP _remstats_pshift(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(pshift(edgelist, riskset, type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // inertiaMW
 arma::mat inertiaMW(arma::mat full_edgelist, arma::mat window_edgelist, double window_length, arma::mat riskset, arma::vec full_weights, bool standardize);
 RcppExport SEXP _remstats_inertiaMW(SEXP full_edgelistSEXP, SEXP window_edgelistSEXP, SEXP window_lengthSEXP, SEXP risksetSEXP, SEXP full_weightsSEXP, SEXP standardizeSEXP) {
@@ -270,6 +283,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_degree", (DL_FUNC) &_remstats_degree, 4},
     {"_remstats_triad", (DL_FUNC) &_remstats_triad, 5},
     {"_remstats_triadU", (DL_FUNC) &_remstats_triadU, 5},
+    {"_remstats_pshift", (DL_FUNC) &_remstats_pshift, 3},
     {"_remstats_inertiaMW", (DL_FUNC) &_remstats_inertiaMW, 6},
     {"_remstats_triadUMW", (DL_FUNC) &_remstats_triadUMW, 7},
     {"_remstats_typestat", (DL_FUNC) &_remstats_typestat, 3},

@@ -754,6 +754,96 @@ arma::mat triadU(arma::vec actors, arma::mat edgelist, arma::mat riskset,
     return(stat);
 }
 
+//' pshift
+//'
+//' A function to compute Gibson's (2003) dyadic participation shifts. 
+//'
+//' @param edgelist 3-column edgelist (time, sender, receiver)
+//' @param riskset 2-column riskset (sender/actor 1, receiver/actor 2)
+//' @param type (1 = AB-BA, 2 = AB-BY, 3 = AB-XA, 4 = AB-XB, 5 = AB-XY, 
+//' 6 = AB-AY)
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistD)
+//' out <- prepER(edgelistD)
+//' ABBA <- pshift(edgelist = out$edgelist, riskset = out$riskest, type = 1)
+//'
+//' @export
+//'
+//[[Rcpp::export]]
+arma::mat pshift(arma::mat edgelist, arma::mat riskset, int type) {
+    // Storage space and fill with zeros
+    arma::mat stat(edgelist.n_rows, riskset.n_rows, fill::zeros);
+
+    // For loop over events
+    for(arma::uword i = 0; i < (edgelist.n_rows - 1); ++i) {
+        //Sender of the current event
+        arma::uword sender = edgelist(i, 1);
+        //Receiver of the current event
+        arma::uword receiver = edgelist(i, 2); 
+
+        // Storage space
+        arma::uvec psdyads = {0};
+
+        // Find the dyads that would create the respective p-shift 
+        switch(type) {
+            // AB-BA
+            case 1 :
+                // Find the reverse dyad (BA)
+                psdyads = find(riskset.col(0) == receiver && 
+                    riskset.col(1) == sender);
+                break;
+            
+            // AB-BY
+            case 2 :
+                // Find all BY dyads 
+                psdyads = find(riskset.col(0) == receiver && 
+                    riskset.col(1) != sender && riskset.col(1) != receiver);
+                break;
+
+            // AB-XA
+            case 3 :
+                // Find all XA dyads 
+                psdyads = find(riskset.col(1) == sender && 
+                    riskset.col(0) != receiver && riskset.col(0) != sender);
+                break;
+            
+            // AB-XB
+            case 4 :
+                // Find all XB dyads 
+                psdyads = find(riskset.col(1) == receiver && 
+                    riskset.col(0) != sender && riskset.col(0) != receiver);
+                break;
+
+            // AB-XY
+            case 5 :
+                // Find all XY dyads 
+                psdyads = find(riskset.col(0) != sender && 
+                    riskset.col(0) != receiver && riskset.col(1) != sender && 
+                    riskset.col(1) != receiver);
+                break;
+            
+            // AB-AY
+            case 6 :
+                // Find all AY dyads 
+                psdyads = find(riskset.col(0) == sender &&                  
+                    riskset.col(1) != receiver && riskset.col(1) != sender);
+                break;              
+        }
+
+        // Set the statistic to one at the next event for those dyads that 
+        // create the respective p-shift
+        for(arma::uword d = 0; d < psdyads.n_elem; ++d) {
+            stat(i+1, psdyads(d)) = 1.0;
+        }
+    }
+
+    // Output
+    return stat;
+}
+
 //' inertiaMW
 //'
 //' A function to compute the inertia effect.
