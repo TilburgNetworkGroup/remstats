@@ -169,82 +169,106 @@ arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist,
                 stat = inertia(edgelist, riskset, weights, standardize);
                 break;
             // inertia_weighted
-            case 12:
+            case 12 :
                 stat = inertia(edgelist, riskset, weights, standardize);
                 break;
             // inertia_type
-            case 13:
+            case 13 :
                 stat = inertia_type(edgelist, riskset, weights, standardize);
                 break;
             // inertia_type_weighted
-            case 14:
+            case 14 :
                 stat = inertia_type(edgelist, riskset, weights, standardize);
                 break;
             // reciprocity
-            case 15: 
+            case 15 : 
                 stat = reciprocity(edgelist, riskset, weights, standardize);
                 break;
             // reciprocity_weighted
-            case 16: 
+            case 16 : 
                 stat = reciprocity(edgelist, riskset, weights, standardize);
                 break;
             // indegree_sender
-            case 17:
+            case 17 :
                 stat = degree(edgelist, riskset, 1, standardize);
                 break;
             // indegree_receiver
-            case 18:
+            case 18 :
                 stat = degree(edgelist, riskset, 2, standardize);
                 break;
             // outdegree_sender
-            case 19:
+            case 19 :
                stat = degree(edgelist, riskset, 3, standardize);
                 break;
             // outdegree_receiver
-            case 20:
+            case 20 :
                 stat = degree(edgelist, riskset, 4, standardize);
                 break;
             // totaldegree_sender
-            case 21:
+            case 21 :
                 stat = degree(edgelist, riskset, 5, standardize);
                 break;
             // totaldegree_receiver
-            case 22:
+            case 22 :
                 stat = degree(edgelist, riskset, 6, standardize);
                 break;
             // OTP
-            case 27:
+            case 27 :
                 stat = triad(actors, edgelist, riskset, 1, standardize);
                 break;
             // ITP
-            case 28:
+            case 28 :
                 stat = triad(actors, edgelist, riskset, 2, standardize);
                 break;
             // OSP
-            case 29:
+            case 29 :
                 stat = triad(actors, edgelist, riskset, 3, standardize);
                 break;
             // ISP
-            case 30:
+            case 30 :
                 stat = triad(actors, edgelist, riskset, 4, standardize);
                 break;
             // shared_partners
-            case 31:
+            case 31 :
                 stat = triadU(actors, edgelist, riskset, FALSE, standardize);
                 break;
             // unique_sp
-            case 32:
+            case 32 :
                 stat = triadU(actors, edgelist, riskset, TRUE, standardize);
                 break;
             // shared_partners_type
-            case 33:
+            case 33 :
                 stat = triadU_type(actors, edgelist, riskset, FALSE, 
                     standardize);
                 break;
             // unique_sp_type
-            case 34:
+            case 34 :
                 stat = triadU_type(actors, edgelist, riskset, TRUE, 
                     standardize);
+                break;
+            // PSAB-BA
+            case 35 :
+                stat = pshift(edgelist, riskset, 1);
+                break;
+            // PSAB-BY
+            case 36 :
+                stat = pshift(edgelist, riskset, 2);
+                break;
+            // PSAB-XA
+            case 37 :
+                stat = pshift(edgelist, riskset, 3);
+                break;
+            // PSAB-XB
+            case 38 :
+                stat = pshift(edgelist, riskset, 4);
+                break;
+            // PSAB-XY
+            case 39 :
+                stat = pshift(edgelist, riskset, 5);
+                break;
+            // PSAB-AY
+            case 40 :
+                stat = pshift(edgelist, riskset, 6);
                 break;
             // interaction effects
             case 999:
@@ -464,6 +488,30 @@ arma::cube remstatsMWCpp(arma::vec effects, bool standardize,
             case 34:
                 stat = triadU_typeMW(actors, full_edgelist, window_edgelist, 
                     window_length, riskset, TRUE, standardize);
+                break;
+            // PSAB-BA
+            case 35 :
+                stat = pshift(window_edgelist, riskset, 1);
+                break;
+            // PSAB-BY
+            case 36 :
+                stat = pshift(window_edgelist, riskset, 2);
+                break;
+            // PSAB-XA
+            case 37 :
+                stat = pshift(window_edgelist, riskset, 3);
+                break;
+            // PSAB-XB
+            case 38 :
+                stat = pshift(window_edgelist, riskset, 4);
+                break;
+            // PSAB-XY
+            case 39 :
+                stat = pshift(window_edgelist, riskset, 5);
+                break;
+            // PSAB-AY
+            case 40 :
+                stat = pshift(window_edgelist, riskset, 6);
                 break;
             // interaction effects
             case 999:

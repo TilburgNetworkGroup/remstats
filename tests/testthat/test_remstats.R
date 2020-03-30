@@ -12,19 +12,27 @@ data(covar)
 
 # Effects
 effectsD <- c("sender_effect", "receiver_effect", "same", "difference",  
-        "mean", "min", "max", "both_equal_to", "event_effect", "inertia", "inertia_weighted", "reciprocity", "reciprocity_weighted", "indegree_sender", "indegree_receiver", "outdegree_sender", "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", "OTP", "ITP", "OSP", "ISP", "sender_effect*inertia", "same*inertia")
+        "mean", "min", "max", "both_equal_to", "event_effect", "inertia", 
+        "inertia_weighted", "reciprocity", "reciprocity_weighted", 
+        "indegree_sender", "indegree_receiver", "outdegree_sender", 
+        "outdegree_receiver", "totaldegree_sender", "totaldegree_receiver", 
+        "OTP", "ITP", "OSP", "ISP", "PSAB-BA", "PSAB-BY", "PSAB-XA", "PSAB-XB", 
+        "PSAB-XY", "PSAB-AY", "sender_effect*inertia", "same*inertia")
 
 effectsD2 <- c("sender_effect", "reciprocity")
 
 effectsU <- c("same", "difference",  "mean", "min", "max", "both_equal_to", 
-    "event_effect", "inertia", "inertia_weighted", "shared_partners", "unique_sp", "same*inertia")
+    "event_effect", "inertia", "inertia_weighted", "shared_partners", 
+    "unique_sp", "same*inertia")
 
 effectsUT <- c("same", "difference",  "mean", "min", "max", "both_equal_to", 
-    "event_effect", "type_effect", "inertia", "inertia_weighted", "inertia_type", "inertia_type_weighted", "shared_partners", "unique_sp", "shared_partners_type", "unique_sp_type", "same*inertia")
+    "event_effect", "type_effect", "inertia", "inertia_weighted", 
+    "inertia_type", "inertia_type_weighted", "shared_partners", "unique_sp", 
+    "shared_partners_type", "unique_sp_type", "same*inertia")
 
 # Covariates 
 covariates <- rep(list(covar[,c(1,2,4)]), 8)
-names(covariates) <- c("sender_effect", "receiver_effect", "same", 
+names(covariates) <- c("sender_effect", "receiver_effect", "same",   
     "difference", "mean", "min", "max", "both_equal_to")
 
 # Event effect
@@ -227,6 +235,21 @@ test_that("triad effects in remstats", {
     expect_equal(statsC$statistics[,,"unique_sp_type"], 
         triadU_type(actors = statsC$actors[,1], edgelist = statsC$edgelist, 
         riskset = statsC$riskset, unique_sp = TRUE, FALSE))
+})
+
+test_that("pshifts in remstats", {
+    expect_equal(statsA$statistics[,,"PSAB-BA"],
+        pshift(edgelist = statsA$edgelist, riskset = statsA$riskset, 1))
+    expect_equal(statsA$statistics[,,"PSAB-BY"],
+        pshift(edgelist = statsA$edgelist, riskset = statsA$riskset, 2))
+    expect_equal(statsA$statistics[,,"PSAB-XA"],
+        pshift(edgelist = statsA$edgelist, riskset = statsA$riskset, 3))
+    expect_equal(statsA$statistics[,,"PSAB-XB"],
+        pshift(edgelist = statsA$edgelist, riskset = statsA$riskset, 4))
+    expect_equal(statsA$statistics[,,"PSAB-XY"],
+        pshift(edgelist = statsA$edgelist, riskset = statsA$riskset, 5))
+    expect_equal(statsA$statistics[,,"PSAB-AY"],
+        pshift(edgelist = statsA$edgelist, riskset = statsA$riskset, 6))
 })
 
 test_that("interaction effects in remstats", {

@@ -5,7 +5,7 @@
 \title{prepER}
 \usage{
 prepER(edgelist, directed = TRUE, type = FALSE, riskset = NULL,
-  actors = NULL)
+  actors = NULL, types = NULL)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
@@ -27,6 +27,8 @@ actors (and action types) are observed in the edgelist.}
 
 \item{actors}{optional; [vector], if supplied, should contain all actors 
 that can potentially interact. Used to create the riskset.}
+
+\item{types}{optional; [vector], if supplied, should contain all event types.}
 }
 \value{
 edgelist [matrix] with actor IDs that run from 1 to N and types that #' run from 1 to C.
@@ -42,8 +44,7 @@ remStats().
 }
 \examples{
 data(edgelistD)
-out <- prepER(edgelist = edgelistD, directed = TRUE, type = FALSE, 
-	riskset = NULL, actors = NULL)
+out <- prepER(edgelist = edgelistD)
 el <- out$edgelist
 rs <- out$riskset
 ac <- out$actors
