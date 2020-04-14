@@ -212,6 +212,14 @@ arma::cube remstatsCpp(arma::vec effects, bool standardize, arma::mat edgelist,
             case 22 :
                 stat = degree(edgelist, riskset, 6, standardize);
                 break;
+            //rrank_send
+            case 25:
+                stat = recency(edgelist, actors, 1);
+                break;
+            //rrank_receive
+            case 26:
+                stat = recency(edgelist, actors, 2);
+                break;
             // OTP
             case 27 :
                 stat = triad(actors, edgelist, riskset, 1, standardize);

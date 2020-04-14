@@ -4,8 +4,14 @@
 \alias{inertiaMW}
 \title{inertiaMW}
 \usage{
-inertiaMW(full_edgelist, window_edgelist, window_length, riskset,
-  full_weights, standardize)
+inertiaMW(
+  full_edgelist,
+  window_edgelist,
+  window_length,
+  riskset,
+  full_weights,
+  standardize
+)
 }
 \arguments{
 \item{full_edgelist}{3-column edgelist (time, sender, receiver)}

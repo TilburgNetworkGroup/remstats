@@ -4,10 +4,20 @@
 \alias{remstats}
 \title{remstats}
 \usage{
-remstats(edgelist, effects, directed = TRUE, type = FALSE,
-  timing = "interval", standardize = FALSE, riskset = NULL,
-  actors = NULL, covariates = NULL, event_effect = NULL,
-  weights = NULL, equal_val = NULL)
+remstats(
+  edgelist,
+  effects,
+  directed = TRUE,
+  type = FALSE,
+  timing = "interval",
+  standardize = FALSE,
+  riskset = NULL,
+  actors = NULL,
+  covariates = NULL,
+  event_effect = NULL,
+  weights = NULL,
+  equal_val = NULL
+)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 

@@ -4,9 +4,21 @@
 \alias{remstatsMWCpp}
 \title{remstatsMWCpp}
 \usage{
-remstatsMWCpp(effects, standardize, full_edgelist, window_edgelist,
-  window_length, riskset, actors, covariates, event_effect, types,
-  full_weights, equal_val, int_positions)
+remstatsMWCpp(
+  effects,
+  standardize,
+  full_edgelist,
+  window_edgelist,
+  window_length,
+  riskset,
+  actors,
+  covariates,
+  event_effect,
+  types,
+  full_weights,
+  equal_val,
+  int_positions
+)
 }
 \arguments{
 \item{effects}{integer vector (effects)}

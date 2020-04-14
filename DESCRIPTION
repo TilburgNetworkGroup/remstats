@@ -54,10 +54,9 @@ Description: This package allows researchers to compute a range of exogenous
 License: MIT + file LICENSE
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 Depends: R (>= 2.10)
 Imports: Rcpp (>= 1.0.2)
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
     testthat,
-

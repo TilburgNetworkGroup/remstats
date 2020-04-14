@@ -4,11 +4,22 @@
 \alias{remstatsMW}
 \title{remstatsMW}
 \usage{
-remstatsMW(full_edgelist, window_edgelist, effects, window_length,
-  directed = TRUE, type = FALSE, timing = "interval",
-  standardize = FALSE, riskset = NULL, actors = NULL,
-  covariates = NULL, event_effect = NULL, full_weights = NULL,
-  equal_val = NULL)
+remstatsMW(
+  full_edgelist,
+  window_edgelist,
+  effects,
+  window_length,
+  directed = TRUE,
+  type = FALSE,
+  timing = "interval",
+  standardize = FALSE,
+  riskset = NULL,
+  actors = NULL,
+  covariates = NULL,
+  event_effect = NULL,
+  full_weights = NULL,
+  equal_val = NULL
+)
 }
 \arguments{
 \item{full_edgelist}{[matrix] or [dataframe], should minimally contain the 

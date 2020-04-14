@@ -515,3 +515,27 @@ triadU_typeMW <- function(actors, full_edgelist, window_edgelist, window_length,
     .Call('_remstats_triadU_typeMW', PACKAGE = 'remstats', actors, full_edgelist, window_edgelist, window_length, riskset, unique_sp, standardize)
 }
 
+#' recency
+#'
+#' A function to compute the rank-based recency effect, as in section 2.2.5 of Butts (2008).
+#' 
+#' @param edgelist 3-column edgelist (time, sender, receiver)
+#' @param actors vector of integers indicating the identity of the actors in the network
+#' @param type equals 1 for outgoing and 2 for incoming recency effect
+#'
+#' @return matrix (time x dyad)
+#'
+#' @examples
+#' data(edgelistD)
+#' out <- prepER(edgelist = edgelistD)
+#' edgelist <- out$edgelist
+#' actors <- out$actors$id
+#' type <- 1
+#' stat <- recency(edgelist, actors, type)
+#'
+#' @export
+#'
+recency <- function(edgelist, actors, type) {
+    .Call('_remstats_recency', PACKAGE = 'remstats', edgelist, actors, type)
+}
+
