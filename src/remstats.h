@@ -1511,8 +1511,7 @@ arma::mat triadU_typeMW(arma::vec actors, arma::mat full_edgelist,
 //'
 //' @export
 //'
-
-// [[Rcpp::export]]
+//[[Rcpp::export]]
 arma::mat recency(arma::mat edgelist, arma::vec actors, double type){
   //this cube will be filled with the ranks at each time
   arma::cube output(max(actors), max(actors), edgelist.n_rows, fill::zeros);
