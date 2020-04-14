@@ -4,8 +4,15 @@
 \alias{triadUMW}
 \title{triadUMW}
 \usage{
-triadUMW(actors, full_edgelist, window_edgelist, window_length, riskset,
-  unique_sp, standardize)
+triadUMW(
+  actors,
+  full_edgelist,
+  window_edgelist,
+  window_length,
+  riskset,
+  unique_sp,
+  standardize
+)
 }
 \arguments{
 \item{actors}{vector with numeric actor IDs (correspond to edgelist,

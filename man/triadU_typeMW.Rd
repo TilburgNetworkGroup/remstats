@@ -4,8 +4,15 @@
 \alias{triadU_typeMW}
 \title{triadU_typeMW}
 \usage{
-triadU_typeMW(actors, full_edgelist, window_edgelist, window_length,
-  riskset, unique_sp, standardize)
+triadU_typeMW(
+  actors,
+  full_edgelist,
+  window_edgelist,
+  window_length,
+  riskset,
+  unique_sp,
+  standardize
+)
 }
 \arguments{
 \item{actors}{vector with numeric actor IDs (correspond to edgelist,

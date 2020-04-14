@@ -4,8 +4,19 @@
 \alias{remstatsCpp}
 \title{remstatsCpp}
 \usage{
-remstatsCpp(effects, standardize, edgelist, riskset, actors, covariates,
-  event_effect, types, weights, equal_val, int_positions)
+remstatsCpp(
+  effects,
+  standardize,
+  edgelist,
+  riskset,
+  actors,
+  covariates,
+  event_effect,
+  types,
+  weights,
+  equal_val,
+  int_positions
+)
 }
 \arguments{
 \item{effects}{integer vector (effects)}

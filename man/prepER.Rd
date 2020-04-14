@@ -4,8 +4,14 @@
 \alias{prepER}
 \title{prepER}
 \usage{
-prepER(edgelist, directed = TRUE, type = FALSE, riskset = NULL,
-  actors = NULL, types = NULL)
+prepER(
+  edgelist,
+  directed = TRUE,
+  type = FALSE,
+  riskset = NULL,
+  actors = NULL,
+  types = NULL
+)
 }
 \arguments{
 \item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 

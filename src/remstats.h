@@ -1489,3 +1489,103 @@ arma::mat triadU_typeMW(arma::vec actors, arma::mat full_edgelist,
     //Output
     return(stat);
 }
+
+
+//' recency
+//'
+//' A function to compute the rank-based recency effect, as in section 2.2.5 of Butts (2008).
+//' 
+//' @param edgelist 3-column edgelist (time, sender, receiver)
+//' @param actors vector of integers indicating the identity of the actors in the network
+//' @param type equals 1 for outgoing and 2 for incoming recency effect
+//'
+//' @return matrix (time x dyad)
+//'
+//' @examples
+//' data(edgelistD)
+//' out <- prepER(edgelist = edgelistD)
+//' edgelist <- out$edgelist
+//' actors <- out$actors$id
+//' type <- 1
+//' stat <- recency(edgelist, actors, type)
+//'
+//' @export
+//'
+
+// [[Rcpp::export]]
+arma::mat recency(arma::mat edgelist, arma::vec actors, double type){
+  //this cube will be filled with the ranks at each time
+  arma::cube output(max(actors), max(actors), edgelist.n_rows, fill::zeros);
+  
+  //these are just auxiliary structures that'll be used inside the loop
+  arma::mat aux(max(actors), max(actors), fill::zeros);
+  arma::vec auxCol(max(actors));
+  
+  for(arma::uword k = 0; k < edgelist.n_rows; ++k){
+    
+      if(k == 0){continue;} //the statistic has to be zero for everybody at time t = 1
+      else {
+        
+        arma::uword j = edgelist(k-1,1); //sender index
+        arma::uword i = edgelist(k-1,2); //receiver index
+        
+        if(k == 1){ //case where time t = 1
+          aux(i-1,j-1) = 1;
+          output.slice(k) = aux;
+        } else {
+          aux = output.slice(k-1);
+          auxCol = aux.col(j-1);
+          arma::uword rank = auxCol(i-1);
+          
+          //this block takes care of the 4 situations needed in order to correctly get the ranks in the network
+          if(rank == 1){ //case where the current interaction was the same as the previous one
+            output.slice(k) = aux;  
+            continue;
+          } else if(sum(auxCol) == 0){//case where it's first interaction of an actor
+            aux(i-1,j-1) = 1;
+          } else if(rank == 0 && sum(auxCol) >= 1){//case where it's the first time an actor interacts with another
+            arma::uvec mostRecent = find(auxCol > 0);
+            auxCol(mostRecent) = auxCol(mostRecent) + 1;
+            auxCol(i-1) = 1;
+            aux.col(j-1) = auxCol;
+          } else if(rank > 1){//case where an actor is not interacting with another for the first time
+            arma::uvec mostRecent = find(auxCol > 0 && auxCol < rank);
+            auxCol(mostRecent) = auxCol(mostRecent) + 1;
+            auxCol(i-1) = 1;
+            aux.col(j-1) = auxCol;
+          }
+        }
+      }
+    //updating the ranks  
+    output.slice(k) = aux;  
+  }
+  
+  //this is the number of edges in the network
+  arma::uword permutations = max(actors)*(max(actors) - 1);
+  //the output of the function, it will be transposed in the end
+  arma::mat recency(permutations, edgelist.n_rows);
+  //another auxiliary structure
+  arma::vec auxRows(permutations);
+  
+  //Only one of this will be the output of the function, this was made to prevent having to create two functions
+  
+  for(arma::uword i = 0; i < output.n_slices; ++i){
+    double value = -1;
+    arma::vec V;
+    output.slice(i).diag(0).fill(value);
+    if(type == 1){//calculates the outgoing recency
+      V = vectorise(output.slice(i).t());
+    }
+    if(type == 2){//calculates the incoming recency
+      V = vectorise(output.slice(i));
+    }  
+    arma::uvec ind1 = find(V >= 0);
+    auxRows = V(ind1); //correcting the fact that rank = Inf was not set for actors who haven't interacted
+    arma::uvec ind2 = find(auxRows);
+    auxRows(ind2) = 1/auxRows(ind2);
+    recency.col(i) = auxRows;
+  }
+
+  //transposing the output to be in the same form as the other functions in the package
+  return(recency.t());
+}  

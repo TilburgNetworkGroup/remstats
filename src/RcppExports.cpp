@@ -272,6 +272,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// recency
+arma::mat recency(arma::mat edgelist, arma::vec actors, double type);
+RcppExport SEXP _remstats_recency(SEXP edgelistSEXP, SEXP actorsSEXP, SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
+    Rcpp::traits::input_parameter< double >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(recency(edgelist, actors, type));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_remstats_remstatsCpp", (DL_FUNC) &_remstats_remstatsCpp, 11},
@@ -291,6 +304,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_inertia_typeMW", (DL_FUNC) &_remstats_inertia_typeMW, 6},
     {"_remstats_triadU_type", (DL_FUNC) &_remstats_triadU_type, 5},
     {"_remstats_triadU_typeMW", (DL_FUNC) &_remstats_triadU_typeMW, 7},
+    {"_remstats_recency", (DL_FUNC) &_remstats_recency, 3},
     {NULL, NULL, 0}
 };
 
