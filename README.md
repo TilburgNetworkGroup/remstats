@@ -1,140 +1,154 @@
 # remstats
 
-An R-package that can be used to compute statistics for relational event history data. Statistics are computed with the `remstats()` function. Output from the `remstats()` function can be used to fit a relational event model with the `rem` function from the `relevent` R-package (Butts, 2008). 
+An R-package that computes statistic for relational event history data. The `remstats()` function is the main function of the package. An introduction on how this function can be used to compute statistics for relational event history data follows below. 
 
-## Installation
-The package can be installed from Github:
-``` r
-# Install the package
+## Getting started 
+
+### Installation 
+The package can be installed from Github. To install the package, run:
+```r
 install.packages("devtools")
 devtools::install_github("TilburgNetworkGroup/remstats")
+```
 
-# Load the package
+Load the package with:
+```r
 library(remstats)
 ```
 
-## Getting started
-For this application, we use the example data set `edgelistD` that is provided with the package. The data set `edgelistD` is a simulated relational event history between 26 actors (actor IDs are denoted by the 26 letters of the alphabet). Events in this simulated relational event history are dyadic and directed. 
+### Data 
+Relational event history data describes a time-ordered series of interactions between actors in a network. Such interactions are referred to as relational events. A relational event minimally contains information on the time of the event and the actors that are involved in the event. 
+
+As an illustration, we use the `history` data object in the `remstats` package. This data object is a randomly generated relational event history. A description of the simulated data can be accessed with:
+
+```r 
+?history
+```  
+
+Here, we read that `history` is a small simulated relational event history with 115 events. Besides information on the time and actors, for each event there is also information on the setting and an event weight. We can view the first six events with:
 
 ```r
-data(edgelistD)
+head(history)
 ```
 
-We may distinguish between endogenous and exogenous statistics. Endogenous statistics refer to statistics that are a function of past events. For example, the endogenous statistic `inertia` captures the tendency of actors to repeatedly send events to the same receivers by counting the number of past events from sender $i$ to receiver $j$. 
+time  | actor1    | actor2    | setting   | weight     
+---   | ---       | ---       | ---       | ---
+238   | 105       | 113       | work      | 1.33
+317   | 105       | 108       | work      | 1.64
+345   | 115       | 112       | work      | 1.82
+627   | 101       | 115       | social    | 1.25
+832   | 113       | 107       | social    | 1.67
+842   | 105       | 109       | work      | 2.30
 
-We can compute an inertia statistic with the following lines of codes:
+Besides the relational event history itself, relational event modeling often requires a second data object with exogenous information on the actors in the network. Information on the actors in the simulated data example in `remstats` is stored in the `info` object. A description of the `info` data can be accessed with:
+
+```r 
+?info
+```  
+
+Here, we read that the `info` object stores for the 10 actors in the network information on their age, sex, extraversion and agreeableness score. Moreover, extraversion and agreeableness is measured multiple times during the observation period. The time variable tells us when the values change. We can view covariates information for the first two actors with:
 
 ```r
-out <- remstats(edgelist = edgelistD, effects = "inertia")
-str(out$statistics)
+head(info)
 ```
 
-The `statistics` object in `out` now contains the inertia statistic. 
+id  | time  | age   | sex   | extraversion  | agreeableness 
+--- |---    | ---   | ---   | ---           | ---
+101 | 0     | 0     | 0     | -0.40         | -0.14
+101 | 9432  | 0     | 0     | -0.32         | -0.26
+101 | 18864 | 0     | 0     | -0.53         | -0.45
+102 | 0     | 0     | 0     | -0.13         | -0.65
+102 | 9432  | 0     | 0     | -0.43         | -0.44
+102 | 18864 | 0     | 0     | -0.13         | -0.43
 
-Exogenous statistics are not a function of past events but allow to include exogenous covariate information. For example, exogenous statistics may encode covariate information for the sender, receiver, the dyad or the environment. The example data set `covar` contains simulated information on two covariate variables (`x1` and `x2`) for the 26 actors together with the time points at which a covariate value changes for a respective actor. 
+### The riskset 
+The riskset is an important part of relational event modeling. It contains all events that can potentially be observed in the relational event history. Statistics are computed for every event in the riskset for every timepoint. Therefore, the riskset is also an important part of `remstats`. If nothing is specified by the user, `remstats()` assumes that all actors that can potentially interact are observed in the edgelist and creates a riskset with every directed pair of observed actors, for which statistics are then computed. Alternatively, the user can use the `directed`, `with_type`, `riskset`, `actors`, and `types` arguments of `remstats()` to tailor the riskset to its application:
 
+* If not every actor that can potentially interact is observed in the edgelist, the user should supply every actor that can potentially interact to the `actors` argument. 
+* If the relational events in the edgelist and in the riskset are undirected (i.e., no distinction is made between i --> j and j --> i), the user should set `directed = FALSE`. 
+* If the user wants to distinguish between events of different types in the riskset (e.g., setting in the illustrative example), the user should set `with_type = TRUE`.
+* If the user wants to distinguish between events of different types but not every type that can potentially occur is observed in the edgelist, the user should supply every type that can potentially occur to the `types` argument. 
+* For other non-standard riskset situations, the user should create its own riskset object and supply it to the `riskset` argument. 
+
+### Compute statistics
+The `remstats()` function in the `remstats`-package computes statistics for the relational event history data. The statistics that are requested need to be supplied to the `formula` argument of the function, specified in an object of class `formula`. This specification should be in the form `~ terms`.
+
+An overview of the statistics that can be computed with remstats is available in the "details" section of the `remstats` function documentation (access with `?remstats`). 
+
+In this illustration, we start with requesting only one statistic: the inertia statistic. Most statistics can be tailored to the user's needs. For example, lets view the description for the `inertia` statistic:
 ```r
-data(covar)
+?inertia
+```
+Here, we can read that the inertia statistic computes for every timepoint *t* for every pair of actors *(i,j)* in the riskset the number of past events. With the `scaling` argument, one of the methods for scaling the statistic can be chosen. With the `memory_value` argument, the user can indicate the time interval for which past events should be included in the statistic. With the `with_type` argument, the user can request to count events between the actor pair *(i,j)* of different types separately. Finally, with the `event_weights` argument, the user can indicate the weight with which past events should be included in the count. 
+
+In this illustration, we will standardize the inertia statistic and use the information on the event weights in the edgelist to weight the events in the counts. To request this statistic, we define the formula as follows:
+```r
+formula <- ~ inertia(scaling = "standardize", event_weights = history$weight)
 ```
 
-If we request an exogenous effect to be computed from `remstats()` we have to include the covariate information to the `covariates` argument. The covariates argument expects a list with per exogenous effect the respective covariate information in matrix format. In this matrix, the first column should refer to the actor IDs, the second column to the time points at which a covariate value changes (set all to zero for time-invariant covariate information) and in the third column the covariate information. 
-
-For example, suppose we want to request a statistic for the effect of `x1` on sending events. First, we prepare the matrix for this effect:
-
+Now, we have everything we need to compute our first statistic:
 ```r
-sender_effect <- covar[,c(1, 2, 3)]
+out <- remstats(formula, edgelist = history)
 ```
 
-Next, we prepare the covariates argument. Note that the names of the elements in the list should correspond to the effects requested. In this case, we want to request `sender_effect` so we name our list element also `sender_effect`:
+The `remstats()` function outputs a list with multiple objects. We can view the names of these objects with:
 ```r
-covariates <- list(sender_effect = sender_effect)
+names(out)
 ```
+Here, we can see that `remstats()` outputs an object named `statistics`, `edgelist`, `riskset` and `evls`. 
 
-Now, we can compute the statistic with `remstats()`:
+The `statistics` object is a 3-dimensional array. On the rows of this array are the timepoints, the columns refer to the potential events in the riskset and the slices refer to the different statistics:
 ```r
-out <- remstats(edgelist = edgelistD, effects = "sender_effect", 
-    covariates = covariates)
-str(out$statistics)
+dim(out$statistics)
 ```
-
-We may want to compute more than one `sender_effect`. In this case, we can add additional columns with covariate information to our `sender_effect` matrix in the `covariates` argument:
-
+Our statistics object has 115 rows, corresponding to the 115 events in the edgelist. It has 90 columns, corresponding to the 90 events in the riskset. Since we did not request anything special for the riskset, it consists of every directed pair of actors observed in the edgelist, which is 10*9 = 90 pairs. These pairs are saved in the `riskset` object. We can ask for the first few lines of this riskset:
 ```r
-sender_effect <- covar
-covariates <- list(sender_effect = sender_effect)
-out <- remstats(edgelist = edgelistD, effects = "sender_effect", 
-    covariates = covariates)
-str(out$statistics)
+head(out$riskset)
 ```
+sender  | receiver
+---     | ---
+103     | 101
+104     | 101
+105     | 101
+107     | 101
+109     | 101
+111     | 101
 
-Interaction between two statistics can also be included in the following manner. Suppose we want to include an interaction between the first sender_effect and inertia:
+Here, we see that the first event in the riskset is the event were actor 103 sends an interaction directed towards actor 101. The first column in the statistic object refers to this first event in the riskset, the second column in the statistic object to the second event in the riskset, and so forth. 
+
+Finally, our statistics object has only one slice, since we only requested one statistic. 
+
+The outputted `edgelist` object by `remstats()` is mainly a control object. It shows the information used by `remstats()` to create the riskset compute the statistics and should be the same as the inputted `edgelist` object. It contains an extra column with for every event that is observed its position in the riskset:
 ```r
-out <- remstats(edgelist = edgelistD, effects = "sender_effect", "inertia", 
-    "sender_effect1*inertia", covariates = covariates)
-str(out$statistics)
+head(out$edgelist)
 ```
+time  | actor1    | actor2    | rs_position
+---   | ---       | ---       | ---
+238   | 105       | 113       | 76
+317   | 105       | 108       | 49
+345   | 115       | 112       | 72
+627   | 101       | 115       | 82
+832   | 113       | 107       | 44
+842   | 105       | 109       | 49
 
-The output from `remstats()` may be used to fit a REM model with `relevent::rem()`. For example:
+Finally, the outputted `evls` object is a transformation of the edgelist into a form such that it can be used by `rem()` function of the `relevent` R-package to estimate a relational event model:
 ```r
-out <- remstats(edgelist = edgelistD, effects = c("baseline", "inertia", 
-    "sender_effect"), covariates = covariates)
-evls <- out$evls
-stats <- out$stats
-
 library(relevent)
-fit <- rem(eventlist = evls, statslist = stats, timing = "interval", 
-    estimator = "MLE")
+fit <- rem(out$evls, out$statistics, timing = "interval", estimator = "MLE")
 summary(fit)
 ```
 
-While this application concerned a relational event history with directed relational events, the `remstats()` function may also be used for undirected events or events with types. An example data set for a relational event history with undirected events is available through `data(edgelistU)`, for a relational event history with directed events with types through `data(edgelistDT)`, and for a relational event history with undirected events with types through `data(edgelistUT)`. Note that the user needs to indicate to `remstats()` whether events in the history are directed or undirected by setting `directed = TRUE` or `directed = FALSE` respectively and whether events in the history are without or with types by setting `type = FALSE` or `type = TRUE` respectively. Statistics may not be defined for every type of relational event history; restrictions on types of events for which statistics are defined can be find below. 
+Inertia is an example of an *endogenous* statistic: it is a function of the relational event history itself. Next, we are going to add a request for an *exogenous* statistic. For this we need the exogenous information on the actors in the `info` object. 
 
-Statistics
-------------
-The following provides a brief overview of the statistics currently in the remstats package. More detailed information will follow.
+As an illustration, we are going to request the statistic for an effect of extraversion on sending events, i.e., a send effect. The description of a send effect is accessed with 
+```r
+?send
+```
+Here, we read that we need to supply the variable for which we want to specify a sender effect and that this variable should correspond to a column in the covariates object that we supply. Thus, we specify a send effect of extraversion with `send("extraversion", info)`.
 
-name in `effects`       | short description | additional arguments | defined for
------------------------ | ----------------- | -------------------- | -----------
-`baseline`              | The statistic for dyad $(i,j)$ at time $t$ is equal to 1.
-`sender_effect`         | The statistic for dyad $(i,j)$ at time $t$ is equal to the covariate value of actor $i$ at time $t$. | `covariates` | `directed = TRUE`
-`receiver_effect`       | The statistic for dyad $(i,j)$ at time $t$ is equal to the covariate value of actor $j$ at time $t$. | `covariates` | `directed = TRUE`
-`same`                  | The statistic for dyad $(i,j)$ at time $t$ is set to 1 if actor $i$ and $j$ have the same covariate value at time $t$ and set to zero otherwise. | `covariates`
-`difference`            | The statistic for dyad $(i,j)$ at time $t$ is equal to the absolute difference between the covariate values of actor $i$ and $j$ at time $t$.| `covariates`
-`mean`                  | The statistic for dyad $(i,j)$ at time $t$ is equal to the mean of the covariate values of actor $i$ and $j$ at time $t$. | `covariates`
-`min`                   | The statistic for dyad $(i,j)$ at time $t$ is equal to the minimum of the covariate values of actor $i$ and $j$ at time $t$. | `covariates`
-`max`                   | The statistic for dyad $(i,j)$ at time $t$ is equal to the maximum of the covariate values of actor $i$ and $j$ at time $t$. | `covariates`
-`both_equal_to`         | The statistic for dyad $(i,j)$ at time $t$ is set to 1 if the covariate values of actors $i$ and $j$ are both equal to some value $\theta$ at time $t$ and set to zero otherwise. | `covariates`, `equal_val`
-`event_effect`          | The statistic for all dyads at time $t$ is equal to some value that denotes a characteristic for the event at time $t$. | `event_effect`
-`type_effect`           | Creates dummy variables for event types. The statistic for dyad with type $(i,j,c)$ at time $t$ is set to 1 if $c$ is equal to $c_i, i = \{1, 2, ... C\}$ where $C$ refers to the number of unique event types and set to zero otherwise. | | `type = TRUE`
-`inertia`               | The statistic for dyad $(i,j)$ at time $t$ is equal to the number of past $(i,j)$ events. 
-`inertia_weighted`      | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum of the weights of past $(i,j)$ events. | `weights`
-`inertia_type`          | The statistic for dyad with type $(i,j,c)$ at time $t$ is equal to the number of past $(i,j,c)$ events. | | `type = TRUE`
-`inertia_type_weighted` | The statistic for dyad with type $(i,j,c)$ at time $t$ is equal to the sum of the weights of past $(i,j,c)$ events. | `weights` | `type = TRUE`
-`reciprocity`           | The statistic for dyad $(i,j)$ at time $t$ is equal to the number of past $(j,i)$ events. | | `directed = TRUE`
-`reciprocity_weighted`  | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum of the weights of past $(j,i)$ events. | `weights` | `directed = TRUE`
-`indegree_sender`       | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum of past events with actor $i$ as receiver. | | `directed = TRUE`
-`indegree_receiver`     | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum of past events with actor $j$ as receiver. | | `directed = TRUE`
-`outdegree_sender`      | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum of past events with actor $i$ as sender. | | `directed = TRUE`
-`outdegree_receiver`    | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum of past events with actor $j$ as sender. | | `directed = TRUE`
-`totaldegree_sender`    | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum of past events with actor $i$ as sender or receiver. | | `directed = TRUE`
-`totaldegree_receiver`  | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum of past events with actor $j$ as sender or receiver. | | `directed = TRUE`
-`rrank_send`            | The statistic for dyad $(i,j)$ at time $t$ is equal to the inverse rank of actor $j$ among the actors to which actor $i$ has most recently send past events. | | `directed = TRUE`
-`rrank_receive`         | The statistic for dyad $(i,j)$ at time $t$ is equal to the inverse rank of actor $j$ among the actors from which actor $i$ has most recently received past events | | `directed = TRUE`
-`OTP`                   | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum over all actors $h$ of the minimum number of past $(i,h)$ and $(h,j)$ events. | | `directed = TRUE`
-`ITP`                   | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum over all actors $h$ of the minimum number of past $(j,h)$ and $(h,i)$ events. | | `directed = TRUE`
-`OSP`                   | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum over all actors $h$ of the minimum number of past $(i,h)$ and $(j,h)$ events. | | `directed = TRUE`
-`ISP`                    | The statistic for dyad $(i,j)$ at time $t$ is equal to the sum over all actors $h$ of the minimum number of past $(h,i)$ and $(h,j)$ events. | | `directed = TRUE`
-`shared_partner`        | The statistic for undirected dyad $(i,j)$ at time $t$ is equal to the sum over all actors $h$ of the minimum number of past undirected $(i,h)$ and $(j,h)$ events. | | `directed = FALSE`
-`unique_sp`             | The statistic for undirected dyad $(i,j)$ at time $t$ is equal to the number of actors $h$ with at least one past undirected $(i,h)$ and $(j,h)$ event. | | `directed = FALSE`
-`shared_partners_type`  | The statistic for undirected dyad with type $(i,j,c)$ at time $t$ is equal to the sum over all actors $h$ of the minimum number of past undirected $(i,h,c)$ and $(j,h,c)$ events. | | `directed = FALSE` and `type = TRUE`
-`unique_sp_type`        | The statistic for undirected dyad with type $(i,j,c)$ at time $t$ is equal to the number of actors $h$ with at least one past undirected $(i,h,c)$ and $(j,h,c)$ event.  | | `directed = FALSE` and `type = TRUE`
-`PSAB-BA`               | After a past event that was send from actor $i$ to actor $j$, the statistic is set to 1 for the dyads $(j,i)$ and set to zero for all other dyads. | | `directed = TRUE`
-`PSAB-BY`               | After a past event that was send from actor $i$ to actor $j$, the statistic is set to 1 for all dyads $(j,h)$ where $h$ is not $i$ and set to zero for all other dyads. | | `directed = TRUE`
-`PSAB-XA`               | After a past event that was send from actor $i$ to actor $j$, the statistic is set to 1 for all dyads $(h,i)$ where $h$ is not $j$ and set to zero for all other dyads. | | `directed = TRUE`
-`PSAB-XB`               | After a past event that was send from actor $i$ to actor $j$, the statistic is set to 1 for all dyads $(h,j)$ where $h$ is not $i$ and set to zero for all other dyads. | | `directed = TRUE`
-`PSAB-XY`               | After a past event that was send from actor $i$ to actor $j$, the statistic is set to 1 for all dyads $(h,k)$ where $h$ and $k$ are not $i$ or $j$ and set to zero for all other dyads. | | `directed = TRUE`
-`PSAB-AY`               | After a past event that was send from actor $i$ to actor $j$, the statistic is set to 1 for all dyads $(i,h)$ where $h$ is not $j$ and set to zero for all other dyads. | | `directed = TRUE`
-
-
-
-
+We further add a `baseline()` statistic to our formula. Statistics in the formula should be separated with the `+`. Finally, we add an interaction between the `inertia()` statistic and the `send()` statistic. This can be done by using the `*` or `:` operator:
+```r
+formula <- ~ baseline() + inertia(scaling = "standardize", 
+    event_weights = history$weight):send("extraversion", info)
+out <- remstats(formula, edgelist = history)
+```

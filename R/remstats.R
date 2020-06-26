@@ -1,531 +1,298 @@
 #' remstats
-#'
-#' A function to compute statistics for a relational event sequence. 
 #' 
-#' @param edgelist [matrix] or [dataframe], should minimally contain the time, 
-#' sender/actor 1 and receiver/actor 2 in the first three columns respectively. 
-#' If the riskset contains typed relational events, the fourth column should 
-#' contain the event type. 
-#' @param effects [character vector], indicates the effects that are requested.
-#' @param directed [logical], are relational events in the riskset directional 
-#' (directed = TRUE, default) or undirectional (directed = FALSE).
-#' @param type [logical], do relational events in the riskset consider an 
-#' action type (type = TRUE) or not (type = FALSE, default). 
-#' @param timing [character value], indicates whether the full likelihood 
-#' (timing = "interval", default) or ordinal likelihod (timing = "ordinal") 
-#' will be used for estimation. If interval timing, a baseline statistic is 
-#' added to the statistic array.
-#' @param standardize [logical], indicates whether endogenous effects should be 
-#' standardized (default = FALSE)
-#'
-#' @param riskset optional; [matrix] or [dataframe], should minimally contain 
-#' sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
-#' If it contains typed relational events, the third column should contain the 
-#' event type. If a riskset is not supplied, it is assumed that all possible 
-#' actors (and action types) are observed in the edgelist.
-#' @param actors optional; [vector], if supplied, should contain all actors 
-#' that can potentially interact. Used to create the riskset. 
-#' @param covariates optional; [List] with the covariate values for when a 
-#' sender_effect, receiver_effect, same, difference, mean, min, max, or 
-#' both_equal_to effect are requested. Covariate values should be supplied to 
-#' an element with the name equal to the requested effect. Covariate values 
-#' should be supplied in a matrix with in the first column the actor IDs, the 
-#' second column the time at which covariate values change (can be set to zero 
-#' for time-invariant covariates) and in subsequent columns the unique 
-#' covariate variables for which the respective effect is requested. 
-#' @param event_effect optional; matrix with the values for when an 
-#' event_effect is requested: one column of length edgelist per event_effect. 
-#' @param weights optional; [vector], if supplied, should be of length edgelist 
-#' and contain the weights for the events in the edgelist (to compute 
-#' inertia_weighted)
-#' @param equal_val optional; [vector]. Required if the "both_equal_to" effect 
-#' is requested. Denotes the value(s) to which both covariate values of the 
-#' actors in a dyad should be equal. 
-#'
-#' @return statistics [array], with three dimensions: timepoint x riskset x 
-#' statistic. 
-#' @return edgelist [matrix] with actor IDs that run from 1 to N and types that 
-#' run from 1 to C. 
-#' @return riskset [matrix], with actor IDs that run from 1 to N and types that
-#' run from 1 to C. 
-#' @return evls [matrix], edgelist transformed in the format that is required 
-#' for estimation by relevent::rem() with in the first column the relational 
-#' event ID and in the second column the time.
-#' @return actors [vector], all unique actor IDs
+#' Computes statistics for relational event history data. 
+#' 
+#' The statistics to be computed are defined symbolically and should be in the 
+#' form \code{~ statistics}. The statistics are separated by + operators. 
+#' Interactions between two statistics can be included with * or : operators. 
+#' 
+#' A list of available statistics follows: 
+#' \itemize{
+#'  \item \code{\link{baseline}()}
+#'  \item \code{\link{send}()}
+#'  \item \code{\link{receive}()}
+#'  \item \code{\link{same}()}
+#'  \item \code{\link{difference}()}
+#'  \item \code{\link{average}()}
+#'  \item \code{\link{minimum}()}
+#'  \item \code{\link{maximum}()}
+#'  \item \code{\link{equate}()}
+#'  \item \code{\link{event}()}
+#'  \item \code{\link{inertia}()}
+#'  \item \code{\link{reciprocity}()}
+#'  \item \code{\link{indegreeSender}()}
+#'  \item \code{\link{indegreeReceiver}()}
+#'  \item \code{\link{outdegreeSender}()}
+#'  \item \code{\link{outdegreeReceiver}()}
+#'  \item \code{\link{totaldegreeSender}()}
+#'  \item \code{\link{totaldegreeReceiver}()}
+#'  \item \code{\link{otp}()}
+#'  \item \code{\link{itp}()}
+#'  \item \code{\link{osp}()}
+#'  \item \code{\link{isp}()}
+#'  \item \code{\link{sp}()}
+#'  \item \code{\link{spUnique}()}
+#'  \item \code{\link{psABBA}()}
+#'  \item \code{\link{psABBY}()}
+#'  \item \code{\link{psABXA}()}
+#'  \item \code{\link{psABXB}()}
+#'  \item \code{\link{psABXY}()}
+#'  \item \code{\link{psABAY}()}
+#'  \item \code{\link{rrankSend}()}
+#'  \item \code{\link{rrankReceive}()}
+#' }
+#' 
+#' @param formula an object of class \code{"\link[stats]{formula}"} (or one 
+#' that can be coerced to that class): a symbolic description of statistics to 
+#' be computed. The details of the specification of the statistics and an 
+#' overview of the available statistics are given under 'Details'. 
+#' @param edgelist an object of class \code{"\link[base]{matrix}"} or 
+#' \code{"\link[base]{data.frame}"} that contains the relational event history. 
+#' Each row in the edgelist should refer to one event. The first column should 
+#' refer to the timepoint or order of the event, the second column to the 
+#' sender (or first actor) and the third column to the receiver (or second 
+#' actor). The fourth column may refer to the type of the event, this column is 
+#' only used when \code{with_type = TRUE}.
+#' @param directed Logical value. Indicates whether events in the edgelist are 
+#' directed (\code{directed = TRUE}, default) or undirected 
+#' (\code{directed = FALSE}).
+#' @param with_type Logical value. Indicates whether event types are considered 
+#' in the dependent variable (\code{with_type = TRUE}) or not 
+#' (\code{with_type = FALSE}, default).
+#' @param riskset an object of class \code{"\link[base]{matrix}"} or 
+#' \code{"\link[base]{data.frame}"} that contains the riskset. The first column 
+#' should refer to the sender/actor1, the second column to the receiver/actor2 
+#' and a third column may refer to the event type. Can be supplied to indicate 
+#' a non-standard riskset. 
+#' @param actors Vector with actor id's. Should be supplied when not all actors 
+#' that can interact are observed in the edgelist.
+#' @param types Vector with event type id's. Should be supplied when not all 
+#' types that can occur are observed in the edgelist.
+#' @param start Integer value. Indicates the first row in the edgelist for 
+#' which statistics need to be computed. Can be used to compute statistics for 
+#' a subpart of the relational event history but based on the whole relational 
+#' event history. If nothing is indicated, statistics will be computed starting 
+#' from the first row of the edgelist. 
+#' @param stop Integer value. Indicates the last row in the edgelist for 
+#' which statistics need to be computed. If nothing is indicated, statistics 
+#' will be computed stopping at the last row of the edgelist. 
 #' 
 #' @examples 
-#' data(edgelistD)
-#' data(covar)
-#' effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver", 
-#'  "outdegree_sender")
-#' covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
-#' out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
+#' data(history)
+#' data(info)
+#' form <- ~ baseline() + inertia():send("extraversion", info)
+#' remstats(form, edgelist = history)
 #' 
-#' @export
+#' @export 
+remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE, 
+    riskset = NULL, actors = NULL, types = NULL, start = NULL, stop = NULL) {
 
-remstats <- function(edgelist, effects, directed = TRUE, type = FALSE, 
-    timing = "interval", standardize = FALSE, riskset = NULL, actors = NULL, 
-    covariates = NULL, event_effect = NULL, weights = NULL, equal_val = NULL) {
+    # Get effects information
+    ft <- stats::terms(formula)
+    
+    var <- attr(ft, "variables")
+    var <- as.list(var)[-1]
 
-    # Prepare the edgelist, riskset and actors
-    out <- prepER(edgelist, directed, type, riskset, actors)
-    el <- out$edgelist
-    rs <- out$riskset
-    ac <- out$actors
-    if(type) {ty <- out$types}
+    effects <- lapply(var, eval)
+    effects <- unlist(effects, recursive = FALSE)
 
-    # Prepare the evls (edgelist in relevent::rem() format)
-    evls <- prepEvls(el, rs, type)
+    # Set start and stop
+    if(is.null(start)) {
+        start <- 1
+    } 
+    if(start < 1) {
+        stop("start should be set to 1 or larger.")
+    }
+    if(is.null(stop)) {
+        stop <- nrow(edgelist)
+    } 
+    if(stop < start) {
+        stop("stop cannot be smaller than start.")
+    }
+
+    # Prepare REH input data
+    dat <- prepEdgelist(edgelist, directed, with_type, riskset, 
+        actors, types)
+
+    actors <- dat$actors
+    actorsUser <- dat$actorsUser
+    edgelist <- dat$edgelist
+    edgelistUser <- dat$edgelistUser
+    riskset <- dat$riskset
+    risksetUser <- dat$risksetUser
+    evls <- dat$evls
 
     # Prepare the effects
-    all_effects <- c("sender_effect", "receiver_effect", "same", "difference",  
-        "mean", "min", "max", "both_equal_to", "event_effect", "type_effect", 
-        "inertia", "inertia_weighted", "inertia_type", "inertia_type_weighted", 
-        "reciprocity", "reciprocity_weighted", "indegree_sender", 
-        "indegree_receiver", "outdegree_sender", "outdegree_receiver", 
-        "totaldegree_sender", "totaldegree_receiver", "recency_send", 
-        "recency_receive", "rrank_send", "rrank_receive", "OTP", "ITP", "OSP", 
-        "ISP", "shared_partners", "unique_sp", "shared_partners_type", 
-        "unique_sp_type", "PSAB-BA", "PSAB-BY", "PSAB-XA", "PSAB-XB",  
-        "PSAB-XY", "PSAB-AY")
-    eff <- match(effects[!grepl("\\*", effects)], all_effects)
+    all_effects <- c(
+        "baseline", #1
+        "send", "receive", #2 #3
+        "same", "difference", "average", #4 #5 #6
+        "minimum", "maximum", "equate", #7 #8 #9  
+        "inertia", "reciprocity", #10 #11
+        "indegreeSender", "indegreeReceiver", #12 #13
+        "outdegreeSender", "outdegreeReceiver", #14 #15
+        "totaldegreeSender", "totaldegreeReceiver", #16, #17
+        "otp", "itp", "osp", "isp", #18 #19 #20 #21
+        "sp", "spUnique", #22, #23
+        "psABBA", "psABBY", "psABXA",  #24 #25 #26 
+        "psABXB", "psABXY", "psABAY",  #27 #28 #29
+        "rrankSend", "rrankReceive",  #30 #31
+        "baselineType", "interact", #32 #33
+        "event" #34
+    ) 
+    eff <- match(names(effects), all_effects)
 
-    # Add a baseline effect
-    if(timing == "interval") {eff <- c(0, eff)}
-
-    # Prepare exogenous effects
-    # If requested
-    # Sender_effect
-    if(any(eff==1)) {
-        eff <- append(eff[-which(eff==1)], 
-            rep(1, ncol(covariates$sender_effect)-2), which(eff==1)-1)
-        covariates$sender_effect$id <- ac$id[
-            match(covariates$sender_effect$id, ac$name)]
-        covariates$sender_effect <- as.matrix(covariates$sender_effect)
-    }
-    # Receiver_effect
-    if(any(eff==2)) {
-        eff <- append(eff[-which(eff==2)], 
-            rep(2, ncol(covariates$receiver_effect)-2), which(eff==2)-1)
-        covariates$receiver_effect$id <- ac$id[
-            match(covariates$receiver_effect$id, ac$name)]
-        covariates$receiver_effect <- as.matrix(covariates$receiver_effect)
-    }
-    # Same
-    if(any(eff==3)) {
-        eff <- append(eff[-which(eff==3)], rep(3, ncol(covariates$same)-2), 
-            which(eff==3)-1)
-        covariates$same$id <- ac$id[match(covariates$same$id, ac$name)]
-        covariates$same <- as.matrix(covariates$same)
-    }
-    # Difference
-    if(any(eff==4)) {
-        eff <- append(eff[-which(eff==4)], 
-            rep(4, ncol(covariates$difference)-2), which(eff==4)-1)
-        covariates$difference$id <- ac$id[
-            match(covariates$difference$id, ac$name)]
-        covariates$difference <- as.matrix(covariates$difference)
-    }
-    # Mean
-    if(any(eff==5)) {
-        eff <- append(eff[-which(eff==5)], rep(5, ncol(covariates$mean)-2), 
-            which(eff==5)-1)
-        covariates$mean$id <- ac$id[match(covariates$mean$id, ac$name)]
-        covariates$mean <- as.matrix(covariates$mean)
-    }
-    # Min
-    if(any(eff==6)) {
-        eff <- append(eff[-which(eff==6)], rep(6, ncol(covariates$min)-2), 
-            which(eff==6)-1)
-        covariates$min$id <- ac$id[match(covariates$min$id, ac$name)]
-        covariates$min <- as.matrix(covariates$min)
-    }
-    # Max
-    if(any(eff==7)) {
-        eff <- append(eff[-which(eff==7)], rep(7, ncol(covariates$max)-2), 
-            which(eff==7)-1)
-        covariates$max$id <- ac$id[match(covariates$max$id, ac$name)]
-        covariates$max <- as.matrix(covariates$max)
-    }
-    # Both_equal_to
-    if(any(eff==8)) {
-        eff <- append(eff[-which(eff==8)], 
-            rep(8, ncol(covariates$both_equal_to)-2), which(eff==8)-1)
-        covariates$both_equal_to$id <- ac$id[
-            match(covariates$both_equal_to$id, ac$name)]
-        covariates$both_equal_to <- as.matrix(covariates$both_equal_to)
+    # Check correct specification effects
+    if(!directed) {
+        if(any(names(effects) %in% c("send", "receive", "reciprocity", 
+            "indegreeSender", "indegreeReceiver", "outdegreeSender", 
+            "outdegreeReceiver", "totaldegreeSender", "totaldegreeReceiver", 
+            "otp", "itp", "osp", "isp", "psABBA", "psABBY", "psABXA", "psABXB", 
+            "psABXY", "psABAY", "rrankSend", "rrankReceive"))) {
+            stop(paste("Attempting to request effects that are not defined when `directed = FALSE`."))
+        }
     }
 
-    # If not requested
-    if(!(any(eff==1))) {covariates$sender_effect <- matrix(0, 1, 1)}
-    if(!(any(eff==2))) {covariates$receiver_effect <- matrix(0, 1, 1)}
-    if(!(any(eff==3))) {covariates$same <- matrix(0, 1, 1)}
-    if(!(any(eff==4))) {covariates$difference <- matrix(0, 1, 1)}
-    if(!(any(eff==5))) {covariates$mean <- matrix(0, 1, 1)}
-    if(!(any(eff==6))) {covariates$min <- matrix(0, 1, 1)}
-    if(!(any(eff==7))) {covariates$max <- matrix(0, 1, 1)}
-    if(!(any(eff==8))) {covariates$both_equal_to <- matrix(0, 1, 1)}
-
-    # Order exogenous effects
-    covar <- list(covariates$sender_effect, covariates$receiver_effect, 
-        covariates$same, covariates$difference, covariates$mean, 
-        covariates$min, covariates$max, covariates$both_equal_to)
-
-    # Prepare event effects
-    # If requested
-    if(any(eff==9)) {
-        event_effect <- as.matrix(event_effect)
-        eff <- append(eff[-which(eff==9)], 
-            rep(9, ncol(event_effect)), which(eff==9)-1)
-    } else {
-        event_effect <- matrix(0, 1, 1)
+    if(directed) {
+        if(any(names(effects) %in% c("sp", "spUnique"))) {
+            stop(paste("Attemping to request effects that are not defined when `directed = TRUE`"))
+        }
     }
 
-    # Prepare type effects
-    if(any(eff==10)) {
-        types <- sort(ty[,1])
+    # Prepare scaling info (vector length p)
+    scaling <- sapply(effects, function(x) {
+        sc <- x$scaling
+        if(is.null(sc)) {sc <- 0}
+        sc
+    })
+
+    # Prepare memory_value info (vector length p)
+    memory_value <- sapply(effects, function(x) {
+        mv <- x$memory_value
+        if(is.null(mv)) {mv <- Inf}
+        mv
+    })
+
+    # Prepare with_type Info (vector length p)
+    with_typeVar <- sapply(effects, function(x) {
+        wt <- x$with_type
+        if(is.null(wt)) {wt <- FALSE}
+        wt
+    })
+    if(any(with_typeVar) && !with_type) {
+        stop(paste(names(effects)[which(with_typeVar)], "with type requested but no types in riskset: set with_type = TRUE in remstats() or request", names(effects)[which(with_typeVar)], "with_type = FALSE. "))
+    }
+
+    # Prepare event weights (m x p matrix)
+    event_weights <- lapply(effects, function(x) {
+        ew <- x$event_weights
+        if(is.null(ew)) {ew <- rep(1, length(edgelist))}
+        ew
+    })
+    event_weights <- do.call(cbind, event_weights)
+
+    # Prepare baselineType effect
+    if(any(with_typeVar[which(names(effects) == "baseline")])) {
+        typesUser <- unique(sort(risksetUser[,3]))
+        typesUser <- typesUser[-1]
+        types <- unique(sort(riskset[,3]))
         types <- types[-1]
-        eff <- append(eff[-which(eff==10)], 
-            rep(10, length(types)), which(eff==10)-1)
-    } else {
-        types <- 0
-    }
-
-    # Prepare interaction effects
-    if(any(grepl("\\*", effects))) {
-        # Which are the interaction effects?
-        int_effects <- effects[grepl("\\*", effects)]
-        int_effects <- sapply(int_effects, function(x) {
-            strsplit(x, split = "\\*")
-        })
-        int_effects <- matrix(unlist(int_effects), byrow = T, ncol = 2)
         
-        # Get positions interaction effects
-        findpos <- function(value, effects) {
-            if(grepl("[0-9]", value)) {
-                temp <- strsplit(value, split = "[0-9]")[[1]]	
-                pos <- which(effects == temp)[1]
-                temp2 <- strsplit(value, split = "[a-z]")[[1]]
-                correction <- suppressWarnings(as.numeric(temp2)[!is.na(as.numeric(temp2))])
-                pos + correction-1
+        ind <- which(with_typeVar == TRUE & names(effects) == "baseline")
+        
+        for(p in seq_along(types)) {
+            x <- data.frame(type = types[p])
+            attributes(x)$effect <- "baselineType"
+            colnames(x) <- typesUser[p]
+            
+            if(p == 1) {
+                effects <- append(effects[-ind], 
+                    list(baselineType = list(x = x)),
+                    ind - 1)
             } else {
-                which(effects == value)
+                effects <- append(effects, 
+                    list(baselineType = list(x = x)), 
+                    ind - 2 + p)
+                attr(ft, "factor") <- rbind(
+                    attr(ft, "factor")[1:ind,],
+                    attr(ft, "factor")[ind:nrow(attr(ft, "factor")),])
             }
         }
-	
- 	    temp_effects <- c("baseline", all_effects[eff])
-        int_positions <- t(apply(int_effects, 1, function(x) {
-            cbind(findpos(x[1], temp_effects), findpos(x[2], temp_effects))
-        }))
-        int_positions <- int_positions-1
-	    # Case 999 in remstatsCpp refers to interaction effects
-	    eff <- c(eff, rep(999, nrow(int_effects)))
-    } else {
-        int_positions <- matrix(0, 1, 1)
+        rownames(attr(ft, "factor")) <- names(effects)
+        eff <- match(names(effects), all_effects)
     }
 
-    # Deal with event weights if not requested
-    if(is.null(weights)) {weights <- rep(1, nrow(el))}
-
-    # Deal with equal_val if not requested
-    if(is.null(equal_val)) {equal_val <- 0}
-	
-    # (4) Compute statistics
-    stats <- remstatsCpp(effects = eff, standardize = standardize, 
-        edgelist = el, riskset = rs, actors = ac[,1], covariates = covar, 
-        event_effect = event_effect, types = types, weights = weights, 
-        equal_val = equal_val, int_positions = int_positions)
-
-    # (5) Return output
-	# Prepare dimnames statsistics
-    # Bind "baseline" with all main effects and the interaction effects
-	dimnames(stats)[[3]] <- c("baseline", all_effects[eff[!eff==999]], 
-        effects[grepl("\\*", effects)])
-	
-    # Deal with interaction effects for which one of the main effects can 
-    # appear multiple times in the dimnames (i.e., two sender_effects)
-	if(any(grepl("\\*", dimnames(stats)[[3]]))) {
-		multeff <- c("sender_effect", "receiver_effect", "same", "difference",
-            "mean", "min", "max", "both_equal_to", "event_effect", 
-            "type_effect")
-        # Matrix with on the rows the interaction effects and on the columns 
-        # the "multeff". Entries are TRUE when the multeff appears in this 
-        # interaction effect and FALSE if not.
-		intdimpos <- sapply(multeff, function(x) {grepl(x, int_effects)})
-	} else {
-        # Set intdimpos to null if there are no interaction effects
-		intdimpos <- NULL
-	}
-	
-    # Saving space
-	intnames <- list()
-	
-    # Prepare the dimnames for sender_effect(s)
-	if(any(dimnames(stats)[[3]] == "sender_effect")) {
-        # Get the position of the sender effects
-		pos <- which(dimnames(stats)[[3]] == "sender_effect")
-        # If the variables in covariates don't have a name, set their names 
-        # equal to x1 ... xn
-		if(is.null(colnames(covariates$sender_effect))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("sender_effect_x", 1:length(pos), sep = "") 
-            # If there are interaction effects...
-			if(!is.null(intdimpos)) {
-                # and any of these effects includes a sender_effect...
-				if(any(intdimpos[,1])) {
-                    # save the new name for the sender_effect
-					intnames[[1]] <- 
-						paste("sender_effect_x", 1:length(pos), sep = "")  
-				}	
-			}
-		} else {
-            # If the variables in covariates$sender_effect do have a name, use 
-            # these names
-			dimnames(stats)[[3]][pos] <- 
-				paste("sender_effect_", 
-					colnames(covariates$sender_effect)[3:(2+length(pos))], 
-                    sep = "")	
-			if(!is.null(intdimpos)) {
-                if(any(intdimpos[,1])) {
-				intnames[[1]] <- 
-                    paste("sender_effect_", 
-                        colnames(covariates$sender_effect)[3:(2+length(pos))], 
-                        sep = "")	
-			    }
-            }  
-		}
-	}
-	
-    # Same as above for the other effects
-	if(any(dimnames(stats)[[3]] == "receiver_effect")) {
-		pos <- which(dimnames(stats)[[3]] == "receiver_effect")
-		if(is.null(colnames(covariates$receiver_effect))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("receiver_effect_x", 1:length(pos), sep = "") 
-			if(!is.null(intdimpos)) {
-                if(any(intdimpos[,2])) {
-				    intnames[[2]] <- 
-                    paste("receiver_effect_x", 1:length(pos), sep = "") 
-			    }
-            } 
-		} else {
-			dimnames(stats)[[3]][pos] <- 
-				paste("receiver_effect_", 
-					colnames(covariates$receiver_effect)[3:(2+length(pos))], 
-                    sep = "")	
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,2])) {
-                    intnames[[2]] <- 
-                        paste("receiver_effect_", 
-                        colnames(covariates$receiver_effect)[3:(2+length(pos))], 
-                        sep = "")	
-                }
-            }
-		}
-	}
-	
-	if(any(dimnames(stats)[[3]] == "same")) {
-		pos <- which(dimnames(stats)[[3]] == "same")
-		if(is.null(colnames(covariates$same))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("same_x", 1:length(pos), sep = "") 
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,3])) {
-                    intnames[[3]] <- paste("same_x", 1:length(pos), sep = "") 
-                }
-            }
-		} else {
-			dimnames(stats)[[3]][pos] <- 
-				paste("same_", colnames(covariates$same)[3:(2+length(pos))], 
-                    sep = "")	
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,3])) {
-                    intnames[[3]] <- 
-                        paste("same_", 
-                            colnames(covariates$same)[3:(2+length(pos))], sep = "")	
-                }
-            }
-		}
-	}
-	
-	if(any(dimnames(stats)[[3]] == "difference")) {
-		pos <- which(dimnames(stats)[[3]] == "difference")
-		if(is.null(colnames(covariates$difference))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("difference_x", 1:length(pos), sep = "") 
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,4])) {
-                    intnames[[4]] <- paste("difference_x", 1:length(pos), sep = "") 
-                }
-            }
-		} else {
-			dimnames(stats)[[3]][pos] <- 
-				paste("difference_", 
-                    colnames(covariates$difference)[3:(2+length(pos))], 
-                    sep = "")	
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,4])) {
-                    intnames[[4]] <- 
-                        paste("difference_", 
-                            colnames(covariates$difference)[3:(2+length(pos))], 
-                            sep = "")	
-                }
-            }
-		}
-	}
-	
-	if(any(dimnames(stats)[[3]] == "mean")) {
-		pos <- which(dimnames(stats)[[3]] == "mean")
-		if(is.null(colnames(covariates$mean))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("mean_x", 1:length(pos), sep = "") 
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,5])) {
-                    intnames[[5]] <- paste("mean_x", 1:length(pos), sep = "") 
-                }
-            }
-		} else {
-			dimnames(stats)[[3]][pos] <- 
-				paste("mean_", 
-					colnames(covariates$mean)[3:(2+length(pos))], sep = "")	
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,5])) {
-                    intnames[[5]] <- 	
-                        paste("mean_", 
-                        colnames(covariates$mean)[3:(2+length(pos))], sep = "")	
-                }
-            }
-		}
-	}
-	
-	if(any(dimnames(stats)[[3]] == "min")) {
-		pos <- which(dimnames(stats)[[3]] == "min")
-		if(is.null(colnames(covariates$min))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("min_x", 1:length(pos), sep = "") 
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,6])) {
-                    intnames[[6]] <- paste("min_x", 1:length(pos), sep = "") 
-                }
-            }
-		} else {
-			dimnames(stats)[[3]][pos] <- 
-				paste("min_", 
-					colnames(covariates$min)[3:(2+length(pos))], sep = "")
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,6])) {
-                    intnames[[6]] <-
-                        paste("min_", colnames(covariates$min)[3:(2+length(pos))], 
-                            sep = "")
-                }
-            }
-		}
-	}
-	
-	if(any(dimnames(stats)[[3]] == "max")) {
-		pos <- which(dimnames(stats)[[3]] == "max")
-		if(is.null(colnames(covariates$max))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("max_x", 1:length(pos), sep = "") 
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,7])) {
-                    intnames[[7]] <- paste("max_x", 1:length(pos), sep = "") 
-                }
-            }
-		} else {
-			dimnames(stats)[[3]][pos] <- 
-				paste("max_", 
-						colnames(covariates$max)[3:(2+length(pos))], sep = "")	
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,7])) {
-                    intnames[[7]] <- 
-                        paste("max_", colnames(covariates$max)[3:(2+length(pos))], 
-                            sep = "")
-                }
-            }
-		}
-	}
-	
-	if(any(dimnames(stats)[[3]] == "both_equal_to")) {
-		pos <- which(dimnames(stats)[[3]] == "both_equal_to")
-		if(is.null(colnames(covariates$both_equal_to))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("both_equal_to", equal_val, 1:length(pos), sep = "") 
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,8])) {
-                    intnames[[8]] <- 
-                        paste("both_equal_to", equal_val, 1:length(pos), sep = "") 
-                }
-            }
-		} else {
-			dimnames(stats)[[3]][pos] <- 
-				paste("both_equal_to_", 
-					colnames(covariates$both_equal_to)[3:(2+length(pos))], 
-                    equal_val, sep = "")	
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,8])) {
-                    intnames[[8]] <- 
-                        paste("both_equal_to_", 
-                            colnames(covariates$both_equal_to)[3:(2+length(pos))], 
-                            equal_val, sep = "")	
-                }
-            }
-		}
-	}
-	
-	if(any(dimnames(stats)[[3]] == "event_effect")) {
-		pos <- which(dimnames(stats)[[3]] == "event_effect")
-		if(is.null(colnames(event_effect))) {
-			dimnames(stats)[[3]][pos] <- 
-                paste("event_effect", 1:length(pos), sep = "") 
-            if(!is.null(intdimpos)) {
-                if(any(intdimpos[,9])) {
-                    intnames[[9]] <- paste("event_effect", 1:length(pos), sep = "") 
-                }
-            }
-		} else {
-			dimnames(stats)[[3]][pos] <- 
-				paste("event_effect_", colnames(event_effect), sep = "")
-            if(!is.null(intdimpos)) {	
-                if(any(intdimpos[,9])) {
-                    intnames[[9]] <- 
-                        paste("event_effect_", colnames(event_effect), sep = "")
-                }
-            }
-		}
-	}
-	
-	if(any(dimnames(stats)[[3]] == "type_effect")) {
-		for(i in 1:length(types)) {
-			pos <- which(dimnames(stats)[[3]] == "type_effect")[1]
-			dimnames(stats)[[3]][pos] <- 
-				paste("type_effect_", ty[i+1,1], sep = "")
-		}
-        if(!is.null(intdimpos)) {
-            if(any(intdimpos[,10])) {
-                intnames[[10]] <- paste("type_effect_", sort(ty[,1])[-1], sep = "") 
-            }
+    # Prepare interaction effects 
+    # Note: interaction effects should always be the last ones in the effects 
+    # and eff objects: this makes sure the main effects are previously computed
+    for(p in seq_along(attr(ft, "order"))) {
+        if(attr(ft, "order")[p] == 2) {
+            out <- list(
+                interact = list(
+                    x = as.matrix(which(attr(ft, "factor")[,p]>0))
+                )
+            )
+            attributes(out$interact$x)$effect <- "interact"
+            effects <- append(effects, out)
         }
-	}
-	
-	if(any(grepl("\\*", dimnames(stats)[[3]]))) {
-		for(i in 1:nrow(intdimpos)) {
-			if(any(intdimpos[i,])) {
-				temp <- strsplit(int_effects[i], split = "[a-z]")[[1]]
-				pos <- suppressWarnings(as.numeric(temp)[!is.na(as.numeric(temp))])
-				if(length(pos) == 0) {
-					int_effects[i] <- intnames[[which(intdimpos[i,])]]		
-				} else {
-					int_effects[i] <- intnames[[which(intdimpos[i,])]][pos]		
-				}		
-			}
-		}
-		
-		dimnames(stats)[[3]][which(grepl("\\*", dimnames(stats)[[3]]))] <- 
-			paste(int_effects[,1], "*", int_effects[,2], sep = "")
-	}
+    }
+    eff <- match(names(effects), all_effects)
+
+    # Prepare exogenous information (list with p elements)
+    values <- lapply(effects, function(y) {
+        val <- y$x
+        effect <- attributes(val)$effect
+        if(!is.null(val)) {
+            if(!(effect %in% c("baselineType", "interact", "event"))) {
+                val$id <- match(val$id, actorsUser)
+                if(!all(actors %in% val$id)) {
+                    stop(paste0("Make sure that for every actor a ", effect, "Effect value is defined."))
+                }
+                if(!all(actors %in% val[val$time <= edgelist[start,1],"id"])) {
+                    stop(paste0("Make sure that for every actor a ", effect, "Effect starting value is defined."))
+                }
+            }
+            val <- as.matrix(val)
+            val <- apply(val, 2, as.numeric)
+            val <- as.matrix(val)
+        }
+        val
+    })
+
+    # Prepare equal_val
+    equal_val <- sapply(effects, function(y) {
+        val <- y$equal_val
+        if(is.null(val)) {val <- NA}
+        val
+    })
+
+    # Compute statistics
+    statistics <- compute_stats(eff, edgelist, riskset, start, stop, 
+        values, scaling, memory_value, with_typeVar, event_weights, equal_val)
+
+    # Prepare output
+    effectnames <- sapply(effects, function(y) {
+        if(!is.null(attr(y$x, "effect"))) {
+            if(attr(y$x, "effect") == "baselineType") {
+                paste0("baselineType_", colnames(y$x)[1])
+            } else if(attr(y$x, "effect") == "interact") {
+                paste0(all_effects[eff[y$x[1]]], "*", all_effects[eff[y$x[2]]])
+            } else if(attr(y$x, "effect") == "event") {
+                paste0("event_", colnames(y$x)[1])
+            }    else {
+                paste0(attributes(y$x)$effect, "_", colnames(y$x)[3])
+            }
+        } else {
+            NA
+        }
+    })
+    effectnames <- unlist(effectnames)
+    effectnames <- ifelse(is.na(effectnames), names(effectnames), effectnames)
+    names(effectnames) <- NULL
+    dimnames(statistics) <- list(NULL, NULL, effectnames)
+    class(statistics) <- "remstats"
 
     # Output
-	list(statistics = stats, edgelist = el, riskset = rs, evls = evls, 
-			 actors = ac)
+    list(statistics = statistics, edgelist = edgelistUser, 
+        riskset = risksetUser, evls = evls)
 }

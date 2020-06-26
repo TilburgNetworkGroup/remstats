@@ -5,96 +5,109 @@
 \title{remstats}
 \usage{
 remstats(
+  formula,
   edgelist,
-  effects,
   directed = TRUE,
-  type = FALSE,
-  timing = "interval",
-  standardize = FALSE,
+  with_type = FALSE,
   riskset = NULL,
   actors = NULL,
-  covariates = NULL,
-  event_effect = NULL,
-  weights = NULL,
-  equal_val = NULL
+  types = NULL,
+  start = NULL,
+  stop = NULL
 )
 }
 \arguments{
-\item{edgelist}{[matrix] or [dataframe], should minimally contain the time, 
-sender/actor 1 and receiver/actor 2 in the first three columns respectively. 
-If the riskset contains typed relational events, the fourth column should 
-contain the event type.}
+\item{formula}{an object of class \code{"\link[stats]{formula}"} (or one 
+that can be coerced to that class): a symbolic description of statistics to 
+be computed. The details of the specification of the statistics and an 
+overview of the available statistics are given under 'Details'.}
 
-\item{effects}{[character vector], indicates the effects that are requested.}
+\item{edgelist}{an object of class \code{"\link[base]{matrix}"} or 
+\code{"\link[base]{data.frame}"} that contains the relational event history. 
+Each row in the edgelist should refer to one event. The first column should 
+refer to the timepoint or order of the event, the second column to the 
+sender (or first actor) and the third column to the receiver (or second 
+actor). The fourth column may refer to the type of the event, this column is 
+only used when \code{with_type = TRUE}.}
 
-\item{directed}{[logical], are relational events in the riskset directional 
-(directed = TRUE, default) or undirectional (directed = FALSE).}
+\item{directed}{Logical value. Indicates whether events in the edgelist are 
+directed (\code{directed = TRUE}, default) or undirected 
+(\code{directed = FALSE}).}
 
-\item{type}{[logical], do relational events in the riskset consider an 
-action type (type = TRUE) or not (type = FALSE, default).}
+\item{with_type}{Logical value. Indicates whether event types are considered 
+in the dependent variable (\code{with_type = TRUE}) or not 
+(\code{with_type = FALSE}, default).}
 
-\item{timing}{[character value], indicates whether the full likelihood 
-(timing = "interval", default) or ordinal likelihod (timing = "ordinal") 
-will be used for estimation. If interval timing, a baseline statistic is 
-added to the statistic array.}
+\item{riskset}{an object of class \code{"\link[base]{matrix}"} or 
+\code{"\link[base]{data.frame}"} that contains the riskset. The first column 
+should refer to the sender/actor1, the second column to the receiver/actor2 
+and a third column may refer to the event type. Can be supplied to indicate 
+a non-standard riskset.}
 
-\item{standardize}{[logical], indicates whether endogenous effects should be 
-standardized (default = FALSE)}
+\item{actors}{Vector with actor id's. Should be supplied when not all actors 
+that can interact are observed in the edgelist.}
 
-\item{riskset}{optional; [matrix] or [dataframe], should minimally contain 
-sender/actor 1 and receiver/actor 2 in the first two columns, respectively. 
-If it contains typed relational events, the third column should contain the 
-event type. If a riskset is not supplied, it is assumed that all possible 
-actors (and action types) are observed in the edgelist.}
+\item{types}{Vector with event type id's. Should be supplied when not all 
+types that can occur are observed in the edgelist.}
 
-\item{actors}{optional; [vector], if supplied, should contain all actors 
-that can potentially interact. Used to create the riskset.}
+\item{start}{Integer value. Indicates the first row in the edgelist for 
+which statistics need to be computed. Can be used to compute statistics for 
+a subpart of the relational event history but based on the whole relational 
+event history. If nothing is indicated, statistics will be computed starting 
+from the first row of the edgelist.}
 
-\item{covariates}{optional; [List] with the covariate values for when a 
-sender_effect, receiver_effect, same, difference, mean, min, max, or 
-both_equal_to effect are requested. Covariate values should be supplied to 
-an element with the name equal to the requested effect. Covariate values 
-should be supplied in a matrix with in the first column the actor IDs, the 
-second column the time at which covariate values change (can be set to zero 
-for time-invariant covariates) and in subsequent columns the unique 
-covariate variables for which the respective effect is requested.}
-
-\item{event_effect}{optional; matrix with the values for when an 
-event_effect is requested: one column of length edgelist per event_effect.}
-
-\item{weights}{optional; [vector], if supplied, should be of length edgelist 
-and contain the weights for the events in the edgelist (to compute 
-inertia_weighted)}
-
-\item{equal_val}{optional; [vector]. Required if the "both_equal_to" effect 
-is requested. Denotes the value(s) to which both covariate values of the 
-actors in a dyad should be equal.}
-}
-\value{
-statistics [array], with three dimensions: timepoint x riskset x 
-statistic.
-
-edgelist [matrix] with actor IDs that run from 1 to N and types that 
-run from 1 to C.
-
-riskset [matrix], with actor IDs that run from 1 to N and types that
-run from 1 to C.
-
-evls [matrix], edgelist transformed in the format that is required 
-for estimation by relevent::rem() with in the first column the relational 
-event ID and in the second column the time.
-
-actors [vector], all unique actor IDs
+\item{stop}{Integer value. Indicates the last row in the edgelist for 
+which statistics need to be computed. If nothing is indicated, statistics 
+will be computed stopping at the last row of the edgelist.}
 }
 \description{
-A function to compute statistics for a relational event sequence.
+Computes statistics for relational event history data.
+}
+\details{
+The statistics to be computed are defined symbolically and should be in the 
+form \code{~ statistics}. The statistics are separated by + operators. 
+Interactions between two statistics can be included with * or : operators. 
+
+A list of available statistics follows: 
+\itemize{
+ \item \code{\link{baseline}()}
+ \item \code{\link{send}()}
+ \item \code{\link{receive}()}
+ \item \code{\link{same}()}
+ \item \code{\link{difference}()}
+ \item \code{\link{average}()}
+ \item \code{\link{minimum}()}
+ \item \code{\link{maximum}()}
+ \item \code{\link{equate}()}
+ \item \code{\link{event}()}
+ \item \code{\link{inertia}()}
+ \item \code{\link{reciprocity}()}
+ \item \code{\link{indegreeSender}()}
+ \item \code{\link{indegreeReceiver}()}
+ \item \code{\link{outdegreeSender}()}
+ \item \code{\link{outdegreeReceiver}()}
+ \item \code{\link{totaldegreeSender}()}
+ \item \code{\link{totaldegreeReceiver}()}
+ \item \code{\link{otp}()}
+ \item \code{\link{itp}()}
+ \item \code{\link{osp}()}
+ \item \code{\link{isp}()}
+ \item \code{\link{sp}()}
+ \item \code{\link{spUnique}()}
+ \item \code{\link{psABBA}()}
+ \item \code{\link{psABBY}()}
+ \item \code{\link{psABXA}()}
+ \item \code{\link{psABXB}()}
+ \item \code{\link{psABXY}()}
+ \item \code{\link{psABAY}()}
+ \item \code{\link{rrankSend}()}
+ \item \code{\link{rrankReceive}()}
+}
 }
 \examples{
-data(edgelistD)
-data(covar)
-effects <- c("difference", "both_equal_to", "inertia", "indegree_receiver", 
- "outdegree_sender")
-covariates <- list(difference = covar, both_equal_to = covar[,c(1:2, 4)])
-out <- remstats(edgelistD, effects, covariates = covariates, equal_val = 0)
+data(history)
+data(info)
+form <- ~ baseline() + inertia():send("extraversion", info)
+remstats(form, edgelist = history)
 
 }
