@@ -49,7 +49,7 @@ Authors@R:
 Maintainer: Marlyne Meijerink-Bosman <m.l.meijerink@tilburguniversity.edu>
 Description: This package computes a range of exogenous and endogenous    
     statistics for relational event history data. 
-License: MIT + file LICENSE
+License: GPL (>= 3)
 LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.1.0
