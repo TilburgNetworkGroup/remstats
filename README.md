@@ -1,6 +1,10 @@
-# remstats
+# `remstats`: Compute statistic for relational event history data. 
 
-An R-package that computes statistic for relational event history data. The `remstats()` function is the main function of the package. An introduction on how this function can be used to compute statistics for relational event history data follows below. 
+Butts' (2008) relational event model allows researchers to investigate the exogenous and endogenous predictors of how a time-ordered 
+sequence of relational events (a so-called *relational event history*) evolves over time. The R-package `remstats` is developed to assist researchers in applying 
+relational event modeling to their own data: it computes a range of exogenous and endogenous statistics for relational event history data. 
+
+The `remstats()` function is the main function of the package. It requires as input an `edgelist` (the relational event history in a `matrix` or `data.frame`) and a `formula` object that specifies the statistics that need to be computed. Additionally, a `covariates` object may contain exogenous information on the actors in the social network that may interact. An introduction on how the `remstats()` function can be used to compute statistics for relational event history data follows below. 
 
 ## Getting started 
 
