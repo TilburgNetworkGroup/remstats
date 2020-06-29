@@ -1,4 +1,4 @@
-# `remstats`: Compute statistic for relational event history data. 
+# `remstats`: Compute statistics for relational event history data. 
 
 Butts' (2008) relational event model allows researchers to investigate the exogenous and endogenous predictors of how a time-ordered 
 sequence of relational events (a so-called *relational event history*) evolves over time. The R-package `remstats` is developed to assist researchers in applying 
