@@ -5,7 +5,7 @@
 \alias{history}
 \title{Simulated relational event history}
 \format{
-A dataframe with 112 rows and 5 variables:
+A dataframe with 115 rows and 5 variables:
 \describe{
  \item{time}{time of the event since onset of observation (e.g., in minutes)}
  \item{actor1}{the first actor involved in the event}

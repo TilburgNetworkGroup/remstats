@@ -1,8 +1,8 @@
 Package: remstats
 Type: Package
-Title: Computes Statistics For Relational Event Modeling
-Version: 1.0
-Date: 2020-02-14
+Title: Computes Statistics For Relational Event History Data
+Version: 1.0.0
+Date: 2020-06-29
 Authors@R: 
     c(
         person(
@@ -47,16 +47,20 @@ Authors@R:
             email = "j.mulder3@tilburguniversity.edu")
     )
 Maintainer: Marlyne Meijerink-Bosman <m.l.meijerink@tilburguniversity.edu>
-Description: This package allows researchers to compute a range of exogenous 
-    and endogenous statistics for relational event modeling. Statistics are 
-    collected in an array compatible for estimation of a relational event model 
-    with relevent::rem. 
+Description: This package computes a range of exogenous and endogenous    
+    statistics for relational event history data. 
 License: MIT + file LICENSE
 LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.1.0
 Depends: R (>= 2.10)
-Imports: Rcpp (>= 1.0.2)
-LinkingTo: Rcpp, RcppArmadillo
-Suggests: 
+Imports: 
+    Rcpp (>= 1.0.2),
+    stats,
+    utils
+LinkingTo: 
+    Rcpp, 
+    RcppArmadillo
+Suggests:
+    graphics,
     testthat,
