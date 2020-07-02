@@ -202,14 +202,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // compute_eventEffect
-arma::mat compute_eventEffect(arma::mat x, arma::cube statistics);
-RcppExport SEXP _remstats_compute_eventEffect(SEXP xSEXP, SEXP statisticsSEXP) {
+arma::mat compute_eventEffect(arma::mat x, arma::cube statistics, int start, int stop);
+RcppExport SEXP _remstats_compute_eventEffect(SEXP xSEXP, SEXP statisticsSEXP, SEXP startSEXP, SEXP stopSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::cube >::type statistics(statisticsSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_eventEffect(x, statistics));
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_eventEffect(x, statistics, start, stop));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -249,7 +251,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_rrank", (DL_FUNC) &_remstats_compute_rrank, 6},
     {"_remstats_compute_baselineType", (DL_FUNC) &_remstats_compute_baselineType, 5},
     {"_remstats_compute_interact", (DL_FUNC) &_remstats_compute_interact, 2},
-    {"_remstats_compute_eventEffect", (DL_FUNC) &_remstats_compute_eventEffect, 2},
+    {"_remstats_compute_eventEffect", (DL_FUNC) &_remstats_compute_eventEffect, 4},
     {"_remstats_compute_stats", (DL_FUNC) &_remstats_compute_stats, 11},
     {NULL, NULL, 0}
 };
