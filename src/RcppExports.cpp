@@ -213,6 +213,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// recency
+Rcpp::NumericMatrix recency(Rcpp::NumericMatrix edgelist, Rcpp::NumericMatrix riskset, Rcpp::NumericVector nodes, int memory_value, int type);
+RcppExport SEXP _remstats_recency(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP nodesSEXP, SEXP memory_valueSEXP, SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type nodes(nodesSEXP);
+    Rcpp::traits::input_parameter< int >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(recency(edgelist, riskset, nodes, memory_value, type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // compute_stats
 arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& riskset, int start, int stop, const Rcpp::List& values, const arma::vec& scaling, const arma::vec& memory_value, const arma::vec& with_type, const arma::mat& event_weights, const arma::vec& equal_val);
 RcppExport SEXP _remstats_compute_stats(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP valuesSEXP, SEXP scalingSEXP, SEXP memory_valueSEXP, SEXP with_typeSEXP, SEXP event_weightsSEXP, SEXP equal_valSEXP) {
@@ -250,6 +265,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_baselineType", (DL_FUNC) &_remstats_compute_baselineType, 5},
     {"_remstats_compute_interact", (DL_FUNC) &_remstats_compute_interact, 2},
     {"_remstats_compute_eventEffect", (DL_FUNC) &_remstats_compute_eventEffect, 2},
+    {"_remstats_recency", (DL_FUNC) &_remstats_recency, 5},
     {"_remstats_compute_stats", (DL_FUNC) &_remstats_compute_stats, 11},
     {NULL, NULL, 0}
 };

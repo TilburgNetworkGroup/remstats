@@ -43,6 +43,14 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
     // Initialize saving space
     arma::cube statistics(small_edgelist.n_rows, riskset.n_rows, effects.n_elem);
 
+    
+    // Extract the actors
+    arma::vec actors = sort(unique(join_cols(riskset.col(0), riskset.col(1))));
+    
+    
+    
+    
+    
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
@@ -299,6 +307,22 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
             case 34 :
                 stat = compute_eventEffect(values[i], statistics);
                 break;
+            // recencySender
+            case 35 :
+                stat = recency(edgelist,riskset, actors, memory_value(i), 1);
+                break;
+                // recencyreceiver
+            case 36 :
+                stat = recency(edgelist,riskset, actors, memory_value(i), 2);
+               break;
+               // recenyContinue
+            case 37 :
+                stat = recency(edgelist,riskset, actors, memory_value(i), 3);
+                break;
+               
+               
+                
+                
         }
 
         // Save statistic

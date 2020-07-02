@@ -1122,5 +1122,82 @@ rrankReceive <- function(with_type = FALSE) {
 }
 
 
+#' recenySender
+#' 
+#' Description
+#' 
+#' Details
+#' 
+#' @param memory_value numeric value. Specifies the time after which events are 
+#' no longer included in the statistic count (default: all past events are 
+#' considered). Note: make sure memory_value is specified in the same time unit 
+#' as the time for the events in the edgelist. 
+#' 
+#' seealso
+#' 
+#' examples
+#' 
+#' @export 
+recenySender <- function(memory_value = NULL) {
+	
+	list(
+		recenySender = list(memory_value = memory_value)
+	)
+	
+}
+
+
+
+#' recenyReceiver
+#' 
+#' Description
+#' 
+#' Details
+#' 
+#' @param memory_value numeric value. Specifies the time after which events are 
+#' no longer included in the statistic count (default: all past events are 
+#' considered). Note: make sure memory_value is specified in the same time unit 
+#' as the time for the events in the edgelist. 
+#' 
+#' seealso
+#' 
+#' examples
+#' 
+#' @export 
+recenyReceiver <- function(memory_value = NULL) {
+	
+	list(
+		recenyReceiver = list(memory_value = memory_value)
+	)
+	
+}
+
+
+#' recenyContinue
+#' 
+#' Description
+#' 
+#' Details
+#' 
+#' @param memory_value numeric value. Specifies the time after which events are 
+#' no longer included in the statistic count (default: all past events are 
+#' considered). Note: make sure memory_value is specified in the same time unit 
+#' as the time for the events in the edgelist. 
+#' 
+#' seealso
+#' 
+#' examples
+#' 
+#' @export 
+recenyContinue <- function(memory_value = NULL) {
+	
+	list(
+		recenyContinue = list(memory_value = memory_value)
+	)
+	
+}
+
+
+
 
 

@@ -1,4 +1,6 @@
 #include <RcppArmadillo.h>
+using namespace Rcpp;
+
 // [[Rcpp::depends(RcppArmadillo)]]
 
 // standardize
@@ -1142,5 +1144,117 @@ arma::mat compute_eventEffect(arma::mat x, arma::cube statistics) {
 
     return stat;
 }
+
+
+//' recency
+//'
+//'    A function for computing the recency statistics, as in  Vu et al. (2017) and Mulder and Leenders (2019).
+//'    Recency sender (type=1)including how long ago the sender was active as sender.
+//'    Recency receiver (type=2) including how long ago the receiver was active as receiver.
+//'    Recency sender-receiver(continue) (type=3) including how long ago the sender send something to the receiver.
+//'    
+//'    
+//' @param edgelist, matrix, 3-column edgelist (time, sender, receiver).
+//' @param nodes, vector of integers indicating the identity of the actors in the network.
+//' @param type equals 1 for Recency sender, type equals 2 for Recency receiver, type equals 3 for Recency sender-receiver.
+//' @param riskset matrix, all potential dyads, the set of all sender/receiver that are possible at time t.
+//' @param memory, based on the the event data you can decide about memory.E.g. 30 days, 10 months,80 hours, etc.
+//' @return matrix (event time x dyad)
+//'
+//' @examples
+//' 
+//' edge <- edgelist
+//' edgelist <- out$edgelist
+//' nodes <- out$actors$id
+//' type <- 1
+//' memory <- 60
+//' test <- recency(edge, riskset, nodes, memory=60, type)
+//'
+//' @export
+//'
+
+
+// [[Rcpp::export]]
+Rcpp::NumericMatrix recency (Rcpp::NumericMatrix edgelist,Rcpp::NumericMatrix riskset,  Rcpp::NumericVector nodes, int memory_value,int type) {
+	
+	
+	int n     = nodes.size();
+	
+	int nedge = n*(n-1);
+	
+	Rcpp::NumericMatrix ref = riskset;
+	Rcpp::NumericMatrix RE(edgelist.nrow(),ref.nrow());
+	
+	
+	for (int ee1 = 1; ee1 < edgelist.nrow(); ee1++) {
+		
+		Rcpp::NumericVector recencySend (nedge, 0.0);
+		Rcpp::NumericVector recencyReceiv (nedge, 0.0);
+		Rcpp::NumericVector recencyContinue (nedge, 0.0);
+		
+		for (int ee2 = 0; ee2 < ee1; ee2++) {
+			double verschil  = edgelist(ee1,0) - edgelist(ee2,0);
+			
+			if(verschil>memory_value){
+				verschil =1e6;
+			} else {
+				
+				verschil=verschil;}
+			
+			Rcpp::NumericMatrix::Column col_ref_se  = ref( _ , 0);  // Reference to the column sender of risk set
+			Rcpp::NumericMatrix::Column col_edge_se = edgelist( _ , 1);  // Reference to the column sender of edgelist
+			
+			Rcpp::NumericMatrix::Column col_ref_rec  = ref( _ , 1);  // Reference to the column receiver of risk set
+			Rcpp::NumericMatrix::Column col_edge_rec = edgelist( _ , 2);  // Reference to the column receiver of edgelist
+			
+			
+			if(type==1){
+				// recency sender
+				Rcpp::IntegerVector v = Rcpp::seq(0, col_ref_se.size()-1);
+				Rcpp::IntegerVector gg = v[col_ref_se==col_edge_se[ee2]];
+				
+				Rcpp::NumericVector recencyS (gg.size(), 1/(verschil+1));
+				
+				recencySend[gg] = recencyS;
+				RE( ee1 , _ ) = recencySend;
+				
+			}else if (type==2){
+				// recency receiver
+				Rcpp::IntegerVector v = Rcpp::seq(0, col_ref_rec.size()-1);
+				Rcpp::IntegerVector gg = v[col_ref_rec==col_edge_rec[ee2]];
+				
+				
+				Rcpp::NumericVector recencyRec (gg.size(), 1/(verschil+1));
+				
+				
+				recencyReceiv[gg] = recencyRec;
+				RE( ee1 , _ ) = recencyReceiv;
+				
+			} else if (type==3){
+				
+				// recency sender-receiver or recency continue
+				Rcpp::IntegerVector v  = Rcpp::seq(0, col_ref_se.size()-1);
+				Rcpp::IntegerVector gg = v[(col_ref_se==col_edge_se[ee2])&(col_ref_rec==col_edge_rec[ee2])];
+				
+				Rcpp::NumericVector recency_SendRec (gg.size(), 1/(verschil+1));
+				
+				
+				recencyContinue[gg] = recency_SendRec;
+				RE( ee1 , _ ) = recencyContinue;
+				
+			}
+			
+		}
+		
+		
+	}
+	
+	
+	//transposing the output to be in the same form as the other functions in the package
+	
+	return RE;
+	
+}
+
 
 

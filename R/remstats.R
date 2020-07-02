@@ -40,6 +40,9 @@
 #'  \item \code{\link{psABAY}()}
 #'  \item \code{\link{rrankSend}()}
 #'  \item \code{\link{rrankReceive}()}
+#'  \item \code{\link{recenySender}()}
+#'  \item \code{\link{recenyReceiver}()}
+#'  \item \code{\link{recenyContinue}()}
 #' }
 #' 
 #' @param formula an object of class \code{"\link[stats]{formula}"} (or one 
@@ -138,8 +141,8 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
         "psABXB", "psABXY", "psABAY",  #27 #28 #29
         "rrankSend", "rrankReceive",  #30 #31
         "baselineType", "interact", #32 #33
-        "event" #34
-    ) 
+        "event","recenySender","recenyReceiver","recenyContinue" #34
+        ) 
     eff <- match(names(effects), all_effects)
 
     # Check correct specification effects
