@@ -292,6 +292,9 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
     dimnames(statistics) <- list(NULL, NULL, effectnames)
     class(statistics) <- "remstats"
 
+    edgelistUser <- edgelistUser[start:stop,]
+    evls <- evls[start:stop,]
+
     # Output
     list(statistics = statistics, edgelist = edgelistUser, 
         riskset = risksetUser, evls = evls)
