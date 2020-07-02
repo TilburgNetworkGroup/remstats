@@ -1132,12 +1132,14 @@ arma::mat compute_interact(arma::mat x, arma::cube statistics) {
 //  stat: matrix (timepoint x riskset position)
 // 
 //[[Rcpp::export]]
-arma::mat compute_eventEffect(arma::mat x, arma::cube statistics) {
+arma::mat compute_eventEffect(arma::mat x, arma::cube statistics, int start, 
+    int stop) {
     // Storage space and fill with zeros
     arma::mat stat(statistics.n_rows, statistics.n_cols, arma::fill::zeros);
 
     // Copy the column of x for each column in stat
     arma::colvec y = x.col(0);
+    y = y.subvec(start - 1, stop - 1);
     stat.each_col() = y;
 
     return stat;
