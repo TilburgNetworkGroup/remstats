@@ -53,8 +53,8 @@ compute_interact <- function(x, statistics) {
     .Call(`_remstats_compute_interact`, x, statistics)
 }
 
-compute_eventEffect <- function(x, statistics) {
-    .Call(`_remstats_compute_eventEffect`, x, statistics)
+compute_eventEffect <- function(x, statistics, start, stop) {
+    .Call(`_remstats_compute_eventEffect`, x, statistics, start, stop)
 }
 
 recency <- function(edgelist, riskset, memory_value, type) {

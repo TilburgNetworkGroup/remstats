@@ -297,7 +297,7 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
                 break;
             // event
             case 34 :
-                stat = compute_eventEffect(values[i], statistics);
+                stat = compute_eventEffect(values[i], statistics, start, stop);
                 break;
             // recencySender
             case 35 :
