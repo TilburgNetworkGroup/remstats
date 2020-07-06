@@ -102,9 +102,9 @@ A list of available statistics follows:
  \item \code{\link{psABAY}()}
  \item \code{\link{rrankSend}()}
  \item \code{\link{rrankReceive}()}
- \item \code{\link{recenySender}()}
- \item \code{\link{recenyReceiver}()}
- \item \code{\link{recenyContinue}()}
+ \item \code{\link{recencySender}()}
+ \item \code{\link{recencyReceiver}()}
+ \item \code{\link{recencyContinue}()}
 }
 }
 \examples{

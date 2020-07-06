@@ -41,15 +41,7 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
     arma::mat small_edgelist = edgelist.rows((start-1), (stop-1));
     
     // Initialize saving space
-    arma::cube statistics(small_edgelist.n_rows, riskset.n_rows, effects.n_elem);
-
-    
-    // Extract the actors
-    arma::vec actors = sort(unique(join_cols(riskset.col(0), riskset.col(1))));
-    
-    
-    
-    
+    arma::cube statistics(small_edgelist.n_rows, riskset.n_rows, effects.n_elem); 
     
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
@@ -309,20 +301,16 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
                 break;
             // recencySender
             case 35 :
-                stat = recency(edgelist,riskset, actors, memory_value(i), 1);
+                stat = recency(edgelist, riskset, memory_value(i), 1);
                 break;
-                // recencyreceiver
+            // recencyreceiver
             case 36 :
-                stat = recency(edgelist,riskset, actors, memory_value(i), 2);
+                stat = recency(edgelist, riskset, memory_value(i), 2);
                break;
-               // recenyContinue
+            // recenyContinue
             case 37 :
-                stat = recency(edgelist,riskset, actors, memory_value(i), 3);
-                break;
-               
-               
-                
-                
+                stat = recency(edgelist, riskset, memory_value(i), 3);
+                break;                             
         }
 
         // Save statistic
