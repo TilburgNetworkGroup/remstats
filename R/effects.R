@@ -1122,5 +1122,91 @@ rrankReceive <- function(with_type = FALSE) {
 }
 
 
+#' recencySender
+#' 
+#' Specifies the statistic for a recency sender effect in the 
+#' \code{formula} argument of \code{\link{remstats}}.
+#' 
+#' The recencySender effect refers to a recency statistic similar to Vu et 
+#' al. (2017) and Mulder and Leenders (2019). For each timepoint t, for 
+#' directed dyad (i,j) the statistic is equal to 1/(the time that has past 
+#' since sender i was last active + 1).
+#' 
+#' @param memory_value numeric value. Specifies the time after which events are 
+#' no longer included in the statistic count (default: all past events are 
+#' considered). Note: make sure memory_value is specified in the same time unit 
+#' as the time for the events in the edgelist. 
+#' 
+#' @seealso \code{\link{recencyReceiver}} and \code{\link{recencyContinue}}
+#' 
+#' @examples
+#' data(history)
+#' remstats(~ recenySender(), edgelist = history)
+#' 
+#' @export 
+recencySender <- function(memory_value = Inf) {
+	
+	list(
+		recencySender = list(memory_value = memory_value)
+	)
+	
+}
+
+#' recencyReceiver
+#' 
+#' Specifies the statistic for a recency receiver effect in the 
+#' \code{formula} argument of \code{\link{remstats}}.
+#' 
+#' The recencyReceiver effect refers to a recency statistic similar to Vu et 
+#' al. (2017) and Mulder and Leenders (2019). For each timepoint t, for 
+#' directed dyad (i,j) the statistic is equal to 1/(the time that has past 
+#' since receiver j was last active + 1). 
+#' 
+#' @inheritParams recencySender
+#' 
+#' @seealso \code{\link{recencySender}} and \code{\link{recencyContinue}}
+#' 
+#' @examples
+#' data(history)
+#' remstats(~ recencyReceiver(), edgelist = history)
+#' 
+#' @export 
+recencyReceiver <- function(memory_value = Inf) {
+	
+	list(
+		recencyReceiver = list(memory_value = memory_value)
+	)
+	
+}
+
+#' recencyContinue
+#' 
+#' Specifies the statistic for a recency contine effect in the 
+#' \code{formula} argument of \code{\link{remstats}}.
+#' 
+#' The recencyContinue effect refers to a recency statistic similar to Vu et 
+#' al. (2017) and Mulder and Leenders (2019). For each timepoint t, for 
+#' directed dyad (i,j) the statistic is equal to 1/(the time that has past 
+#' since the dyad was last active + 1).
+#' 
+#' @inheritParams recencySender
+#' 
+#' @seealso \code{\link{recencySender}} and \code{\link{recencyReceiver}}
+#' 
+#' @examples
+#' data(history)
+#' remstats(~ recencyContinue(), edgelist = history)
+#' 
+#' @export 
+recencyContinue <- function(memory_value = Inf) {
+	
+	list(
+		recencyContinue = list(memory_value = memory_value)
+	)
+	
+}
+
+
+
 
 

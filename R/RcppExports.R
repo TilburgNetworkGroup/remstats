@@ -57,6 +57,10 @@ compute_eventEffect <- function(x, statistics, start, stop) {
     .Call(`_remstats_compute_eventEffect`, x, statistics, start, stop)
 }
 
+recency <- function(edgelist, riskset, memory_value, type) {
+    .Call(`_remstats_recency`, edgelist, riskset, memory_value, type)
+}
+
 compute_stats <- function(effects, edgelist, riskset, start, stop, values, scaling, memory_value, with_type, event_weights, equal_val) {
     .Call(`_remstats_compute_stats`, effects, edgelist, riskset, start, stop, values, scaling, memory_value, with_type, event_weights, equal_val)
 }

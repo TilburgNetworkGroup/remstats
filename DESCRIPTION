@@ -71,4 +71,3 @@ LinkingTo:
 Suggests:
     graphics,
     testthat
-    
