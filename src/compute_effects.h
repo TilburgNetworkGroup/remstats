@@ -612,22 +612,22 @@ arma::mat compute_triad(int type, const arma::mat& edgelist,
             int eventtype = 1;
             if(with_type) {eventtype = edgelist(past(j), 3);}
             // otp, itp, osp, isp
-            if(type == 1 || type == 2 || type == 3 || type == 4) {
+            if((type == 1) || (type == 2) || (type == 3) || (type == 4)) {
                 adj(eventsender-1, eventreceiver-1, eventtype-1) += 
                     event_weights(past(j));
             } 
-            // sp
-            if(type == 5) {
+            // sp and spUnique
+            if((type == 5) || (type == 6)) {
                 adj(eventsender-1, eventreceiver-1, eventtype-1) += 
                     event_weights(past(j));
                 adj(eventreceiver-1, eventsender-1, eventtype-1) += 
                     event_weights(past(j));
-            } 
-            // spUnique
-            if(type == 6) {
-                adj(eventsender-1, eventreceiver-1, eventtype-1) += 1;
-                adj.replace(2, 1);
-            }           
+                
+                // spUnique
+                if(type == 6) {
+                   adj.replace(2, 1); 
+                }
+            }       
         }
 
         //Compare with previous adj
@@ -706,7 +706,7 @@ arma::mat compute_triad(int type, const arma::mat& edgelist,
         stat.row(i) = thisrow; 
     }   
 
-    return stat;    
+    return stat;   
 }
 
 // compute_pshift
