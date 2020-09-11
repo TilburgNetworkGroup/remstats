@@ -65,3 +65,7 @@ compute_stats <- function(effects, edgelist, riskset, start, stop, values, scali
     .Call(`_remstats_compute_stats`, effects, edgelist, riskset, start, stop, values, scaling, memory_value, with_type, event_weights, equal_val)
 }
 
+# Register entry points for exported C++ functions
+methods::setLoadAction(function(ns) {
+    .Call('_remstats_RcppExport_registerCCallable', PACKAGE = 'remstats')
+})

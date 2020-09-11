@@ -352,7 +352,7 @@ arma::mat compute_inertia(const arma::mat& edgelist, const arma::mat& riskset,
     arma::mat stat(small_edgelist.n_rows, riskset.n_rows, arma::fill::zeros);  
 
     // For loop over the small edgelist
-    for(arma::uword i = 1; i < small_edgelist.n_rows; ++i) {
+    for(arma::uword i = 0; i < small_edgelist.n_rows; ++i) {
         //Storage space and fill with zeros
         arma::rowvec thisrow(riskset.n_rows, arma::fill::zeros);
 
@@ -415,7 +415,7 @@ arma::mat compute_reciprocity(const arma::mat& edgelist,
     arma::mat stat(small_edgelist.n_rows, riskset.n_rows, arma::fill::zeros);
 
     // For loop over the small edgelist
-    for(arma::uword i = 1; i < small_edgelist.n_rows; ++i) {
+    for(arma::uword i = 0; i < small_edgelist.n_rows; ++i) {
         //Storage space and fill with zeros
         arma::rowvec thisrow(riskset.n_rows, arma::fill::zeros);
 
@@ -484,7 +484,7 @@ arma::mat compute_degree(int type, const arma::mat& edgelist,
 	arma::mat stat(small_edgelist.n_rows, riskset.n_rows, arma::fill::zeros);
 	
 	// For loop over the sequence
-	for(arma::uword i = 1; i < small_edgelist.n_rows; ++i) {
+	for(arma::uword i = 0; i < small_edgelist.n_rows; ++i) {
 		//Storage space and fill with zeros
 		arma::rowvec thisrow(riskset.n_rows, arma::fill::zeros);
 		
@@ -736,17 +736,28 @@ arma::mat compute_pshift(int type, const arma::mat& edgelist,
     arma::mat small_edgelist = edgelist.rows((start-1), (stop-1));
 
     // Storage space and arma::fill with zeros
-    arma::mat stat(edgelist.n_rows, riskset.n_rows, arma::fill::zeros);
+    arma::mat stat(small_edgelist.n_rows, riskset.n_rows, arma::fill::zeros);
 
     // For loop over events
-    for(arma::uword i = 0; i < (edgelist.n_rows - 1); ++i) {
-        //Sender of the current event
-        int sender = edgelist(i, 1);
-        //Receiver of the current event
-        int receiver = edgelist(i, 2); 
-        //Type of the current event
+    for(arma::uword i = 0; i < small_edgelist.n_rows; ++i) {
+        //Time of the current event
+        double time = small_edgelist(i, 0); 
+        //Position of the current event in the full edgelist
+        arma::uvec current = arma::find(edgelist.col(0) == time);
+        // Position of the last event in the full edgelist
+        int last = current(0) - 1;
+
+        // If the current event is the first event in the edgelist, continue to 
+        // the next iteration
+        if(last < 0) {continue;}  
+
+        //Sender of the last event
+        int sender = edgelist(last, 1);
+        //Receiver of the last event
+        int receiver = edgelist(last, 2); 
+        //Type of the last event
         int eventtype = 1;
-        if(with_type) {eventtype = edgelist(i,3);}
+        if(with_type) {eventtype = edgelist(last,3);}
 
         // Storage space
         arma::uvec psdyads = {0};
@@ -833,10 +844,10 @@ arma::mat compute_pshift(int type, const arma::mat& edgelist,
                 break;              
         }
 
-        // Set the statistic to one at the next event for those dyads that 
-        // create the respective p-shift
+        // Set the statistic to one for those dyads that create the respective 
+        // p-shift
         for(arma::uword d = 0; d < psdyads.n_elem; ++d) {
-            stat(i+1, psdyads(d)) = 1.0;
+            stat(i, psdyads(d)) = 1.0;
         }
     }
 

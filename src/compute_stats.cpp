@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 #include "compute_effects.h"
 // [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::interfaces(r, cpp)]]
 
 // compute_stats
 //
