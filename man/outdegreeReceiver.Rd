@@ -39,7 +39,7 @@ Specifies the statistic for an outdegree of the receiver effect in the
 \code{formula} argument of \code{\link{remstats}}.
 }
 \details{
-An outdegree of the sender effect refers to the tendency for actors to 
+An outdegree of the receiver effect refers to the tendency for actors to 
 receive events if they have send more past events. The statistic at 
 timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
 send by actor \emph{j} before timepoint \emph{t}. Optionally, a scaling 
