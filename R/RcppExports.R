@@ -21,6 +21,10 @@ compute_dyadEffect <- function(values, type, edgelist, riskset, start, stop, equ
     .Call(`_remstats_compute_dyadEffect`, values, type, edgelist, riskset, start, stop, equal_val)
 }
 
+compute_tie <- function(values, edgelist, riskset, start, stop) {
+    .Call(`_remstats_compute_tie`, values, edgelist, riskset, start, stop)
+}
+
 compute_inertia <- function(edgelist, riskset, memory_value, with_type, event_weights, start, stop) {
     .Call(`_remstats_compute_inertia`, edgelist, riskset, memory_value, with_type, event_weights, start, stop)
 }

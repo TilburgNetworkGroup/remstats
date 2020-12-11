@@ -318,6 +318,43 @@ arma::mat compute_dyadEffect(const arma::mat& values, int type,
     return(stat);
 }
 
+// compute_tie
+//[[Rcpp::export]]
+arma::mat compute_tie(const arma::mat& values, const arma::mat& edgelist, const 
+    arma::mat& riskset, int start, int stop) {
+
+    // Extract small edgelist
+    arma::mat small_edgelist = edgelist.rows((start-1), (stop-1));
+
+    // Storage space and fill with zeros
+    arma::mat stat(small_edgelist.n_rows, riskset.n_rows, arma::fill::zeros); 
+
+    // Saving space
+    arma::rowvec thisrow(riskset.n_rows);
+
+    // For loop over dyads
+    for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+        
+        // Find the relevant actors
+        arma::uword actor1 = riskset(i, 0);
+        arma::uword actor2 = riskset(i, 1);
+
+        // Find the value
+        arma::uvec index = find(values.col(0) == actor1 && 
+            values.col(1) == actor2);
+        double tieval = values(index(0),2);
+        thisrow(i) = tieval;
+    }
+
+    // Save in stat
+    for(arma::uword m = 0; m < small_edgelist.n_rows; ++m) {
+        stat.row(m) = thisrow;
+    }
+
+    //Output
+    return(stat);
+}
+
 // compute_inertia
 // 
 // Computes statistic for an inertia effect. 

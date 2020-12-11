@@ -317,7 +317,11 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
             // recenyContinue
             case 37 :
                 stat = recency(edgelist, riskset, memory_value(i), 3);
-                break;                             
+                break;  
+            // tie
+            case 38 :
+                stat = compute_tie(values[i], edgelist, riskset, start, 
+                    stop);                            
         }
 
         // Save statistic
