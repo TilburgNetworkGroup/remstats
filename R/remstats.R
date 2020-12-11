@@ -141,7 +141,8 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
         "psABXB", "psABXY", "psABAY",  #27 #28 #29
         "rrankSend", "rrankReceive",  #30 #31
         "baselineType", "interact", "event", #32 #33 #34
-        "recencySender","recencyReceiver","recencyContinue" #35 #36 #37
+        "recencySender","recencyReceiver","recencyContinue", #35 #36 #37
+        "tie" #38
         ) 
     eff <- match(names(effects), all_effects)
 
@@ -246,7 +247,7 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
         val <- y$x
         effect <- attributes(val)$effect
         if(!is.null(val)) {
-            if(!(effect %in% c("baselineType", "interact", "event"))) {
+            if(!(effect %in% c("baselineType", "interact", "event", "tie"))) {
                 val$id <- match(val$id, actorsUser)
                 if(!all(actors %in% val$id)) {
                     stop(paste0("Make sure that for every actor a ", effect, "Effect value is defined."))
@@ -255,6 +256,27 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
                     stop(paste0("Make sure that for every actor a ", effect, "Effect starting value is defined."))
                 }
             }
+            if(effect == "tie") {
+                if(is.null(rownames(val)) | is.null(colnames(val))) {
+                    if(nrow(val) != ncol(val)) {stop("Expect equal number of rows and columns for matrix `X` in tie.")}
+                    if(nrow(val) != length(actors)) {stop("Make sure that the dimensions of the matrix 'X' in tie correspond to the number of unique actors in the riskset.")}
+                    rownames(val) <- colnames(val) <- actors
+                } else {
+                    if(any(rownames(val) %in% actorsUser)) {
+                        rownames(val) <- match(rownames(val), actorsUser)
+                    }
+                    if(any(colnames(val) %in% actorsUser)) {
+                        colnames(val) <- match(colnames(val), actorsUser)
+                    }
+                }
+                longVal <- expand.grid(actors, actors)
+                longVal[,3] <- apply(longVal, 1, function(y) {
+                    val[which(rownames(val) == y[1]), which(rownames(val) == y[2])]
+                })
+                val <- longVal
+                colnames(val) <- c("id1", "id2", "value")
+            }
+            
             val <- as.matrix(val)
             val <- apply(val, 2, as.numeric)
             val <- as.matrix(val)
@@ -281,8 +303,10 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
             } else if(attr(y$x, "effect") == "interact") {
                 paste0(all_effects[eff[y$x[1]]], "*", all_effects[eff[y$x[2]]])
             } else if(attr(y$x, "effect") == "event") {
-                paste0("event_", colnames(y$x)[1])
-            }    else {
+                paste0("event_", colnames(y$x)[1]) 
+            } else if(attr(y$x, "effect") == "tie") { 
+                "tie"
+            } else {
                 paste0(attributes(y$x)$effect, "_", colnames(y$x)[3])
             }
         } else {

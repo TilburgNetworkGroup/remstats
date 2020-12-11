@@ -75,6 +75,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// compute_tie
+arma::mat compute_tie(const arma::mat& values, const arma::mat& edgelist, const arma::mat& riskset, int start, int stop);
+RcppExport SEXP _remstats_compute_tie(SEXP valuesSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP startSEXP, SEXP stopSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type values(valuesSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_tie(values, edgelist, riskset, start, stop));
+    return rcpp_result_gen;
+END_RCPP
+}
 // compute_inertia
 arma::mat compute_inertia(const arma::mat& edgelist, const arma::mat& riskset, double memory_value, bool with_type, const arma::vec& event_weights, int start, int stop);
 RcppExport SEXP _remstats_compute_inertia(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP memory_valueSEXP, SEXP with_typeSEXP, SEXP event_weightsSEXP, SEXP startSEXP, SEXP stopSEXP) {
@@ -299,6 +314,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_divide_by_2past", (DL_FUNC) &_remstats_divide_by_2past, 1},
     {"_remstats_compute_actorEffect", (DL_FUNC) &_remstats_compute_actorEffect, 6},
     {"_remstats_compute_dyadEffect", (DL_FUNC) &_remstats_compute_dyadEffect, 7},
+    {"_remstats_compute_tie", (DL_FUNC) &_remstats_compute_tie, 5},
     {"_remstats_compute_inertia", (DL_FUNC) &_remstats_compute_inertia, 7},
     {"_remstats_compute_reciprocity", (DL_FUNC) &_remstats_compute_reciprocity, 7},
     {"_remstats_compute_degree", (DL_FUNC) &_remstats_compute_degree, 8},

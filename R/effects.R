@@ -251,6 +251,12 @@ equate <- function(variables, equal_val, covariates) {
     out
 }
 
+#' @export 
+tie <- function(X) {
+    attributes(X)$effect <- "tie"
+    list("tie" = list(x = X))
+}
+
 #' event
 #' 
 #' Specifies the statistic for an event effect in the \code{formula} argument 
