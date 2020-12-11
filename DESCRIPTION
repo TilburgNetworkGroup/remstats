@@ -1,8 +1,8 @@
 Package: remstats
 Type: Package
 Title: Computes Statistics For Relational Event History Data
-Version: 1.0.1
-Date: 2020-09-11
+Version: 1.0.2
+Date: 2020-12-11
 Authors@R: 
     c(
         person(
@@ -58,7 +58,7 @@ URL: https://github.com/TilburgNetworkGroup/remstats
 BugReports: https://github.com/TilburgNetworkGroup/renstats/issues
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
 Imports: 

@@ -5,7 +5,7 @@
 \title{reciprocity}
 \usage{
 reciprocity(
-  scaling = c("counts", "indegreeSender", "standardize"),
+  scaling = c("counts", "indegreeSender", "standardize", "FrRecSnd"),
   memory_value = Inf,
   with_type = FALSE,
   event_weights = NULL

@@ -5,7 +5,7 @@
 \title{inertia}
 \usage{
 inertia(
-  scaling = c("counts", "outdegreeSender", "standardize"),
+  scaling = c("counts", "outdegreeSender", "standardize", "FrPSndSnd"),
   memory_value = Inf,
   with_type = FALSE,
   event_weights = NULL

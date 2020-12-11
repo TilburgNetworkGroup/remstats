@@ -338,13 +338,13 @@ event <- function(x) {
 #' remstats(~ inertia(), edgelist = history)
 #'
 #' @export 
-inertia <- function(scaling = c("counts", "outdegreeSender", "standardize"), 
-    memory_value = Inf, with_type = FALSE, event_weights = NULL) {
+inertia <- function(scaling = c("counts", "outdegreeSender", "standardize",
+    "FrPSndSnd"), memory_value = Inf, with_type = FALSE, event_weights = NULL) {
 
     out <- prepEndoVar("inertia", scaling, memory_value, with_type, 
         event_weights)
     out$inertia$scaling <- match(out$inertia$scaling, 
-        c("counts", "outdegreeSender", "standardize"))
+        c("counts", "outdegreeSender", "standardize", "FrPSndSnd"))
     out
 }
 
@@ -385,12 +385,12 @@ inertia <- function(scaling = c("counts", "outdegreeSender", "standardize"),
 #'
 #' @export 
 reciprocity <- function(scaling = c("counts", "indegreeSender", 
-    "standardize"), memory_value = Inf, with_type = FALSE, 
+    "standardize", "FrRecSnd"), memory_value = Inf, with_type = FALSE, 
     event_weights = NULL) {
 
     out <- prepEndoVar("reciprocity", scaling, memory_value, with_type, event_weights)
     out$reciprocity$scaling <- match(out$reciprocity$scaling, 
-        c("counts", "indegreeSender", "standardize"))
+        c("counts", "indegreeSender", "standardize", "FrRecSnd"))
     out
 }
 

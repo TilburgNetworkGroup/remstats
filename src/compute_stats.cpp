@@ -112,6 +112,16 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
                 if(scaling(i) == 3) {
                     stat = standardize(stat);                    
                 }
+                if(scaling(i) == 4) {
+                    deno = compute_degree(3, edgelist, riskset, 
+                        memory_value(i), with_type(i), event_weights.col(i), 
+                        start, stop);
+                    stat = stat/deno;
+                    arma::vec actors = sort(unique(join_cols(riskset.col(0), 
+                        riskset.col(1))));
+                    double rep = 1.0/(actors.n_elem-1.0);
+                    stat.replace(arma::datum::nan, rep);
+                }
                 break;
             // reciprocity
             case 11 :
@@ -126,6 +136,16 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
                 }
                 if(scaling(i) == 3) {
                     stat = standardize(stat);                    
+                }
+                if(scaling(i) == 4) {
+                    deno = compute_degree(1, edgelist, riskset, 
+                        memory_value(i), with_type(i), event_weights.col(i), 
+                        start, stop);
+                    stat = stat/deno;
+                    arma::vec actors = sort(unique(join_cols(riskset.col(0), 
+                        riskset.col(1))));
+                    double rep = 1.0/(actors.n_elem-1.0);
+                    stat.replace(arma::datum::nan, rep);
                 }
                 break;
             // indegreeSender
