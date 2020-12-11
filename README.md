@@ -6,6 +6,8 @@ relational event modeling to their own data: it computes a range of exogenous an
 
 The `remstats()` function is the main function of the package. It requires as input an `edgelist` (the relational event history in a `matrix` or `data.frame`) and a `formula` object that specifies the statistics that need to be computed. Additionally, a `covariates` object may contain exogenous information on the actors in the social network that may interact. An introduction on how the `remstats()` function can be used to compute statistics for relational event history data follows below. 
 
+A table with `remstats` equivalents for statistics in `relevent::rem.dyad()` can be found through [this link](relations.md). 
+
 ## Getting started 
 
 ### Installation 
