@@ -3,8 +3,8 @@
 `CovEvent`              |`tie()`
 `CovRec`                |`receive()`
 `CovSnd`                |`send()`
-`FrPSndSnd`             |`inertia(scaling = outdegreeSender)`
-`FrRecSnd`              |`reciprocity(scaling = indegreeSender)`
+`FrPSndSnd`             |`inertia(scaling = "outdegreeSender")`
+`FrRecSnd`              |`reciprocity(scaling = "indegreeSender")`
 `ISPSnd`                |`isp()`
 `ITPSnd`                |`itp()`
 `NIDRec`                |`indegreeReceiver(scaling = "total")`
