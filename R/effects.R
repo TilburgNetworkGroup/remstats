@@ -303,7 +303,7 @@ event <- function(x) {
 #' Specifies the statistic for an inertia effect in the \code{formula} argument 
 #' of \code{\link{remstats}}.
 #' 
-#' @details 
+#' @details
 #' An inertia effect refers to the tendency for actors to repeat past 
 #' interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
 #' equal to the number of \emph{(i,j)} events before timepoint \emph{t}. 
@@ -312,6 +312,14 @@ event <- function(x) {
 #' by setting \code{memory_value}, events of different types can be counted 
 #' separately by setting \code{with_type = TRUE} or past events can be weighted 
 #' by setting \code{event_weights}. 
+#' 
+#' Note that by scaling the inertia count by the outdegree of the sender, the 
+#' statistic refers to the fraction of messages send by actor i that were send 
+#' to actor j. If actor i hasn't send any messages yet it can be assumed that 
+#' every actor is equally likely to receive a message from i and the statistic 
+#' is set equal to 1/(n-1), where n refers to the number of actors. The 
+#' resulting statistic is similar to the "FrPSndSnd" statistic in the R package 
+#' relevent, or the persistence statistic in Section 2.2.2 of Butts (2008).
 #' 
 #' @param scaling the method for scaling the inertia statistic. Options are one 
 #' of \code{"counts"} (default option, gives the raw counts of past (i,j) 
@@ -338,13 +346,13 @@ event <- function(x) {
 #' remstats(~ inertia(), edgelist = history)
 #'
 #' @export 
-inertia <- function(scaling = c("counts", "outdegreeSender", "standardize",
-    "FrPSndSnd"), memory_value = Inf, with_type = FALSE, event_weights = NULL) {
+inertia <- function(scaling = c("counts", "outdegreeSender", "standardize"), 
+    memory_value = Inf, with_type = FALSE, event_weights = NULL) {
 
     out <- prepEndoVar("inertia", scaling, memory_value, with_type, 
         event_weights)
     out$inertia$scaling <- match(out$inertia$scaling, 
-        c("counts", "outdegreeSender", "standardize", "FrPSndSnd"))
+        c("counts", "outdegreeSender", "standardize"))
     out
 }
 
@@ -362,6 +370,14 @@ inertia <- function(scaling = c("counts", "outdegreeSender", "standardize",
 #' by setting \code{memory_value}, events of different types can be counted 
 #' separately by setting \code{with_type = TRUE} or past events can be weighted 
 #' by setting \code{event_weights}.
+#' 
+#' Note that by scaling the reciprocity count by the indegree of the sender, 
+#' the statistic refers to the fraction of messages received by actor i that 
+#' were received from actor j. If actor i hasn't received any messages yet it 
+#' can be assumed that actor i is equally likely to receive a message from 
+#' every actor and the statistic is set equal to 1/(n-1), where n refers to the 
+#' number of actors. The resulting statistic is similar to the "FrRecSnd" 
+#' statistic in the R package relevent.
 #' 
 #' @param scaling the method for scaling the reciprocity statistic. Options are 
 #' one of \code{"counts"} (default option, gives the raw counts of past (j,i) 
@@ -385,12 +401,12 @@ inertia <- function(scaling = c("counts", "outdegreeSender", "standardize",
 #'
 #' @export 
 reciprocity <- function(scaling = c("counts", "indegreeSender", 
-    "standardize", "FrRecSnd"), memory_value = Inf, with_type = FALSE, 
+    "standardize"), memory_value = Inf, with_type = FALSE, 
     event_weights = NULL) {
 
     out <- prepEndoVar("reciprocity", scaling, memory_value, with_type, event_weights)
     out$reciprocity$scaling <- match(out$reciprocity$scaling, 
-        c("counts", "indegreeSender", "standardize", "FrRecSnd"))
+        c("counts", "indegreeSender", "standardize"))
     out
 }
 

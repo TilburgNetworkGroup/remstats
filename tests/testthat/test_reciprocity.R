@@ -22,7 +22,8 @@ test_that("scaling is indegreeSender", {
 	
 	# Tests
 	temp <- stats[,,2]/stats[,,3]
-	temp[is.na(temp)] <- 0
+	n <- length(unique(info$id))
+	temp[is.na(temp)] <- 1/(n-1)
 	expect_equal(stats[,,1], temp)
 })
 

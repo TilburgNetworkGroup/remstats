@@ -5,7 +5,7 @@
 \title{reciprocity}
 \usage{
 reciprocity(
-  scaling = c("counts", "indegreeSender", "standardize", "FrRecSnd"),
+  scaling = c("counts", "indegreeSender", "standardize"),
   memory_value = Inf,
   with_type = FALSE,
   event_weights = NULL
@@ -47,6 +47,14 @@ happened a certain number of time units ago can be disregarded in the count
 by setting \code{memory_value}, events of different types can be counted 
 separately by setting \code{with_type = TRUE} or past events can be weighted 
 by setting \code{event_weights}.
+
+Note that by scaling the reciprocity count by the indegree of the sender, 
+the statistic refers to the fraction of messages received by actor i that 
+were received from actor j. If actor i hasn't received any messages yet it 
+can be assumed that actor i is equally likely to receive a message from 
+every actor and the statistic is set equal to 1/(n-1), where n refers to the 
+number of actors. The resulting statistic is similar to the "FrRecSnd" 
+statistic in the R package relevent.
 }
 \examples{
 data(history)

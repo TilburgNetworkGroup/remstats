@@ -5,7 +5,7 @@
 \title{inertia}
 \usage{
 inertia(
-  scaling = c("counts", "outdegreeSender", "standardize", "FrPSndSnd"),
+  scaling = c("counts", "outdegreeSender", "standardize"),
   memory_value = Inf,
   with_type = FALSE,
   event_weights = NULL
@@ -47,7 +47,15 @@ Optionally, a scaling method can be set with \code{scaling}, events that
 happened a certain number of time units ago can be disregarded in the count 
 by setting \code{memory_value}, events of different types can be counted 
 separately by setting \code{with_type = TRUE} or past events can be weighted 
-by setting \code{event_weights}.
+by setting \code{event_weights}. 
+
+Note that by scaling the inertia count by the outdegree of the sender, the 
+statistic refers to the fraction of messages send by actor i that were send 
+to actor j. If actor i hasn't send any messages yet it can be assumed that 
+every actor is equally likely to receive a message from i and the statistic 
+is set equal to 1/(n-1), where n refers to the number of actors. The 
+resulting statistic is similar to the "FrPSndSnd" statistic in the R package 
+relevent, or the persistence statistic in Section 2.2.2 of Butts (2008).
 }
 \examples{
 data(history)
