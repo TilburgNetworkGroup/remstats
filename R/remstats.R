@@ -313,9 +313,15 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
             NA
         }
     })
+    
     effectnames <- unlist(effectnames)
     effectnames <- ifelse(is.na(effectnames), names(effectnames), effectnames)
     names(effectnames) <- NULL
+    temp <- attr(ft, "term.labels")[grepl("tie", attr(ft, "term.labels"))]
+    temp <- strsplit(temp, "tie(", fixed = TRUE)
+    effectnames[which(effectnames == "tie")] <- paste0("tie_", sapply(temp, function(x) {
+        unlist(strsplit(x[2], ")", fixed = TRUE))
+    }))
     dimnames(statistics) <- list(NULL, NULL, effectnames)
     class(statistics) <- "remstats"
 
