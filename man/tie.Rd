@@ -6,6 +6,10 @@
 \usage{
 tie(X)
 }
+\arguments{
+\item{X}{a matrix with covariate information, rows and columns should refer 
+to actors.}
+}
 \description{
 tie
 }

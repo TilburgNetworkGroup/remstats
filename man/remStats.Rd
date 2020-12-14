@@ -7,11 +7,12 @@
 remstats(
   formula,
   edgelist,
-  directed = TRUE,
-  with_type = FALSE,
-  riskset = NULL,
   actors = NULL,
   types = NULL,
+  directed = TRUE,
+  ordinal = FALSE,
+  origin = NULL,
+  omit_dyad = NULL,
   start = NULL,
   stop = NULL
 )
@@ -27,28 +28,30 @@ overview of the available statistics are given under 'Details'.}
 Each row in the edgelist should refer to one event. The first column should 
 refer to the timepoint or order of the event, the second column to the 
 sender (or first actor) and the third column to the receiver (or second 
-actor). The fourth column may refer to the type of the event, this column is 
-only used when \code{with_type = TRUE}.}
+actor). A column that refers to event types may be added and has to be named 
+"type". Finally, a column that refers to event weights may be added and has 
+to be named "weight".}
+
+\item{actors}{Vector with actor names. Should be supplied when not all 
+actors that can interact are observed in the edgelist.}
+
+\item{types}{Vector with event type names. Should be supplied when not all 
+types that can occur are observed in the edgelist.}
 
 \item{directed}{Logical value. Indicates whether events in the edgelist are 
 directed (\code{directed = TRUE}, default) or undirected 
 (\code{directed = FALSE}).}
 
-\item{with_type}{Logical value. Indicates whether event types are considered 
-in the dependent variable (\code{with_type = TRUE}) or not 
-(\code{with_type = FALSE}, default).}
+\item{ordinal}{Logical value. Indicates whether the timing information for 
+the events in the edgelist is exact (ordinal = FALSE, default) or is only 
+known up to the ordering of the events (ordinal = TRUE).}
 
-\item{riskset}{an object of class \code{"\link[base]{matrix}"} or 
-\code{"\link[base]{data.frame}"} that contains the riskset. The first column 
-should refer to the sender/actor1, the second column to the receiver/actor2 
-and a third column may refer to the event type. Can be supplied to indicate 
-a non-standard riskset.}
+\item{origin}{starting time point (default is NULL).}
 
-\item{actors}{Vector with actor id's. Should be supplied when not all actors 
-that can interact are observed in the edgelist.}
-
-\item{types}{Vector with event type id's. Should be supplied when not all 
-types that can occur are observed in the edgelist.}
+\item{omit_dyad}{an object of class \code{"\link[base]{list}"} to assist in 
+the creation of a non-standard riskset. Each element of the list is a list 
+of two elements: 'time', that is a vector of time points which to omit dyads 
+from, 'dyad', which is a data.frame where dyads to omit are supplied.}
 
 \item{start}{Integer value. Indicates the first row in the edgelist for 
 which statistics need to be computed. Can be used to compute statistics for 
@@ -73,6 +76,7 @@ A list of available statistics follows:
  \item \code{\link{baseline}()}
  \item \code{\link{send}()}
  \item \code{\link{receive}()}
+ \item \code{\link{tie}()}
  \item \code{\link{same}()}
  \item \code{\link{difference}()}
  \item \code{\link{average}()}

@@ -85,13 +85,15 @@ test_that("memory_value", {
 })
 
 test_that("with type", {
+	# Make sure type is a column in the history
+	names(history)[4] <- "type"
+	
 	# Specify the effects
 	form <- ~ sp(with_type = TRUE) + sp() + spUnique(with_type = TRUE) +
 		spUnique()
 
 	# Compute the stats
-	out <- remstats(form, edgelist = history, directed = FALSE, 
-		with_type = TRUE)
+	out <- remstats(form, edgelist = history, directed = FALSE)
 	stats <- out$statistics
 	
 	# Tests

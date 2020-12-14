@@ -13,7 +13,7 @@ test_that("scaling is counts", {
 	
 	# Tests
 	reverse_dyads <- apply(riskset, 1, function(x) {
-		which(riskset$sender == as.numeric(x[2]) & riskset$receiver == as.numeric(x[1]))
+		which(riskset[,1] == as.numeric(x[2]) & riskset[,2] == as.numeric(x[1]))
 	})
 	
 	expect_equal(stats[,,"otp"], stats[,reverse_dyads,"itp"])
@@ -38,7 +38,7 @@ test_that("scaling is standardize", {
 	
 	# Tests
 	reverse_dyads <- apply(riskset, 1, function(x) {
-		which(riskset$sender == as.numeric(x[2]) & riskset$receiver == as.numeric(x[1]))
+		which(riskset[,1] == as.numeric(x[2]) & riskset[,2] == as.numeric(x[1]))
 	})
 	
 	expect_equal(stats[,,"otp"], stats[,reverse_dyads,"itp"])
@@ -63,7 +63,7 @@ test_that("memory is window", {
 
 	# Tests	
 	reverse_dyads <- apply(riskset, 1, function(x) {
-		which(riskset$sender == as.numeric(x[2]) & riskset$receiver == as.numeric(x[1]))
+		which(riskset[,1] == as.numeric(x[2]) & riskset[,2] == as.numeric(x[1]))
 	})
 	
 	expect_equal(stats[,,"otp"], stats[,reverse_dyads,"itp"])
@@ -75,9 +75,12 @@ test_that("with type", {
 	# Specify the stats
 	form <- ~ otp() + otp(with_type = TRUE) + itp() + itp(with_type = TRUE) + 
 		osp() + osp(with_type = TRUE) + isp() + isp(with_type = TRUE)
+	
+	# Make type a column name in the history
+	names(history)[4] <- "type"
 
 	# Compute the stats	
-	out <- remstats(form, edgelist = history, with_type = TRUE)
+	out <- remstats(form, edgelist = history)
 	stats <- out$statistics
 	riskset <- out$riskset
 	
@@ -102,7 +105,7 @@ test_that("event weights", {
 	
 	# Tests
 	reverse_dyads <- apply(riskset, 1, function(x) {
-		which(riskset$sender == as.numeric(x[2]) & riskset$receiver == as.numeric(x[1]))
+		which(riskset[,1] == as.numeric(x[2]) & riskset[,2] == as.numeric(x[1]))
 	})
 	
 	expect_equal(stats[,,"otp"], stats[,reverse_dyads,"itp"])

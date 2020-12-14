@@ -11,6 +11,7 @@
 #'  \item \code{\link{baseline}()}
 #'  \item \code{\link{send}()}
 #'  \item \code{\link{receive}()}
+#'  \item \code{\link{tie}()}
 #'  \item \code{\link{same}()}
 #'  \item \code{\link{difference}()}
 #'  \item \code{\link{average}()}
@@ -54,23 +55,24 @@
 #' Each row in the edgelist should refer to one event. The first column should 
 #' refer to the timepoint or order of the event, the second column to the 
 #' sender (or first actor) and the third column to the receiver (or second 
-#' actor). The fourth column may refer to the type of the event, this column is 
-#' only used when \code{with_type = TRUE}.
+#' actor). A column that refers to event types may be added and has to be named 
+#' "type". Finally, a column that refers to event weights may be added and has 
+#' to be named "weight". 
+#' @param actors Vector with actor names. Should be supplied when not all 
+#' actors that can interact are observed in the edgelist.
+#' @param types Vector with event type names. Should be supplied when not all 
+#' types that can occur are observed in the edgelist.
 #' @param directed Logical value. Indicates whether events in the edgelist are 
 #' directed (\code{directed = TRUE}, default) or undirected 
 #' (\code{directed = FALSE}).
-#' @param with_type Logical value. Indicates whether event types are considered 
-#' in the dependent variable (\code{with_type = TRUE}) or not 
-#' (\code{with_type = FALSE}, default).
-#' @param riskset an object of class \code{"\link[base]{matrix}"} or 
-#' \code{"\link[base]{data.frame}"} that contains the riskset. The first column 
-#' should refer to the sender/actor1, the second column to the receiver/actor2 
-#' and a third column may refer to the event type. Can be supplied to indicate 
-#' a non-standard riskset. 
-#' @param actors Vector with actor id's. Should be supplied when not all actors 
-#' that can interact are observed in the edgelist.
-#' @param types Vector with event type id's. Should be supplied when not all 
-#' types that can occur are observed in the edgelist.
+#' @param ordinal Logical value. Indicates whether the timing information for 
+#' the events in the edgelist is exact (ordinal = FALSE, default) or is only 
+#' known up to the ordering of the events (ordinal = TRUE). 
+#' @param origin starting time point (default is NULL).
+#' @param omit_dyad an object of class \code{"\link[base]{list}"} to assist in 
+#' the creation of a non-standard riskset. Each element of the list is a list 
+#' of two elements: 'time', that is a vector of time points which to omit dyads 
+#' from, 'dyad', which is a data.frame where dyads to omit are supplied.
 #' @param start Integer value. Indicates the first row in the edgelist for 
 #' which statistics need to be computed. Can be used to compute statistics for 
 #' a subpart of the relational event history but based on the whole relational 
@@ -87,8 +89,8 @@
 #' remstats(form, edgelist = history)
 #' 
 #' @export 
-remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE, 
-    riskset = NULL, actors = NULL, types = NULL, start = NULL, stop = NULL) {
+remstats <- function(formula, edgelist, actors = NULL, types = NULL, 
+    directed = TRUE, ordinal = FALSE, origin = NULL, omit_dyad = NULL, start = NULL, stop = NULL) {
 
     # Get effects information
     ft <- stats::terms(formula)
@@ -113,17 +115,16 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
         stop("stop cannot be smaller than start.")
     }
 
-    # Prepare REH input data
-    dat <- prepEdgelist(edgelist, directed, with_type, riskset, 
-        actors, types)
+    # Process edgelist
+    dat <- remify::reh(edgelist = edgelist, actors = actors, 
+        types = types, directed = directed, ordinal = ordinal, origin = origin, 
+        omit_dyad = omit_dyad)
 
-    actors <- dat$actors
-    actorsUser <- dat$actorsUser
-    edgelist <- dat$edgelist
-    edgelistUser <- dat$edgelistUser
-    riskset <- dat$riskset
-    risksetUser <- dat$risksetUser
-    evls <- dat$evls
+    edgelist <- as.matrix(dat$edgelist)
+    riskset <- dat$risksetMatrix
+    risksetCube <- dat$risksetCube
+    actors <- attr(dat, "dictionary")$actors
+    types <- attr(dat, "dictionary")$types
 
     # Prepare the effects
     all_effects <- c(
@@ -153,13 +154,13 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
             "outdegreeReceiver", "totaldegreeSender", "totaldegreeReceiver", 
             "otp", "itp", "osp", "isp", "psABBA", "psABBY", "psABXA", "psABXB", 
             "psABXY", "psABAY", "rrankSend", "rrankReceive"))) {
-            stop(paste("Attempting to request effects that are not defined when `directed = FALSE`."))
+            stop(paste("Attempting to request effects that are not defined for undirected events"))
         }
     }
 
     if(directed) {
         if(any(names(effects) %in% c("sp", "spUnique"))) {
-            stop(paste("Attemping to request effects that are not defined when `directed = TRUE`"))
+            stop(paste("Attemping to request effects that are not defined for directed events"))
         }
     }
 
@@ -183,8 +184,9 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
         if(is.null(wt)) {wt <- FALSE}
         wt
     })
-    if(any(with_typeVar) && !with_type) {
-        stop(paste(names(effects)[which(with_typeVar)], "with type requested but no types in riskset: set with_type = TRUE in remstats() or request", names(effects)[which(with_typeVar)], "with_type = FALSE. "))
+    
+    if(any(with_typeVar) && !attr(dat, "with_type")) {
+        stop(paste(names(effects)[which(with_typeVar)], "with type requested but no types in edgelist, make sure edgelist has a 'type' column or request", names(effects)[which(with_typeVar)], "with_type = FALSE. "))
     }
 
     # Prepare event weights (m x p matrix)
@@ -197,9 +199,9 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
 
     # Prepare baselineType effect
     if(any(with_typeVar[which(names(effects) == "baseline")])) {
-        typesUser <- unique(sort(risksetUser[,3]))
+        typesUser <- types[,1]
         typesUser <- typesUser[-1]
-        types <- unique(sort(riskset[,3]))
+        types <- types[,2]
         types <- types[-1]
         
         ind <- which(with_typeVar == TRUE & names(effects) == "baseline")
@@ -248,28 +250,28 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
         effect <- attributes(val)$effect
         if(!is.null(val)) {
             if(!(effect %in% c("baselineType", "interact", "event", "tie"))) {
-                val$id <- match(val$id, actorsUser)
-                if(!all(actors %in% val$id)) {
+                val$id <- actors[match(val$id, actors[,1]),2]
+                if(!all(actors[,2] %in% val$id)) {
                     stop(paste0("Make sure that for every actor a ", effect, "Effect value is defined."))
                 }
-                if(!all(actors %in% val[val$time <= edgelist[start,1],"id"])) {
+                if(!all(actors[,2] %in% val[val$time <= edgelist[start,1],"id"])) {
                     stop(paste0("Make sure that for every actor a ", effect, "Effect starting value is defined."))
                 }
             }
             if(effect == "tie") {
                 if(is.null(rownames(val)) | is.null(colnames(val))) {
                     if(nrow(val) != ncol(val)) {stop("Expect equal number of rows and columns for matrix `X` in tie.")}
-                    if(nrow(val) != length(actors)) {stop("Make sure that the dimensions of the matrix 'X' in tie correspond to the number of unique actors in the riskset.")}
-                    rownames(val) <- colnames(val) <- actors
+                    if(nrow(val) != nrow(actors)) {stop("Make sure that the dimensions of the matrix 'X' in tie correspond to the number of unique actors in the riskset.")}
+                    rownames(val) <- colnames(val) <- actors[,2]
                 } else {
-                    if(any(rownames(val) %in% actorsUser)) {
-                        rownames(val) <- match(rownames(val), actorsUser)
+                    if(any(rownames(val) %in% actors[,1])) {
+                        rownames(val) <- actors[match(rownames(val), actors[,1]),2]
                     }
-                    if(any(colnames(val) %in% actorsUser)) {
-                        colnames(val) <- match(colnames(val), actorsUser)
+                    if(any(colnames(val) %in% actors[,1])) {
+                        colnames(val) <- actors[match(colnames(val), actors[,1]),2]
                     }
                 }
-                longVal <- expand.grid(actors, actors)
+                longVal <- expand.grid(actors[,2], actors[,2])
                 longVal[,3] <- apply(longVal, 1, function(y) {
                     val[which(rownames(val) == y[1]), which(rownames(val) == y[2])]
                 })
@@ -325,10 +327,16 @@ remstats <- function(formula, edgelist, directed = TRUE, with_type = FALSE,
     dimnames(statistics) <- list(NULL, NULL, effectnames)
     class(statistics) <- "remstats"
 
-    edgelistUser <- edgelistUser[start:stop,]
-    evls <- evls[start:stop,]
+    # Transform edgelist to evls
+    # Get riskset position
+    rp <- apply(edgelist, 1, function(x) {
+        risksetCube[x[2]+1, x[3]+1, x[4]+1] + 1
+    })
+
+    evls <- cbind(rp, edgelist[,1])
+    colnames(evls) <- c("event", "time")
 
     # Output
-    list(statistics = statistics, edgelist = edgelistUser, 
-        riskset = risksetUser, evls = evls)
+    list(statistics = statistics, edgelist = edgelist[start:stop,], 
+        riskset = riskset, evls = evls[start:stop,])
 }

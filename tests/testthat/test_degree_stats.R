@@ -11,39 +11,40 @@ test_that("scaling is counts", {
 	out <- remstats(form, edgelist = history)
 	stats <- out$statistics
 	riskset <- out$riskset
+	edgelist <- out$edgelist
 	
 	# Tests
 	# Test the last row
 	expect_true(all(stats[nrow(stats),, "indegreeSender"] == 	
 		apply(riskset, 1, function(x) {
-			sum(history[-nrow(history),3] == x[1])
+			sum(edgelist[-nrow(edgelist),3] == x[1])
 		})
 	))
 	expect_true(all(stats[nrow(stats),, "indegreeReceiver"] == 	
 		apply(riskset, 1, function(x) {
-			sum(history[-nrow(history),3] == x[2])
+			sum(edgelist[-nrow(edgelist),3] == x[2])
 		})
 	))
 	expect_true(all(stats[nrow(stats),, "outdegreeSender"] == 	
 		apply(riskset, 1, function(x) {
-			sum(history[-nrow(history),2] == x[1])
+			sum(edgelist[-nrow(edgelist),2] == x[1])
 		})
 	))
 	expect_true(all(stats[nrow(stats),, "outdegreeReceiver"] == 	
 		apply(riskset, 1, function(x) {
-			sum(history[-nrow(history),2] == x[2])
+			sum(edgelist[-nrow(edgelist),2] == x[2])
 		})
 	))
 	expect_true(all(stats[nrow(stats),, "totaldegreeSender"] == 	
 		apply(riskset, 1, function(x) {
-			sum(history[-nrow(history),2] == x[1] | 
-			history[-nrow(history),3] == x[1])
+			sum(edgelist[-nrow(edgelist),2] == x[1] | 
+						edgelist[-nrow(edgelist),3] == x[1])
 		})
 	))
 	expect_true(all(stats[nrow(stats),, "totaldegreeReceiver"] == 	
 		apply(riskset, 1, function(x) {
-			sum(history[-nrow(history),2] == x[2] | 
-			history[-nrow(history),3] == x[2])
+			sum(edgelist[-nrow(edgelist),2] == x[2] | 
+						edgelist[-nrow(edgelist),3] == x[2])
 		})
 	))
 	
@@ -154,7 +155,8 @@ test_that("with type", {
 		totaldegreeReceiver(with_type = TRUE)
 
 	# Compute statistics
-	out <- remstats(form, edgelist = history, with_type = TRUE)
+	names(history)[4] <- "type"
+	out <- remstats(form, edgelist = history)
 	stats <- out$statistics
 	
 	# Tests
@@ -208,5 +210,4 @@ test_that("event weights", {
 	expect_equal(rowSums(stats[,,"totaldegreeReceiver"]), 
 		c(0, head(cumsum(history$weight)*(n-1)*2, 
 		n = nrow(history)-1)))
-	
 })

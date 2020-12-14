@@ -53,9 +53,11 @@ test_that("memory_value", {
 })
 
 test_that("with type", {
+	# Make sure type is a column in the history
+	names(history)[4] <- "type"
+	
 	# Specify the effect and compute
-	out <- remstats(~ inertia(with_type = TRUE), edgelist = history, 
-		with_type = TRUE)
+	out <- remstats(~ inertia(with_type = TRUE), edgelist = history)
 	stats <- out$statistics
 	
 	# Tests
