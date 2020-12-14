@@ -1,7 +1,7 @@
 Package: remstats
 Type: Package
 Title: Computes Statistics For Relational Event History Data
-Version: 1.0.3
+Version: 1.2.0
 Date: 2020-12-11
 Authors@R: 
     c(
@@ -60,14 +60,16 @@ LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.1.1
 Depends: 
-    R (>= 2.10)
-Imports: 
+    R (>= 2.10),
+Imports:
     Rcpp (>= 1.0.2),
     stats,
-    utils
+    utils,
+    remify
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
 Suggests:
     graphics,
     testthat
+SystemRequirements: GNU make 

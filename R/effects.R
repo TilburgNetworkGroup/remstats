@@ -252,6 +252,9 @@ equate <- function(variables, equal_val, covariates) {
 }
 
 #' tie
+#' 
+#' @param X a matrix with covariate information, rows and columns should refer 
+#' to actors. 
 #'  
 #' @export 
 tie <- function(X) {
@@ -1165,7 +1168,7 @@ rrankReceive <- function(with_type = FALSE) {
 #' 
 #' @examples
 #' data(history)
-#' remstats(~ recenySender(), edgelist = history)
+#' remstats(~ recencySender(), edgelist = history)
 #' 
 #' @export 
 recencySender <- function(memory_value = Inf) {

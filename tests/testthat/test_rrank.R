@@ -25,11 +25,14 @@ test_that("recency ranks", {
 })
 
 test_that("recency ranks with type", {
+	# Make sure type is a column in the history
+	names(history)[4] <- "type"
+	
 	# Specify the effects
 	form <- ~ rrankSend(with_type = TRUE) + rrankReceive(with_type = TRUE)
 	
 	# Compute the statistics
-	out <- remstats(form, edgelist = history, with_type = TRUE)
+	out <- remstats(form, edgelist = history)
 	stats <- out$statistics
 	
 	# Tests

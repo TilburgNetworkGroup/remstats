@@ -24,6 +24,9 @@ test_that("pshifts", {
 })
 
 test_that("pshifts with type", {
+	# Make sure type is a column in the history
+	names(history)[4] <- "type"
+	
 	# Specify the statistics
 	form <- ~ psABBA(with_type = TRUE) + psABBY(with_type = TRUE) + 
 		psABXA(with_type = TRUE) + psABXB(with_type = TRUE) + 
@@ -31,7 +34,7 @@ test_that("pshifts with type", {
 
 
 	# Compute the statistics
-	out <- remstats(form, edgelist = history, with_type = TRUE)
+	out <- remstats(form, edgelist = history)
 	stats <- out$statistics
 	
 	# Tests
@@ -44,5 +47,5 @@ test_that("pshifts with type", {
 	expect_equal(rowSums(stats[,,"psABXY"]), 
 		c(0, rep((n-2)*(n-3), nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABAY"]), c(0, rep(n-2, nrow(stats)-1)))
-	expect_equal(ncol(stats), n*(n-1)*length(unique(history$setting)))
+	expect_equal(ncol(stats), n*(n-1)*length(unique(history$type)))
 })

@@ -24,7 +24,7 @@ since sender i was last active + 1).
 }
 \examples{
 data(history)
-remstats(~ recenySender(), edgelist = history)
+remstats(~ recencySender(), edgelist = history)
 
 }
 \seealso{
