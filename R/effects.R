@@ -251,6 +251,8 @@ equate <- function(variables, equal_val, covariates) {
     out
 }
 
+#' tie
+#'  
 #' @export 
 tie <- function(X) {
     attributes(X)$effect <- "tie"
