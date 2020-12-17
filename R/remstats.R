@@ -325,8 +325,7 @@ remstats <- function(formula, edgelist, actors = NULL, types = NULL,
         unlist(strsplit(x[2], ")", fixed = TRUE))
     }))
     dimnames(statistics) <- list(NULL, NULL, effectnames)
-    class(statistics) <- "remstats"
-
+    
     # Transform edgelist to evls
     # Get riskset position
     rp <- apply(edgelist, 1, function(x) {
@@ -337,6 +336,12 @@ remstats <- function(formula, edgelist, actors = NULL, types = NULL,
     colnames(evls) <- c("event", "time")
 
     # Output
-    list(statistics = statistics, edgelist = edgelist[start:stop,], 
-        riskset = riskset, evls = evls[start:stop,])
+    out <- list(
+        statistics = statistics, 
+        edgelist = edgelist[start:stop,], 
+        riskset = riskset, 
+        evls = evls[start:stop,]
+    )
+    class(out) <- "remstats"
+    out
 }
