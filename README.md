@@ -14,6 +14,7 @@ A table with `remstats` equivalents for statistics in `relevent::rem.dyad()` can
 The package can be installed from Github. To install the package, run:
 ```r
 install.packages("devtools")
+devtools::install_github("TilburgNetworkGroup/remify")
 devtools::install_github("TilburgNetworkGroup/remstats")
 ```
 
