@@ -2,6 +2,7 @@
 #' 
 #' Computes statistics for relational event history data. 
 #' 
+#' @details 
 #' The statistics to be computed are defined symbolically and should be in the 
 #' form \code{~ statistics}. The statistics are separated by + operators. 
 #' Interactions between two statistics can be included with * or : operators. 
@@ -47,46 +48,27 @@
 #' }
 #' 
 #' @param formula an object of class \code{"\link[stats]{formula}"} (or one 
-#' that can be coerced to that class): a symbolic description of statistics to 
-#' be computed. The details of the specification of the statistics and an 
-#' overview of the available statistics are given under 'Details'. 
-#' @param edgelist an object of class \code{"\link[base]{matrix}"} or 
-#' \code{"\link[base]{data.frame}"} that contains the relational event history. 
-#' Each row in the edgelist should refer to one event. The first column should 
-#' refer to the timepoint or order of the event, the second column to the 
-#' sender (or first actor) and the third column to the receiver (or second 
-#' actor). A column that refers to event types may be added and has to be named 
-#' "type". Finally, a column that refers to event weights may be added and has 
-#' to be named "weight". 
-#' @param actors Vector with actor names. Should be supplied when not all 
-#' actors that can interact are observed in the edgelist.
-#' @param types Vector with event type names. Should be supplied when not all 
-#' types that can occur are observed in the edgelist.
-#' @param directed Logical value. Indicates whether events in the edgelist are 
-#' directed (\code{directed = TRUE}, default) or undirected 
-#' (\code{directed = FALSE}).
-#' @param ordinal Logical value. Indicates whether the timing information for 
-#' the events in the edgelist is exact (ordinal = FALSE, default) or is only 
-#' known up to the ordering of the events (ordinal = TRUE). 
-#' @param origin starting time point (default is NULL).
-#' @param omit_dyad an object of class \code{"\link[base]{list}"} to assist in 
-#' the creation of a non-standard riskset. Each element of the list is a list 
-#' of two elements: 'time', that is a vector of time points which to omit dyads 
-#' from, 'dyad', which is a data.frame where dyads to omit are supplied.
-#' @param start Integer value. Indicates the first row in the edgelist for 
+#' that can be coerced to that class): a symbolic description of the requested 
+#' statistics, see 'Details'. 
+#' @param edgelist an object of class \code{"\link[base]{data.frame}"} or 
+#' \code{"\link[base]{matrix}"} characterizing the relational event history 
+#' sorted by time with columns `time`, `actor1`, `actor2` and optionally `type` 
+#' and `weight`. Alternatively, an object of class \code{"\link[remify]{reh}"}. 
+#' @inheritParams remify::reh
+#' @param start integer value that indicates the first row in the edgelist for 
 #' which statistics need to be computed. Can be used to compute statistics for 
-#' a subpart of the relational event history but based on the whole relational 
+#' a subpart of the relational event history based on the whole past relational 
 #' event history. If nothing is indicated, statistics will be computed starting 
 #' from the first row of the edgelist. 
-#' @param stop Integer value. Indicates the last row in the edgelist for 
+#' @param stop integer value that indicates the last row in the edgelist for 
 #' which statistics need to be computed. If nothing is indicated, statistics 
 #' will be computed stopping at the last row of the edgelist. 
 #' 
 #' @examples 
 #' data(history)
 #' data(info)
-#' form <- ~ baseline() + inertia():send("extraversion", info)
-#' remstats(form, edgelist = history)
+#' remstats(~ baseline() + inertia():send("extraversion", info), 
+#'  edgelist = history)
 #' 
 #' @export 
 remstats <- function(formula, edgelist, actors = NULL, types = NULL, 
@@ -115,10 +97,16 @@ remstats <- function(formula, edgelist, actors = NULL, types = NULL,
         stop("stop cannot be smaller than start.")
     }
 
-    # Process edgelist
-    dat <- remify::reh(edgelist = edgelist, actors = actors, 
-        types = types, directed = directed, ordinal = ordinal, origin = origin, 
-        omit_dyad = omit_dyad)
+    # Prepare edgelist, riskset, actors & type
+    if(class(edgelist) == "reh") {
+        dat <- edgelist 
+
+    } else {
+        # Process edgelist
+        dat <- remify::reh(edgelist = edgelist, actors = actors, 
+            types = types, directed = directed, ordinal = ordinal, 
+            origin = origin, omit_dyad = omit_dyad)
+    }
 
     edgelist <- as.matrix(dat$edgelist)
     riskset <- dat$risksetMatrix
