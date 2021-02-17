@@ -233,9 +233,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// recency
-arma::mat recency(const arma::mat& edgelist, const arma::mat& riskset, double memory_value, int type);
-RcppExport SEXP _remstats_recency(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP memory_valueSEXP, SEXP typeSEXP) {
+// compute_recency
+arma::mat compute_recency(const arma::mat& edgelist, const arma::mat& riskset, double memory_value, int type, int start, int stop);
+RcppExport SEXP _remstats_compute_recency(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP memory_valueSEXP, SEXP typeSEXP, SEXP startSEXP, SEXP stopSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -243,7 +243,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< double >::type memory_value(memory_valueSEXP);
     Rcpp::traits::input_parameter< int >::type type(typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(recency(edgelist, riskset, memory_value, type));
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_recency(edgelist, riskset, memory_value, type, start, stop));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -324,7 +326,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_baselineType", (DL_FUNC) &_remstats_compute_baselineType, 5},
     {"_remstats_compute_interact", (DL_FUNC) &_remstats_compute_interact, 2},
     {"_remstats_compute_eventEffect", (DL_FUNC) &_remstats_compute_eventEffect, 4},
-    {"_remstats_recency", (DL_FUNC) &_remstats_recency, 4},
+    {"_remstats_compute_recency", (DL_FUNC) &_remstats_compute_recency, 6},
     {"_remstats_compute_stats", (DL_FUNC) &_remstats_compute_stats, 11},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}

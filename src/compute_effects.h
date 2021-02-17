@@ -1195,7 +1195,7 @@ arma::mat compute_eventEffect(arma::mat x, arma::cube statistics, int start,
 }
 
 
-// recency
+// compute_recency
 //
 // A function for computing the recency statistics, as in  Vu et al. (2017) and 
 // Mulder and Leenders (2019).
@@ -1213,6 +1213,10 @@ arma::mat compute_eventEffect(arma::mat x, arma::cube statistics, int start,
 // 30 days, 10 months,80 hours, etc.
 // @param type equals 1 for Recency sender, type equals 2 for Recency receiver, 
 // type equals 3 for Recency sender-receiver.
+//  start: integer value referring to the first row + 1 in the edgelist 
+// for which effects have to be computed 
+//  stop: integer value referring to the last row + 1 in the edgelist 
+// for which effects have to be computed 
 //
 // @return matrix (event time x dyad)
 //
@@ -1220,28 +1224,30 @@ arma::mat compute_eventEffect(arma::mat x, arma::cube statistics, int start,
 // test <- recency(edge, riskset, memory = 60, type  = 1)
 //
 // [[Rcpp::export]]
-arma::mat recency(const arma::mat& edgelist, const arma::mat& riskset, 
-    double memory_value, int type) {
+arma::mat compute_recency(const arma::mat& edgelist, const arma::mat& riskset, 
+    double memory_value, int type, int start, int stop) {
 
-	// Number of dyads
-	int nedge = riskset.n_rows;
+    // Extract small edgelist
+    arma::mat small_edgelist = edgelist.rows((start-1), (stop-1));
 
-    // Rename riskset
-    arma::mat ref = riskset;
-    // Statistic matrix saving space
-    arma::mat RE(edgelist.n_rows, ref.n_rows, arma::fill::zeros);
+    // Storage space and fill with zeros
+    arma::mat stat(small_edgelist.n_rows, riskset.n_rows, arma::fill::zeros); 
 
     // For loop over the edgelist
-    for(arma::uword ee1 = 1; ee1 < edgelist.n_rows; ee1++) {
+    for(arma::uword i = 0; i < small_edgelist.n_rows; ++i) {
         // Create saving space
-        arma::rowvec recencySend(nedge, arma::fill::zeros);
-        arma::rowvec recencyReceive(nedge, arma::fill::zeros);
-        arma::rowvec recencyContinue(nedge, arma::fill::zeros);
+        arma::rowvec recency(riskset.n_rows, arma::fill::zeros);
+
+        //Time of the current event
+        double time = small_edgelist(i, 0); 
+
+        //Position of the current event in the full edgelist
+        arma::uvec current = arma::find(edgelist.col(0) == time);
 
         // For loop over past events
-        for(arma::uword ee2 = 0; ee2 < ee1; ee2++) {
+        for(arma::uword j = 0; j < current(0); j++) {
             // How long ago in the past was this event?
-            double verschil = edgelist(ee1, 0) - edgelist(ee2, 0);
+            double verschil = time - edgelist(j, 0);
 
             if(verschil > memory_value) {
                 verschil = 1e6;
@@ -1249,59 +1255,43 @@ arma::mat recency(const arma::mat& edgelist, const arma::mat& riskset,
                 verschil = verschil;
             }
 
-            //Reference to the column sender of riskset 
-            arma::vec col_ref_se = ref.col(0);
-            //Reference to the column sender of edgelist
-            arma::vec col_edge_se = edgelist.col(1);
-
-            //Reference to the column receiver of riskset 
-            arma::vec col_ref_rec = ref.col(1);
-            //Reference to the column receiver of edgelist
-            arma::vec col_edge_rec = edgelist.col(2);
-
-            
             if(type == 1) {
                 // recency sender
                 // Which dyads in the riskset have the sender equal to the 
-                // sender of event ee2?
-                arma::uvec gg = arma::find(col_ref_se == col_edge_se(ee2));
-                // Set for these dyads the recency value equal to the recency
-                for(arma::uword s = 0; s < gg.n_elem; ++s) {
-                    recencySend(gg(s)) = 1/(verschil+1);
+                // sender of event j?
+                arma::uvec dyads = arma::find(riskset.col(0) == edgelist(j, 1));
+                // Set for these dyads the stat value equal to the recency
+                for(arma::uword s = 0; s < dyads.n_elem; ++s) {
+                    recency(dyads(s)) = 1/(verschil+1);
                 }
-                // Copy the current recencySend stats to the RE statistic matrix
-				RE.row(ee1) = recencySend;
             } else if(type == 2) {
                 // recency receiver
                 // Which dyads in the riskset have the receiver equal to the 
-                // receiver of event ee2?
-                arma::uvec gg = arma::find(col_ref_rec == col_edge_rec(ee2));
+                // receiver of event j?
+                arma::uvec dyads = arma::find(riskset.col(1) == edgelist(j, 2));
                 // Set for these dyads the recency value equal to the recency
-                for(arma::uword s = 0; s < gg.n_elem; ++s) {
-                    recencyReceive(gg(s)) = 1/(verschil+1);
+                for(arma::uword s = 0; s < dyads.n_elem; ++s) {
+                    recency(dyads(s)) = 1/(verschil+1);
                 }
-                // Copy the current recencyReceive stats to the RE statistic 
-                // matrix
-				RE.row(ee1) = recencyReceive;
             } else if (type == 3) {
                 // recency continue
                 // Which dyads in the riskset are equal to the dyad of event 
-                // ee2?
-                arma::uvec gg = 
-                    arma::find((col_ref_se == col_edge_se(ee2)) &&    
-                    (col_ref_rec == col_edge_rec(ee2)));
+                // j?
+                arma::uvec dyads = 
+                    arma::find((riskset.col(0) == edgelist(j, 1)) &&    
+                    (riskset.col(1) == edgelist(j, 2)));
                 // Set for these dyads the recency value equal to the recency
-                for(arma::uword s = 0; s < gg.n_elem; ++s) {
-                    recencyContinue(gg(s)) = 1/(verschil+1);
+                for(arma::uword s = 0; s < dyads.n_elem; ++s) {
+                    recency(dyads(s)) = 1/(verschil+1);
                 }
-                // Copy the current recencyReceive stats to the RE statistic 
-                // matrix
-				RE.row(ee1) = recencyContinue;
             }
         }
+        
+        // Copy the current recency row to the stat statistic matrix
+        stat.row(i) = recency;
     }
 
-    return RE;
+    return stat;
 }
 
 

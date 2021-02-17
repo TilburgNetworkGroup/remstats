@@ -308,15 +308,18 @@ arma::cube compute_stats(const arma::vec& effects, const arma::mat& edgelist,
                 break;
             // recencySender
             case 35 :
-                stat = recency(edgelist, riskset, memory_value(i), 1);
+                stat = compute_recency(edgelist, riskset, memory_value(i), 1, 
+                    start, stop);
                 break;
             // recencyreceiver
             case 36 :
-                stat = recency(edgelist, riskset, memory_value(i), 2);
+                stat = compute_recency(edgelist, riskset, memory_value(i), 2,  
+                    start, stop);
                break;
             // recenyContinue
             case 37 :
-                stat = recency(edgelist, riskset, memory_value(i), 3);
+                stat = compute_recency(edgelist, riskset, memory_value(i), 3,
+                    start, stop);
                 break;  
             // tie
             case 38 :
