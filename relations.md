@@ -3,16 +3,16 @@
 `CovEvent`              |`tie()`
 `CovRec`                |`receive()`
 `CovSnd`                |`send()`
-`FrPSndSnd`             |`inertia(scaling = "outdegreeSender")`
-`FrRecSnd`              |`reciprocity(scaling = "indegreeSender")`
+`FrPSndSnd`             |`inertia(scaling = "prop")`
+`FrRecSnd`              |`reciprocity(scaling = "prop")`
 `ISPSnd`                |`isp()`
 `ITPSnd`                |`itp()`
-`NIDRec`                |`indegreeReceiver(scaling = "total")`
-`NIDSnd`                |`indegreeSender(scaling = "total")`
-`NODRec`                |`outdegreeReceiver(scaling = "total")`
-`NODSnd`                |`outdegreeSender(scaling = "total")`
-`NTDegRec`              |`totaldegreeReceiver(scaling = "total")`
-`NTDegSnd`              |`totaldegreeSender(scaling = "total")`
+`NIDRec`                |`indegreeReceiver(scaling = "prop")`
+`NIDSnd`                |`indegreeSender(scaling = "prop")`
+`NODRec`                |`outdegreeReceiver(scaling = "prop")`
+`NODSnd`                |`outdegreeSender(scaling = "prop")`
+`NTDegRec`              |`totaldegreeReceiver(scaling = "prop")`
+`NTDegSnd`              |`totaldegreeSender(scaling = "prop")`
 `OSPSnd`                |`osp()`
 `OTPSnd`                |`otp()`
 `PSAB-AY`               |`psABAY()`

@@ -4,12 +4,38 @@
 \alias{tie}
 \title{tie}
 \usage{
-tie(X)
+tie(x, variableName = NULL, scaling = c("as.is", "std"))
 }
 \arguments{
-\item{X}{a matrix with covariate information, rows and columns should refer 
-to actors.}
+\item{x}{a matrix with attribute information, rows and columns should refer 
+to actors in the edgelist}
+
+\item{variableName}{optionally, a string indicating the variable name, used 
+for the dimnames of the output statistics object}
+
+\item{scaling}{the method for scaling the statistic. Default is to not scale 
+the statistic but keep it "as.is". Alternatively, standardization of the 
+statistic per time point can be requested with "std".}
 }
 \description{
-tie
+Specifies the statistic for a `tie` effect in the \code{effects} 
+argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+\code{\link{aomstats}}.
+}
+\details{
+A tie effect refers to an exogenous dyad attribute that affects dyad 
+\emph{(i,j)}'s rate of interacting.
+}
+\examples{
+data(info)
+actors <- unique(info$id)
+age <- info[match(actors, info$id), "age"]
+bothOld <- sapply(1:length(actors), function(i) {
+ sapply(1:length(actors), function(j) {
+     ifelse(age[i] & age[j] == 1 & i != j, 1, 0)
+ })})
+effects <- ~ tie(bothOld, variableName = "both.old")
+tomstats(effects, edgelist = history)
+aomstats(choiceEffects = effects, edgelist = history)
+
 }

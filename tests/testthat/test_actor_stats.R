@@ -1,33 +1,55 @@
-context("actor exogenous stats")
-
+library(remify)
 library(remstats)
 
-test_that("covariates don't vary over time", {
-	# Specify the effects
-	x <- ~ send("extraversion", info[info$time == 0,]) + 
-		receive("agreeableness", info[info$time == 0,])
-
-	# Compute the statistics
-	out <- remstats(x, edgelist = history)
-	stats <- out$statistics
-
-	# Tests
-	expect_true(all(stats[,,"send_extraversion"] %in% 
-		info$extraversion[info$time == 0]))
-	expect_true(all(stats[,,"receive_agreeableness"] %in% 
-		info$agreeableness[info$time == 0]))
+test_that("send", {
+	data(history)
+	data(info)
+	
+	effects <- ~ send("extraversion")
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	aomres <- aomstats(rateEffects = effects, edgelist = history, attributes = info)
+	
+	expect_true(all(tomres$statistics[,,2] %in% info$extraversion))
+	expect_true(all(aomres$statistics$rate[,,2] %in% info$extraversion))
+	
+	effects <- ~ send("extraversion", scaling = "std")
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	aomres <- aomstats(rateEffects = effects, edgelist = history, attributes = info)
+	
+	expect_equal(rowSums(tomres$statistics[,,2]), rep(0, nrow(history)))
+	expect_equal(rowSums(aomres$statistics$rate[,,2]), rep(0, nrow(history)))
+	
+	effects <- ~ send("extraversion", attributes = info)
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
+	
+	expect_true(all(tomres$statistics[,,2] %in% info$extraversion))
+	expect_true(all(aomres$statistics$rate[,,2] %in% info$extraversion))
 })
 
-test_that("covariates vary over time", {
-
-	# Specify the effects
-	x <- ~ send("extraversion", info) + receive("agreeableness", info)
+test_that("receive", {
+	data(history)
+	data(info)
 	
-	# Compute statistics
-	out <- remstats(x, edgelist = history)
-	stats <- out$statistics
+	effects <- ~ receive("extraversion")
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history, attributes = info)
 	
-	# Tests
-	expect_true(all(stats[,,"send_extraversion"] %in% info$extraversion))
-	expect_true(all(stats[,,"receive_agreeableness"] %in% info$agreeableness))
+	expect_true(all(tomres$statistics[,,2] %in% info$extraversion))
+	expect_true(all(aomres$statistics$choice %in% info$extraversion))
+	
+	effects <- ~ receive("extraversion", scaling = "std")
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+	
+	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
+	expect_equal(apply(aomres$statistics$choice[,,1], 1, function(x) mean(x[x!=0])), 
+		rep(0, nrow(history)))
+	
+	effects <- ~ receive("extraversion", attributes = info)
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	
+	expect_true(all(tomres$statistics[,,2] %in% info$extraversion))
+	expect_true(all(aomres$statistics$choice %in% info$extraversion))
 })

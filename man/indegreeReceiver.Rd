@@ -4,54 +4,42 @@
 \alias{indegreeReceiver}
 \title{indegreeReceiver}
 \usage{
-indegreeReceiver(
-  scaling = c("counts", "total", "standardize"),
-  memory_value = Inf,
-  with_type = FALSE,
-  event_weights = NULL
-)
+indegreeReceiver(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the degree statistic. Options are one 
-of \code{"counts"} (default option, gives the raw degree counts at time t), 
-\code{"total"} (in which raw degree counts are divided by the number of past 
-events at time t), and \code{"standardize"} (in which raw degree counts are 
-standardized per time point).}
+\item{scaling}{the method for scaling the degree statistic. Default is 
+to not scale the statistic but keep the raw counts 'as.is'. Alternatively, 
+scaling of the raw degree counts by the number of past events at time t can 
+be requested with 'prop' or standardization of the raw degree counts per 
+time point can be requested with 'std'.}
 
-\item{memory_value}{numeric value. Specifies the time after which events are 
-no longer included in the degree count (default: all past events are 
-considered). Note: make sure memory_value is specified in the same time unit 
-as the time for the events in the edgelist.}
-
-\item{with_type}{logical value. If TRUE, past events of different types c 
-are counted separately for every (i,j,c) event in the risk set. If FALSE 
-(default), the type of the events is not considered in the degree counts. 
-Note: with_type can be FALSE even when a distinction between different event 
-types is made in the risk set.}
-
-\item{event_weights}{vector with numeric values that indicate the intensity 
-of the events in the edgelist. If event weights are supplied, the degree 
-statistic is equal to the sum of the intensity of past events instead of the 
-number of past events.}
+\item{consider_type}{logical, indicates whether to count the degrees 
+separately for each event type (TRUE) or sum degrees across different event 
+types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an indegree of the receiver effect in the 
-\code{formula} argument of \code{\link{remstats}}.
+Specifies the statistic for an `indegreeReceiver` effect in the 
+\code{effects} argument of \code{\link{tomstats}} or the 
+\code{choiceEffects} argument of \code{\link{aomstats}}.
 }
 \details{
 An indegree of the receiver effect refers to the tendency for actors to 
 receive events if they have received more past events. The statistic at 
 timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
-received by actor \emph{j} before timepoint \emph{t}. Optionally, a scaling 
-method can be set with \code{scaling}, events that happened a certain number 
-of time units ago can be disregarded in the count by setting 
-\code{memory_value}, events of different types can be counted separately by 
-setting \code{with_type = TRUE} or past events can be weighted by setting 
-\code{event_weights}.
+received by actor \emph{j} before timepoint \emph{t}. Note that the 
+'indegreeReceiver' effect is only defined for directed events. 
+
+Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+degree count by the total number of past events, the statistic refers to the 
+fraction of past events that were received by actor j. At the first time 
+point, when no events did previously occur, it is assumed that every actor 
+is equally likely to receive a message and the statistic is set equal to 1/
+n, where n refers to the number of actors.
 }
 \examples{
-data(history)
-remstats(~ indegreeReceiver(), edgelist = history)
+effects <- ~ indegreeReceiver()
+tomstats(effects, edgelist = history)
+aomstats(choiceEffects = effects, edgelist = history)
 
 }
 \seealso{

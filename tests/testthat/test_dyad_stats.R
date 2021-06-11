@@ -1,52 +1,61 @@
-context("dyad exogenous stats")
-
+library(remify)
 library(remstats)
 
-test_that("covariates don't vary over time", {
-	# Specify the effects
-	form <- ~ same("sex", info[info$time == 0,]) + 
-		difference("extraversion", info[info$time == 0,]) +
-		average("extraversion", info[info$time == 0,]) +
-		minimum("agreeableness", info[info$time == 0,]) +
-		maximum("agreeableness", info[info$time == 0,]) +
-		equate("age", 0, info[info$time == 0,])
+test_that("average", {
 	
-	# Compute the statistics
-	out <- remstats(form, edgelist = history)
-	stats <- out$statistics
+	effects <- ~ average("extraversion") 
 	
-	# Tests
-	expect_true(all(stats[,,"same_sex"] %in% c(0,1)))
-	temp <- expand.grid(info$extraversion[info$time==0], 
-		info$extraversion[info$time==0])
-	expect_true(all(stats[,,"difference_extraversion"] %in% 
-		abs(temp[,1]-temp[,2])))
-	expect_true(all(stats[,,"average_extraversion"] %in% apply(temp, 1, mean)))
-	temp <- expand.grid(info$agreeableness[info$time==0], 
-		info$agreeableness[info$time==0])
-	expect_true(all(stats[,,"minimum_agreeableness"] %in% apply(temp, 1, min)))
-	expect_true(all(stats[,,"maximum_agreeableness"] %in% apply(temp, 1, max)))
-	expect_true(all(stats[,,"equate_age"] %in% c(0,1)))
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+	
+	expect_true(all(tomres$statistics[,,2] %in% 
+			apply(expand.grid(info$extraversion, info$extraversion), 1, mean)))
+	expect_true(all(aomres$statistics$choice %in% 
+			apply(expand.grid(info$extraversion, info$extraversion), 1, mean)))
 })
 
-test_that("covariates vary over time", {
-	# Specify the effects
-	form <- ~ same("sex", info) + difference("extraversion", info) +
-		average("extraversion", info) + minimum("agreeableness", info) +
-		maximum("agreeableness", info) + equate("age", 0, info)
-
-	# Compute statistics
-	out <- remstats(form, edgelist = history)
-	stats <- out$statistics
+test_that("same", {
 	
-	# Tests
-	expect_true(all(stats[,,"same_sex"] %in% c(0,1)))
-	temp <- expand.grid(info$extraversion, info$extraversion)
-	expect_true(all(stats[,,"difference_extraversion"] %in% 
-		abs(temp[,1]-temp[,2])))
-	expect_true(all(stats[,,"average_extraversion"] %in% apply(temp, 1, mean)))
-	temp <- expand.grid(info$agreeableness, info$agreeableness)
-	expect_true(all(stats[,,"minimum_agreeableness"] %in% apply(temp, 1, min)))
-	expect_true(all(stats[,,"maximum_agreeableness"] %in% apply(temp, 1, max)))
-	expect_true(all(stats[,,"equate_age"] %in% c(0,1)))
+	effects <- ~ same("age") 
+	
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+	
+	temp <- info$age[!duplicated(info$id)]
+	count <- sum(temp==0)*(sum(temp==0)-1) + sum(temp==1)*(sum(temp==1)-1)
+	
+	expect_true(all(rowSums(tomres$statistics[,,2])==count))
+	expect_true(all(rowSums(aomres$statistics$choice) %in% 
+			c(sum(temp == 0), sum(temp == 1))))
+})
+
+test_that("difference", {
+	
+	effects <- ~ difference("extraversion", absolute = TRUE) 
+	
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+	
+	expect_true(all(tomres$statistics[,,2] %in% 
+			apply(expand.grid(info$extraversion, info$extraversion), 1, function(x) abs(diff(x)))))
+	expect_true(all(aomres$statistics$choice %in% 
+			apply(expand.grid(info$extraversion, info$extraversion), 1, function(x) abs(diff(x)))))
+})
+
+test_that("maximum", {
+	
+	effects <- ~ maximum("extraversion") 
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	
+	expect_true(all(tomres$statistics[,,2] %in% 
+			apply(expand.grid(info$extraversion, info$extraversion), 1, max)))
+})
+
+test_that("minimum", {
+	
+	effects <- ~ minimum("extraversion") 
+	tomres <- tomstats(effects, edgelist = history, attributes = info)
+	
+	expect_true(all(tomres$statistics[,,2] %in% 
+			apply(expand.grid(info$extraversion, info$extraversion), 1, min)))
 })

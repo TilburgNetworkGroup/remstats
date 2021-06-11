@@ -1,124 +1,313 @@
 #' baseline
 #' 
-#' Specifies the statistic for a baseline effect in the \code{formula} argument 
-#' of \code{\link{remstats}}.
+#' A baseline effect in the \code{effects} argument of \code{\link{tomstats}} 
+#' is automatically specified when \code{ordinal} in \code{\link{tomstats}} is 
+#' set to FALSE (default) and automatically removed when this argument is set 
+#' to TRUE. Alternatively, a baseline effect can be explicitly specified by 
+#' adding '1' to the equation or explicitly removed by adding '-1' to the 
+#' equation. This also holds for the \code{rateEffects} in 
+#' \code{\link{aomstats}}. 
 #' 
 #' @details
-#' The baseline effect refers to the baseline tendency to interact: the 
-#' log-inverse of the estimated parameter translates to the average number of 
-#' observed events per time unit per dyad. The statistic is equal to one for 
-#' all dyads in the riskset at all timepoints. 
+#' The baseline effect refers to the baseline tendency to interact. In the 
+#' tie-oriented model, the log-inverse of the estimated parameter translates to 
+#' the average number of observed events per time unit per dyad. In the 
+#' actor-oriented model, the log-inverse of the estimated parameter translates 
+#' to the average number of observed events per time unit per actor. The 
+#' statistic is equal to one for all dyads resp. actors in the riskset at all 
+#' timepoints. 
 #' 
-#' The baseline effect with type refers to the baseline tendency to interact 
-#' for an event type, compared to the reference category. The statistic is 
-#' equal to one for all dyads in the riskset with the given event type at all 
-#' timepoints and zero for all dyads in the riskset with other event types. 
-#' 
-#' @param with_type logical value. If set to true, creates dummy variables for 
-#' the event types that refer to the baseline tendency to interact within the 
-#' respective event type compared to the reference category (first of sorted 
-#' event types). Note: with_type can be FALSE even when a distinction 
-#' between different event types is made in the risk set but cannot be TRUE if 
-#' a distinction between different event type is not made in the riskset. 
+#' @name baseline
+#' @aliases intercept
 #' 
 #' @examples
-#' data(history)
-#' remstats(~ baseline(), edgelist = history)
-#'
-#' @export 
-baseline <- function(with_type = FALSE) {
-    list(baseline = list(with_type = with_type))
-}
+#' tomstats(~ 1, edgelist = history)
+#' aomstats(rateEffects = ~ 1, edgelist = history)
+NULL
 
 #' send
 #' 
-#' Specifies the statistic for a send effect in the \code{formula} argument 
-#' of \code{\link{remstats}}.
+#' Specifies the statistic for a `send` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}} or the \code{rateEffects} argument of 
+#' \code{\link{aomstats}}.
 #' 
 #' @details
 #' A send effect refers to an exogenous actor attribute that affects actor 
 #' i's rate of sending events. The statistic at timepoint \emph{t} is equal to 
 #' the value of the exogenous attribute for actor \emph{i} at time \emph{t} for 
-#' all dyads in the riskset that have actor \emph{i} as sender. A send effect 
-#' is only defined for directed relational events. 
+#' all dyads in the riskset that have actor \emph{i} as sender. Note that a 
+#' send effect is only defined for directed relational events. 
 #' 
-#' @param variables character vector: names of one or more columns in the 
-#' \code{covariates} object for which the statistic has to be computed. 
-#' @param covariates an object of class \code{"\link[base]{data.frame}"} that 
-#' contains the exogenous covariates. Each row should refer to one actor. The 
-#' first column should contain the actor id (corresponding to the actor id's in 
-#' the edgelist). The second column refers to the time when covariates change 
-#' (set to zero if none of the covariates vary over time). Subsequent columns 
-#' contain the covariates that are called in the specifications of exogenous 
-#' statistics. 
+#' The \code{attributes} object should be constructed as follows: Each row 
+#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
+#' `id` column is required that contains the actor id (corresponding to the 
+#' actor id's in the edgelist). A `time` column is required that contains the 
+#' time when attributes change (set to zero if none of the attributes vary over 
+#' time). Subsequent columns contain the attributes that are called in the 
+#' specifications of exogenous statistics. Alternatively, a dataframe with 
+#' attributes for all exogenous effects can be defined in the \code{attributes} 
+#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' 
+#' @param variable string with the name of the column in the 
+#' \code{attributes} object for which the statistic has to be computed. 
+#' @param attributes optionally, an object of class 
+#' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
+#' details). 
+#' @param scaling the method for scaling the statistic. Default is to not scale 
+#' the statistic but keep it "as.is". Alternatively, standardization of the 
+#' statistic per time point can be requested with "std". 
 #' 
 #' @examples 
-#' data(history)
-#' data(info)
-#' remstats(~ send(c("extraversion", "agreeableness"), info), 
-#'  edgelist = history)
+#' effects <- ~ send("extraversion")
+#' tomstats(effects, edgelist = history, attributes = info)
+#' aomstats(rateEffects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
-send <- function(variables, covariates) {
-    out <- prepExoVar("send", variables, covariates)
-    out
+send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Prepare effect 
+    if(is.null(attributes)) {
+        list(
+            effect = "send", 
+            variable = variable,
+            x = NULL,
+            scaling = scaling
+        )
+    } else {
+        # Check if the variable name is in the attributes object
+        if(!(variable%in%colnames(attributes))) {
+        stop(
+            paste("Variable", variable, "not in attributes object for the 'send' effect."))
+        }
+
+        # Warning for missing values
+        if(anyNA(attributes[,variable])) {
+            warning("Missing values in the attributes object for the 'send' effect can cause unexpected behavior.")
+        }
+
+        # Collect the information in a dataframe
+        dat <- data.frame(
+            id = attributes$id,
+            time = attributes$time,
+            x = attributes[,variable]
+        )
+        
+        # Set the third column name equal to the variable name
+        colnames(dat)[3] <- variable
+
+        # Output
+        list(
+            effect = "send", 
+            variable = variable,
+            x = dat, 
+            scaling = scaling)
+    }
 }
 
 #' receive
 #' 
-#' Specifies the statistic for a receive effect in the \code{formula} argument 
-#' of \code{\link{remstats}}.
+#' Specifies the statistic for a `receive` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+#' \code{\link{aomstats}}.
 #' 
 #' @details
 #' A receive effect refers to an exogenous actor attribute that affects actor 
 #' i's rate of receiving events. The statistic at timepoint \emph{t} is equal 
 #' to the value of the exogenous attribute for actor \emph{i} at time \emph{t} 
-#' for all dyads in the riskset that have actor \emph{i} as receiver. A 
-#' receive effect is only defined for directed relational events.
+#' for all dyads in the riskset that have actor \emph{i} as receiver. Note that 
+#' a receive effect is only defined for directed relational events.
+#' 
+#' The \code{attributes} object should be constructed as follows: Each row 
+#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
+#' `id` column is required that contains the actor id (corresponding to the 
+#' actor id's in the edgelist). A `time` column is required that contains the 
+#' time when attributes change (set to zero if none of the attributes vary over 
+#' time). Subsequent columns contain the attributes that are called in the 
+#' specifications of exogenous statistics. Alternatively, a dataframe with 
+#' attributes for all exogenous effects can be defined in the \code{attributes} 
+#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
 #' 
 #' @examples 
-#' data(history)
-#' data(info)
-#' remstats(~ receive(c("extraversion", "agreeableness"), info), 
-#'  edgelist = history)
+#' effects <- ~ receive("extraversion") 
+#' tomstats(effects, edgelist = history, attributes = info)
+#' aomstats(choiceEffects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
-receive <- function(variables, covariates) {
-    out <- prepExoVar("receive", variables, covariates)
-    out
+receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Prepare effect 
+    if(is.null(attributes)) {
+        list(
+            effect = "receive", 
+            variable = variable,
+            x = NULL,
+            scaling = scaling
+        )
+    } else {
+        # Check if the variable name is in the attributes object
+        if(!(variable%in%colnames(attributes))) {
+        stop(
+            paste("Variable", variable, "not in attributes object for the 'receive' effect."))
+        }
+
+        # Warning for missing values
+        if(anyNA(attributes[,variable])) {
+            warning("Missing values in the attributes object for the 'receive' effect can cause unexpected behavior.")
+        }
+
+        # Collect the information in a dataframe
+        dat <- data.frame(
+            id = attributes$id,
+            time = attributes$time,
+            x = attributes[,variable]
+        )
+        
+        # Set the third column name equal to the variable name
+        colnames(dat)[3] <- variable
+
+        # Output
+        list(
+            effect = "receive", 
+            variable = variable,
+            x = dat, 
+            scaling = scaling)
+    }
+}
+
+# TO DO: timevarying tie effect
+#' tie
+#' 
+#' Specifies the statistic for a `tie` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+#' \code{\link{aomstats}}.
+#' 
+#' @details 
+#' A tie effect refers to an exogenous dyad attribute that affects dyad 
+#' \emph{(i,j)}'s rate of interacting. 
+#' 
+#' @param x a matrix with attribute information, rows and columns should refer 
+#' to actors in the edgelist
+#' @param variableName optionally, a string indicating the variable name, used 
+#' for the dimnames of the output statistics object 
+#' @param scaling the method for scaling the statistic. Default is to not scale 
+#' the statistic but keep it "as.is". Alternatively, standardization of the 
+#' statistic per time point can be requested with "std". 
+#' 
+#' @examples 
+#' data(info)
+#' actors <- unique(info$id)
+#' age <- info[match(actors, info$id), "age"]
+#' bothOld <- sapply(1:length(actors), function(i) {
+#'  sapply(1:length(actors), function(j) {
+#'      ifelse(age[i] & age[j] == 1 & i != j, 1, 0)
+#'  })})
+#' effects <- ~ tie(bothOld, variableName = "both.old")
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
+#' 
+#' @export
+tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
+
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Output
+    list(
+        effect = "tie", 
+        x = x,
+        variable = variableName,
+        scaling = scaling
+    )
+
 }
 
 #' same
 #' 
-#' Specifies the statistic for a same effect in the \code{formula} argument 
-#' of \code{\link{remstats}}.
+#' Specifies the statistic for a `same` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+#' \code{\link{aomstats}}.
 #' 
-#' @details 
+#' @details
 #' A same effect refers to an exogenous actor attribute that affects dyad 
 #' \emph{(i,j)}'s rate of interacting based on whether they have the same value 
 #' (or not) on this attribute. The statistic at timepoint \emph{t} is equal to 
 #' one for dyads \emph{(i,j)} that have the same value on the attribute at 
 #' timepoint \emph{t} and equal to 0 for dyads that do not have the same value. 
 #' 
+#' The \code{attributes} object should be constructed as follows: Each row 
+#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
+#' `id` column is required that contains the actor id (corresponding to the 
+#' actor id's in the edgelist). A `time` column is required that contains the 
+#' time when attributes change (set to zero if none of the attributes vary over 
+#' time). Subsequent columns contain the attributes that are called in the 
+#' specifications of exogenous statistics. Alternatively, a dataframe with 
+#' attributes for all exogenous effects can be defined in the \code{attributes} 
+#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' 
 #' @inheritParams send
 #' 
 #' @examples 
-#' data(history)
-#' data(info)
-#' remstats(~ same(c("age", "sex"), info), edgelist = history)
+#' effects <- ~ same("age") 
+#' tomstats(effects, edgelist = history, attributes = info)
+#' aomstats(choiceEffects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
-same <- function(variables, covariates) {
-    out <- prepExoVar("same", variables, covariates)
-    out
+same <- function(variable, attributes = NULL) {
+   
+    # Prepare effect 
+    if(is.null(attributes)) {
+        list(
+            effect = "same", 
+            variable = variable,
+            x = NULL,
+            scaling = 1
+        )
+    } else {
+        # Check if the variable name is in the attributes object
+        if(!(variable%in%colnames(attributes))) {
+        stop(
+            paste("Variable", variable, "not in attributes object for the 'same' effect."))
+        }
+
+        # Warning for missing values
+        if(anyNA(attributes[,variable])) {
+            warning("Missing values in the attributes object for the 'same' effect can cause unexpected behavior.")
+        }
+
+        # Collect the information in a dataframe
+        dat <- data.frame(
+            id = attributes$id,
+            time = attributes$time,
+            x = attributes[,variable]
+        )
+        
+        # Set the third column name equal to the variable name
+        colnames(dat)[3] <- variable
+
+        # Output
+        list(
+            effect = "same", 
+            variable = variable,
+            x = dat, 
+            scaling = 1)
+    }
 }
 
 #' difference
 #' 
-#' Specifies the statistic for a difference effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a `difference` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+#' \code{\link{aomstats}}.
 #' 
 #' @details 
 #' A difference effect refers to an exogenous actor attribute that affects dyad 
@@ -127,25 +316,83 @@ same <- function(variables, covariates) {
 #' \emph{(i,j)} is equal to the absolute difference between the values of actor 
 #' \emph{i} and \emph{j} on the attribute at timepoint \emph{t}.  
 #' 
+#' The \code{attributes} object should be constructed as follows: Each row 
+#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
+#' `id` column is required that contains the actor id (corresponding to the 
+#' actor id's in the edgelist). A `time` column is required that contains the 
+#' time when attributes change (set to zero if none of the attributes vary over 
+#' time). Subsequent columns contain the attributes that are called in the 
+#' specifications of exogenous statistics. Alternatively, a dataframe with 
+#' attributes for all exogenous effects can be defined in the \code{attributes} 
+#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' 
 #' @inheritParams send
+#' @param absolute logical value indicating whether the difference values 
+#' should be converted to the absolute difference
 #' 
 #' @examples 
-#' data(history)
-#' data(info)
-#' remstats(~ difference(c("extraversion", "agreeableness"), info), 
-#'  edgelist = history)
+#' effects <- ~ difference("extraversion", absolute = TRUE) 
+#' tomstats(effects, edgelist = history, attributes = info)
+#' aomstats(choiceEffects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
-difference <- function(variables, covariates) {
-    out <- prepExoVar("difference", variables, covariates)
-    out
+difference <- function(variable, attributes = NULL, 
+    scaling = c("as.is", "std"), absolute = FALSE) {
+
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    temp <- scaling
+    if(temp == "as.is" & !absolute) {scaling <- 1}
+    if(temp == "as.is" & absolute) {scaling <- 2}  # absolute values
+    if(temp == "std" & !absolute) {scaling <- 3}  # standardized values
+    if(temp == "std" & absolute) {scaling <- 4}  # std absolute values
+
+    # Prepare effect 
+    if(is.null(attributes)) {
+        list(
+            effect = "difference", 
+            variable = variable,
+            x = NULL,
+            scaling = scaling
+        )
+    } else {
+        # Check if the variable name is in the attributes object
+        if(!(variable%in%colnames(attributes))) {
+        stop(
+            paste("Variable", variable, "not in attributes object for the 'difference' effect."))
+        }
+
+        # Warning for missing values
+        if(anyNA(attributes[,variable])) {
+            warning("Missing values in the attributes object for the 'difference' effect can cause unexpected behavior.")
+        }
+
+        # Collect the information in a dataframe
+        dat <- data.frame(
+            id = attributes$id,
+            time = attributes$time,
+            x = attributes[,variable]
+        )
+        
+        # Set the third column name equal to the variable name
+        colnames(dat)[3] <- variable
+
+        # Output
+        list(
+            effect = "difference", 
+            variable = variable,
+            x = dat, 
+            scaling = scaling)
+    }
 }
 
 #' average
 #' 
-#' Specifies the statistic for an average effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for an `average` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+#' \code{\link{aomstats}}.
 #' 
+#'  
 #' @details 
 #' An average effect refers to an exogenous actor attribute that affects dyad 
 #' \emph{(i,j)}'s rate of interacting based on the average of their values on 
@@ -153,24 +400,72 @@ difference <- function(variables, covariates) {
 #' equal to the average of the values of actor \emph{i} and \emph{j} on the 
 #' attribute at timepoint \emph{t}.  
 #' 
+#' The \code{attributes} object should be constructed as follows: Each row 
+#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
+#' `id` column is required that contains the actor id (corresponding to the 
+#' actor id's in the edgelist). A `time` column is required that contains the 
+#' time when attributes change (set to zero if none of the attributes vary over 
+#' time). Subsequent columns contain the attributes that are called in the 
+#' specifications of exogenous statistics. Alternatively, a dataframe with 
+#' attributes for all exogenous effects can be defined in the \code{attributes} 
+#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' 
 #' @inheritParams send
 #' 
 #' @examples 
-#' data(history)
-#' data(info)
-#' remstats(~ average(c("extraversion", "agreeableness"), info), 
-#'  edgelist = history)
+#' effects <- ~ average("extraversion") 
+#' tomstats(effects, edgelist = history, attributes = info)
+#' aomstats(choiceEffects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
-average <- function(variables, covariates) {
-    out <- prepExoVar("average", variables, covariates)
-    out
+average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Prepare effect 
+    if(is.null(attributes)) {
+        list(
+            effect = "average", 
+            variable = variable,
+            x = NULL,
+            scaling = scaling
+        )
+    } else {
+        # Check if the variable name is in the attributes object
+        if(!(variable%in%colnames(attributes))) {
+        stop(
+            paste("Variable", variable, "not in attributes object for the 'average' effect."))
+        }
+
+        # Warning for missing values
+        if(anyNA(attributes[,variable])) {
+            warning("Missing values in the attributes object for the 'average' effect can cause unexpected behavior.")
+        }
+
+        # Collect the information in a dataframe
+        dat <- data.frame(
+            id = attributes$id,
+            time = attributes$time,
+            x = attributes[,variable]
+        )
+        
+        # Set the third column name equal to the variable name
+        colnames(dat)[3] <- variable
+
+        # Output
+        list(
+            effect = "average", 
+            variable = variable,
+            x = dat, 
+            scaling = scaling)
+    }
 }
 
 #' minimum
 #' 
-#' Specifies the statistic for a minimum effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a `minimum` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
 #' 
 #' @details 
 #' A minimum effect refers to an exogenous actor attribute that affects dyad 
@@ -179,24 +474,71 @@ average <- function(variables, covariates) {
 #' equal to the minimum of the values of actor \emph{i} and \emph{j} on the 
 #' attribute at timepoint \emph{t}.   
 #' 
+#' The \code{attributes} object should be constructed as follows: Each row 
+#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
+#' `id` column is required that contains the actor id (corresponding to the 
+#' actor id's in the edgelist). A `time` column is required that contains the 
+#' time when attributes change (set to zero if none of the attributes vary over 
+#' time). Subsequent columns contain the attributes that are called in the 
+#' specifications of exogenous statistics. Alternatively, a dataframe with 
+#' attributes for all exogenous effects can be defined in the \code{attributes} 
+#' argument of \code{\link{tomstats}}. 
+#' 
 #' @inheritParams send
 #' 
 #' @examples 
-#' data(history)
-#' data(info)
-#' remstats(~ minimum(c("extraversion", "agreeableness"), info), 
-#'  edgelist = history)
+#' effects <- ~ minimum("extraversion") 
+#' tomstats(effects, edgelist = history, attributes = info)
 #' 
 #' @export 
-minimum <- function(variables, covariates) {
-    out <- prepExoVar("minimum", variables, covariates)
-    out
+minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Prepare effect 
+    if(is.null(attributes)) {
+        list(
+            effect = "minimum", 
+            variable = variable,
+            x = NULL,
+            scaling = scaling
+        )
+    } else {
+        # Check if the variable name is in the attributes object
+        if(!(variable%in%colnames(attributes))) {
+        stop(
+            paste("Variable", variable, "not in attributes object for the 'minimum' effect."))
+        }
+
+        # Warning for missing values
+        if(anyNA(attributes[,variable])) {
+            warning("Missing values in the attributes object for the 'minimum' effect can cause unexpected behavior.")
+        }
+
+        # Collect the information in a dataframe
+        dat <- data.frame(
+            id = attributes$id,
+            time = attributes$time,
+            x = attributes[,variable]
+        )
+        
+        # Set the third column name equal to the variable name
+        colnames(dat)[3] <- variable
+
+        # Output
+        list(
+            effect = "minimum", 
+            variable = variable,
+            x = dat, 
+            scaling = scaling)
+    }
 }
 
 #' maximum
 #' 
-#' Specifies the statistic for a maximum effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a `maximum` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
 #' 
 #' @details 
 #' A maximum effect refers to an exogenous actor attribute that affects dyad 
@@ -205,256 +547,274 @@ minimum <- function(variables, covariates) {
 #' equal to the maximum of the values of actor \emph{i} and \emph{j} on the 
 #' attribute at timepoint \emph{t}.  
 #' 
+#' The \code{attributes} object should be constructed as follows: Each row 
+#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
+#' `id` column is required that contains the actor id (corresponding to the 
+#' actor id's in the edgelist). A `time` column is required that contains the 
+#' time when attributes change (set to zero if none of the attributes vary over 
+#' time). Subsequent columns contain the attributes that are called in the 
+#' specifications of exogenous statistics. Alternatively, a dataframe with 
+#' attributes for all exogenous effects can be defined in the \code{attributes} 
+#' argument of \code{\link{tomstats}}. 
+#' 
 #' @inheritParams send
 #' 
 #' @examples 
-#' data(history)
-#' data(info)
-#' remstats(~ maximum(c("extraversion", "agreeableness"), info), 
-#'  edgelist = history)
+#' effects <- ~ maximum("extraversion") 
+#' tomstats(effects, edgelist = history, attributes = info)
 #' 
 #' @export 
-maximum <- function(variables, covariates) {
-    out <- prepExoVar("maximum", variables, covariates)
-    out
-}
+maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
 
-#' equate
-#' 
-#' Specifies the statistic for an `equate_to`-effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
-#' 
-#' @details 
-#' An `equate_to`-effect refers to an exogenous actor attribute that affects 
-#' dyad \emph{(i,j)}'s rate of interacting based on whether both their values 
-#' are equal to a specific value on this attribute. The statistic at timepoint 
-#' \emph{t} for dyad \emph{(i,j)} is equal to one if the values of actor 
-#' \emph{i} and \emph{j} on the attribute at timepoint \emph{t} are both equal 
-#' to the specified value and equal to zero if not. 
-#' 
-#' @param equal_val numeric vector. 
-#' @inheritParams send
-#' 
-#' @examples 
-#' data(history)
-#' data(info)
-#' remstats(~ equate(c("age", "age"), c(0,1), info), 
-#'  edgelist = history)
-#' 
-#' @export 
-equate <- function(variables, equal_val, covariates) {
-    out <- prepExoVar("equate", variables, covariates)
-    out <- lapply(X = 1:length(out), function(X) {
-	    list(x = out[[X]]$x, equal_val = equal_val[X])
-    })
-    names(out) <- rep("equate", length(out))
-    out
-}
+    # Prepare effect 
+    if(is.null(attributes)) {
+        list(
+            effect = "maximum", 
+            variable = variable,
+            x = NULL,
+            scaling = scaling
+        )
+    } else {
+        # Check if the variable name is in the attributes object
+        if(!(variable%in%colnames(attributes))) {
+        stop(
+            paste("Variable", variable, "not in attributes object for the 'maximum' effect."))
+        }
 
-#' tie
-#' 
-#' @param X a matrix with covariate information, rows and columns should refer 
-#' to actors. 
-#'  
-#' @export 
-tie <- function(X) {
-    attributes(X)$effect <- "tie"
-    list("tie" = list(x = X))
+        # Warning for missing values
+        if(anyNA(attributes[,variable])) {
+            warning("Missing values in the attributes object for the 'maximum' effect can cause unexpected behavior.")
+        }
+
+        # Collect the information in a dataframe
+        dat <- data.frame(
+            id = attributes$id,
+            time = attributes$time,
+            x = attributes[,variable]
+        )
+        
+        # Set the third column name equal to the variable name
+        colnames(dat)[3] <- variable
+
+        # Output
+        list(
+            effect = "maximum", 
+            variable = variable,
+            x = dat, 
+            scaling = scaling)
+    }
 }
 
 #' event
 #' 
-#' Specifies the statistic for an event effect in the \code{formula} argument 
-#' of \code{\link{remstats}}.
+#' Specifies the statistic for an event effect in the \code{effects} argument 
+#' of \code{\link{tomstats}}.
 #' 
 #' @details 
-#' An event effect refers to an exogenous event attribute that affects the rate 
-#' of interacting in events higher or lower on this attribute. The statistic at 
-#' timepoint \emph{t} is for all dyads in the riskset equal to the attribute of 
-#' the event at timepoint \emph{t}. 
+#' An event effect refers to an exogenous event attribute that affects the 
+#' waiting time between events. The statistic at timepoint \emph{t} is for all 
+#' dyads in the riskset equal to the attribute of the event at timepoint 
+#' \emph{t}. 
 #' 
-#' @param x numeric vector with the attribute of the events. The length of this 
-#' vector should be equal to the number of events in the edgelist
+#' @param variable string with the name of the column in the 
+#' \code{edgelist} object supplied to \code{\link{tomstats}} with the 
+#' event attribute. 
+#' 
+#' @seealso \code{\link{FEtype}}
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ event(history$setting), edgelist = history)
+#' history$work <- ifelse(history$setting == "work", 1, 0)
+#' effects <- ~ event("work")
+#' tomstats(effects, edgelist = history)
 #' 
 #' @export 
-event <- function(x) {
-
-    # Preprocess the information 
-    var <- as.matrix(x)
-
-    if(class(var[1])=="character") {
-			var <- factor(var, levels = var, labels = match(var, unique(var)))
-			var <- as.numeric(var)
-			var <- match(var, unique(var))-1
-		}
-
-    # Collect the information in a dataframe
-    dat <- data.frame(x = var)
-
-		# Set the column name equal to the variable name
-		if(!is.null(names(x))) {
-        colnames(dat) <- names(x)
-    } 
-
-    # Give the dataframe an effect attribute with the effect type
-		attributes(dat)$effect <- "event"
-
+event <- function(variable) {
     # Output
-    list(event = list(
-        x = dat
-    ))
+    list(
+        effect = "event",
+        variable = variable,
+        scaling = 1
+    )
+}
+
+#' FEtype
+#' 
+#' Specifies the statistic for fixed effects for event types in the 
+#' \code{effects} argument of \code{\link{tomstats}}.
+#' 
+#' @details 
+#' Fixed effects for event types capture the variation in event rate across 
+#' different event types (e.g., see Butts, 2008). The specification of FEtype 
+#' in the \code{effects} argument of \code{\link{tomstats}} results in the 
+#' specification of C-1 statistics, were C is the number of different event 
+#' types in the riskset. Let one of the event types, e.g. \emph{c = 1}, 
+#' represent the reference category. Than, for every event type 
+#' \emph{c = 2, ..., C}, a statistic is created that at timepoint \emph{t} for 
+#' dyad \emph{(i,j,c)} is equal to 1 if \emph{c} is equal to the respective 
+#' event type and equal to 0 otherwise (i.e., dummy variables are created). 
+#' Note that specifying fixed effects for event types is only available when 
+#' event types are modeled in the dependent variable. 
+#' 
+#' @seealso \code{\link{event}}
+#' 
+#' @examples 
+#' history$type <- history$setting
+#' effects <- ~ FEtype()
+#' tomstats(effects, edgelist = history)
+#' 
+#' @export 
+FEtype <- function() {
+    # Output
+    list(
+        effect = "FEtype",
+        scaling = 1
+    )
 }
 
 #' inertia
 #' 
-#' Specifies the statistic for an inertia effect in the \code{formula} argument 
-#' of \code{\link{remstats}}.
+#' Specifies the statistic for an inertia effect in the \code{effects} argument 
+#' of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+#' \code{\link{aomstats}}.
 #' 
 #' @details
 #' An inertia effect refers to the tendency for actors to repeat past 
 #' interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
 #' equal to the number of \emph{(i,j)} events before timepoint \emph{t}. 
-#' Optionally, a scaling method can be set with \code{scaling}, events that 
-#' happened a certain number of time units ago can be disregarded in the count 
-#' by setting \code{memory_value}, events of different types can be counted 
-#' separately by setting \code{with_type = TRUE} or past events can be weighted 
-#' by setting \code{event_weights}. 
 #' 
-#' Note that by scaling the inertia count by the outdegree of the sender, the 
-#' statistic refers to the fraction of messages send by actor i that were send 
-#' to actor j. If actor i hasn't send any messages yet it can be assumed that 
-#' every actor is equally likely to receive a message from i and the statistic 
-#' is set equal to 1/(n-1), where n refers to the number of actors. The 
-#' resulting statistic is similar to the "FrPSndSnd" statistic in the R package 
-#' relevent, or the persistence statistic in Section 2.2.2 of Butts (2008).
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' inertia count by the outdegree of the sender ("prop"), the statistic refers 
+#' to the fraction of messages send by actor i that were send to actor j. If 
+#' actor i hasn't send any messages yet it can be assumed that every actor is 
+#' equally likely to receive a message from i and the statistic is set equal to 
+#' 1/(n-1), where n refers to the number of actors. The resulting statistic is 
+#' similar to the "FrPSndSnd" statistic in the R package relevent, or the 
+#' persistence statistic in Section 2.2.2 of Butts (2008). Note that this 
+#' scaling method is only defined for directed events. 
 #' 
-#' @param scaling the method for scaling the inertia statistic. Options are one 
-#' of \code{"counts"} (default option, gives the raw counts of past (i,j) 
-#' events at time t), \code{"outdegreeSender"} (in which raw counts are 
-#' divided by the outdegree of the sender at time t, only available for 
-#' directed events), and \code{"standardize"} (in which raw counts are 
-#' standardized per time point).
-#' @param memory_value numeric value. Specifies the time after which events are 
-#' no longer included in the statistic count (default: all past events are 
-#' considered). Note: make sure memory_value is specified in the same time unit 
-#' as the time for the events in the edgelist. 
-#' @param with_type logical value. If TRUE, past (i,j) events of different 
-#' types c are counted separately for every (i,j,c) event in the risk set. If 
-#' FALSE (default), the type of the events is not considered in the counting of 
-#' past (i,j) events. Note: with_type can be FALSE even when a distinction 
-#' between different event types is made in the risk set but cannot be TRUE if 
-#' a distinction between different event type is not made in the riskset. 
-#' @param event_weights vector with numeric values that indicate the intensity 
-#' of the events in the edgelist. If event weights are supplied, the inertia 
-#' statistic is equal to the sum of the intensity of past (i,j) events.
+#' @param scaling the method for scaling the inertia statistic. Default is to 
+#' not scale the statistic but keep the raw counts 'as.is'. Alternatively, the 
+#' statistics can be scaled by specifying 'prop', in which raw counts are 
+#' divided by the outdegree of the sender at time t (see 'details') or 
+#' standardization of the raw counts per time point can be requested with 'std'.
+#' @param consider_type logical, indicates whether to count the number of past 
+#' events separately for each event type (TRUE) or sum across different event 
+#' types (FALSE, default).
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ inertia(), edgelist = history)
+#' effects <- ~ inertia()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #'
 #' @export 
-inertia <- function(scaling = c("counts", "outdegreeSender", "standardize"), 
-    memory_value = Inf, with_type = FALSE, event_weights = NULL) {
+inertia <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
 
-    out <- prepEndoVar("inertia", scaling, memory_value, with_type, 
-        event_weights)
-    out$inertia$scaling <- match(out$inertia$scaling, 
-        c("counts", "outdegreeSender", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "inertia",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "inertia.type",
+            scaling = scaling
+        )
+    }
 }
 
 #' reciprocity
 #' 
-#' Specifies the statistic for a reciprocity effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a reciprocity effect in the \code{effects} 
+#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+#' \code{\link{aomstats}}.
 #' 
 #' @details 
 #' A reciprocity effect refers to the tendency for actors to reciprocate past 
 #' interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
-#' equal to the number of \emph{(j,i)} events before timepoint \emph{t}. 
-#' Optionally, a scaling method can be set with \code{scaling}, events that 
-#' happened a certain number of time units ago can be disregarded in the count 
-#' by setting \code{memory_value}, events of different types can be counted 
-#' separately by setting \code{with_type = TRUE} or past events can be weighted 
-#' by setting \code{event_weights}.
+#' equal to the number of \emph{(j,i)} events before timepoint \emph{t}. Note 
+#' that a reciprocity effect is only defined for directed events. 
 #' 
-#' Note that by scaling the reciprocity count by the indegree of the sender, 
-#' the statistic refers to the fraction of messages received by actor i that 
-#' were received from actor j. If actor i hasn't received any messages yet it 
-#' can be assumed that actor i is equally likely to receive a message from 
-#' every actor and the statistic is set equal to 1/(n-1), where n refers to the 
-#' number of actors. The resulting statistic is similar to the "FrRecSnd" 
-#' statistic in the R package relevent.
+#' Optionally, a scaling method can be set with \code{scaling}.  By scaling the 
+#' reciprocity count by the indegree of the sender, the statistic refers to the 
+#' fraction of messages received by actor i that were received from actor j. If 
+#' actor i hasn't received any messages yet it can be assumed that actor i is 
+#' equally likely to receive a message from every actor and the statistic is 
+#' set equal to 1/(n-1), where n refers to the number of actors. The resulting 
+#' statistic is similar to the "FrRecSnd" statistic in the R package relevent.
 #' 
-#' @param scaling the method for scaling the reciprocity statistic. Options are 
-#' one of \code{"counts"} (default option, gives the raw counts of past (j,i) 
-#' events at time t), \code{"indegreeSender"} (in which raw counts are 
-#' divided by the indegree of the sender at time t), and \code{"standardize"} 
-#' (in which raw counts are standardized per time point).
-#' @param with_type logical value. If TRUE, past (j,i) events of different 
-#' types c are counted separately for every (i,j,c) event in the risk set. If 
-#' FALSE (default), the type of the events is not considered in the counting of 
-#' past (j,i) events. Note: with_type can be FALSE even when a distinction 
-#' between different event types is made in the risk set. 
-#' @param event_weights vector with numeric values that indicate the intensity 
-#' of the events in the edgelist. If event weights are supplied, the 
-#' reciprocity statistic is equal to the sum of the intensity of past (j,i)
-#' events.
-#' @inheritParams inertia
+#' @param scaling the method for scaling the reciprocity statistic. Default is 
+#' to not scale the statistic but keep the raw 'counts'. Alternatively, the 
+#' statistics can be scaled by 'prop', in which raw counts are 
+#' divided by the indegree of the sender at time t (see 'details') or 
+#' standardization of the raw counts per time point can be requested with 'std'.
+#' @param consider_type logical, indicates whether to count the number of past 
+#' reciprocal events separately for each event type (TRUE) or sum across 
+#' different event types (FALSE, default).
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ reciprocity(), edgelist = history)
+#' effects <- ~ reciprocity()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #'
 #' @export 
-reciprocity <- function(scaling = c("counts", "indegreeSender", 
-    "standardize"), memory_value = Inf, with_type = FALSE, 
-    event_weights = NULL) {
+reciprocity <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
 
-    out <- prepEndoVar("reciprocity", scaling, memory_value, with_type, event_weights)
-    out$reciprocity$scaling <- match(out$reciprocity$scaling, 
-        c("counts", "indegreeSender", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "reciprocity",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "reciprocity.type",
+            scaling = scaling
+        )
+    }
 }
 
 #' indegreeSender
 #' 
-#' Specifies the statistic for an indegree of the sender effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' Specifies the statistic for an `indegreeSender` effect in the \code{effects} 
+#' argument of \code{\link{tomstats}} or the \code{rateEffects} argument of 
+#' \code{\link{aomstats}}.
 #' 
 #' @details 
 #' An indegree of the sender effect refers to the tendency for actors to send 
 #' events if they have received more past events. The statistic at timepoint 
 #' \emph{t} for dyad \emph{(i,j)} is equal to the number of events received by 
-#' actor \emph{i} before timepoint \emph{t}. Optionally, a scaling method can 
-#' be set with \code{scaling}, events that happened a certain number of time 
-#' units ago can be disregarded in the count by setting \code{memory_value}, 
-#' events of different types can be counted separately by setting 
-#' \code{with_type = TRUE} or past events can be weighted by setting 
-#' \code{event_weights}. 
+#' actor \emph{i} before timepoint \emph{t}. Note that the 'indegreeSender' 
+#' effect is only defined for directed events. 
 #' 
-#' @param scaling the method for scaling the degree statistic. Options are one 
-#' of \code{"counts"} (default option, gives the raw degree counts at time t), 
-#' \code{"total"} (in which raw degree counts are divided by the number of past 
-#' events at time t), and \code{"standardize"} (in which raw degree counts are 
-#' standardized per time point).
-#' @param memory_value numeric value. Specifies the time after which events are 
-#' no longer included in the degree count (default: all past events are 
-#' considered). Note: make sure memory_value is specified in the same time unit 
-#' as the time for the events in the edgelist. 
-#' @param with_type logical value. If TRUE, past events of different types c 
-#' are counted separately for every (i,j,c) event in the risk set. If FALSE 
-#' (default), the type of the events is not considered in the degree counts. 
-#' Note: with_type can be FALSE even when a distinction between different event 
-#' types is made in the risk set. 
-#' @param event_weights vector with numeric values that indicate the intensity 
-#' of the events in the edgelist. If event weights are supplied, the degree 
-#' statistic is equal to the sum of the intensity of past events instead of the 
-#' number of past events. 
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events, the statistic refers to the 
+#' fraction of past events that were received by actor i. At the first time 
+#' point, when no events did previously occur, it is assumed that every actor 
+#' is equally likely to send a message and the statistic is set equal to 1/n, 
+#' where n refers to the number of actors. 
+#' 
+#' @param scaling the method for scaling the degree statistic. Default is 
+#' to not scale the statistic but keep the raw counts 'as.is'. Alternatively, 
+#' scaling of the raw degree counts by the number of past events at time t can 
+#' be requested with 'prop' or standardization of the raw degree counts per 
+#' time point can be requested with 'std'.
+#' @param consider_type logical, indicates whether to count the degrees 
+#' separately for each event type (TRUE) or sum degrees across different event 
+#' types (FALSE, default).
 #' 
 #' @aliases degree indegree
 #' @seealso \code{\link{indegreeReceiver}}, \code{\link{outdegreeSender}}, 
@@ -462,36 +822,51 @@ reciprocity <- function(scaling = c("counts", "indegreeSender",
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ indegreeSender(), edgelist = history)
+#' effects <- ~ indegreeSender()
+#' tomstats(effects, edgelist = history)
+#' aomstats(rateEffects = effects, edgelist = history)
 #'
 #' @export
-indegreeSender <- function(scaling = c("counts", "total", 
-    "standardize"), memory_value = Inf, with_type = FALSE, 
-    event_weights = NULL) {
+indegreeSender <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
 
-    out <- prepEndoVar("indegreeSender", scaling, memory_value, with_type, 
-        event_weights)
-    out$indegreeSender$scaling <- match(out$indegreeSender$scaling, 
-        c("counts", "total", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "indegreeSender",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "indegreeSender.type",
+            scaling = scaling
+        )
+    }
 }
 
 #' indegreeReceiver
 #' 
-#' Specifies the statistic for an indegree of the receiver effect in the 
-#' \code{formula} argument of \code{\link{remstats}}. 
+#' Specifies the statistic for an `indegreeReceiver` effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
 #' @details 
 #' An indegree of the receiver effect refers to the tendency for actors to 
 #' receive events if they have received more past events. The statistic at 
 #' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
-#' received by actor \emph{j} before timepoint \emph{t}. Optionally, a scaling 
-#' method can be set with \code{scaling}, events that happened a certain number 
-#' of time units ago can be disregarded in the count by setting 
-#' \code{memory_value}, events of different types can be counted separately by 
-#' setting \code{with_type = TRUE} or past events can be weighted by setting 
-#' \code{event_weights}. 
+#' received by actor \emph{j} before timepoint \emph{t}. Note that the 
+#' 'indegreeReceiver' effect is only defined for directed events. 
+#' 
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events, the statistic refers to the 
+#' fraction of past events that were received by actor j. At the first time 
+#' point, when no events did previously occur, it is assumed that every actor 
+#' is equally likely to receive a message and the statistic is set equal to 1/
+#' n, where n refers to the number of actors. 
 #' 
 #' @inheritParams indegreeSender
 #' 
@@ -500,36 +875,51 @@ indegreeSender <- function(scaling = c("counts", "total",
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ indegreeReceiver(), edgelist = history)
+#' effects <- ~ indegreeReceiver()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #'
 #' @export
-indegreeReceiver <- function(scaling = c("counts", "total", 
-    "standardize"), memory_value = Inf, with_type = FALSE, 
-    event_weights = NULL) {
+indegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
 
-    out <- prepEndoVar("indegreeReceiver", scaling, memory_value, with_type, 
-        event_weights)
-    out$indegreeReceiver$scaling <- match(out$indegreeReceiver$scaling, 
-        c("counts", "total", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "indegreeReceiver",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "indegreeReceiver.type",
+            scaling = scaling
+        )
+    }
 }
 
 #' outdegreeSender
 #' 
-#' Specifies the statistic for an outdegree of the sender effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' Specifies the statistic for an `outdegreeSender` effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the \code{rateEffects} 
+#' argument of \code{\link{aomstats}}.
 #' 
 #' @details 
 #' An outdegree of the sender effect refers to the tendency for actors to send 
 #' events if they have send more past events. The statistic at timepoint 
 #' \emph{t} for dyad \emph{(i,j)} is equal to the number of events send by 
-#' actor \emph{i} before timepoint \emph{t}. Optionally, a scaling method can 
-#' be set with \code{scaling}, events that happened a certain number of time 
-#' units ago can be disregarded in the count by setting \code{memory_value}, 
-#' events of different types can be counted separately by setting 
-#' \code{with_type = TRUE} or past events can be weighted by setting 
-#' \code{event_weights}. 
+#' actor \emph{i} before timepoint \emph{t}. Note that the 'outdegreeSender' 
+#' effect is only defined for directed events. 
+#' 
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events, the statistic refers to the 
+#' fraction of past events that were send by actor i. At the first time 
+#' point, when no events did previously occur, it is assumed that every actor 
+#' is equally likely to send a message and the statistic is set equal to 1/n, 
+#' where n refers to the number of actors. 
 #' 
 #' @inheritParams indegreeSender
 #' 
@@ -539,36 +929,51 @@ indegreeReceiver <- function(scaling = c("counts", "total",
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ outdegreeSender(), edgelist = history)
+#' effects <- ~ outdegreeSender()
+#' tomstats(effects, edgelist = history)
+#' aomstats(rateEffects = effects, edgelist = history)
 #'
 #' @export
-outdegreeSender <- function(scaling = c("counts", "total", 
-    "standardize"), memory_value = Inf, with_type = FALSE, 
-    event_weights = NULL) {
+outdegreeSender <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
 
-    out <- prepEndoVar("outdegreeSender", scaling, memory_value, with_type, 
-        event_weights)
-    out$outdegreeSender$scaling <- match(out$outdegreeSender$scaling, 
-        c("counts", "total", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "outdegreeSender",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "outdegreeSender.type",
+            scaling = scaling
+        )
+    }
 }
 
 #' outdegreeReceiver
 #' 
-#' Specifies the statistic for an outdegree of the receiver effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' Specifies the statistic for an `outdegreeReceiver` effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
 #' @details 
 #' An outdegree of the receiver effect refers to the tendency for actors to 
 #' receive events if they have send more past events. The statistic at 
 #' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
-#' send by actor \emph{j} before timepoint \emph{t}. Optionally, a scaling 
-#' method can be set with \code{scaling}, events that happened a certain number 
-#' of time units ago can be disregarded in the count by setting 
-#' \code{memory_value}, events of different types can be counted separately by 
-#' setting \code{with_type = TRUE} or past events can be weighted by setting 
-#' \code{event_weights}. 
+#' send by actor \emph{j} before timepoint \emph{t}. Note that the 
+#' 'outdegreeReceiver' effect is only defined for directed events. 
+#' 
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events, the statistic refers to the 
+#' fraction of past events that were send by actor j. At the first time 
+#' point, when no events did previously occur, it is assumed that every actor 
+#' is equally likely to receive a message and the statistic is set equal to 
+#' 1/n, where n refers to the number of actors. 
 #' 
 #' @inheritParams indegreeSender
 #' 
@@ -577,43 +982,60 @@ outdegreeSender <- function(scaling = c("counts", "total",
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ outdegreeReceiver(), edgelist = history)
+#' effects <- ~ outdegreeReceiver()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #'
 #' @export
-outdegreeReceiver <- function(scaling = c("counts", "total", 
-    "standardize"), memory_value = Inf,with_type = FALSE, 
-    event_weights = NULL) {
+outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
 
-    out <- prepEndoVar("outdegreeReceiver", scaling, memory_value, with_type, 
-        event_weights)
-    out$outdegreeReceiver$scaling <- match(out$outdegreeReceiver$scaling, 
-        c("counts", "total", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "outdegreeReceiver",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "outdegreeReceiver.type",
+            scaling = scaling
+        )
+    }
 }
 
 #' totaldegreeSender
 #' 
-#' Specifies the statistic for a total degree of the sender effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' Specifies the statistic for an `totaldegreeSender` effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the \code{rateEffects} 
+#' argument of \code{\link{aomstats}}.
 #' 
 #' @details 
 #' A total degree of the sender effect refers to the tendency for actors to 
 #' send events if they have send and received more past events. The statistic 
 #' at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
-#' send and received by actor \emph{i} before timepoint \emph{t}. Optionally, a 
-#' scaling method can be set with \code{scaling}, events that happened a 
-#' certain number of time units ago can be disregarded in the count by setting 
-#' \code{memory_value}, events of different types can be counted separately by 
-#' setting \code{with_type = TRUE} or past events can be weighted by setting 
-#' \code{event_weights}. 
+#' send and received by actor \emph{i} before timepoint \emph{t}. Note that the 
+#' 'totaldegreeSender' effect is only defined for directed events.
 #' 
-#' @param scaling the method for scaling the degree statistic. Options are one 
-#' of \code{"counts"} (default option, gives the raw degree counts at time t), 
-#' \code{"total"} (in which raw degree counts are divided by the number of past 
-#' events at time t times two), and \code{"standardize"} (in which raw degree 
-#' counts are standardized per time point).
-#' @inheritParams indegreeSender
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events times two, the statistic 
+#' refers to the fraction of past events times two that involved actor i. At 
+#' the first time point, when no events did previously occur, it is assumed 
+#' that every actor is equally likely to send a message and the statistic is 
+#' set equal to 1/n, where n refers to the number of actors. 
+#' 
+#' @param scaling the method for scaling the degree statistic. Default is 
+#' to not scale the statistic but keep the raw counts 'as.is'. Alternatively, 
+#' scaling of the raw degree counts by two times the number of past events at 
+#' time t can be requested with 'prop' or standardization of the raw degree 
+#' counts per time point can be requested with 'std'.
+#' @param consider_type logical, indicates whether to count the degrees 
+#' separately for each event type (TRUE) or sum degrees across different event 
+#' types (FALSE, default).
 #' 
 #' @aliases totaldegree
 #' @seealso \code{\link{indegreeSender}}, \code{\link{indegreeReceiver}}, 
@@ -621,36 +1043,52 @@ outdegreeReceiver <- function(scaling = c("counts", "total",
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ totaldegreeSender(), edgelist = history)
+#' effects <- ~ totaldegreeSender()
+#' tomstats(effects, edgelist = history)
+#' aomstats(rateEffects = effects, edgelist = history)
 #'
 #' @export
-totaldegreeSender <- function(scaling = c("counts", "total", 
-    "standardize"), memory_value = Inf, with_type = FALSE, 
-    event_weights = NULL) {
+totaldegreeSender <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
 
-    out <- prepEndoVar("totaldegreeSender", scaling, memory_value, with_type, 
-        event_weights)
-    out$totaldegreeSender$scaling <- match(out$totaldegreeSender$scaling, 
-        c("counts", "total", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "totaldegreeSender",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "totaldegreeSender.type",
+            scaling = scaling
+        )
+    }
 }
 
 #' totaldegreeReceiver
 #' 
-#' Specifies the statistic for a total degree of the receiver effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' Specifies the statistic for an `totaldegreeReceiver` effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
 #' @details 
 #' A total degree of the receiver effect refers to the tendency for actors to 
 #' receive events if they have send and received more past events. The 
 #' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number 
 #' of events send and received by actor \emph{j} before timepoint \emph{t}. 
-#' Optionally, a scaling method can be set with \code{scaling}, events that 
-#' happened a certain number of time units ago can be disregarded in the count 
-#' by setting \code{memory_value}, events of different types can be counted 
-#' separately by setting \code{with_type = TRUE} or past events can be weighted 
-#' by setting \code{event_weights}. 
+#' Note that the 'totaldegreeReceiver' effect is only defined for directed 
+#' events.
+#' 
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events times two, the statistic 
+#' refers to the fraction of past events times two that involved actor j. At 
+#' the first time point, when no events did previously occur, it is assumed 
+#' that every actor is equally likely to receive a message and the statistic is 
+#' set equal to 1/n, where n refers to the number of actors. 
 #' 
 #' @inheritParams totaldegreeSender
 #' 
@@ -659,43 +1097,54 @@ totaldegreeSender <- function(scaling = c("counts", "total",
 #' \code{\link{totaldegreeSender}} for other types of degree effects.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ totaldegreeReceiver(), edgelist = history)
+#' effects <- ~ totaldegreeReceiver()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #'
 #' @export
-totaldegreeReceiver <- function(scaling = c("counts", "total", 
-    "standardize"), memory_value = Inf, with_type = FALSE, 
-    event_weights = NULL) {
+totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
 
-    out <- prepEndoVar("totaldegreeReceiver", scaling, memory_value, with_type, 
-        event_weights)
-    out$totaldegreeReceiver$scaling <- match(out$totaldegreeReceiver$scaling, 
-        c("counts", "total", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "totaldegreeReceiver",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "totaldegreeReceiver.type",
+            scaling = scaling
+        )
+    }
 }
 
 #' otp
 #' 
 #' Specifies the statistic for an outgoing two-path effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
 #' @details 
 #' An outgoing two-path effect refers to the tendency of dyads to interact if 
 #' they have more past outgoing two-paths between them. The statistic at 
 #' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past 
 #' \emph{(i,h)}, \emph{(h,j)} events, summed over all actors \emph{h}. 
-#' Optionally, a scaling method can be set with \code{scaling}, events that 
-#' happened a certain number of time units ago can be disregarded in the count 
-#' by setting \code{memory_value}, events of different types can be counted 
-#' separately by setting \code{with_type = TRUE} or past events can be weighted 
-#' by setting \code{event_weights}.
+#' Optionally, a scaling method can be set with \code{scaling}. Note that an 
+#' 'otp' effect is only defined for directed events. 
 #' 
-#' @param scaling the method for scaling the triad statistic. Options are one 
-#' of \code{"counts"} (default option, gives the raw triad counts at time t), 
-#' or \code{"standardize"} (in which raw triad counts are standardized per time 
-#' point).
-#' @inheritParams indegreeSender
-#' 
+#' @param scaling the method for scaling the triad statistic. Default is to not 
+#' scale the statistic but keep the raw counts 'as.is'. Alternatively, 
+#' standardization of the raw counts per time point can be requested 
+#' with 'std'. 
+#' @param consider_type logical, indicates whether to count the two-paths 
+#' separately for each event type (TRUE) or sum across different event 
+#' types (FALSE, default).
+#'
 #' @aliases triad 
 #' @seealso \code{\link{itp}}, \code{\link{osp}}, or \code{\link{isp}} for 
 #' other types of triadic effects for directed relational events and 
@@ -703,33 +1152,44 @@ totaldegreeReceiver <- function(scaling = c("counts", "total",
 #' undirected relational events.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ otp(), edgelist = history)
+#' effects <- ~ otp()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #' 
 #' @export  
-otp <- function(scaling = c("counts", "standardize"), 
-    memory_value = Inf, with_type = FALSE, event_weights = NULL) {
+otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
-    out <- prepEndoVar("otp", scaling, memory_value, with_type, event_weights)
-    out$otp$scaling <- match(out$otp$scaling, c("counts", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "otp",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "otp.type",
+            scaling = scaling
+        )
+    }    
 }
 
 #' itp
 #' 
 #' Specifies the statistic for an incoming two-path effect in the 
-#' \code{formula} argument of \code{\link{remstats}}. 
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}. 
 #' 
 #' @details
 #' An incomping two-path effect refers to the tendency of dyads to interact if 
 #' they have more past incoming two-paths between them. The statistic at 
 #' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past 
 #' \emph{(j,h)}, \emph{(h,i)} events, summed over all actors \emph{h}. 
-#' Optionally, a scaling method can be set with \code{scaling}, events that 
-#' happened a certain number of time units ago can be disregarded in the count 
-#' by setting \code{memory_value}, events of different types can be counted 
-#' separately by setting \code{with_type = TRUE} or past events can be weighted 
-#' by setting \code{event_weights}.
+#' Optionally, a scaling method can be set with \code{scaling}. Note that an 
+#' 'itp' effect is only defined for directed events. 
 #' 
 #' @inheritParams otp
 #' 
@@ -739,35 +1199,52 @@ otp <- function(scaling = c("counts", "standardize"),
 #' undirected relational events.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ itp(), edgelist = history)
+#' effects <- ~ itp()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #' 
 #' @export  
-itp <- function(scaling = c("counts", "standardize"), memory_value = Inf, 
-    with_type = FALSE, event_weights = NULL) {
+itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
-    out <- prepEndoVar("itp", scaling, memory_value, with_type, event_weights)
-    out$itp$scaling <- match(out$itp$scaling, c("counts", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "itp",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "itp.type",
+            scaling = scaling
+        )
+    }    
 }
 
 #' osp
 #' 
 #' Specifies the statistic for an outgoing shared partners effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
 #' @details
 #' An outgoing shared partners effect refers to the tendency of dyads to 
 #' interact if they have more past outgoing shared partners between them. The 
 #' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the 
 #' minimum of past \emph{(i,h)}, \emph{(j,h)} events, summed over all actors 
-#' \emph{h}. Optionally, a scaling method can be set with \code{scaling}, 
-#' events that happened a certain number of time units ago can be disregarded 
-#' in the count by setting \code{memory_value}, events of different types can 
-#' be counted separately by setting \code{with_type = TRUE} or past events can 
-#' be weighted by setting \code{event_weights}.
+#' \emph{h}. Optionally, a scaling method can be set with \code{scaling}. Note 
+#' that an 'osp' effect is only defined for directed events. 
 #' 
-#' @inheritParams otp
+#' @param scaling the method for scaling the triad statistic. Default is to not 
+#' scale the statistic but keep the raw 'counts'. Alternatively, 
+#' standardization of the raw counts per time point can be requested 
+#' with 'std'. 
+#' @param consider_type logical, indicates whether to count the shared partners 
+#' separately for each event type (TRUE) or sum across different event 
+#' types (FALSE, default).
 #' 
 #' @seealso \code{\link{otp}}, \code{\link{itp}}, or \code{\link{isp}} for 
 #' other types of triadic effects for directed relational events and 
@@ -775,35 +1252,46 @@ itp <- function(scaling = c("counts", "standardize"), memory_value = Inf,
 #' undirected relational events.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ osp(), edgelist = history)
+#' effects <- ~ osp()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #' 
 #' @export  
-osp <- function(scaling = c("counts", "standardize"), memory_value = Inf, 
-    with_type = FALSE, event_weights = NULL) {
+osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
-    out <- prepEndoVar("osp", scaling, memory_value, with_type, event_weights)
-    out$osp$scaling <- match(out$osp$scaling, c("counts", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "osp",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "osp.type",
+            scaling = scaling
+        )
+    }    
 }
 
 #' isp
 #' 
 #' Specifies the statistic for an incoming shared partners effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
 #' @details
 #' An incoming shared partners effect refers to the tendency of dyads to 
 #' interact if they have more past incoming shared partners between them. The 
 #' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the 
 #' minimum of past \emph{(h,i)}, \emph{(h,j)} events, summed over all actors 
-#' \emph{h}. Optionally, a scaling method can be set with \code{scaling}, 
-#' events that happened a certain number of time units ago can be disregarded 
-#' in the count by setting \code{memory_value}, events of different types can 
-#' be counted separately by setting \code{with_type = TRUE} or past events can 
-#' be weighted by setting \code{event_weights}.
+#' \emph{h}. Optionally, a scaling method can be set with \code{scaling}. Note 
+#' that an 'isp' effect is only defined for directed events. 
 #' 
-#' @inheritParams otp
+#' @inheritParams osp
 #' 
 #' @seealso \code{\link{otp}}, \code{\link{itp}}, or \code{\link{osp}} for 
 #' other types of triadic effects for directed relational events and 
@@ -811,36 +1299,45 @@ osp <- function(scaling = c("counts", "standardize"), memory_value = Inf,
 #' undirected relational events.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ isp(), edgelist = history)
+#' effects <- ~ isp()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #' 
 #' @export  
-isp <- function(scaling = c("counts", "standardize"), memory_value = Inf, 
-    with_type = FALSE, event_weights = NULL) {
+isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
-    out <- prepEndoVar("isp", scaling, memory_value, with_type, event_weights)
-    out$isp$scaling <- match(out$isp$scaling, c("counts", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "isp",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "isp.type",
+            scaling = scaling
+        )
+    }    
 }
 
 #' sp
 #' 
-#' Specifies the statistic for a shared partners effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a shared partners effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
 #' 
 #' @details
 #' A shared partners effect refers to the tendency of dyads to interact if they 
-#' have more past shared partners between them. The statistic is defined for 
-#' undirected relational events. The statistic at timepoint \emph{t} for dyad 
-#' \emph{(i,j)} is equal to the minimum of past undirected \emph{(i,h)}, 
-#' \emph{(j,h)} events, summed over all actors \emph{h}. Optionally, a scaling 
-#' method can be set with \code{scaling}, events that happened a certain number 
-#' of time units ago can be disregarded in the count by setting 
-#' \code{memory_value}, events of different types can be counted separately by 
-#' setting \code{with_type = TRUE} or past events can be weighted by setting 
-#' \code{event_weights}.
+#' have more past shared partners between them. The statistic at timepoint 
+#' \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past undirected 
+#' \emph{(i,h)}, \emph{(j,h)} events, summed over all actors \emph{h}. 
+#' Optionally, a scaling method can be set with \code{scaling}. Note that the 
+#' `shared partners' effect is only defined for undirected events. 
 #' 
-#' @inheritParams otp
+#' @inheritParams osp
 #' 
 #' @seealso \code{\link{spUnique}} for another type of triadic effect for 
 #' undirected relational events and \code{\link{otp}}, \code{\link{itp}}, 
@@ -848,35 +1345,45 @@ isp <- function(scaling = c("counts", "standardize"), memory_value = Inf,
 #' relational events.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ sp(), edgelist = history, directed = FALSE)
+#' effects <- ~ sp()
+#' tomstats(effects, edgelist = history, directed = FALSE)
 #' 
 #' @export  
-sp <- function(scaling = c("counts", "standardize"), memory_value = Inf, 
-    with_type = FALSE, event_weights = NULL) {
+sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
-    out <- prepEndoVar("sp", scaling, memory_value, with_type, event_weights)
-    out$sp$scaling <- match(out$sp$scaling, c("counts", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "sp",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "sp.type",
+            scaling = scaling
+        )
+    }    
 }
 
 #' spUnique
 #' 
 #' Specifies the statistic for a unique shared partners effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' \code{effects} argument of \code{\link{tomstats}}.
 #' 
 #' @details
 #' A unique shared partners effect refers to the tendency of dyads to interact 
-#' if they have more past unique shared partners between them. The statistic is 
-#' defined for undirected relational events. The statistic at timepoint 
-#' \emph{t} for dyad \emph{(i,j)} is equal to the number of unique actors 
-#' \emph{h} that both actors \emph{i} and \emph{j} interacted with in the past. 
-#' Optionally, a scaling method can be set with \code{scaling}, events that 
-#' happened a certain number of time units ago can be disregarded in the count 
-#' by setting \code{memory_value} or events of different types can be counted 
-#' separately by setting \code{with_type = TRUE}.
+#' if they have more past unique shared partners between them. The statistic at 
+#' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of unique 
+#' actors \emph{h} that both actors \emph{i} and \emph{j} interacted with in 
+#' the past. Optionally, a scaling method can be set with \code{scaling}. Note 
+#' that the `unique shared partners' effect is only defined for undirected 
+#' events. 
 #' 
-#' @inheritParams otp
+#' @inheritParams osp
 #' 
 #' @seealso \code{\link{sp}} for another type of triadic effect for 
 #' undirected relational events and \code{\link{otp}}, \code{\link{itp}}, 
@@ -884,23 +1391,37 @@ sp <- function(scaling = c("counts", "standardize"), memory_value = Inf,
 #' relational events.
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ spUnique(), edgelist = history, directed = FALSE)
+#' effects <- ~ spUnique()
+#' tomstats(effects, edgelist = history, directed = FALSE)
 #' 
 #' @export  
-spUnique <- function(scaling = c("counts", "standardize"), memory_value = Inf, 
-    with_type = FALSE) {
+spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
-    out <- prepEndoVar("spUnique", scaling, memory_value, with_type, NULL)
-    out$spUnique$scaling <- match(out$spUnique$scaling, 
-        c("counts", "standardize"))
-    out
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "spUnique",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "spUnique.type",
+            scaling = scaling
+        )
+    }    
 }
 
 #' psABBA
 #' 
-#' Specifies the statistic for a pshift AB-BA effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a pshift AB-BA effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
+#' 
+#' @param consider_type logical, indicates whether to consider the event type 
+#' in determining which dyads create a pshift (TRUE) or not (FALSE, default).
 #' 
 #' @details
 #' The AB-BA pshift effect refers to one of Gibson's (2003) dyadic 
@@ -909,12 +1430,13 @@ spUnique <- function(scaling = c("counts", "standardize"), memory_value = Inf,
 #' is the current sender). For each timepoint t, the psABBA statistic is equal 
 #' to one for the dyad that will create the participation shift if it would 
 #' occur in the edgelist at time t and equal to zero for the dyads that will 
-#' not create this participation shift.
-#' 
-#' @param with_type logical value. If TRUE, the pshift is set only for those
-#' dyads in the riskset with the same event type as the last event. If FALSE 
-#' (default), pshifts are set regardless of the event types of the dyads in 
-#' the riskset. 
+#' not create this participation shift. If consider_type is set to TRUE, the 
+#' type of the AB event and the type of the BA event have to be equal. If it is 
+#' set to FALSE, the participation shift is set to one for every BA event, 
+#' regardless of the event type. If multiple events in the edgelist occur at 
+#' the same time point, the order of these events determines whether the 
+#' p-shift is observed. Note that the AB-BA pshift is only defined for directed 
+#' events. 
 #' 
 #' @aliases pshift 
 #' @seealso \code{\link{psABBY}}, \code{\link{psABXA}}, \code{\link{psABXB}}, 
@@ -922,21 +1444,32 @@ spUnique <- function(scaling = c("counts", "standardize"), memory_value = Inf,
 #' shifts. 
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ psABBA(), edgelist = history)
+#' effects <- ~ psABBA()
+#' tomstats(effects, edgelist = history)
 #' 
 #' @export
-psABBA <- function(with_type = FALSE) {
+psABBA <- function(consider_type = FALSE) {
 
-    list(
-        "psABBA" = list(with_type = with_type)
-    )
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "psABBA",
+            scaling = 1
+        )   
+    } else {
+        list(
+            effect = "psABBA.type",
+            scaling = 1
+        )
+    }
 }
 
 #' psABBY
 #' 
-#' Specifies the statistic for a pshift AB-BY effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a pshift AB-BY effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
+#' 
+#' @inheritParams psABBA
 #' 
 #' @details
 #' The AB-BY pshift effect refers to one of Gibson's (2003) dyadic 
@@ -945,30 +1478,45 @@ psABBA <- function(with_type = FALSE) {
 #' receiver is not in the current event). For each timepoint t, the psABBY 
 #' statistic is equal to one for the dyads that will create the participation 
 #' shift if they would occur in the edgelist at time t and equal to zero for 
-#' the dyads that will not create this participation shift.
-#' 
-#' @inheritParams psABBA
+#' the dyads that will not create this participation shift. If consider_type is 
+#' set to TRUE, the type of the AB event and the type of the BY events have to 
+#' be equal. If it is set to FALSE, the participation shift is set to one for 
+#' every BY event, regardless of the event type. If multiple events in the 
+#' edgelist occur at the same time point, the order of these events determines 
+#' whether the p-shift is observed. Note that the AB-BY pshift is only defined 
+#' for directed events.  
 #' 
 #' @seealso \code{\link{psABBA}}, \code{\link{psABXA}}, \code{\link{psABXB}}, 
 #' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation 
 #' shifts. 
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ psABBY(), edgelist = history)
+#' effects <- ~ psABBY()
+#' tomstats(effects, edgelist = history)
 #' 
 #' @export
-psABBY <- function(with_type = FALSE) {
+psABBY <- function(consider_type = FALSE) {
 
-    list(
-        "psABBY" = list(with_type = with_type)
-    )
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "psABBY",
+            scaling = 1
+        )   
+    } else {
+        list(
+            effect = "psABBY.type",
+            scaling = 1
+        )
+    }
 }
 
 #' psABXA
 #' 
-#' Specifies the statistic for a pshift AB-XA effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a pshift AB-XA effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
+#' 
+#' @inheritParams psABBA
 #' 
 #' @details
 #' The AB-XA pshift effect refers to one of Gibson's (2003) dyadic 
@@ -977,30 +1525,45 @@ psABBY <- function(with_type = FALSE) {
 #' receiver is the current sender). For each timepoint t, the psABXA statistic 
 #' is equal to one for the dyads that will create the participation shift if 
 #' they would occur in the edgelist at time t and equal to zero for the dyads 
-#' that will not create this participation shift.
-#' 
-#' @inheritParams psABBA
+#' that will not create this participation shift. If consider_type is set to 
+#' TRUE, the type of the AB event and the type of the XA events have to be 
+#' equal. If it is set to FALSE, the participation shift is set to one for 
+#' every XA event, regardless of the event type. If multiple events in the 
+#' edgelist occur at the same time point, the order of these events determines 
+#' whether the p-shift is observed. Note that the AB-XA pshift is only defined 
+#' for directed events.  
 #' 
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXB}}, 
 #' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation 
 #' shifts. 
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ psABBA(), edgelist = history)
+#' effects <- ~ psABXA()
+#' tomstats(effects, edgelist = history)
 #' 
 #' @export
-psABXA <- function(with_type = FALSE) {
+psABXA <- function(consider_type = FALSE) {
 
-    list(
-        "psABXA" = list(with_type = with_type)
-    )
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "psABXA",
+            scaling = 1
+        )   
+    } else {
+        list(
+            effect = "psABXA.type",
+            scaling = 1
+        )
+    }
 }
 
 #' psABXB
 #' 
-#' Specifies the statistic for a pshift AB-XB effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a pshift AB-XB effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
+#' 
+#' @inheritParams psABBA
 #' 
 #' @details
 #' The AB-XB pshift effect refers to one of Gibson's (2003) dyadic 
@@ -1009,30 +1572,45 @@ psABXA <- function(with_type = FALSE) {
 #' receiver is the current receiver). For each timepoint t, the psABXB 
 #' statistic is equal to one for the dyads that will create the participation 
 #' shift if they would occur in the edgelist at time t and equal to zero for 
-#' the dyads that will not create this participation shift.
-#' 
-#' @inheritParams psABBA
+#' the dyads that will not create this participation shift. If consider_type is 
+#' set to TRUE, the type of the AB event and the type of the XB events have to 
+#' be equal. If it is set to FALSE, the participation shift is set to one for 
+#' every XB event, regardless of the event type. If multiple events in the 
+#' edgelist occur at the same time point, the order of these events determines 
+#' whether the p-shift is observed. Note that the AB-XB pshift is only defined 
+#' for directed events.  
 #' 
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}}, 
 #' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation 
 #' shifts. 
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ psABXB(), edgelist = history)
+#' effects <- ~ psABXB()
+#' tomstats(effects, edgelist = history)
 #' 
 #' @export
-psABXB <- function(with_type = FALSE) {
+psABXB <- function(consider_type = FALSE) {
 
-    list(
-        "psABXB" = list(with_type = with_type)
-    )
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "psABXB",
+            scaling = 1
+        )   
+    } else {
+        list(
+            effect = "psABXB.type",
+            scaling = 1
+        )
+    }
 }
 
 #' psABXY
 #' 
-#' Specifies the statistic for a pshift AB-XY effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a pshift AB-XY effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
+#' 
+#' @inheritParams psABBA
 #' 
 #' @details
 #' The AB-XY pshift effect refers to one of Gibson's (2003) dyadic 
@@ -1041,30 +1619,44 @@ psABXB <- function(with_type = FALSE) {
 #' event). For each timepoint t, the psABXY statistic is equal to one for the 
 #' dyads that will create the participation shift if they would occur in the 
 #' edgelist at time t and equal to zero for the dyads that will not create this 
-#' participation shift.
-#' 
-#' @inheritParams psABBA
+#' participation shift. If consider_type is set to TRUE, the type of the AB 
+#' event and the type of the XY events have to be equal. If it is set to FALSE, 
+#' the participation shift is set to one for every XY event, regardless of the 
+#' event type. If multiple events in the edgelist occur at the same time point, 
+#' the order of these events determines whether the p-shift is observed. Note 
+#' that the AB-XY pshift is only defined for directed events.  
 #' 
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}}, 
 #' \code{\link{psABXB}} or \code{\link{psABAY}} for other dyadic participation 
 #' shifts. 
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ psABXY(), edgelist = history)
+#' effects <- ~ psABXY()
+#' tomstats(effects, edgelist = history)
 #' 
 #' @export
-psABXY <- function(with_type = FALSE) {
+psABXY <- function(consider_type = FALSE) {
 
-    list(
-        "psABXY" = list(with_type = with_type)
-    )
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "psABXY",
+            scaling = 1
+        )   
+    } else {
+        list(
+            effect = "psABXY.type",
+            scaling = 1
+        )
+    }
 }
 
 #' psABAY
 #' 
-#' Specifies the statistic for a pshift AB-AY effect in the \code{formula} 
-#' argument of \code{\link{remstats}}.
+#' Specifies the statistic for a pshift AB-AY effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
+#' 
+#' @inheritParams psABBA
 #' 
 #' @details
 #' The AB-AY pshift effect refers to one of Gibson's (2003) dyadic 
@@ -1073,167 +1665,334 @@ psABXY <- function(with_type = FALSE) {
 #' receiver is not in the current event). For each timepoint t, the psABAY 
 #' statistic is equal to one for the dyads that will create the participation 
 #' shift if they would occur in the edgelist at time t and equal to zero for 
-#' the dyads that will not create this participation shift.
-#' 
-#' @inheritParams psABBA
+#' the dyads that will not create this participation shift. If consider_type is 
+#' set to TRUE, the type of the AB event and the type of the AY events have to 
+#' be equal. If it is set to FALSE, the participation shift is set to one for 
+#' every AY event, regardless of the event type. If multiple events in the 
+#' edgelist occur at the same time point, the order of these events determines 
+#' whether the p-shift is observed. Note that the AB-AY pshift is only defined 
+#' for directed events.  
 #' 
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}}, 
 #' \code{\link{psABXB}} or \code{\link{psABXY}} for other dyadic participation 
 #' shifts. 
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ psABAY(), edgelist = history)
+#' effects <- ~ psABAY()
+#' tomstats(effects, edgelist = history)
 #' 
 #' @export
-psABAY <- function(with_type = FALSE) {
+psABAY <- function(consider_type = FALSE) {
 
-    list(
-        "psABAY" = list(with_type = with_type)
-    )
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "psABAY",
+            scaling = 1
+        )   
+    } else {
+        list(
+            effect = "psABAY.type",
+            scaling = 1
+        )
+    }
 }
 
 #' rrankSend
 #' 
 #' Specifies the statistic for a recency rank send effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
-#' The rrankSend effect refers to a rank-based recency effect, as in section 2.
-#' 2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) the 
-#' statistic is equal to the inverse of the rank of receiver j among the actors 
-#' to which sender i has most recently send past events.
+#' The rrankSend effect refers to a rank-based recency effect, as described in 
+#' section 2.2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) 
+#' the statistic is equal to the inverse of the rank of receiver j among the 
+#' actors to which sender i has most recently send past events. Note that the 
+#' 'rrankSend' effect is only defined for directed events. 
 #' 
-#' @param with_type logical value. If TRUE, ranks are created taking event 
-#' types into account. If FALSE (default), ranks are created regardless of the 
-#' event types of the dyads in the riskset.
+#' @param consider_type logical, indicates whether to determine the rank 
+#' separately for each event type (TRUE) or regardless of event types (FALSE, 
+#' default).
 #' 
-#' @aliases recency recencyRank rrank
-#' @seealso \code{\link{rrankReceive}}
+#' @aliases recencyRank rrank
+#' @seealso \code{\link{rrankReceive}}, \code{\link{recencySendSender}}, 
+#' \code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}}, 
+#' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for 
+#' other type of recency effects
 #' 
 #' @examples 
-#' data(history)
-#' remstats(~ rrankSend(), edgelist = history)
+#' effects <- ~ rrankSend()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #'
 #' @export 
-rrankSend <- function(with_type = FALSE) {
-
-    list(
-        rrankSend = list(with_type = with_type)
-    )
+rrankSend <- function(consider_type = FALSE) {
+    
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "rrankSend",
+            scaling = 1
+        )
+    } else {
+        list(
+            effect = "rrankSend.type",
+            scaling = 1
+        )
+    }  
 }
 
 #' rrankReceive
 #' 
 #' Specifies the statistic for a recency rank receive effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
-#' The rrankSend effect refers to a rank-based recency effect, as in section 2.
-#' 2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) the 
-#' statistic is equal to the inverse of the rank of receiver j among the actors 
-#' from which sender i has most recently received past events
+#' The rrankSend effect refers to a rank-based recency effect, as described in 
+#' section 2.2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) 
+#' the statistic is equal to the inverse of the rank of receiver j among the 
+#' actors from which sender i has most recently received past events. Note that 
+#' the 'rrankReceive' effect is only defined for directed events. 
 #' 
 #' @inheritParams rrankSend
 #' 
-#' @seealso \code{\link{rrankSend}}
+#' @seealso \code{\link{rrankSend}}, \code{\link{recencySendSender}}, 
+#' \code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}}, 
+#' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for 
+#' other type of recency effects
 #' 
 #' @examples
-#' data(history)
-#' remstats(~ rrankReceive(), edgelist = history)
+#' effects <- ~ rrankReceive()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #'
 #' @export 
-rrankReceive <- function(with_type = FALSE) {
+rrankReceive <- function(consider_type = FALSE) {
 
-    list(
-        rrankReceive = list(with_type = with_type)
-    )
+     # Output
+    if(!consider_type) {
+        list(
+            effect = "rrankReceive",
+            scaling = 1
+        )
+    } else {
+        list(
+            effect = "rrankReceive.type",
+            scaling = 1
+        )
+    }  
 }
 
 
-#' recencySender
+#' recencySendSender
 #' 
-#' Specifies the statistic for a recency sender effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' Specifies the statistic for a recency send of sender effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the \code{rateEffects} 
+#' argument of \code{\link{aomstats}}.
 #' 
-#' The recencySender effect refers to a recency statistic similar to Vu et 
-#' al. (2017) and Mulder and Leenders (2019). For each timepoint t, for 
-#' directed dyad (i,j) the statistic is equal to 1/(the time that has past 
-#' since sender i was last active + 1).
+#' The recencySendSender effect refers to a recency statistic similar to what 
+#' is described in Vu et al. (2017) and Mulder and Leenders (2019). For each 
+#' timepoint t, for directed dyad (i,j) the statistic is equal to 1/(the time 
+#' that has past since sender i was last active as sender + 1). Note that the 
+#' 'recencySendSender' effect is only defined for directed events. 
 #' 
-#' @param memory_value numeric value. Specifies the time after which events are 
-#' no longer included in the statistic count (default: all past events are 
-#' considered). Note: make sure memory_value is specified in the same time unit 
-#' as the time for the events in the edgelist. 
+#' @param consider_type logical, indicates whether to compute the recency  
+#' separately for each event type (TRUE) or regardless of event types (FALSE, 
+#' default).
 #' 
-#' @seealso \code{\link{recencyReceiver}} and \code{\link{recencyContinue}}
+#' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
+#' \code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}}, 
+#' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for 
+#' other type of recency effects
 #' 
 #' @examples
-#' data(history)
-#' remstats(~ recencySender(), edgelist = history)
+#' effects <- ~ recencySendSender()
+#' tomstats(effects, edgelist = history)
+#' aomstats(rateEffects = effects, edgelist = history)
 #' 
 #' @export 
-recencySender <- function(memory_value = Inf) {
-	
-	list(
-		recencySender = list(memory_value = memory_value)
-	)
-	
+recencySendSender <- function(consider_type = FALSE) {
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "recencySendSender",
+            scaling = 1
+        )
+    } else {
+        list(
+            effect = "recencySendSender.type",
+            scaling = 1
+        )
+    }  
+
 }
 
-#' recencyReceiver
+#' recencySendReceiver
 #' 
-#' Specifies the statistic for a recency receiver effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' Specifies the statistic for a recency send of receiver effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
-#' The recencyReceiver effect refers to a recency statistic similar to Vu et 
-#' al. (2017) and Mulder and Leenders (2019). For each timepoint t, for 
-#' directed dyad (i,j) the statistic is equal to 1/(the time that has past 
-#' since receiver j was last active + 1). 
+#' The recencySendReceiver effect refers to a recency statistic similar to what 
+#' is described in Vu et al. (2017) and Mulder and Leenders (2019). For each 
+#' timepoint t, for directed dyad (i,j) the statistic is equal to 1/(the time 
+#' that has past since receiver j was last active as sender + 1). Note that the 
+#' 'recencySendReceiver' effect is only defined for directed events. 
 #' 
-#' @inheritParams recencySender
+#' @inheritParams recencySendSender
 #' 
-#' @seealso \code{\link{recencySender}} and \code{\link{recencyContinue}}
+#' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
+#' \code{\link{recencySendSender}}, \code{\link{recencyReceiveSender}}, 
+#' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for 
+#' other type of recency effects
 #' 
 #' @examples
-#' data(history)
-#' remstats(~ recencyReceiver(), edgelist = history)
+#' effects <- ~ recencySendReceiver()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #' 
 #' @export 
-recencyReceiver <- function(memory_value = Inf) {
-	
-	list(
-		recencyReceiver = list(memory_value = memory_value)
-	)
-	
+recencySendReceiver <- function(consider_type = FALSE) {
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "recencySendReceiver",
+            scaling = 1
+        )
+    } else {
+        list(
+            effect = "recencySendReceiver.type",
+            scaling = 1
+        )
+    }  
+
+}
+
+#' recencyReceiveSender
+#' 
+#' Specifies the statistic for a recency receive of sender effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{rateEffects} argument of \code{\link{aomstats}}.
+#' 
+#' The recencyReceiveSender effect refers to a recency statistic similar to 
+#' what is described in Vu et al. (2017) and Mulder and Leenders (2019). For 
+#' each timepoint t, for directed dyad (i,j) the statistic is equal to 1/(the 
+#' time that has past since sender i was last active as receiver + 1). Note 
+#' that the 'recencyReceiveSender' effect is only defined for directed events. 
+#' 
+#' @inheritParams recencySendSender
+#' 
+#' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
+#' \code{\link{recencySendSender}}, \code{\link{recencySendReceiver}}, 
+#' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for 
+#' other type of recency effects
+#' 
+#' @examples
+#' effects <- ~ recencyReceiveSender()
+#' tomstats(effects, edgelist = history)
+#' aomstats(rateEffects = effects, edgelist = history)
+#' 
+#' @export 
+recencyReceiveSender <- function(consider_type = FALSE) {
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "recencyReceiveSender",
+            scaling = 1
+        )
+    } else {
+        list(
+            effect = "recencyReceiveSender.type",
+            scaling = 1
+        )
+    }  
+
+}
+
+#' recencyReceiveReceiver
+#' 
+#' Specifies the statistic for a recency receive of receiver effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' 
+#' The recencyReceiveReceiver effect refers to a recency statistic similar to 
+#' what is described in Vu et al. (2017) and Mulder and Leenders (2019). For 
+#' each timepoint t, for directed dyad (i,j) the statistic is equal to 1/(the 
+#' time that has past since receiver j was last active as receiver + 1). Note 
+#' that the 'recencyReceiveReceiver' effect is only defined for directed 
+#' events. 
+#' 
+#' @inheritParams recencySendSender
+#' 
+#' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
+#' \code{\link{recencySendSender}}, \code{\link{recencyReceiveSender}}, 
+#' \code{\link{recencyReceiveSender}} and \code{\link{recencyContinue}} for 
+#' other type of recency effects
+#' 
+#' @examples
+#' effects <- ~ recencyReceiveReceiver()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
+#' 
+#' @export 
+recencyReceiveReceiver <- function(consider_type = FALSE) {
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "recencyReceiveReceiver",
+            scaling = 1
+        )
+    } else {
+        list(
+            effect = "recencyReceiveReceiver.type",
+            scaling = 1
+        )
+    }  
+
 }
 
 #' recencyContinue
 #' 
-#' Specifies the statistic for a recency contine effect in the 
-#' \code{formula} argument of \code{\link{remstats}}.
+#' Specifies the statistic for a recency continue effect in the 
+#' \code{effects} argument of \code{\link{tomstats}} or the 
+#' \code{choiceEffects} argument of \code{\link{aomstats}}.
 #' 
-#' The recencyContinue effect refers to a recency statistic similar to Vu et 
-#' al. (2017) and Mulder and Leenders (2019). For each timepoint t, for 
-#' directed dyad (i,j) the statistic is equal to 1/(the time that has past 
-#' since the dyad was last active + 1).
+#' The recencyContinue effect refers to a recency statistic similar to what is 
+#' described in Vu et al. (2017) and Mulder and Leenders (2019). For each 
+#' timepoint t, for directed dyad (i,j) the statistic is equal to 1/(the time 
+#' that has past since the dyad was last active + 1).
 #' 
-#' @inheritParams recencySender
+#' @inheritParams recencySendSender
 #' 
-#' @seealso \code{\link{recencySender}} and \code{\link{recencyReceiver}}
+#' @aliases recency
+#' 
+#' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
+#' \code{\link{recencySendSender}}, \code{\link{recencyReceiveSender}}, 
+#' \code{\link{recencyReceiveSender}} and \code{\link{recencyReceiveReceiver}} 
+#' for other type of recency effects
 #' 
 #' @examples
-#' data(history)
-#' remstats(~ recencyContinue(), edgelist = history)
+#' effects <- ~ recencyContinue()
+#' tomstats(effects, edgelist = history)
+#' aomstats(choiceEffects = effects, edgelist = history)
 #' 
 #' @export 
-recencyContinue <- function(memory_value = Inf) {
+recencyContinue <- function(consider_type = FALSE) {
 	
-	list(
-		recencyContinue = list(memory_value = memory_value)
-	)
-	
+	# Output
+    if(!consider_type) {
+        list(
+            effect = "recencyContinue",
+            scaling = 1
+        )
+    } else {
+        list(
+            effect = "recencyContinue.type",
+            scaling = 1
+        )
+    }  
 }
-
-
-
-
-
