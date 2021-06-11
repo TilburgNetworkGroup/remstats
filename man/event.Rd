@@ -4,24 +4,29 @@
 \alias{event}
 \title{event}
 \usage{
-event(x)
+event(variable)
 }
 \arguments{
-\item{x}{numeric vector with the attribute of the events. The length of this 
-vector should be equal to the number of events in the edgelist}
+\item{variable}{string with the name of the column in the 
+\code{edgelist} object supplied to \code{\link{tomstats}} with the 
+event attribute.}
 }
 \description{
-Specifies the statistic for an event effect in the \code{formula} argument 
-of \code{\link{remstats}}.
+Specifies the statistic for an event effect in the \code{effects} argument 
+of \code{\link{tomstats}}.
 }
 \details{
-An event effect refers to an exogenous event attribute that affects the rate 
-of interacting in events higher or lower on this attribute. The statistic at 
-timepoint \emph{t} is for all dyads in the riskset equal to the attribute of 
-the event at timepoint \emph{t}.
+An event effect refers to an exogenous event attribute that affects the 
+waiting time between events. The statistic at timepoint \emph{t} is for all 
+dyads in the riskset equal to the attribute of the event at timepoint 
+\emph{t}.
 }
 \examples{
-data(history)
-remstats(~ event(history$setting), edgelist = history)
+history$work <- ifelse(history$setting == "work", 1, 0)
+effects <- ~ event("work")
+tomstats(effects, edgelist = history)
 
+}
+\seealso{
+\code{\link{FEtype}}
 }

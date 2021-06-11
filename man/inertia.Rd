@@ -4,61 +4,42 @@
 \alias{inertia}
 \title{inertia}
 \usage{
-inertia(
-  scaling = c("counts", "outdegreeSender", "standardize"),
-  memory_value = Inf,
-  with_type = FALSE,
-  event_weights = NULL
-)
+inertia(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the inertia statistic. Options are one 
-of \code{"counts"} (default option, gives the raw counts of past (i,j) 
-events at time t), \code{"outdegreeSender"} (in which raw counts are 
-divided by the outdegree of the sender at time t, only available for 
-directed events), and \code{"standardize"} (in which raw counts are 
-standardized per time point).}
+\item{scaling}{the method for scaling the inertia statistic. Default is to 
+not scale the statistic but keep the raw counts 'as.is'. Alternatively, the 
+statistics can be scaled by specifying 'prop', in which raw counts are 
+divided by the outdegree of the sender at time t (see 'details') or 
+standardization of the raw counts per time point can be requested with 'std'.}
 
-\item{memory_value}{numeric value. Specifies the time after which events are 
-no longer included in the statistic count (default: all past events are 
-considered). Note: make sure memory_value is specified in the same time unit 
-as the time for the events in the edgelist.}
-
-\item{with_type}{logical value. If TRUE, past (i,j) events of different 
-types c are counted separately for every (i,j,c) event in the risk set. If 
-FALSE (default), the type of the events is not considered in the counting of 
-past (i,j) events. Note: with_type can be FALSE even when a distinction 
-between different event types is made in the risk set but cannot be TRUE if 
-a distinction between different event type is not made in the riskset.}
-
-\item{event_weights}{vector with numeric values that indicate the intensity 
-of the events in the edgelist. If event weights are supplied, the inertia 
-statistic is equal to the sum of the intensity of past (i,j) events.}
+\item{consider_type}{logical, indicates whether to count the number of past 
+events separately for each event type (TRUE) or sum across different event 
+types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an inertia effect in the \code{formula} argument 
-of \code{\link{remstats}}.
+Specifies the statistic for an inertia effect in the \code{effects} argument 
+of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+\code{\link{aomstats}}.
 }
 \details{
 An inertia effect refers to the tendency for actors to repeat past 
 interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
 equal to the number of \emph{(i,j)} events before timepoint \emph{t}. 
-Optionally, a scaling method can be set with \code{scaling}, events that 
-happened a certain number of time units ago can be disregarded in the count 
-by setting \code{memory_value}, events of different types can be counted 
-separately by setting \code{with_type = TRUE} or past events can be weighted 
-by setting \code{event_weights}. 
 
-Note that by scaling the inertia count by the outdegree of the sender, the 
-statistic refers to the fraction of messages send by actor i that were send 
-to actor j. If actor i hasn't send any messages yet it can be assumed that 
-every actor is equally likely to receive a message from i and the statistic 
-is set equal to 1/(n-1), where n refers to the number of actors. The 
-resulting statistic is similar to the "FrPSndSnd" statistic in the R package 
-relevent, or the persistence statistic in Section 2.2.2 of Butts (2008).
+Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+inertia count by the outdegree of the sender ("prop"), the statistic refers 
+to the fraction of messages send by actor i that were send to actor j. If 
+actor i hasn't send any messages yet it can be assumed that every actor is 
+equally likely to receive a message from i and the statistic is set equal to 
+1/(n-1), where n refers to the number of actors. The resulting statistic is 
+similar to the "FrPSndSnd" statistic in the R package relevent, or the 
+persistence statistic in Section 2.2.2 of Butts (2008). Note that this 
+scaling method is only defined for directed events.
 }
 \examples{
-data(history)
-remstats(~ inertia(), edgelist = history)
+effects <- ~ inertia()
+tomstats(effects, edgelist = history)
+aomstats(choiceEffects = effects, edgelist = history)
 
 }

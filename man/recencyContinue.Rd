@@ -2,31 +2,36 @@
 % Please edit documentation in R/effects.R
 \name{recencyContinue}
 \alias{recencyContinue}
+\alias{recency}
 \title{recencyContinue}
 \usage{
-recencyContinue(memory_value = Inf)
+recencyContinue(consider_type = FALSE)
 }
 \arguments{
-\item{memory_value}{numeric value. Specifies the time after which events are 
-no longer included in the statistic count (default: all past events are 
-considered). Note: make sure memory_value is specified in the same time unit 
-as the time for the events in the edgelist.}
+\item{consider_type}{logical, indicates whether to compute the recency
+separately for each event type (TRUE) or regardless of event types (FALSE, 
+default).}
 }
 \description{
-Specifies the statistic for a recency contine effect in the 
-\code{formula} argument of \code{\link{remstats}}.
+Specifies the statistic for a recency continue effect in the 
+\code{effects} argument of \code{\link{tomstats}} or the 
+\code{choiceEffects} argument of \code{\link{aomstats}}.
 }
 \details{
-The recencyContinue effect refers to a recency statistic similar to Vu et 
-al. (2017) and Mulder and Leenders (2019). For each timepoint t, for 
-directed dyad (i,j) the statistic is equal to 1/(the time that has past 
-since the dyad was last active + 1).
+The recencyContinue effect refers to a recency statistic similar to what is 
+described in Vu et al. (2017) and Mulder and Leenders (2019). For each 
+timepoint t, for directed dyad (i,j) the statistic is equal to 1/(the time 
+that has past since the dyad was last active + 1).
 }
 \examples{
-data(history)
-remstats(~ recencyContinue(), edgelist = history)
+effects <- ~ recencyContinue()
+tomstats(effects, edgelist = history)
+aomstats(choiceEffects = effects, edgelist = history)
 
 }
 \seealso{
-\code{\link{recencySender}} and \code{\link{recencyReceiver}}
+\code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
+\code{\link{recencySendSender}}, \code{\link{recencyReceiveSender}}, 
+\code{\link{recencyReceiveSender}} and \code{\link{recencyReceiveReceiver}} 
+for other type of recency effects
 }

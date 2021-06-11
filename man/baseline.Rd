@@ -2,35 +2,27 @@
 % Please edit documentation in R/effects.R
 \name{baseline}
 \alias{baseline}
+\alias{intercept}
 \title{baseline}
-\usage{
-baseline(with_type = FALSE)
-}
-\arguments{
-\item{with_type}{logical value. If set to true, creates dummy variables for 
-the event types that refer to the baseline tendency to interact within the 
-respective event type compared to the reference category (first of sorted 
-event types). Note: with_type can be FALSE even when a distinction 
-between different event types is made in the risk set but cannot be TRUE if 
-a distinction between different event type is not made in the riskset.}
-}
 \description{
-Specifies the statistic for a baseline effect in the \code{formula} argument 
-of \code{\link{remstats}}.
+A baseline effect in the \code{effects} argument of \code{\link{tomstats}} 
+is automatically specified when \code{ordinal} in \code{\link{tomstats}} is 
+set to FALSE (default) and automatically removed when this argument is set 
+to TRUE. Alternatively, a baseline effect can be explicitly specified by 
+adding '1' to the equation or explicitly removed by adding '-1' to the 
+equation. This also holds for the \code{rateEffects} in 
+\code{\link{aomstats}}.
 }
 \details{
-The baseline effect refers to the baseline tendency to interact: the 
-log-inverse of the estimated parameter translates to the average number of 
-observed events per time unit per dyad. The statistic is equal to one for 
-all dyads in the riskset at all timepoints. 
-
-The baseline effect with type refers to the baseline tendency to interact 
-for an event type, compared to the reference category. The statistic is 
-equal to one for all dyads in the riskset with the given event type at all 
-timepoints and zero for all dyads in the riskset with other event types.
+The baseline effect refers to the baseline tendency to interact. In the 
+tie-oriented model, the log-inverse of the estimated parameter translates to 
+the average number of observed events per time unit per dyad. In the 
+actor-oriented model, the log-inverse of the estimated parameter translates 
+to the average number of observed events per time unit per actor. The 
+statistic is equal to one for all dyads resp. actors in the riskset at all 
+timepoints.
 }
 \examples{
-data(history)
-remstats(~ baseline(), edgelist = history)
-
+tomstats(~ 1, edgelist = history)
+aomstats(rateEffects = ~ 1, edgelist = history)
 }

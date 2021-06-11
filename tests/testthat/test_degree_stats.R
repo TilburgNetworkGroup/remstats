@@ -1,213 +1,185 @@
-context("degree stats")
-
+library(remify)
 library(remstats)
 
-test_that("scaling is counts", {
-	# Specify the effects
-	form <- ~ indegreeSender() + indegreeReceiver() + outdegreeSender() + 
-		outdegreeReceiver() + totaldegreeSender() + totaldegreeReceiver()
-
-	# Compute the statistics
-	out <- remstats(form, edgelist = history)
-	stats <- out$statistics
-	riskset <- out$riskset
-	edgelist <- out$edgelist
+test_that("indegreeSender", {
 	
-	# Tests
-	# Test the last row
-	expect_true(all(stats[nrow(stats),, "indegreeSender"] == 	
-		apply(riskset, 1, function(x) {
-			sum(edgelist[-nrow(edgelist),3] == x[1])
-		})
-	))
-	expect_true(all(stats[nrow(stats),, "indegreeReceiver"] == 	
-		apply(riskset, 1, function(x) {
-			sum(edgelist[-nrow(edgelist),3] == x[2])
-		})
-	))
-	expect_true(all(stats[nrow(stats),, "outdegreeSender"] == 	
-		apply(riskset, 1, function(x) {
-			sum(edgelist[-nrow(edgelist),2] == x[1])
-		})
-	))
-	expect_true(all(stats[nrow(stats),, "outdegreeReceiver"] == 	
-		apply(riskset, 1, function(x) {
-			sum(edgelist[-nrow(edgelist),2] == x[2])
-		})
-	))
-	expect_true(all(stats[nrow(stats),, "totaldegreeSender"] == 	
-		apply(riskset, 1, function(x) {
-			sum(edgelist[-nrow(edgelist),2] == x[1] | 
-						edgelist[-nrow(edgelist),3] == x[1])
-		})
-	))
-	expect_true(all(stats[nrow(stats),, "totaldegreeReceiver"] == 	
-		apply(riskset, 1, function(x) {
-			sum(edgelist[-nrow(edgelist),2] == x[2] | 
-						edgelist[-nrow(edgelist),3] == x[2])
-		})
-	))
+	data(history)
+	history$weight <- rep(1, nrow(history))
+	effects <- ~ indegreeSender()
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
 	
-	# Test the rowsums
-	n <- length(unique(info$id))
-	expect_equal(rowSums(stats[,,"indegreeSender"]), 
-		seq(0, (nrow(history)-1)*(n-1), n-1))
-	expect_equal(rowSums(stats[,,"indegreeReceiver"]), 
-		seq(0, (nrow(history)-1)*(n-1), n-1))
-	expect_equal(rowSums(stats[,,"outdegreeSender"]), 
-		seq(0, (nrow(history)-1)*(n-1), n-1))
-	expect_equal(rowSums(stats[,,"outdegreeReceiver"]), 
-		seq(0, (nrow(history)-1)*(n-1), n-1))
-	expect_equal(rowSums(stats[,,"totaldegreeSender"]), 
-		seq(0, (nrow(history)-1)*(n-1), n-1)*2)
-	expect_equal(rowSums(stats[,,"totaldegreeReceiver"]), 
-		seq(0, (nrow(history)-1)*(n-1), n-1)*2)
-})
-
-test_that("scaling is total", {
-	# Specify the effects
-	form <- ~ indegreeSender(scaling = "total") + 
-		indegreeReceiver(scaling = "total") + 
-		outdegreeSender(scaling = "total") + 
-		outdegreeReceiver(scaling = "total") + 
-		totaldegreeSender(scaling = "total") + 
-		totaldegreeReceiver(scaling = "total")
-
-	# Compute the statistics
-	out <- remstats(form, edgelist = history)
-	stats <- out$statistics
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*9, 9))
+	expect_equal(rowSums(aomres$statistics$rate[,,2]),
+		seq(0, nrow(history)-1, 1))
 	
-	# Test the rowsums
-	n <- length(unique(info$id))
-	expect_equal(rowSums(stats[,,"indegreeSender"]), 
-		c(0, rep(n-1, nrow(stats)-1)))
-	expect_equal(rowSums(stats[,,"indegreeReceiver"]), 
-		c(0, rep(n-1, nrow(stats)-1)))
-	expect_equal(rowSums(stats[,,"outdegreeSender"]), 
-		c(0, rep(n-1, nrow(stats)-1)))
-	expect_equal(rowSums(stats[,,"outdegreeReceiver"]), 
-		c(0, rep(n-1, nrow(stats)-1)))
-	expect_equal(rowSums(stats[,,"totaldegreeSender"]), 
-		c(0, rep(n-1, nrow(stats)-1)))
-	expect_equal(rowSums(stats[,,"totaldegreeReceiver"]), 
-		c(0, rep(n-1, nrow(stats)-1)))
-})
-
-test_that("scaling is standardize", {
-	# Specify the effects
-	form <- ~ indegreeSender(scaling = "standardize") + 
-		indegreeReceiver(scaling = "standardize") + 
-		outdegreeSender(scaling = "standardize") + 
-		outdegreeReceiver(scaling = "standardize") + 
-		totaldegreeSender(scaling = "standardize") + 
-		totaldegreeReceiver(scaling = "standardize")
-
-	# Compute statistics
-	out <- remstats(form, edgelist = history)
-	stats <- out$statistics
+	effects <- ~ indegreeSender(scaling = "std")
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
 	
-	# Test rowmeans
-	expect_equal(rowMeans(stats[,,"indegreeSender"]), rep(0, nrow(stats)))
-	expect_equal(rowMeans(stats[,,"indegreeReceiver"]), rep(0, nrow(stats)))
-	expect_equal(rowMeans(stats[,,"outdegreeSender"]), rep(0, nrow(stats)))
-	expect_equal(rowMeans(stats[,,"outdegreeReceiver"]), rep(0, nrow(stats)))
-	expect_equal(rowMeans(stats[,,"totaldegreeSender"]), rep(0, nrow(stats)))
-	expect_equal(rowMeans(stats[,,"totaldegreeReceiver"]), rep(0, nrow(stats)))
-})
+	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$rate[,,2]), rep(0, nrow(history)))
+	
+	effects <- ~ indegreeSender(scaling = "prop")
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[-1,,2]), rep(9, nrow(history)-1))
+	expect_equal(rowSums(aomres$statistics$rate[-1,,2]), rep(1, nrow(history)-1))
+	
+	colnames(history)[4] <- "type"
+	effects <- ~ indegreeSender(consider_type = TRUE)
+	tomres <- tomstats(effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*9, 9))
+}) 
 
-test_that("memory_value", {
-	# Specify the effects
-	form <- ~ indegreeSender(memory_value = 10000) + 
-		indegreeReceiver(memory_value = 10000) + 
-		outdegreeSender(memory_value = 10000) + 
-		outdegreeReceiver(memory_value = 10000) + 
-		totaldegreeSender(memory_value = 10000) + 
-		totaldegreeReceiver(memory_value = 10000)
+test_that("outdegreeSender", {
+	
+	data(history)
+	history$weight <- rep(1, nrow(history))
+	effects <- ~ outdegreeSender()
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*9, 9))
+	expect_equal(rowSums(aomres$statistics$rate[,,2]),
+		seq(0, nrow(history)-1, 1))
+	
+	effects <- ~ outdegreeSender(scaling = "std")
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
+	
+	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$rate[,,2]), rep(0, nrow(history)))
+	
+	effects <- ~ outdegreeSender(scaling = "prop")
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[-1,,2]), rep(9, nrow(history)-1))
+	expect_equal(rowSums(aomres$statistics$rate[-1,,2]), rep(1, nrow(history)-1))
+	
+	colnames(history)[4] <- "type"
+	effects <- ~ outdegreeSender(consider_type = TRUE)
+	tomres <- tomstats(effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*9, 9))
+}) 
 
-	# Compute statistics
-	out <- remstats(form, edgelist = history)
-	stats <- out$statistics
+test_that("indegreeReceiver", {
 	
-	# Tests
-	n <- length(unique(info$id))
-	expect_true(all(diff(rowSums(stats[,,"indegreeSender"])) <= (n-1)))
-	expect_true(all(diff(rowSums(stats[,,"indegreeReceiver"])) <= (n-1)))
-	expect_true(all(diff(rowSums(stats[,,"outdegreeSender"])) <= (n-1)))
-	expect_true(all(diff(rowSums(stats[,,"outdegreeReceiver"])) <= (n-1)))
-	expect_true(all(diff(rowSums(stats[,,"totaldegreeSender"])) <= (n-1)*2))
-	expect_true(all(diff(rowSums(stats[,,"totaldegreeReceiver"])) <= (n-1)*2))
+	data(history)
+	history$weight <- rep(1, nrow(history))
+	effects <- ~ indegreeReceiver()
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history)
 	
-	expect_true(!all(diff(rowSums(stats[,,"indegreeSender"])) == (n-1)))
-	expect_true(!all(diff(rowSums(stats[,,"indegreeReceiver"])) == (n-1)))
-	expect_true(!all(diff(rowSums(stats[,,"outdegreeSender"])) == (n-1)))
-	expect_true(!all(diff(rowSums(stats[,,"outdegreeReceiver"])) == (n-1)))
-	expect_true(!all(diff(rowSums(stats[,,"totaldegreeSender"])) == (n-1)*2))
-	expect_true(!all(diff(rowSums(stats[,,"totaldegreeReceiver"])) == (n-1)*2))
-})
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*9, 9))
+	expect_equal(rowSums(aomres$statistics$choice),
+		seq(0, nrow(history)-1, 1))
+	
+	effects <- ~ indegreeReceiver(scaling = "std")
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	
+	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$choice), rep(0, nrow(history)))
+	
+	effects <- ~ indegreeReceiver(scaling = "prop")
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[-1,,2]), rep(9, nrow(history)-1))
+	expect_equal(rowSums(aomres$statistics$choice[-1,,]), rep(1, nrow(history)-1))
+	
+	colnames(history)[4] <- "type"
+	effects <- ~ indegreeReceiver(consider_type = TRUE)
+	tomres <- tomstats(effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*9, 9))
+}) 
 
-test_that("with type", {
-	# Specify the effects
-	form <- ~ indegreeSender(with_type = TRUE) + 
-		indegreeReceiver(with_type = TRUE) + 
-		outdegreeSender(with_type = TRUE) + 
-		outdegreeReceiver(with_type = TRUE) + 
-		totaldegreeSender(with_type = TRUE) + 
-		totaldegreeReceiver(with_type = TRUE)
+test_that("totaldegreeSender", {
+	
+	data(history)
+	history$weight <- rep(1, nrow(history))
+	effects <- ~ totaldegreeSender() + indegreeSender() + outdegreeSender()
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*18, 18))
+	expect_equal(rowSums(aomres$statistics$rate[,,2]),
+		seq(0, (nrow(history)-1)*2, 2))
+	expect_equal(tomres$statistics[,,2], 
+		tomres$statistics[,,3] + tomres$statistics[,,4])
+	expect_equal(aomres$statistics$rate[,,2], 
+		aomres$statistics$rate[,,3] + aomres$statistics$rate[,,4])
+	
+	effects <- ~ totaldegreeSender(scaling = "std") 
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
+	
+	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$rate[,,2]), rep(0, nrow(history)))
+	
+	effects <- ~ totaldegreeSender(scaling = "prop")
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(rateEffects = effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[-1,,2]), rep(9, nrow(history)-1))
+	expect_equal(rowSums(aomres$statistics$rate[-1,,2]), rep(1, nrow(history)-1))
+	
+	colnames(history)[4] <- "type"
+	effects <- ~ totaldegreeSender(consider_type = TRUE)
+	tomres <- tomstats(effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*18, 18))
+}) 
 
-	# Compute statistics
-	names(history)[4] <- "type"
-	out <- remstats(form, edgelist = history)
-	stats <- out$statistics
+test_that("totaldegreeReceiver", {
 	
-	# Tests
-	n <- length(unique(info$id))
-	expect_equal(rowSums(stats[,,"indegreeSender"]), 
-		0:(nrow(history)-1)*(n-1))
-	expect_equal(rowSums(stats[,,"indegreeReceiver"]), 
-		0:(nrow(history)-1)*(n-1))
-	expect_equal(rowSums(stats[,,"outdegreeSender"]), 
-		0:(nrow(history)-1)*(n-1))
-	expect_equal(rowSums(stats[,,"outdegreeReceiver"]), 
-		0:(nrow(history)-1)*(n-1))
-	expect_equal(rowSums(stats[,,"totaldegreeSender"]), 
-		0:(nrow(history)-1)*(n-1)*2)
-	expect_equal(rowSums(stats[,,"totaldegreeReceiver"]), 
-		0:(nrow(history)-1)*(n-1)*2)
+	data(history)
+	history$weight <- rep(1, nrow(history))
+	effects <- ~ totaldegreeReceiver() + indegreeReceiver() + outdegreeReceiver()
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history)
 	
-	expect_equal(ncol(stats), n*(n-1)*2)
-})
-
-test_that("event weights", {
-	# Specify the effects
-	form <- ~ indegreeSender(event_weights = history$weight) + 
-		indegreeReceiver(event_weights = history$weight) + 
-		outdegreeSender(event_weights = history$weight) + 
-		outdegreeReceiver(event_weights = history$weight) + 
-		totaldegreeSender(event_weights = history$weight) + 
-		totaldegreeReceiver(event_weights = history$weight)
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*18, 18))
+	expect_equal(rowSums(aomres$statistics$choice[,,1]),
+		seq(0, (nrow(history)-1)*2, 2))
+	expect_equal(tomres$statistics[,,2], 
+		tomres$statistics[,,3] + tomres$statistics[,,4])
+	expect_equal(aomres$statistics$choice[,,1], 
+		aomres$statistics$choice[,,2] + aomres$statistics$choice[,,3])
 	
-	# Compute statistics
-	out <- remstats(form, edgelist = history)
-	stats <- out$statistics
+	effects <- ~ totaldegreeReceiver(scaling = "std") 
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history)
 	
-	# Tests
-	n <- length(unique(info$id))
-	expect_equal(rowSums(stats[,,"indegreeSender"]), 
-		c(0, head(cumsum(history$weight)*(n-1), 
-		n = nrow(history)-1)))
-	expect_equal(rowSums(stats[,,"indegreeReceiver"]), 
-		c(0, head(cumsum(history$weight)*(n-1), 
-		n = nrow(history)-1)))
-	expect_equal(rowSums(stats[,,"outdegreeSender"]), 
-		c(0, head(cumsum(history$weight)*(n-1), 
-		n = nrow(history)-1)))
-	expect_equal(rowSums(stats[,,"outdegreeReceiver"]), 
-		c(0, head(cumsum(history$weight)*(n-1), 
-		n = nrow(history)-1)))
-	expect_equal(rowSums(stats[,,"totaldegreeSender"]), 
-		c(0, head(cumsum(history$weight)*(n-1)*2, 
-		n = nrow(history)-1)))
-	expect_equal(rowSums(stats[,,"totaldegreeReceiver"]), 
-		c(0, head(cumsum(history$weight)*(n-1)*2, 
-		n = nrow(history)-1)))
+	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$choice), rep(0, nrow(history)))
+	
+	effects <- ~ totaldegreeReceiver(scaling = "prop")
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[-1,,2]), rep(9, nrow(history)-1))
+	expect_equal(rowSums(aomres$statistics$choice[-1,,]), rep(1, nrow(history)-1))
+	
+	colnames(history)[4] <- "type"
+	effects <- ~ totaldegreeReceiver(consider_type = TRUE)
+	tomres <- tomstats(effects, edgelist = history)
+	
+	expect_equal(rowSums(tomres$statistics[,,2]),
+		seq(0, (nrow(history)-1)*18, 18))
 })

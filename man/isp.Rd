@@ -4,53 +4,35 @@
 \alias{isp}
 \title{isp}
 \usage{
-isp(
-  scaling = c("counts", "standardize"),
-  memory_value = Inf,
-  with_type = FALSE,
-  event_weights = NULL
-)
+isp(scaling = c("as.is", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the triad statistic. Options are one 
-of \code{"counts"} (default option, gives the raw triad counts at time t), 
-or \code{"standardize"} (in which raw triad counts are standardized per time 
-point).}
+\item{scaling}{the method for scaling the triad statistic. Default is to not 
+scale the statistic but keep the raw 'counts'. Alternatively, 
+standardization of the raw counts per time point can be requested 
+with 'std'.}
 
-\item{memory_value}{numeric value. Specifies the time after which events are 
-no longer included in the degree count (default: all past events are 
-considered). Note: make sure memory_value is specified in the same time unit 
-as the time for the events in the edgelist.}
-
-\item{with_type}{logical value. If TRUE, past events of different types c 
-are counted separately for every (i,j,c) event in the risk set. If FALSE 
-(default), the type of the events is not considered in the degree counts. 
-Note: with_type can be FALSE even when a distinction between different event 
-types is made in the risk set.}
-
-\item{event_weights}{vector with numeric values that indicate the intensity 
-of the events in the edgelist. If event weights are supplied, the degree 
-statistic is equal to the sum of the intensity of past events instead of the 
-number of past events.}
+\item{consider_type}{logical, indicates whether to count the shared partners 
+separately for each event type (TRUE) or sum across different event 
+types (FALSE, default).}
 }
 \description{
 Specifies the statistic for an incoming shared partners effect in the 
-\code{formula} argument of \code{\link{remstats}}.
+\code{effects} argument of \code{\link{tomstats}} or the 
+\code{choiceEffects} argument of \code{\link{aomstats}}.
 }
 \details{
 An incoming shared partners effect refers to the tendency of dyads to 
 interact if they have more past incoming shared partners between them. The 
 statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the 
 minimum of past \emph{(h,i)}, \emph{(h,j)} events, summed over all actors 
-\emph{h}. Optionally, a scaling method can be set with \code{scaling}, 
-events that happened a certain number of time units ago can be disregarded 
-in the count by setting \code{memory_value}, events of different types can 
-be counted separately by setting \code{with_type = TRUE} or past events can 
-be weighted by setting \code{event_weights}.
+\emph{h}. Optionally, a scaling method can be set with \code{scaling}. Note 
+that an 'isp' effect is only defined for directed events.
 }
 \examples{
-data(history)
-remstats(~ isp(), edgelist = history)
+effects <- ~ isp()
+tomstats(effects, edgelist = history)
+aomstats(choiceEffects = effects, edgelist = history)
 
 }
 \seealso{

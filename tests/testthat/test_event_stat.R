@@ -1,12 +1,14 @@
-context("event stat")
-
-# Compute statistics
-out <- remstats(~ event(history$setting), edgelist = history)
-stats <- out$statistics
-riskset <- out$riskset
+library(remify)
+library(remstats)
 
 # Test
-test_that("event stat", {
-    expect_equal(stats[,,1], 
-    	replicate(n = nrow(riskset), match(history$setting, c("work", "social"))-1))
+test_that("event", {
+	
+	history$work <- ifelse(history$setting == "work", 1, 0)
+	tomres <- tomstats(~ event("work"), edgelist = history)
+	stats <- tomres$statistics
+	riskset <- tomres$riskset
+	
+	expect_equal(stats[,,"event.work"], 
+		replicate(n = nrow(riskset), history$work))
 })

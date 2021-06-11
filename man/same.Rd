@@ -4,34 +4,41 @@
 \alias{same}
 \title{same}
 \usage{
-same(variables, covariates)
+same(variable, attributes = NULL)
 }
 \arguments{
-\item{variables}{character vector: names of one or more columns in the 
-\code{covariates} object for which the statistic has to be computed.}
+\item{variable}{string with the name of the column in the 
+\code{attributes} object for which the statistic has to be computed.}
 
-\item{covariates}{an object of class \code{"\link[base]{data.frame}"} that 
-contains the exogenous covariates. Each row should refer to one actor. The 
-first column should contain the actor id (corresponding to the actor id's in 
-the edgelist). The second column refers to the time when covariates change 
-(set to zero if none of the covariates vary over time). Subsequent columns 
-contain the covariates that are called in the specifications of exogenous 
-statistics.}
+\item{attributes}{optionally, an object of class 
+\code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
+details).}
 }
 \description{
-Specifies the statistic for a same effect in the \code{formula} argument 
-of \code{\link{remstats}}.
+Specifies the statistic for a `same` effect in the \code{effects} 
+argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
+\code{\link{aomstats}}.
 }
 \details{
 A same effect refers to an exogenous actor attribute that affects dyad 
 \emph{(i,j)}'s rate of interacting based on whether they have the same value 
 (or not) on this attribute. The statistic at timepoint \emph{t} is equal to 
 one for dyads \emph{(i,j)} that have the same value on the attribute at 
-timepoint \emph{t} and equal to 0 for dyads that do not have the same value.
+timepoint \emph{t} and equal to 0 for dyads that do not have the same value. 
+
+The \code{attributes} object should be constructed as follows: Each row 
+refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
+`id` column is required that contains the actor id (corresponding to the 
+actor id's in the edgelist). A `time` column is required that contains the 
+time when attributes change (set to zero if none of the attributes vary over 
+time). Subsequent columns contain the attributes that are called in the 
+specifications of exogenous statistics. Alternatively, a dataframe with 
+attributes for all exogenous effects can be defined in the \code{attributes} 
+argument of \code{\link{tomstats}} or \code{\link{aomstats}}.
 }
 \examples{
-data(history)
-data(info)
-remstats(~ same(c("age", "sex"), info), edgelist = history)
+effects <- ~ same("age") 
+tomstats(effects, edgelist = history, attributes = info)
+aomstats(choiceEffects = effects, edgelist = history, attributes = info)
 
 }

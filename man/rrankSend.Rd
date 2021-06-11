@@ -2,33 +2,38 @@
 % Please edit documentation in R/effects.R
 \name{rrankSend}
 \alias{rrankSend}
-\alias{recency}
 \alias{recencyRank}
 \alias{rrank}
 \title{rrankSend}
 \usage{
-rrankSend(with_type = FALSE)
+rrankSend(consider_type = FALSE)
 }
 \arguments{
-\item{with_type}{logical value. If TRUE, ranks are created taking event 
-types into account. If FALSE (default), ranks are created regardless of the 
-event types of the dyads in the riskset.}
+\item{consider_type}{logical, indicates whether to determine the rank 
+separately for each event type (TRUE) or regardless of event types (FALSE, 
+default).}
 }
 \description{
 Specifies the statistic for a recency rank send effect in the 
-\code{formula} argument of \code{\link{remstats}}.
+\code{effects} argument of \code{\link{tomstats}} or the 
+\code{choiceEffects} argument of \code{\link{aomstats}}.
 }
 \details{
-The rrankSend effect refers to a rank-based recency effect, as in section 2.
-2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) the 
-statistic is equal to the inverse of the rank of receiver j among the actors 
-to which sender i has most recently send past events.
+The rrankSend effect refers to a rank-based recency effect, as described in 
+section 2.2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) 
+the statistic is equal to the inverse of the rank of receiver j among the 
+actors to which sender i has most recently send past events. Note that the 
+'rrankSend' effect is only defined for directed events.
 }
 \examples{
-data(history)
-remstats(~ rrankSend(), edgelist = history)
+effects <- ~ rrankSend()
+tomstats(effects, edgelist = history)
+aomstats(choiceEffects = effects, edgelist = history)
 
 }
 \seealso{
-\code{\link{rrankReceive}}
+\code{\link{rrankReceive}}, \code{\link{recencySendSender}}, 
+\code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}}, 
+\code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for 
+other type of recency effects
 }
