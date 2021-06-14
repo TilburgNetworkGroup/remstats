@@ -29,11 +29,13 @@ and `weight`. Alternatively, an object of class \code{"\link[remify]{reh}"}.}
 
 \item{sender_effects}{an object of class \code{"\link[stats]{formula}"} (or 
 one that can be coerced to that class): a symbolic description of the 
-effects in the sender activity rate step of the model}
+effects in the sender activity rate step of the actor-oriented model for 
+which statistics are computed, see `Details'}
 
 \item{receiver_effects}{an object of class \code{"\link[stats]{formula}"} 
 (or one that can be coerced to that class): a symbolic description of the 
-effects in the receiver choice step of model}
+effects in the receiver choice step of model for which statistics are 
+computed, see `Details'}
 
 \item{attributes}{optionally, an object of class 
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
@@ -69,8 +71,7 @@ event for which statistics are requested (see Details)}
 timepoints and on the columns the riskset entries}
 }
 \value{
-\code{edgelist } An object class \code{"\link[remify]{reh}"}, i.e., 
-the processed edgelist used for the computation of the statistics
+\code{edgelist } Dataframe with the edgelist
 
 \code{statistics  } List with in the first element the statistics 
 for the sender activity rate step and in the second element the statistics 

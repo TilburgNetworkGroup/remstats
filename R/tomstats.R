@@ -100,8 +100,7 @@
 #' potential edges) in the risk set and slices refer to statistics 
 #' @return \code{evls } Matrix with the edgelist, processed such that it can be 
 #' used to estimate a relational event model with \code{"\link[relevent]{rem}"} 
-#' @return \code{edgelist } An object class \code{"\link[remify]{reh}"}, i.e., 
-#' the processed edgelist used for the computation of the statistics
+#' @return \code{edgelist } Dataframe with the edgelist
 #' @return \code{adjmat } Matrix with the adjacency matrix, rows refer to 
 #' timepoints and columns to riskset entries
 #' 
