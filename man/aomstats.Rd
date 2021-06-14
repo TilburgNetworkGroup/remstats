@@ -6,8 +6,8 @@
 \usage{
 aomstats(
   edgelist,
-  rateEffects = NULL,
-  choiceEffects = NULL,
+  sender_effects = NULL,
+  receiver_effects = NULL,
   attributes = NULL,
   actors = NULL,
   types = NULL,
@@ -27,13 +27,13 @@ aomstats(
 sorted by time with columns `time`, `actor1`, `actor2` and optionally `type` 
 and `weight`. Alternatively, an object of class \code{"\link[remify]{reh}"}.}
 
-\item{rateEffects}{an object of class \code{"\link[stats]{formula}"} (or one 
-that can be coerced to that class): a symbolic description of the effects in 
-the rate model}
-
-\item{choiceEffects}{an object of class \code{"\link[stats]{formula}"} (or 
+\item{sender_effects}{an object of class \code{"\link[stats]{formula}"} (or 
 one that can be coerced to that class): a symbolic description of the 
-effects in the choice model}
+effects in the sender activity rate step of the model}
+
+\item{receiver_effects}{an object of class \code{"\link[stats]{formula}"} 
+(or one that can be coerced to that class): a symbolic description of the 
+effects in the receiver choice step of model}
 
 \item{attributes}{optionally, an object of class 
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
@@ -73,24 +73,26 @@ timepoints and on the columns the riskset entries}
 the processed edgelist used for the computation of the statistics
 
 \code{statistics  } List with in the first element the statistics 
-for the rate model and in the second element the statistics for the choice 
-model
+for the sender activity rate step and in the second element the statistics 
+for the receiver choice step
 
 \code{adjmat } Matrix with the adjacency matrix, rows refer to 
 timepoints and columns to riskset entries
 }
 \description{
-Computes statistics for the rate step and choice step in actor-oriented 
-relational event models (e.g., see Stadtfeld & Block, 2017).
+Computes statistics for the sender activity rate step and receiver choice 
+step in actor-oriented relational event models (e.g., see Stadtfeld & Block, 
+2017).
 }
 \details{
 The statistics to be computed are defined symbolically and should be 
-supplied to the \code{rateEffects} and/or \code{choiceEffects} arguments in 
-the form \code{~ effects}. The terms are separated by + operators. 
-Interactions between two effects can be included with * or : operators. 
+supplied to the \code{sender_effects} and/or \code{receiver_effects} 
+arguments in the form \code{~ effects}. The terms are separated by + 
+operators. Interactions between two effects can be included with * or : 
+operators. 
 
 A list of available effects and their corresponding statistics for the 
-\emph{rate} step: 
+\emph{sender activity rate} step: 
 \itemize{
  \item \code{\link{baseline}()}
  \item \code{\link{send}()}
@@ -102,7 +104,7 @@ A list of available effects and their corresponding statistics for the
 }
 
 A list of available effects and their corresponding statistics for the 
-\emph{choice} step: 
+\emph{receiver choice} step: 
 \itemize{
  \item \code{\link{receive}()}
  \item \code{\link{tie}()}
@@ -133,7 +135,7 @@ time when attributes change (set to zero if none of the attributes vary over
 time). Subsequent columns contain the attributes that are called in the 
 specifications of exogenous statistics. Alternatively, a 
 dataframe with attributes can be defined in the separate effect functions 
-supplied to the \code{rateEffects} or \code{choiceEffects} argument.
+supplied to the \code{sender_effects} or \code{receiver_effects} argument.
 
 Optionally, statistics can be computed for a slice of the edgelist - but 
 based on the entire history. This is achieved by setting the start and 
@@ -144,9 +146,9 @@ consists of events 1-4.
 }
 \examples{
 library(remstats)
-rateEffects <- ~ send("extraversion")
-choiceEffects <- ~ receive("agreeableness") + inertia() + otp()
-aomstats(edgelist = history, rateEffects, choiceEffects, 
+seff <- ~ send("extraversion")
+reff <- ~ receive("agreeableness") + inertia() + otp()
+aomstats(edgelist = history, sender_effects = seff, receiver_effects = reff, 
  attributes = info)
 
 

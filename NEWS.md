@@ -1,3 +1,10 @@
+# remstats 2.0.1
+
+* Changed `aomstats()` function arguments that refer to the requested effects: `sender_effects` (was `rateEffects`) and `receiver_effects` (was `choiceEffects`). 
+* Changed names of the `aomstats()` `statistics` List output object to `sender_stats` (was `rate`) and `receiver_stats` (was `choice`). 
+* Updated package description. 
+
+
 # remstats 2.0.0
 
 * Added a `NEWS.md` file to track changes to the package.

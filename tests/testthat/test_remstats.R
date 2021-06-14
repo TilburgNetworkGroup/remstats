@@ -18,11 +18,11 @@ test_that("output tomstats", {
 })
 
 test_that("output aomstats", {
-	out <- aomstats(rateEffects = ~ send("extraversion"), 
-		choiceEffects = ~ inertia(), edgelist = history[,c(1:3)], attributes = info)
+	out <- aomstats(sender_effects = ~ send("extraversion"), 
+		receiver_effects = ~ inertia(), edgelist = history[,c(1:3)], attributes = info)
 	
-	rstats <- out$statistics$rate
-	cstats <- out$statistics$choice
+	rstats <- out$statistics$sender_stats
+	cstats <- out$statistics$receiver_stats
 	edgelist <- out$edgelist
 	riskset <- out$riskset
 	adjmat <- out$adjmat

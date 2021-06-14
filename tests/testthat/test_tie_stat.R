@@ -15,7 +15,7 @@ test_that("tie effect", {
 	
 	effects <- ~ tie(bothOld, variableName = "both.old")
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	aomres <- aomstats(receiver_effects = effects, edgelist = history)
 	
 	dyads <- which(tomres$riskset[,1] %in% actors[age == 1] & 
 			tomres$riskset[,2] %in% actors[age == 1])
@@ -25,15 +25,15 @@ test_that("tie effect", {
 	
 	events <- which(aomres$edgelist$actor1 %in% actors[age == 1])
 	receivers <- which(age==1)
-	expect_true(all(aomres$statistics$choice[events, receivers,]==1))
+	expect_true(all(aomres$statistics$receiver_stats[events, receivers,]==1))
 	
 	# Standardized scaling
 	effects <- ~ tie(bothOld, variableName = "both.old", scaling = "std")
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	aomres <- aomstats(receiver_effects = effects, edgelist = history)
 	
 	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(tomres$edgelist)))
-	expect_equal(rowMeans(aomres$statistics$choice), rep(0, nrow(aomres$edgelist)))
+	expect_equal(rowMeans(aomres$statistics$receiver_stats), rep(0, nrow(aomres$edgelist)))
 })
 
 

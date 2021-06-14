@@ -5,7 +5,7 @@ test_that("recencyContinue", {
 	
 	effects <- ~ recencyContinue()
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history, choiceEffects = effects)
+	aomres <- aomstats(edgelist = history, receiver_effects = effects)
 	
 	event <- 9
 	expect_equal(sapply(1:nrow(history), function(m) {
@@ -23,7 +23,7 @@ test_that("recencyContinue", {
 	receivers <- sort(unique(tomres$riskset$actor2))
 	receiver <- match(tomres$riskset$actor2[9], receivers)
 	events <- which(history$actor1 == sender)
-	expect_true(all(aomres$statistics$choice[events,10,] %in% 
+	expect_true(all(aomres$statistics$receiver_stats[events,10,] %in% 
 			tomres$statistics[,9,2]))
 	
 	colnames(history)[4] <- "type"
@@ -46,7 +46,7 @@ test_that("recencySendSender", {
 	
 	effects <- ~ recencySendSender()
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history, rateEffects = effects)
+	aomres <- aomstats(edgelist = history, sender_effects = effects)
 	
 	event <- 9
 	expect_equal(sapply(1:nrow(history), function(m) {
@@ -62,7 +62,7 @@ test_that("recencySendSender", {
 	
 	senders <- sort(unique(tomres$riskset$actor1))
 	sender <- match(tomres$riskset$actor1[9], senders)
-	expect_true(all(aomres$statistics$rate[,sender,2] %in% 
+	expect_true(all(aomres$statistics$sender_stats[,sender,2] %in% 
 			tomres$statistics[,9,2]))
 	
 	colnames(history)[4] <- "type"
@@ -86,7 +86,7 @@ test_that("recencySendReceiver", {
 	
 	effects <- ~ recencySendReceiver()
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history, choiceEffects = effects)
+	aomres <- aomstats(edgelist = history, receiver_effects = effects)
 	
 	event <- 9
 	expect_equal(sapply(1:nrow(history), function(m) {
@@ -102,7 +102,7 @@ test_that("recencySendReceiver", {
 	
 	receivers <- sort(unique(tomres$riskset$actor2))
 	receiver <- match(tomres$riskset$actor2[9], receivers)
-	expect_true(all(aomres$statistics$choice[,receiver,1] %in% 
+	expect_true(all(aomres$statistics$receiver_stats[,receiver,1] %in% 
 			tomres$statistics[,9,2]))
 	
 	colnames(history)[4] <- "type"
@@ -126,7 +126,7 @@ test_that("recencyReceiveSender", {
 	
 	effects <- ~ recencyReceiveSender()
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history, rateEffects = effects)
+	aomres <- aomstats(edgelist = history, sender_effects = effects)
 	
 	event <- 9
 	expect_equal(sapply(1:nrow(history), function(m) {
@@ -142,7 +142,7 @@ test_that("recencyReceiveSender", {
 	
 	senders <- sort(unique(tomres$riskset$actor1))
 	sender <- match(tomres$riskset$actor1[9], senders)
-	expect_true(all(aomres$statistics$rate[,sender,2] %in% 
+	expect_true(all(aomres$statistics$sender_stats[,sender,2] %in% 
 			tomres$statistics[,9,2]))
 	
 	colnames(history)[4] <- "type"
@@ -166,7 +166,7 @@ test_that("recencyReceiveReceiver", {
 	
 	effects <- ~ recencyReceiveReceiver()
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history, choiceEffects = effects)
+	aomres <- aomstats(edgelist = history, receiver_effects = effects)
 	
 	event <- 9
 	expect_equal(sapply(1:nrow(history), function(m) {
@@ -182,7 +182,7 @@ test_that("recencyReceiveReceiver", {
 	
 	receivers <- sort(unique(tomres$riskset$actor2))
 	receiver <- match(tomres$riskset$actor2[9], receivers)
-	expect_true(all(aomres$statistics$choice[,receiver,1] %in% 
+	expect_true(all(aomres$statistics$receiver_stats[,receiver,1] %in% 
 			tomres$statistics[,9,2]))
 	
 	colnames(history)[4] <- "type"
