@@ -15,7 +15,7 @@ default).}
 \description{
 Specifies the statistic for a recency continue effect in the 
 \code{effects} argument of \code{\link{tomstats}} or the 
-\code{choiceEffects} argument of \code{\link{aomstats}}.
+\code{receiver_effects} argument of \code{\link{aomstats}}.
 }
 \details{
 The recencyContinue effect refers to a recency statistic similar to what is 
@@ -26,7 +26,7 @@ that has past since the dyad was last active + 1).
 \examples{
 effects <- ~ recencyContinue()
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }
 \seealso{

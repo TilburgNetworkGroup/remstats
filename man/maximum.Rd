@@ -19,8 +19,7 @@ the statistic but keep it "as.is". Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 }
 \description{
-Specifies the statistic for a `maximum` effect in the \code{effects} 
-argument of \code{\link{tomstats}}.
+Specifies the statistic for a `maximum` effect in the tie-oriented model.
 }
 \details{
 A maximum effect refers to an exogenous actor attribute that affects dyad 
@@ -37,10 +36,12 @@ time when attributes change (set to zero if none of the attributes vary over
 time). Subsequent columns contain the attributes that are called in the 
 specifications of exogenous statistics. Alternatively, a dataframe with 
 attributes for all exogenous effects can be defined in the \code{attributes} 
-argument of \code{\link{tomstats}}.
+argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+\code{\link{aomstats}}.
 }
 \examples{
 effects <- ~ maximum("extraversion") 
+remstats(edgelist = history, tie_effects = effects, attributes = info)
 tomstats(effects, edgelist = history, attributes = info)
 
 }

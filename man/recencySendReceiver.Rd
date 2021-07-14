@@ -14,7 +14,7 @@ default).}
 \description{
 Specifies the statistic for a recency send of receiver effect in the 
 \code{effects} argument of \code{\link{tomstats}} or the 
-\code{choiceEffects} argument of \code{\link{aomstats}}.
+\code{receiver_effects} argument of \code{\link{aomstats}}.
 }
 \details{
 The recencySendReceiver effect refers to a recency statistic similar to what 
@@ -26,7 +26,7 @@ that has past since receiver j was last active as sender + 1). Note that the
 \examples{
 effects <- ~ recencySendReceiver()
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }
 \seealso{

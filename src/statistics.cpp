@@ -922,8 +922,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
                     double count1 = adjmat(t, arrow1);
                     double count2 = adjmat(t, arrow2);
                     if(type == 6) {
-                        if(count1 > 1) {count1 = 1;}
-                        if(count2 > 1) {count2 = 1;}
+                        if(count1 > 0) {count1 = 1;}
+                        if(count2 > 0) {count2 = 1;}
                     }
                     arma::vec count = {count1, count2};
                     stat(t, d) += min(count);
@@ -996,8 +996,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
                     double count1 = arma::sum(adjmatrow(arrow1U));
                     double count2 = arma::sum(adjmatrow(arrow2U));
                     if(type == 6) {
-                        if(count1 > 1) {count1 = 1;}
-                        if(count2 > 1) {count2 = 1;}
+                        if(count1 > 0) {count1 = 1;}
+                        if(count2 > 0) {count2 = 1;}
                     }
                     arma::vec count = {count1, count2};
                     stat(t, d) += arma::min(count);

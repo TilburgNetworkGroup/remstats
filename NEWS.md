@@ -1,9 +1,12 @@
 # remstats 2.0.1
 
+* Added the `remstats()` function, which is a wrapper for `aomstats()` and `tomstats()`. 
 * Changed `aomstats()` function arguments that refer to the requested effects: `sender_effects` (was `rateEffects`) and `receiver_effects` (was `choiceEffects`). 
 * Changed names of the `aomstats()` `statistics` List output object to `sender_stats` (was `rate`) and `receiver_stats` (was `choice`). 
-* Updated package description. 
-* Fixed some errors in the documentation.
+* Updated package description.
+* Updated functions documentation. 
+* Fixed bug in computation "spUnique" effect (was affected by event weights). 
+* Added variableName tie to dimnames statistics object.  
 
 # remstats 2.0.0
 

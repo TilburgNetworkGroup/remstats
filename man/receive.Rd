@@ -19,9 +19,8 @@ the statistic but keep it "as.is". Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 }
 \description{
-Specifies the statistic for a `receive` effect in the \code{effects} 
-argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-\code{\link{aomstats}}.
+Specifies the statistic for a `receive` effect in the tie-oriented model or 
+the receiver choice step of the actor-oriented model.
 }
 \details{
 A receive effect refers to an exogenous actor attribute that affects actor 
@@ -38,11 +37,14 @@ time when attributes change (set to zero if none of the attributes vary over
 time). Subsequent columns contain the attributes that are called in the 
 specifications of exogenous statistics. Alternatively, a dataframe with 
 attributes for all exogenous effects can be defined in the \code{attributes} 
-argument of \code{\link{tomstats}} or \code{\link{aomstats}}.
+argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+\code{\link{aomstats}}.
 }
 \examples{
 effects <- ~ receive("extraversion") 
+remstats(edgelist = history, tie_effects = effects, attributes = info)
+remstats(edgelist = history, receiver_effects = effects, attributes = info)
 tomstats(effects, edgelist = history, attributes = info)
-aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 
 }

@@ -14,7 +14,7 @@ default).}
 \description{
 Specifies the statistic for a recency rank receive effect in the 
 \code{effects} argument of \code{\link{tomstats}} or the 
-\code{choiceEffects} argument of \code{\link{aomstats}}.
+\code{receiver_effects} argument of \code{\link{aomstats}}.
 }
 \details{
 The rrankSend effect refers to a rank-based recency effect, as described in 
@@ -26,7 +26,7 @@ the 'rrankReceive' effect is only defined for directed events.
 \examples{
 effects <- ~ rrankReceive()
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }
 \seealso{

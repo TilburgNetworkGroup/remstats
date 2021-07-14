@@ -20,13 +20,14 @@ types (FALSE, default).}
 }
 \description{
 Specifies the statistic for an `totaldegreeSender` effect in the 
-\code{effects} argument of \code{\link{tomstats}} or the \code{rateEffects} 
-argument of \code{\link{aomstats}}.
+tie-oriented model or the sender activity rate step of the actor-oriented 
+model.
 }
 \details{
 A total degree of the sender effect refers to the tendency for actors to 
 send events if they have send and received more past events. The statistic 
-at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
+at timepoint \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or sender 
+\emph{i} (actor-oriented model) is equal to the number of events 
 send and received by actor \emph{i} before timepoint \emph{t}. Note that the 
 'totaldegreeSender' effect is only defined for directed events.
 
@@ -39,8 +40,10 @@ set equal to 1/n, where n refers to the number of actors.
 }
 \examples{
 effects <- ~ totaldegreeSender()
+remstats(edgelist = history, tie_effects = effects)
+remstats(edgelist = history, sender_effects = effects)
 tomstats(effects, edgelist = history)
-aomstats(rateEffects = effects, edgelist = history)
+aomstats(sender_effects = effects, edgelist = history)
 
 }
 \seealso{

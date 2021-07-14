@@ -15,16 +15,21 @@ same(variable, attributes = NULL)
 details).}
 }
 \description{
-Specifies the statistic for a `same` effect in the \code{effects} 
-argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-\code{\link{aomstats}}.
+Specifies the statistic for a `same` effect in the tie-oriented model or the 
+receiver choice step of the actor-oriented model.
 }
 \details{
-A same effect refers to an exogenous actor attribute that affects dyad 
-\emph{(i,j)}'s rate of interacting based on whether they have the same value 
-(or not) on this attribute. The statistic at timepoint \emph{t} is equal to 
-one for dyads \emph{(i,j)} that have the same value on the attribute at 
-timepoint \emph{t} and equal to 0 for dyads that do not have the same value. 
+A `same` effect refers to an exogenous actor attribute that affects dyad 
+\emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s  
+probability of being chosen as a receiver for the event send by the active 
+sender \emph{i} at time \emph{t} (actor-oriented model) based on whether 
+actors \emph{i} and \emph{j} have the same value (or not) on this attribute. 
+The statistic at timepoint \emph{t} is equal to one for dyads \emph{(i,j)} 
+that have the same value on the attribute at timepoint \emph{t} 
+(tie-oriented model) or one for receivers \emph{j} that have the same value 
+on the attribute as the active sender \emph{i} at timepoint \emph{t} 
+(actor-oriented model) and equal to 0 for dyads resp. receivers that do not 
+have the same value. 
 
 The \code{attributes} object should be constructed as follows: Each row 
 refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
@@ -34,11 +39,14 @@ time when attributes change (set to zero if none of the attributes vary over
 time). Subsequent columns contain the attributes that are called in the 
 specifications of exogenous statistics. Alternatively, a dataframe with 
 attributes for all exogenous effects can be defined in the \code{attributes} 
-argument of \code{\link{tomstats}} or \code{\link{aomstats}}.
+argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+\code{\link{aomstats}}.
 }
 \examples{
 effects <- ~ same("age") 
+remstats(edgelist = history, tie_effects = effects, attributes = info)
+remstats(edgelist = history, receiver_effects = effects, attributes = info)
 tomstats(effects, edgelist = history, attributes = info)
-aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 
 }

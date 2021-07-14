@@ -18,8 +18,7 @@ types (FALSE, default).}
 }
 \description{
 Specifies the statistic for an incoming shared partners effect in the 
-\code{effects} argument of \code{\link{tomstats}} or the 
-\code{choiceEffects} argument of \code{\link{aomstats}}.
+tie-oriented model or the receiver choice step of the actor-oriented model.
 }
 \details{
 An incoming shared partners effect refers to the tendency of dyads to 
@@ -31,8 +30,10 @@ that an 'isp' effect is only defined for directed events.
 }
 \examples{
 effects <- ~ isp()
+remstats(edgelist = history, tie_effects = effects)
+remstats(edgelist = history, receiver_effects = effects)
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }
 \seealso{

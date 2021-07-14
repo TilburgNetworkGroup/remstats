@@ -27,16 +27,18 @@ statistic per time point can be requested with "std".}
 should be converted to the absolute difference}
 }
 \description{
-Specifies the statistic for a `difference` effect in the \code{effects} 
-argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-\code{\link{aomstats}}.
+Specifies the statistic for a `difference` effect in the tie-oriented model 
+or the receiver choice step of the actor-oriented model.
 }
 \details{
 A difference effect refers to an exogenous actor attribute that affects dyad 
-\emph{(i,j)}'s rate of interacting based on the difference between their 
-values on this attribute. The statistic at timepoint \emph{t} for dyad 
-\emph{(i,j)} is equal to the absolute difference between the values of actor 
-\emph{i} and \emph{j} on the attribute at timepoint \emph{t}.  
+\emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s  
+probability of being chosen as a receiver for the event send by the active 
+sender \emph{i} at time \emph{t} (actor-oriented model) based on the 
+difference between the values of actors \emph{i} and \emph{j} on this 
+attribute. The statistic at timepoint \emph{t} is equal to the (absolute)
+difference between the values of actor \emph{i} and \emph{j} on the att
+ribute at timepoint \emph{t}.  
 
 The \code{attributes} object should be constructed as follows: Each row 
 refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
@@ -46,11 +48,14 @@ time when attributes change (set to zero if none of the attributes vary over
 time). Subsequent columns contain the attributes that are called in the 
 specifications of exogenous statistics. Alternatively, a dataframe with 
 attributes for all exogenous effects can be defined in the \code{attributes} 
-argument of \code{\link{tomstats}} or \code{\link{aomstats}}.
+argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+\code{\link{aomstats}}.
 }
 \examples{
 effects <- ~ difference("extraversion", absolute = TRUE) 
+remstats(edgelist = history, tie_effects = effects, attributes = info)
+remstats(edgelist = history, receiver_effects = effects, attributes = info)
 tomstats(effects, edgelist = history, attributes = info)
-aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 
 }

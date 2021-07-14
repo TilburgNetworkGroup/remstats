@@ -17,9 +17,8 @@ separately for each event type (TRUE) or sum across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an incoming two-path effect in the 
-\code{effects} argument of \code{\link{tomstats}} or the 
-\code{choiceEffects} argument of \code{\link{aomstats}}.
+Specifies the statistic for an incoming two-path effect in the tie-oriented 
+model or the receiver choice step of the actor-oriented model.
 }
 \details{
 An incomping two-path effect refers to the tendency of dyads to interact if 
@@ -31,8 +30,10 @@ Optionally, a scaling method can be set with \code{scaling}. Note that an
 }
 \examples{
 effects <- ~ itp()
+remstats(edgelist = history, tie_effects = effects)
+remstats(edgelist = history, receiver_effects = effects)
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }
 \seealso{

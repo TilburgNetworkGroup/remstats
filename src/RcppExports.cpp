@@ -9,6 +9,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // find_dyad
 int find_dyad(int i, int j, int c, int N, bool directed);
 static SEXP _remstats_find_dyad_try(SEXP iSEXP, SEXP jSEXP, SEXP cSEXP, SEXP NSEXP, SEXP directedSEXP) {

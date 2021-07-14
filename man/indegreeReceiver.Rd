@@ -18,14 +18,14 @@ separately for each event type (TRUE) or sum degrees across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an `indegreeReceiver` effect in the 
-\code{effects} argument of \code{\link{tomstats}} or the 
-\code{choiceEffects} argument of \code{\link{aomstats}}.
+Specifies the statistic for an `indegreeReceiver` effect in the tie-oriented 
+model or the receiver choice step of the actor-oriented model.
 }
 \details{
 An indegree of the receiver effect refers to the tendency for actors to 
 receive events if they have received more past events. The statistic at 
-timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
+timepoint \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or 
+receiver \emph{j} (actor-oriented model) is equal to the number of events 
 received by actor \emph{j} before timepoint \emph{t}. Note that the 
 'indegreeReceiver' effect is only defined for directed events. 
 
@@ -38,8 +38,10 @@ n, where n refers to the number of actors.
 }
 \examples{
 effects <- ~ indegreeReceiver()
+remstats(edgelist = history, tie_effects = effects)
+remstats(edgelist = history, receiver_effects = effects)
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }
 \seealso{

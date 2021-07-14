@@ -18,15 +18,15 @@ reciprocal events separately for each event type (TRUE) or sum across
 different event types (FALSE, default).}
 }
 \description{
-Specifies the statistic for a reciprocity effect in the \code{effects} 
-argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-\code{\link{aomstats}}.
+Specifies the statistic for a reciprocity effect in the tie-oriented model 
+or the receiver choice step of the actor-oriented model.
 }
 \details{
 A reciprocity effect refers to the tendency for actors to reciprocate past 
-interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
-equal to the number of \emph{(j,i)} events before timepoint \emph{t}. Note 
-that a reciprocity effect is only defined for directed events. 
+interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} 
+(tie-oriented model) or receiver \emph{j} (actor-oriented model) is equal to 
+the number of \emph{(j,i)} events before timepoint \emph{t}. Note that a 
+reciprocity effect is only defined for directed events. 
 
 Optionally, a scaling method can be set with \code{scaling}.  By scaling the 
 reciprocity count by the indegree of the sender, the statistic refers to the 
@@ -38,7 +38,9 @@ statistic is similar to the "FrRecSnd" statistic in the R package relevent.
 }
 \examples{
 effects <- ~ reciprocity()
+remstats(edgelist = history, tie_effects = effects)
+remstats(edgelist = history, receiver_effects = effects)
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }

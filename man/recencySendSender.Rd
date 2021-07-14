@@ -13,7 +13,7 @@ default).}
 }
 \description{
 Specifies the statistic for a recency send of sender effect in the 
-\code{effects} argument of \code{\link{tomstats}} or the \code{rateEffects} 
+\code{effects} argument of \code{\link{tomstats}} or the \code{sender_effects} 
 argument of \code{\link{aomstats}}.
 }
 \details{
@@ -26,7 +26,7 @@ that has past since sender i was last active as sender + 1). Note that the
 \examples{
 effects <- ~ recencySendSender()
 tomstats(effects, edgelist = history)
-aomstats(rateEffects = effects, edgelist = history)
+aomstats(sender_effects = effects, edgelist = history)
 
 }
 \seealso{
