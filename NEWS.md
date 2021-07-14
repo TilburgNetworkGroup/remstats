@@ -7,6 +7,7 @@
 * Updated functions documentation. 
 * Fixed bug in computation "spUnique" effect (was affected by event weights). 
 * Added variableName tie to dimnames statistics object.  
+* Fixed bug in computation "event" effect in combination with windowed memory (covariates object was not sliced). 
 
 # remstats 2.0.0
 

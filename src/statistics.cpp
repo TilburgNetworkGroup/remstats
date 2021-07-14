@@ -1845,12 +1845,15 @@ arma::mat event_tie(const arma::mat& covariates, const arma::mat& edgelist,
     // Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
 
+    // Slice the covariates according to "start" and "stop"
+    arma::mat covS = covariates.rows(start, stop);
+
 	// Initialize saving space 
 	arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
 
     // For loop over dyads
     for(arma::uword i = 0; i < riskset.n_rows; ++i) {
-        stat.col(i) = covariates.col(0);
+        stat.col(i) = covS.col(0);
     }
 
     //Output
