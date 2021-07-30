@@ -7,10 +7,12 @@
 ## Major changes 
 * Changed the specification of the variable in the `event()` effect. 
 
+## Minor changes
+* Updated computation procedure for triadic statistics for greater efficiency and less computation time. 
+
 ## To do
 * rrank efficiency
 * triad efficiency
-* event variable: does not match with remify::reh input
 
 # remstats 2.0.1
 

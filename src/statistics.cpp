@@ -849,165 +849,182 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
 // 
 // [[Rcpp::export]]
 arma::mat triad_tie(int type, const arma::mat& edgelist, 
-    const arma::vec& actors, const arma::vec& types, const arma::mat& adjmat, 
-    const arma::mat& riskset,int start, int stop, bool consider_type) {
-
-    // Slice the edgelist according to "start" and "stop"
+	const arma::vec& actors, const arma::vec& types, const arma::mat& adjmat, 
+	const arma::mat& riskset, int start, int stop, bool consider_type) {
+	
+	// Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
-
+	
 	// Initialize saving space
 	arma::mat stat(slice.n_rows, adjmat.n_cols, arma::fill::zeros);
+	
+	// New adjmat with only zeros and ones 
+    arma::mat new_adjmat = adjmat;
 
-    if(consider_type) {
-        // For loop over dyads
-        for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
-            // Sender i, receiver j and event type c
-            int i = riskset(d,0);
-            int j = riskset(d,1);
-            int c = riskset(d,2);
-            
-            // For loop over actors h
-            for(arma::uword h = 0; h < actors.n_elem; ++h) {
-                if((h == i) || (h == j)) {continue;}
-
-                // Saving space
-                int arrow1; int arrow2;
-                
-                // otp
-                if(type == 1) {
-                    // arrow1 = sender i sends to actor h
-                    arrow1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
-                    // arrow2 = actor h sends to receiver j
-                    arrow2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
+	if(type == 6) {
+		for(arma::uword i = 0; i < adjmat.n_rows; ++i) {
+			for(arma::uword j = 0; j < adjmat.n_cols; ++j) {
+				if(adjmat(i,j) > 0) {
+                    new_adjmat(i,j) = 1;
+                } else {
+                    new_adjmat(i,j) = 0;
                 }
+			}
+		}
+	}
+	
+	if(consider_type) {
+		// For loop over dyads
+		for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
+			// Sender i, receiver j and event type c
+			int i = riskset(d,0);
+			int j = riskset(d,1);
+			int c = riskset(d,2);
+			
+			// For loop over actors h
+			for(arma::uword h = 0; h < actors.n_elem; ++h) {
+				if((h == i) || (h == j)) {continue;}
+				
+				// Saving space
+				int a1; int a2;
+				arma::colvec c1(edgelist.n_rows);
+				arma::colvec c2(edgelist.n_rows);
+				
+				// otp
+				if(type == 1) {
+					// arrow1 = sender i sends to actor h
+					a1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
+					// arrow2 = actor h sends to receiver j
+					a2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
+				}
+				
+				// itp
+				if(type == 2) {
+					// arrow1 = actor h sends to sender i
+					a1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
+					// arrow2 = receiver j sends to actor h
+					a2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
+				}
+				
+				// osp
+				if(type == 3) {
+					// arrow1 = sender i sends to actor h
+					a1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
+					// arrow2 = receiver j sends to actor h
+					a2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
+				}
+				
+				// isp
+				if(type == 4) {
+					// arrow1 = actor h sends to sender i
+					a1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
+					// arrow2 = actor h sends to receiver j
+					a2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
+				}
+				
+				// sp or spUnique
+				if((type == 5) || (type == 6)) {
+					// arrow1 = actor h sends to sender i OR sender i sends to 
+					// actor h (undirected events, only one exists) ~ corrected 
+					// for by setting directed = FALSE
+					a1 = find_dyad(actors(h), i, c, actors.n_elem, FALSE);
+					
+					// arrow2 = receiver j sends to actor h OR actor h sends to 
+					// receiver j (undirected events, only one exists)
+					a2 = find_dyad(actors(h), j, c, actors.n_elem, FALSE);
+				}
 
-                // itp
-                if(type == 2) {
-                    // arrow1 = actor h sends to sender i
-                    arrow1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
-                    // arrow2 = receiver j sends to actor h
-                    arrow2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
+                if(type == 6) {
+                    c1 += new_adjmat.col(a1);
+				    c2 += new_adjmat.col(a2);
+                } else {
+                    c1 += adjmat.col(a1);
+				    c2 += adjmat.col(a2);
                 }
-
-                // osp
-                if(type == 3) {
-                    // arrow1 = sender i sends to actor h
-                    arrow1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
-                    // arrow2 = receiver j sends to actor h
-                    arrow2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
-                }
-
-                // isp
-                if(type == 4) {
-                    // arrow1 = actor h sends to sender i
-                    arrow1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
-                    // arrow2 = actor h sends to receiver j
-                    arrow2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
-                }
-
-                // sp or spUnique
-                if((type == 5) || (type == 6)) {
-                    // arrow1 = actor h sends to sender i OR sender i sends to 
-                    // actor h (undirected events, only one exists) ~ corrected 
-                    // for by setting directed = FALSE
-                    arrow1 = find_dyad(actors(h), i, c, actors.n_elem, FALSE);
-
-                    // arrow2 = receiver j sends to actor h OR actor h sends to 
-                    // receiver j (undirected events, only one exists)
-                    arrow2 = find_dyad(actors(h), j, c, actors.n_elem, FALSE);
-                }
-
-                // For loop over timepoints
-                for(arma::uword t = 0; t < slice.n_rows; ++t) {
-                    double count1 = adjmat(t, arrow1);
-                    double count2 = adjmat(t, arrow2);
-                    if(type == 6) {
-                        if(count1 > 0) {count1 = 1;}
-                        if(count2 > 0) {count2 = 1;}
+				
+				stat.col(d) += min(c1, c2);
+			}
+		}
+	} else {
+		// For loop over dyads
+		for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
+			// Sender i and receiver j 
+			int i = riskset(d,0);
+			int j = riskset(d,1);
+			
+			// For loop over actors h
+			for(arma::uword h = 0; h < actors.n_elem; ++h) {
+				if((h == i) || (h == j)) {continue;}
+				
+				arma::colvec c1(edgelist.n_rows);
+				arma::colvec c2(edgelist.n_rows);
+				
+				// For loop over event types
+				for(arma::uword c = 0; c < types.n_elem; ++c) {
+					
+					int a1 = 0;
+					int a2 = 0;
+					
+					// otp
+					if(type == 1) {
+						// arrow1 = sender i sends to actor h
+						a1 = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
+						// arrow2 = actor h sends to receiver j
+						a2 = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
+					}
+					
+					// itp
+					if(type == 2) {
+						// arrow1 = actor h sends to sender i
+						a1 = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
+						// arrow2 = receiver j sends to actor h
+						a2 = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
+					}
+					
+					// osp
+					if(type == 3) {
+						// arrow1 = sender i sends to actor h
+						a1 = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
+						// arrow2 = receiver j sends to actor h
+						a2 = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
+					}
+					
+					// isp
+					if(type == 4) {
+						// arrow1 = actor h sends to sender i
+						a1 = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
+						// arrow2 = actor h sends to receiver j
+						a2 = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
+					}
+					
+					// sp or spUnique
+					if((type == 5) || (type == 6)) {
+						a1 = find_dyad(actors(h),i,c,actors.n_elem,FALSE);
+						a2 = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
+					}
+					
+					// sp or spUnique
+					if((type == 5) || (type == 6)) {
+						a1 = find_dyad(actors(h),i,c,actors.n_elem,FALSE);
+						a2 = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
+					}
+					
+					if(type == 6) {
+                        c1 += new_adjmat.col(a1);
+                        c2 += new_adjmat.col(a2);
+                    } else {
+                        c1 += adjmat.col(a1);
+                        c2 += adjmat.col(a2);
                     }
-                    arma::vec count = {count1, count2};
-                    stat(t, d) += min(count);
-                }
-            }
-        }
-    } else {
-        // For loop over dyads
-        for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
-            // Sender i and receiver j 
-            int i = riskset(d,0);
-            int j = riskset(d,1);
-            
-            // For loop over actors h
-            for(arma::uword h = 0; h < actors.n_elem; ++h) {
-                if((h == i) || (h == j)) {continue;}
-
-                // Saving space
-                arma::vec arrow1(types.n_elem); 
-                arma::vec arrow2(types.n_elem);
-
-                // For loop over event types
-                for(arma::uword c = 0; c < types.n_elem; ++c) {
-                                        
-                    // otp
-                    if(type == 1) {
-                        // arrow1 = sender i sends to actor h
-                        arrow1(c) = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
-                        // arrow2 = actor h sends to receiver j
-                        arrow2(c) = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
-                    }
-
-                    // itp
-                    if(type == 2) {
-                        // arrow1 = actor h sends to sender i
-                        arrow1(c) = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
-                        // arrow2 = receiver j sends to actor h
-                        arrow2(c) = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
-                    }
-
-                    // osp
-                    if(type == 3) {
-                        // arrow1 = sender i sends to actor h
-                        arrow1(c) = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
-                        // arrow2 = receiver j sends to actor h
-                        arrow2(c) = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
-                    }
-
-                    // isp
-                    if(type == 4) {
-                        // arrow1 = actor h sends to sender i
-                        arrow1(c) = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
-                        // arrow2 = actor h sends to receiver j
-                        arrow2(c) = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
-                    }
-
-                    // sp or spUnique
-                    if((type == 5) || (type == 6)) {
-                        arrow1(c) = find_dyad(actors(h),i,c,actors.n_elem,FALSE);
-                        arrow2(c) = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
-                    }
-                }
-
-                arma::uvec arrow1U = arma::conv_to<arma::uvec>::from(arrow1);
-                arma::uvec arrow2U = arma::conv_to<arma::uvec>::from(arrow2);
-
-                // For loop over timepoints
-                for(arma::uword t = 0; t < slice.n_rows; ++t) {
-                    arma::rowvec adjmatrow = adjmat.row(t);
-                    double count1 = arma::sum(adjmatrow(arrow1U));
-                    double count2 = arma::sum(adjmatrow(arrow2U));
-                    if(type == 6) {
-                        if(count1 > 0) {count1 = 1;}
-                        if(count2 > 0) {count2 = 1;}
-                    }
-                    arma::vec count = {count1, count2};
-                    stat(t, d) += arma::min(count);
-                }     
-            }
-        }          
-    }     
-
-    // Output the computed stat
-    return stat;
+				}
+				
+				stat.col(d) += min(c1, c2);
+			}
+		}          
+	}     
+	
+	// Output the computed stat
+	return stat;
 }
 
 // pshift_tie

@@ -421,8 +421,8 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         statistics = statistics, 
         edgelist = edgelist,
         riskset = riskset, 
-        actors = actors[,2],
-        types = types[,2],
+        actors = actors[,1],
+        types = types[,1],
         evls = evls[(start+1):(stop+1),],
         adjmat = adjmat
     )
