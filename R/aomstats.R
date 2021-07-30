@@ -50,13 +50,14 @@
 #' these affect the endogenous statistics. These settings are defined globally 
 #' in the \code{aomstats} function and affect the computation of all endogenous 
 #' statistics with the following exceptions (that follow logically from their 
-#' definition). Since the recency-rank statistics (rrankSend, rrankReceive) 
-#' depend on the ranking of past events, and the recency statistics 
-#' (recencyContinue, recencySendSender, recencySendReceiver, 
-#' recencyReceiveSender, recencyReceiveReceiver) depend on the time past, the 
-#' computation of these statistics do not depend on event weights and are 
-#' therefore affected by "window" memory but not by "Brandes" memory or 
-#' supplied event weights. 
+#' definition). Since the recency statistics (recencyContinue, 
+#' recencySendSender, recencySendReceiver, recencyReceiveSender, 
+#' recencyReceiveReceiver) depend on the time past, the computation of these 
+#' statistics do not depend on event weights and are therefore affected by 
+#' "window" memory but not by "Brandes" memory or supplied event weights. The 
+#' recency-rank statistics (rrankSend, rrankReceive) are (for now) only 
+#' available with the "full" memory, and are, per definition, not affected by 
+#' supplied event weights.  
 #' 
 #' Optionally, statistics can be computed for a slice of the edgelist - but 
 #' based on the entire history. This is achieved by setting the start and 
@@ -434,7 +435,8 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
     # Output
     out <- list(statistics = 
         list(sender_stats = rateStats, receiver_stats = choiceStats),
-        edgelist = edgelist, riskset = riskset, adjmat = adjmat)
+        edgelist = edgelist, riskset = riskset, actors = actors[,1], 
+        adjmat = adjmat)
     class(out) <- "aomstats"
     out
 }

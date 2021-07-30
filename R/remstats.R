@@ -61,8 +61,7 @@
 #' in the \code{remstats} function and affect the computation of all endogenous 
 #' statistics with the following exceptions (that follow logically from their 
 #' definition). Since spUnique is a count of the number of unique interaction 
-#' partners, the recency-rank statistics (rrankSend, rrankReceive) depend on 
-#' the ranking of past events, and the recency statistics (recencyContinue, 
+#' partners, and the recency statistics (recencyContinue, 
 #' recencySendSender, recencySendReceiver, recencyReceiveSender, 
 #' recencyReceiveReceiver) depend on the time past, the computation of these 
 #' statistics do not depend on event weights and are therefore affected by 
@@ -71,7 +70,9 @@
 #' does not depend on past events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, 
 #' PSAB-XB, PSAB-XY and PSAB-AY) are binary and only dependent on the previous 
 #' event, these statistics are not affected by the memory settings or the 
-#' supplied event weights. 
+#' supplied event weights. The recency-rank statistics (rrankSend, 
+#' rrankReceive) are (for now) only available with the "full" memory, and are, 
+#' per definition, not affected by supplied event weights.
 #' 
 #' Optionally, statistics can be computed for a slice of the edgelist - but 
 #' based on the entire history. This is achieved by setting the start and 
