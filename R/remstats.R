@@ -196,7 +196,7 @@ remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,
             directed = directed, ordinal = ordinal, origin = origin, 
             omit_dyad = omit_dyad, memory = memory, 
             memory_value = memory_value, start = start, 
-            stop = stop, adjmat = adjmat)
+            stop = stop, adjmat = adjmat, verbose = verbose)
     } 
 
     if(!is.null(sender_effects) | !is.null(receiver_effects)) {
@@ -206,7 +206,7 @@ remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,
             ordinal = ordinal, origin = origin, 
             omit_dyad = omit_dyad, memory = memory, 
             memory_value = memory_value, start = start, 
-            stop = stop, adjmat = adjmat)
+            stop = stop, adjmat = adjmat, verbose = verbose)
     }
 
     out
