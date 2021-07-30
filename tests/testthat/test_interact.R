@@ -11,13 +11,13 @@ test_that("interaction effects", {
 	
 	data(history)
 	form <- ~ inertia():reciprocity()
-	aomres <- aomstats(choiceEffects = form, edgelist = history[,c(1:3)])
-	stats <- aomres$statistics$choice
+	aomres <- aomstats(receiver_effects = form, edgelist = history[,c(1:3)])
+	stats <- aomres$statistics$receiver_stats
 	expect_equal(stats[,,3], stats[,,2]*stats[,,1])
 	
 	form <- ~ indegreeSender()*recencySendSender()
-	aomres <- aomstats(rateEffects = form, edgelist = history[,c(1:3)])
-	stats <- aomres$statistics$rate
+	aomres <- aomstats(sender_effects = form, edgelist = history[,c(1:3)])
+	stats <- aomres$statistics$sender_stats
 	expect_equal(stats[,,4], stats[,,3]*stats[,,2])
 })
 

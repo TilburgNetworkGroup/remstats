@@ -1,16 +1,79 @@
 #' aomstats
 #' 
-#' Computes statistics for the rate step and choice step in actor-oriented 
-#' relational event models (e.g., see Stadtfeld & Block, 2017). 
+#' Computes statistics for the sender activity rate step and receiver choice 
+#' step in actor-oriented relational event models (e.g., see Stadtfeld & Block, 
+#' 2017). 
 #' 
 #' @details 
 #' The statistics to be computed are defined symbolically and should be 
-#' supplied to the \code{rateEffects} and/or \code{choiceEffects} arguments in 
-#' the form \code{~ effects}. The terms are separated by + operators. 
-#' Interactions between two effects can be included with * or : operators. 
+#' supplied to the \code{sender_effects} and/or \code{receiver_effects} 
+#' arguments in the form \code{~ effects}. The terms are separated by + 
+#' operators. For example: \code{receiver_effects = ~ inertia() + otp()}.
+#' Interactions between two effects can be included with * or : 
+#' operators. For example: \code{receivereffects = ~ inertia():otp()}. A list 
+#' of available effects and their corresponding statistics follows at the 
+#' bottom. 
+#' 
+#' For the computation of the \emph{exogenous} statistics an attributes object 
+#' with the exogenous covariate information has to be supplied to the 
+#' \code{attributes} argument in either \code{aomstats()} or in the separate 
+#' effect functions supplied to the \code{sender_effects} or 
+#' \code{receiver_effects} argument (e.g., see \code{\link{send}}). This 
+#' \code{attributes} object should be constructed as follows: A dataframe with 
+#' rows refering to the attribute value of actor \emph{i} at timepoint 
+#' \emph{t}. An `id` column is required that contains the actor id 
+#' (corresponding to the actor id's in the edgelist). A `time` column is 
+#' required that contains the time when attributes change (set to zero if none 
+#' of the attributes vary over time). Subsequent columns contain the attributes 
+#' that are called in the specifications of exogenous statistics (column name 
+#' corresponding to the string supplied to the \code{variable} argument in the 
+#' effect function). Note that the procedure for the exogenous effect `tie' 
+#' deviates from this, here the exogenous covariate information has to be 
+#' specified in a different way, see \code{\link{tie}}. 
+#' 
+#' The majority of the statistics can be scaled in some way, see 
+#' the documentation of the \code{scaling} argument in the separate effect 
+#' functions for more information on this. 
+#' 
+#' Two more elements can affect the computation of the 
+#' \emph{endogenous} statistics: the settings of the \code{memory} and 
+#' \code{memoryValue} arguments in \code{aomstats} and the events weights in 
+#' the supplied \code{edgelist} object. First, the memory settings affect the 
+#' way past events are included in the computation of the endogenous 
+#' statistics. Options are one of "full" (all past events are considered), 
+#' "window" (only past events within a given time interval are considered) or 
+#' "Brandes" (the weight of events depends on the elapsed time through an 
+#' exponential decay with a half-life parameter). Second, the weight of the 
+#' events affect the way past events are summed in the computation of the 
+#' endogenous statistics, namely based on their weight. Note that if the 
+#' edgelist contains a column that is named ``weight'', it is assumed that 
+#' these affect the endogenous statistics. These settings are defined globally 
+#' in the \code{aomstats} function and affect the computation of all endogenous 
+#' statistics with the following exceptions (that follow logically from their 
+#' definition). Since the recency statistics (recencyContinue, 
+#' recencySendSender, recencySendReceiver, recencyReceiveSender, 
+#' recencyReceiveReceiver) depend on the time past, the computation of these 
+#' statistics do not depend on event weights and are therefore affected by 
+#' "window" memory but not by "Brandes" memory or supplied event weights. The 
+#' recency-rank statistics (rrankSend, rrankReceive) are (for now) only 
+#' available with the "full" memory, and are, per definition, not affected by 
+#' supplied event weights.  
+#' 
+#' Optionally, statistics can be computed for a slice of the edgelist - but 
+#' based on the entire history. This is achieved by setting the start and 
+#' stop values equal to the index of the first and last event for which 
+#' statistics are requested. For example, start = 5 and stop = 5 computes the 
+#' statistics for only the 5th event in the edgelist, based on the history that 
+#' consists of events 1-4. 
+#' 
+#' Optionally, a previously computed adjacency matrix can be supplied. Note 
+#' that the endogenous statistics will be computed based on this adjacency 
+#' matrix. Hence, supplying a previously computed adjacency matrix can reduce 
+#' computation time but the user should be absolutely sure the adjacency matrix 
+#' is accurate. 
 #' 
 #' A list of available effects and their corresponding statistics for the 
-#' \emph{rate} step: 
+#' \emph{sender activity rate} step: 
 #' \itemize{
 #'  \item \code{\link{baseline}()}
 #'  \item \code{\link{send}()}
@@ -22,7 +85,7 @@
 #' }
 #' 
 #' A list of available effects and their corresponding statistics for the 
-#' \emph{choice} step: 
+#' \emph{receiver choice} step: 
 #' \itemize{
 #'  \item \code{\link{receive}()}
 #'  \item \code{\link{tie}()}
@@ -45,33 +108,18 @@
 #'  \item \code{\link{recencyContinue}()}
 #' }
 #' 
-#' The \code{attributes} object should be constructed as follows: Each row 
-#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
-#' `id` column is required that contains the actor id (corresponding to the 
-#' actor id's in the edgelist). A `time` column is required that contains the 
-#' time when attributes change (set to zero if none of the attributes vary over 
-#' time). Subsequent columns contain the attributes that are called in the 
-#' specifications of exogenous statistics. Alternatively, a 
-#' dataframe with attributes can be defined in the separate effect functions 
-#' supplied to the \code{rateEffects} or \code{choiceEffects} argument.
-#' 
-#' Optionally, statistics can be computed for a slice of the edgelist - but 
-#' based on the entire history. This is achieved by setting the start and 
-#' stop values equal to the index of the first and last event for which 
-#' statistics are requested. For example, start = 5 and stop = 5 computes the 
-#' statistics for only the 5th event in the edgelist, based on the history that 
-#' consists of events 1-4. 
-#' 
 #' @param edgelist an object of class \code{"\link[base]{data.frame}"} or 
 #' \code{"\link[base]{matrix}"} characterizing the relational event history 
 #' sorted by time with columns `time`, `actor1`, `actor2` and optionally `type` 
 #' and `weight`. Alternatively, an object of class \code{"\link[remify]{reh}"}.
-#' @param rateEffects an object of class \code{"\link[stats]{formula}"} (or one 
-#' that can be coerced to that class): a symbolic description of the effects in 
-#' the rate model
-#' @param choiceEffects an object of class \code{"\link[stats]{formula}"} (or 
+#' @param sender_effects an object of class \code{"\link[stats]{formula}"} (or 
 #' one that can be coerced to that class): a symbolic description of the 
-#' effects in the choice model
+#' effects in the sender activity rate step of the actor-oriented model for 
+#' which statistics are computed, see `Details'
+#' @param receiver_effects an object of class \code{"\link[stats]{formula}"} 
+#' (or one that can be coerced to that class): a symbolic description of the 
+#' effects in the receiver choice step of model for which statistics are 
+#' computed, see `Details'
 #' @param attributes optionally, an object of class 
 #' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
 #' Details).
@@ -91,24 +139,27 @@
 #' @param adjmat optionally, an adjacency matrix with on the rows the 
 #' timepoints and on the columns the riskset entries
 #' 
-#' @return \code{edgelist } An object class \code{"\link[remify]{reh}"}, i.e., 
-#' the processed edgelist used for the computation of the statistics
+#' @return \code{edgelist } Dataframe with the edgelist
 #' @return \code{statistics  } List with in the first element the statistics 
-#' for the rate model and in the second element the statistics for the choice 
-#' model
+#' for the sender activity rate step and in the second element the statistics 
+#' for the receiver choice step
 #' @return \code{adjmat } Matrix with the adjacency matrix, rows refer to 
 #' timepoints and columns to riskset entries
 #' 
 #' @examples 
 #' library(remstats)
-#' rateEffects <- ~ send("extraversion")
-#' choiceEffects <- ~ receive("agreeableness") + inertia() + otp()
-#' aomstats(edgelist = history, rateEffects, choiceEffects, 
+#' seff <- ~ send("extraversion")
+#' reff <- ~ receive("agreeableness") + inertia() + otp()
+#' aomstats(edgelist = history, sender_effects = seff, receiver_effects = reff, 
 #'  attributes = info)
+#' 
+#' @references Stadtfeld, C., & Block, P. (2017). Interactions, actors, and 
+#' time: Dynamic network actor models for relational events. Sociological 
+#' Science, 4, 318–352. \url{https://doi.org/10.15195/v4.a14}
 #' 
 #' 
 #' @export 
-aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,  
+aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,  
     attributes = NULL, actors = NULL, types = NULL, ordinal = FALSE, 
     origin = NULL, omit_dyad = NULL, memory = "full", 
     memory_value = Inf, start = 1, stop = Inf, adjmat = NULL) {
@@ -159,27 +210,29 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
     rateStats <- NULL
     choiceStats <- NULL
 
-    # rateEffects
-    if(!is.null(rateEffects)) {
-        # Prepare main rateEffects
-        rateFormula <- rateEffects
-        rateEffects <- parse_formula(rateFormula, "rateEffects")
-        all_rateEffects <- c("baseline", "send", # 1,2
+    # sender_effects
+    if(!is.null(sender_effects)) {
+        # Prepare main sender_effects
+        rateFormula <- sender_effects
+        sender_effects <- parse_formula(rateFormula, "rateEffects")
+        all_sender_effects <- c("baseline", "send", # 1,2
             "indegreeSender", "outdegreeSender", "totaldegreeSender", # 3,4,5
             "recencySendSender", "recencyReceiveSender", #6, 7, 
             "interact") #99
-        rateEffectsN  <- match(sapply(rateEffects, function(x) x$effect), 
-            all_rateEffects)
+        sender_effectsN  <- match(sapply(sender_effects, function(x) x$effect), 
+            all_sender_effects)
         
-        # Prepare interaction rateEffects
-        rateEffects_int <- parse_int(rateFormula, "rateEffects", rateEffects)
-        rateEffectsN <- append(rateEffectsN, rep(99, length(rateEffects_int)), 
-            length(rateEffectsN))
+        # Prepare interaction sender_effects
+        sender_effects_int <- parse_int(rateFormula, "rateEffects", 
+            sender_effects)
+        sender_effectsN <- append(sender_effectsN, 
+            rep(99, length(sender_effects_int)), 
+            length(sender_effectsN))
         rate_interactions <- list()
-        rate_interactions[which(rateEffectsN==99)] <- rateEffects_int
+        rate_interactions[which(sender_effectsN==99)] <- sender_effects_int
 
-        # Prepare rateEffects covariate information
-        rateCovar <- lapply(rateEffects, function(x) {
+        # Prepare sender_effects covariate information
+        rateCovar <- lapply(sender_effects, function(x) {
             if(x$effect == "send") {
                 if(is.null(x$x)) {
                     dat <- data.frame(
@@ -200,12 +253,12 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
             }
         })
 
-        # Prepare rateEffects scaling 
+        # Prepare sender_effects scaling 
         rateScaling <- as.numeric(
-            sapply(rateEffects, function(x) x$scaling))
+            sapply(sender_effects, function(x) x$scaling))
 
         # Compute the adjacency matrix 
-        if(any(rateEffectsN %in% c(3,4,5))) {
+        if(any(sender_effectsN %in% c(3,4,5))) {
             if(is.null(adjmat)) {
                 adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
                     TRUE, memory, memory_value, start, stop)
@@ -215,7 +268,7 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
         }   
 
         # Compute the rate statistics 
-        rateStats <- compute_stats_rate(rateEffectsN, newE, prepR, adjmat, 
+        rateStats <- compute_stats_rate(sender_effectsN, newE, prepR, adjmat, 
             actors[,2], rateScaling, rateCovar, rate_interactions, start, 
             stop)    
 
@@ -228,30 +281,30 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
         dimnames(rateStats) <- 
             list(NULL, NULL, unlist(c(
                 # Main effects
-                all_rateEffects[rateEffectsN[which(rateEffectsN!=99)]],
+                all_sender_effects[sender_effectsN[which(sender_effectsN!=99)]],
                 # Interaction effects
-                sapply(rateEffects_int, function(x) {
+                sapply(sender_effects_int, function(x) {
                     names(x) <- c(
                         strsplit(names(x[1]), "[()]")[[1]][1], 
                         strsplit(names(x[2]), "[()]")[[1]][1])
-                    y <- all_rateEffects[match(names(x), all_rateEffects)]
+                    y <- all_sender_effects[match(names(x), all_sender_effects)]
                     paste0(y[1], ".x.", y[2])
                 })
             )))
 
         # Add variable name to exogenous rateStats 
-        dimnames(rateStats)[[3]][which(rateEffectsN==2)] <- 
-            sapply(rateEffects[which(rateEffectsN==2)], function(x) {
+        dimnames(rateStats)[[3]][which(sender_effectsN==2)] <- 
+            sapply(sender_effects[which(sender_effectsN==2)], function(x) {
                 paste0(x$effect, ".", x$variable)
             })
     }
 
-    # choiceEffects
-    if(!is.null(choiceEffects)) {
-        # Prepare main choiceEffects
-        choiceFormula <- choiceEffects
-        choiceEffects <- parse_formula(choiceFormula, "choiceEffects")
-        all_choiceEffects <- c(
+    # receiver_effects
+    if(!is.null(receiver_effects)) {
+        # Prepare main receiver_effects
+        choiceFormula <- receiver_effects
+        receiver_effects <- parse_formula(choiceFormula, "choiceEffects")
+        all_receiver_effects <- c(
             "receive", "same", "difference", "average", #1, 2, 3, 4
             "tie", #5
             "inertia", "reciprocity", #6, 7
@@ -262,19 +315,19 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
             "recencySendReceiver", "recencyReceiveReceiver", #17 #18
             "recencyContinue", #19
             "interact") #99
-        choiceEffectsN  <- match(sapply(choiceEffects, function(x) x$effect), 
-            all_choiceEffects)
+        receiver_effectsN  <- match(sapply(receiver_effects, function(x) x$effect), 
+            all_receiver_effects)
 
-        # Prepare interaction choiceEffects
-        choiceEffects_int <- parse_int(choiceFormula, "choiceEffects", 
-            choiceEffects)
-        choiceEffectsN <- append(choiceEffectsN, 
-            rep(99, length(choiceEffects_int)), length(choiceEffectsN))
+        # Prepare interaction receiver_effects
+        receiver_effects_int <- parse_int(choiceFormula, "choiceEffects", 
+            receiver_effects)
+        receiver_effectsN <- append(receiver_effectsN, 
+            rep(99, length(receiver_effects_int)), length(receiver_effectsN))
         choice_interactions <- list()
-        choice_interactions[which(choiceEffectsN==99)] <- choiceEffects_int
+        choice_interactions[which(receiver_effectsN==99)] <- receiver_effects_int
 
-        # Prepare choiceEffects covariate information
-        choiceCovar <- lapply(choiceEffects, function(x) {
+        # Prepare receiver_effects covariate information
+        choiceCovar <- lapply(receiver_effects, function(x) {
             if(x$effect %in% c("receive", "same", "difference", "average")) {
                 if(is.null(x$x)) {
                     dat <- data.frame(
@@ -297,12 +350,12 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
             }
         })
 
-        # Prepare choiceEffects scaling 
+        # Prepare receiver_effects scaling 
         choiceScaling <- as.numeric(
-            sapply(choiceEffects, function(x) x$scaling))
+            sapply(receiver_effects, function(x) x$scaling))
 
         # Compute the adjacency matrix 
-        if(any(choiceEffectsN %in% 6:14)) {
+        if(any(receiver_effectsN %in% 6:14)) {
             if(is.null(adjmat)) {
                 adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
                     TRUE, memory, memory_value, start, stop)
@@ -314,7 +367,7 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
         }   
 
         # Compute the choice statistics 
-        choiceStats <- compute_stats_choice(choiceEffectsN, newE, adjmat, 
+        choiceStats <- compute_stats_choice(receiver_effectsN, newE, adjmat, 
             actors[,2], prepR, choiceScaling, choiceCovar, choice_interactions, 
             start, stop)   
 
@@ -327,20 +380,20 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
         dimnames(choiceStats) <- 
             list(NULL, NULL, unlist(c(
                 # Main effects
-                all_choiceEffects[choiceEffectsN[which(choiceEffectsN!=99)]],
+                all_receiver_effects[receiver_effectsN[which(receiver_effectsN!=99)]],
                 # Interaction effects
-                sapply(choiceEffects_int, function(x) {
+                sapply(receiver_effects_int, function(x) {
                     names(x) <- c(
                         strsplit(names(x[1]), "[()]")[[1]][1], 
                         strsplit(names(x[2]), "[()]")[[1]][1])
-                    y <- all_choiceEffects[match(names(x), all_choiceEffects)]
+                    y <- all_receiver_effects[match(names(x), all_receiver_effects)]
                     paste0(y[1], ".x.", y[2])
                 })
             )))
 
         # Add variable name to exogenous choiceStats 
-        dimnames(choiceStats)[[3]][which(choiceEffectsN %in% c(1:5))] <- 
-            sapply(choiceEffects[which(choiceEffectsN %in% c(1:5))], 
+        dimnames(choiceStats)[[3]][which(receiver_effectsN %in% c(1:5))] <- 
+            sapply(receiver_effects[which(receiver_effectsN %in% c(1:5))], 
             function(x) {
                 if(!is.null(x$variable)) {
                     paste0(x$effect, ".", x$variable)
@@ -380,8 +433,10 @@ aomstats <- function(edgelist, rateEffects = NULL, choiceEffects = NULL,
     riskset <- as.data.frame(riskset)
 
     # Output
-    out <- list(statistics = list(rate = rateStats, choice = choiceStats),
-        edgelist = edgelist, riskset = riskset, adjmat = adjmat)
+    out <- list(statistics = 
+        list(sender_stats = rateStats, receiver_stats = choiceStats),
+        edgelist = edgelist, riskset = riskset, actors = actors[,1], 
+        adjmat = adjmat)
     class(out) <- "aomstats"
     out
 }

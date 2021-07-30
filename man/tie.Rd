@@ -18,13 +18,13 @@ the statistic but keep it "as.is". Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 }
 \description{
-Specifies the statistic for a `tie` effect in the \code{effects} 
-argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-\code{\link{aomstats}}.
+Specifies the statistic for a `tie` effect in the tie-oriented model or the 
+receiver choice step of the actor-oriented model.
 }
 \details{
 A tie effect refers to an exogenous dyad attribute that affects dyad 
-\emph{(i,j)}'s rate of interacting.
+\emph{(i,j)}'s rate of interacting. The statistic is equal to the value of 
+the exogenous attribute for dyad \emph{(i,j)}.
 }
 \examples{
 data(info)
@@ -35,7 +35,9 @@ bothOld <- sapply(1:length(actors), function(i) {
      ifelse(age[i] & age[j] == 1 & i != j, 1, 0)
  })})
 effects <- ~ tie(bothOld, variableName = "both.old")
+remstats(edgelist = history, tie_effects = effects, attributes = info)
+remstats(edgelist = history, receiver_effects = effects, attributes = info)
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }

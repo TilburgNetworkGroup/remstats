@@ -83,8 +83,8 @@ parse_tie <- function(List, prep) {
 		colnames(x) <- dictionary[match(colnames(x), dictionary[,1]),2]
 	}	
 	
-	x <- x[order(rownames(x)),]
-	x <- x[,order(colnames(x))]
+	x <- x[order(as.numeric(rownames(x))),]
+	x <- x[,order(as.numeric(colnames(x)))]
 
 	if(!attr(prep, "directed")) {
 		if(!isSymmetric(x)) {

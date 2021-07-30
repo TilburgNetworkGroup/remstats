@@ -14,7 +14,7 @@ default).}
 \description{
 Specifies the statistic for a recency receive of sender effect in the 
 \code{effects} argument of \code{\link{tomstats}} or the 
-\code{rateEffects} argument of \code{\link{aomstats}}.
+\code{sender_effects} argument of \code{\link{aomstats}}.
 }
 \details{
 The recencyReceiveSender effect refers to a recency statistic similar to 
@@ -26,7 +26,7 @@ that the 'recencyReceiveSender' effect is only defined for directed events.
 \examples{
 effects <- ~ recencyReceiveSender()
 tomstats(effects, edgelist = history)
-aomstats(rateEffects = effects, edgelist = history)
+aomstats(sender_effects = effects, edgelist = history)
 
 }
 \seealso{

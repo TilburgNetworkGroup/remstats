@@ -5,15 +5,19 @@
 \alias{intercept}
 \title{baseline}
 \description{
-A baseline effect in the \code{effects} argument of \code{\link{tomstats}} 
-is automatically specified when \code{ordinal} in \code{\link{tomstats}} is 
-set to FALSE (default) and automatically removed when this argument is set 
-to TRUE. Alternatively, a baseline effect can be explicitly specified by 
-adding '1' to the equation or explicitly removed by adding '-1' to the 
-equation. This also holds for the \code{rateEffects} in 
-\code{\link{aomstats}}.
+Specifies an intercept for the tie-oriented model or the sender activity 
+rate step of the actor-oriented model in the same manner as in 
+\code{\link[stats]{lm}} (see Details).
 }
 \details{
+A baseline effect is automatically specified for the tie-oriented model and 
+the sender activity rate step of the actor-oriented model when the
+\code{ordinal} argument in \code{\link{remstats}}, \code{\link{tomstats}}, 
+\code{\link{aomstats}} is set to FALSE (default) and automatically removed 
+when this argument is set to TRUE. Alternatively, a baseline effect can be 
+explicitly specified by adding '1' to the equation or explicitly removed by 
+adding '-1' to the equation. 
+
 The baseline effect refers to the baseline tendency to interact. In the 
 tie-oriented model, the log-inverse of the estimated parameter translates to 
 the average number of observed events per time unit per dyad. In the 
@@ -23,6 +27,8 @@ statistic is equal to one for all dyads resp. actors in the riskset at all
 timepoints.
 }
 \examples{
+remstats(edgelist = history, tie_effects = ~ 1)
+remstats(edgelist = history, sender_effects = ~ 1)
 tomstats(~ 1, edgelist = history)
-aomstats(rateEffects = ~ 1, edgelist = history)
+aomstats(sender_effects = ~ 1, edgelist = history)
 }

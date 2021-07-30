@@ -6,8 +6,8 @@
 \usage{
 aomstats(
   edgelist,
-  rateEffects = NULL,
-  choiceEffects = NULL,
+  sender_effects = NULL,
+  receiver_effects = NULL,
   attributes = NULL,
   actors = NULL,
   types = NULL,
@@ -27,13 +27,15 @@ aomstats(
 sorted by time with columns `time`, `actor1`, `actor2` and optionally `type` 
 and `weight`. Alternatively, an object of class \code{"\link[remify]{reh}"}.}
 
-\item{rateEffects}{an object of class \code{"\link[stats]{formula}"} (or one 
-that can be coerced to that class): a symbolic description of the effects in 
-the rate model}
-
-\item{choiceEffects}{an object of class \code{"\link[stats]{formula}"} (or 
+\item{sender_effects}{an object of class \code{"\link[stats]{formula}"} (or 
 one that can be coerced to that class): a symbolic description of the 
-effects in the choice model}
+effects in the sender activity rate step of the actor-oriented model for 
+which statistics are computed, see `Details'}
+
+\item{receiver_effects}{an object of class \code{"\link[stats]{formula}"} 
+(or one that can be coerced to that class): a symbolic description of the 
+effects in the receiver choice step of model for which statistics are 
+computed, see `Details'}
 
 \item{attributes}{optionally, an object of class 
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
@@ -69,28 +71,90 @@ event for which statistics are requested (see Details)}
 timepoints and on the columns the riskset entries}
 }
 \value{
-\code{edgelist } An object class \code{"\link[remify]{reh}"}, i.e., 
-the processed edgelist used for the computation of the statistics
+\code{edgelist } Dataframe with the edgelist
 
 \code{statistics  } List with in the first element the statistics 
-for the rate model and in the second element the statistics for the choice 
-model
+for the sender activity rate step and in the second element the statistics 
+for the receiver choice step
 
 \code{adjmat } Matrix with the adjacency matrix, rows refer to 
 timepoints and columns to riskset entries
 }
 \description{
-Computes statistics for the rate step and choice step in actor-oriented 
-relational event models (e.g., see Stadtfeld & Block, 2017).
+Computes statistics for the sender activity rate step and receiver choice 
+step in actor-oriented relational event models (e.g., see Stadtfeld & Block, 
+2017).
 }
 \details{
 The statistics to be computed are defined symbolically and should be 
-supplied to the \code{rateEffects} and/or \code{choiceEffects} arguments in 
-the form \code{~ effects}. The terms are separated by + operators. 
-Interactions between two effects can be included with * or : operators. 
+supplied to the \code{sender_effects} and/or \code{receiver_effects} 
+arguments in the form \code{~ effects}. The terms are separated by + 
+operators. For example: \code{receiver_effects = ~ inertia() + otp()}.
+Interactions between two effects can be included with * or : 
+operators. For example: \code{receivereffects = ~ inertia():otp()}. A list 
+of available effects and their corresponding statistics follows at the 
+bottom. 
+
+For the computation of the \emph{exogenous} statistics an attributes object 
+with the exogenous covariate information has to be supplied to the 
+\code{attributes} argument in either \code{aomstats()} or in the separate 
+effect functions supplied to the \code{sender_effects} or 
+\code{receiver_effects} argument (e.g., see \code{\link{send}}). This 
+\code{attributes} object should be constructed as follows: A dataframe with 
+rows refering to the attribute value of actor \emph{i} at timepoint 
+\emph{t}. An `id` column is required that contains the actor id 
+(corresponding to the actor id's in the edgelist). A `time` column is 
+required that contains the time when attributes change (set to zero if none 
+of the attributes vary over time). Subsequent columns contain the attributes 
+that are called in the specifications of exogenous statistics (column name 
+corresponding to the string supplied to the \code{variable} argument in the 
+effect function). Note that the procedure for the exogenous effect `tie' 
+deviates from this, here the exogenous covariate information has to be 
+specified in a different way, see \code{\link{tie}}. 
+
+The majority of the statistics can be scaled in some way, see 
+the documentation of the \code{scaling} argument in the separate effect 
+functions for more information on this. 
+
+Two more elements can affect the computation of the 
+\emph{endogenous} statistics: the settings of the \code{memory} and 
+\code{memoryValue} arguments in \code{aomstats} and the events weights in 
+the supplied \code{edgelist} object. First, the memory settings affect the 
+way past events are included in the computation of the endogenous 
+statistics. Options are one of "full" (all past events are considered), 
+"window" (only past events within a given time interval are considered) or 
+"Brandes" (the weight of events depends on the elapsed time through an 
+exponential decay with a half-life parameter). Second, the weight of the 
+events affect the way past events are summed in the computation of the 
+endogenous statistics, namely based on their weight. Note that if the 
+edgelist contains a column that is named ``weight'', it is assumed that 
+these affect the endogenous statistics. These settings are defined globally 
+in the \code{aomstats} function and affect the computation of all endogenous 
+statistics with the following exceptions (that follow logically from their 
+definition). Since the recency statistics (recencyContinue, 
+recencySendSender, recencySendReceiver, recencyReceiveSender, 
+recencyReceiveReceiver) depend on the time past, the computation of these 
+statistics do not depend on event weights and are therefore affected by 
+"window" memory but not by "Brandes" memory or supplied event weights. The 
+recency-rank statistics (rrankSend, rrankReceive) are (for now) only 
+available with the "full" memory, and are, per definition, not affected by 
+supplied event weights.  
+
+Optionally, statistics can be computed for a slice of the edgelist - but 
+based on the entire history. This is achieved by setting the start and 
+stop values equal to the index of the first and last event for which 
+statistics are requested. For example, start = 5 and stop = 5 computes the 
+statistics for only the 5th event in the edgelist, based on the history that 
+consists of events 1-4. 
+
+Optionally, a previously computed adjacency matrix can be supplied. Note 
+that the endogenous statistics will be computed based on this adjacency 
+matrix. Hence, supplying a previously computed adjacency matrix can reduce 
+computation time but the user should be absolutely sure the adjacency matrix 
+is accurate. 
 
 A list of available effects and their corresponding statistics for the 
-\emph{rate} step: 
+\emph{sender activity rate} step: 
 \itemize{
  \item \code{\link{baseline}()}
  \item \code{\link{send}()}
@@ -102,7 +166,7 @@ A list of available effects and their corresponding statistics for the
 }
 
 A list of available effects and their corresponding statistics for the 
-\emph{choice} step: 
+\emph{receiver choice} step: 
 \itemize{
  \item \code{\link{receive}()}
  \item \code{\link{tie}()}
@@ -124,30 +188,17 @@ A list of available effects and their corresponding statistics for the
  \item \code{\link{recencyReceiveReceiver}()}
  \item \code{\link{recencyContinue}()}
 }
-
-The \code{attributes} object should be constructed as follows: Each row 
-refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
-`id` column is required that contains the actor id (corresponding to the 
-actor id's in the edgelist). A `time` column is required that contains the 
-time when attributes change (set to zero if none of the attributes vary over 
-time). Subsequent columns contain the attributes that are called in the 
-specifications of exogenous statistics. Alternatively, a 
-dataframe with attributes can be defined in the separate effect functions 
-supplied to the \code{rateEffects} or \code{choiceEffects} argument.
-
-Optionally, statistics can be computed for a slice of the edgelist - but 
-based on the entire history. This is achieved by setting the start and 
-stop values equal to the index of the first and last event for which 
-statistics are requested. For example, start = 5 and stop = 5 computes the 
-statistics for only the 5th event in the edgelist, based on the history that 
-consists of events 1-4.
 }
 \examples{
 library(remstats)
-rateEffects <- ~ send("extraversion")
-choiceEffects <- ~ receive("agreeableness") + inertia() + otp()
-aomstats(edgelist = history, rateEffects, choiceEffects, 
+seff <- ~ send("extraversion")
+reff <- ~ receive("agreeableness") + inertia() + otp()
+aomstats(edgelist = history, sender_effects = seff, receiver_effects = reff, 
  attributes = info)
 
-
+}
+\references{
+Stadtfeld, C., & Block, P. (2017). Interactions, actors, and 
+time: Dynamic network actor models for relational events. Sociological 
+Science, 4, 318–352. \url{https://doi.org/10.15195/v4.a14}
 }

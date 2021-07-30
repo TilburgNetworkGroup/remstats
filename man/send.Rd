@@ -19,12 +19,11 @@ the statistic but keep it "as.is". Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 }
 \description{
-Specifies the statistic for a `send` effect in the \code{effects} 
-argument of \code{\link{tomstats}} or the \code{rateEffects} argument of 
-\code{\link{aomstats}}.
+Specifies the statistic for a `send` effect in the tie-oriented model or the 
+actor activity rate step of the actor-oriented model.
 }
 \details{
-A send effect refers to an exogenous actor attribute that affects actor 
+A `send` effect refers to an exogenous actor attribute that affects actor 
 i's rate of sending events. The statistic at timepoint \emph{t} is equal to 
 the value of the exogenous attribute for actor \emph{i} at time \emph{t} for 
 all dyads in the riskset that have actor \emph{i} as sender. Note that a 
@@ -38,11 +37,14 @@ time when attributes change (set to zero if none of the attributes vary over
 time). Subsequent columns contain the attributes that are called in the 
 specifications of exogenous statistics. Alternatively, a dataframe with 
 attributes for all exogenous effects can be defined in the \code{attributes} 
-argument of \code{\link{tomstats}} or \code{\link{aomstats}}.
+argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+\code{\link{aomstats}}.
 }
 \examples{
 effects <- ~ send("extraversion")
+remstats(edgelist = history, tie_effects = effects, attributes = info)
+remstats(edgelist = history, sender_effects = effects, attributes = info)
 tomstats(effects, edgelist = history, attributes = info)
-aomstats(rateEffects = effects, edgelist = history, attributes = info)
+aomstats(sender_effects = effects, edgelist = history, attributes = info)
 
 }

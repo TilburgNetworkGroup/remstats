@@ -174,20 +174,20 @@ out <- tomstats(effects, edgelist = history)
 ```
 
 ### Compute statistics for the actor-oriented model
-The procedure to compute statistics for the actor-oriented model is largely similar to what is written above, except that statistics have to be specified separately for the first modeling step (which we to as the *rate model*) and the second modeling step (which we refer to as the *choice model*). The statistics requested for these two modeling steps need to be supplied to two different effects arguments, namely `rateEffects` and `choiceEffects`, respectively.
+The procedure to compute statistics for the actor-oriented model is largely similar to what is written above, except that statistics have to be specified separately for the sender activity rate step of the model and the receiver choice step of the model. The statistics requested for these two modeling steps need to be supplied to two different effects arguments, namely `sender_effects` and `receiver_effects`, respectively.
 
-An overview of the statistics that can be computed in the rate model and the choice model with `aomstats()` is available in the "details" section of the `aomstats()` function documentation (access with `?aomstats`). 
+An overview of the statistics that can be computed in the sender activity rate step and the receiver choice step with `aomstats()` is available in the "details" section of the `aomstats()` function documentation (access with `?aomstats`). 
 
-In this illustration, we start with requesting only one statistic for the rate model: the *outdegreeSender* statistic. First, lets view the description for the `outdegreeSender` statistic:
+In this illustration, we start with requesting only one statistic for the sender activity rate step: the *outdegreeSender* statistic. First, lets view the description for the `outdegreeSender` statistic:
 ```r
 ?outdegreeSender
 ```
-Here, we can read that, in the rate model, the outdegreeSender statistic computes for every timepoint *t* for every actors *i* the number of outgoing past events. With the `scaling` argument, one of the methods for scaling the statistic can be chosen. With the `consider_type` argument, the user can request to count events of different types separately. 
+Here, we can read that, in the sender activity rate step of the actor-oriented model, the outdegreeSender statistic computes for every timepoint *t* for every actors *i* the number of outgoing past events. With the `scaling` argument, one of the methods for scaling the statistic can be chosen. With the `consider_type` argument, the user can request to count events of different types separately. 
 
-To compute the outdegreeSender statistic for the rate model we supply it to the `rateEffects` argument of `aomstats()`:
+To compute the outdegreeSender statistic for the sender activity rate step we supply it to the `sender_effects` argument of `aomstats()`:
 ```r 
 effects <- ~ outdegreeSender()
-out <- aomstats(rateEffects = effects, edgelist = history)
+out <- aomstats(sender_effects = effects, edgelist = history)
 ```
 
 The outputted list of objects is largely similar to the list outputted by `tomstats()`:
@@ -195,25 +195,25 @@ The outputted list of objects is largely similar to the list outputted by `tomst
 names(out)
 ```
 
-A difference between the two output objects is that the statistics object is now a list with two elements: `rate` and `choice`. Since we did not request any statistics for the `choice` step here, this object is empty. The `rate` object contains the statistic array with the `baseline` statistic (again, automatically computed unless `ordinal = TRUE`), and the requested `outdegreeSender` statistic. 
+A difference between the two output objects is that the statistics object is now a list with two elements: `sender_stats` and `receiver_stats`. Since we did not request any statistics for the receiver choice step here, this object is empty. The `sender_stats` object contains the statistic array with the `baseline` statistic (again, automatically computed unless `ordinal = TRUE`), and the requested `outdegreeSender` statistic. 
 ```r
-dimnames(out$statistics$rate)
+dimnames(out$statistics$sender_stats)
 ```
 
-The dimension of `out$statistics$rate` is 115 x 10 x 2. On the rows we have the timepoints, the columns refer to the actors that can be senders and the slices refer to the different statistics. 
+The dimension of `out$statistics$sender_stats` is 115 x 10 x 2. On the rows we have the timepoints, the columns refer to the actors that can be senders and the slices refer to the different statistics. 
 
-Lets extend our model and also request a statistic for the choice step:
+Lets extend our model and also request a statistic for the receiver choice step:
 ```r
-rateEffects <- ~ outdegreeSender()
-choiceEffects <- ~ inertia()
-out <- aomstats(rateEffects = rateEffects, choiceEffects = choiceEffects, edgelist = history)
+sender_effects <- ~ outdegreeSender()
+receiver_effects <- ~ inertia()
+out <- aomstats(sender_effects = sender_effects, receiver_effects = receiver_effects, edgelist = history)
 ```
 
-We can access the statistic computed for the choice step with `out$statistics$choice`. In this step, the baseline statistic is not automatically computed (and not defined). Hence, the dimensions of the statistics object for the choice step are 115 x 10 x 1. On the rows we have again the timepoints, on the columns now the receivers and on the slices the statistics. 
+We can access the statistic computed for the receiver choice step with `out$statistics$receiver_stats`. In this step, the baseline statistic is not automatically computed (and not defined). Hence, the dimensions of the statistics object for the receiver choice step are 115 x 10 x 1. On the rows we have again the timepoints, on the columns now the receivers and on the slices the statistics. 
 
-Note that the computed values of the statistic in the choice step are equal to the values for this receiver, given the current sender. For example, lets review the first six lines:
+Note that the computed values of the statistic in the receiver choice step are equal to the values for this receiver, given the current sender. For example, lets review the first six lines:
 ```r
-head(out$statistics$choice[,,"inertia"])
+head(out$statistics$receiver_stats[,,"inertia"])
 ```
 
 101 | 103 | 104 | 105 | 107 | 109 | 111 | 112 | 113 | 115

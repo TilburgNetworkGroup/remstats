@@ -922,8 +922,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
                     double count1 = adjmat(t, arrow1);
                     double count2 = adjmat(t, arrow2);
                     if(type == 6) {
-                        if(count1 > 1) {count1 = 1;}
-                        if(count2 > 1) {count2 = 1;}
+                        if(count1 > 0) {count1 = 1;}
+                        if(count2 > 0) {count2 = 1;}
                     }
                     arma::vec count = {count1, count2};
                     stat(t, d) += min(count);
@@ -996,8 +996,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
                     double count1 = arma::sum(adjmatrow(arrow1U));
                     double count2 = arma::sum(adjmatrow(arrow2U));
                     if(type == 6) {
-                        if(count1 > 1) {count1 = 1;}
-                        if(count2 > 1) {count2 = 1;}
+                        if(count1 > 0) {count1 = 1;}
+                        if(count2 > 0) {count2 = 1;}
                     }
                     arma::vec count = {count1, count2};
                     stat(t, d) += arma::min(count);
@@ -1807,34 +1807,34 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
 arma::mat tie_tie(const arma::mat& covariates, const arma::mat& edgelist, 
     const arma::mat& riskset, int start, int stop) {
 
-    // Slice the edgelist according to "start" and "stop"
+  // Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
 
 	// Initialize saving space 
 	arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
 
-    // Saving space
-    arma::rowvec thisrow(riskset.n_rows);
+  // Saving space
+  arma::rowvec thisrow(riskset.n_rows);
 
-    // For loop over dyads
-    for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+  // For loop over dyads
+  for(arma::uword i = 0; i < riskset.n_rows; ++i) {
         
-        // Find the relevant actors
-        arma::uword actor1 = riskset(i, 0);
-        arma::uword actor2 = riskset(i, 1);
+      // Find the relevant actors
+      arma::uword actor1 = riskset(i, 0);
+      arma::uword actor2 = riskset(i, 1);
 
-        // Find the value
-        double tieval = covariates(actor1, actor2);
-        thisrow(i) = tieval;
-    }
+      // Find the value
+      double tieval = covariates(actor1, actor2);
+      thisrow(i) = tieval;
+  }
 
-    // Save in stat
-    for(arma::uword m = 0; m < slice.n_rows; ++m) {
-        stat.row(m) = thisrow;
-    }
+  // Save in stat
+  for(arma::uword m = 0; m < slice.n_rows; ++m) {
+      stat.row(m) = thisrow;
+  }
 
-    //Output
-    return(stat);
+  //Output
+  return(stat);
 }
 
 // event_tie
@@ -1845,12 +1845,15 @@ arma::mat event_tie(const arma::mat& covariates, const arma::mat& edgelist,
     // Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
 
+    // Slice the covariates according to "start" and "stop"
+    arma::mat covS = covariates.rows(start, stop);
+
 	// Initialize saving space 
 	arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
 
     // For loop over dyads
     for(arma::uword i = 0; i < riskset.n_rows; ++i) {
-        stat.col(i) = covariates.col(0);
+        stat.col(i) = covS.col(0);
     }
 
     //Output

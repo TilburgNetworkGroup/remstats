@@ -18,13 +18,14 @@ events separately for each event type (TRUE) or sum across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an inertia effect in the \code{effects} argument 
-of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-\code{\link{aomstats}}.
+Specifies the statistic for an inertia effect in the tie-oriented model or 
+the receiver choice step of the actor-oriented model.
 }
 \details{
-An inertia effect refers to the tendency for actors to repeat past 
-interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
+An inertia effect refers to the tendency for dyads to repeatedly interact 
+with each other (tie-oriented model) or for actors to repeatedly choose the 
+same actor as receiver of their events (actor-oriented model). The statistic 
+at timepoint \emph{t} for dyad \emph{(i,j)} resp. receiver \emph{j} is 
 equal to the number of \emph{(i,j)} events before timepoint \emph{t}. 
 
 Optionally, a scaling method can be set with \code{scaling}. By scaling the 
@@ -39,7 +40,9 @@ scaling method is only defined for directed events.
 }
 \examples{
 effects <- ~ inertia()
+remstats(edgelist = history, tie_effects = effects)
+remstats(edgelist = history, receiver_effects = effects)
 tomstats(effects, edgelist = history)
-aomstats(choiceEffects = effects, edgelist = history)
+aomstats(receiver_effects = effects, edgelist = history)
 
 }

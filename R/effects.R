@@ -1,14 +1,18 @@
 #' baseline
 #' 
-#' A baseline effect in the \code{effects} argument of \code{\link{tomstats}} 
-#' is automatically specified when \code{ordinal} in \code{\link{tomstats}} is 
-#' set to FALSE (default) and automatically removed when this argument is set 
-#' to TRUE. Alternatively, a baseline effect can be explicitly specified by 
-#' adding '1' to the equation or explicitly removed by adding '-1' to the 
-#' equation. This also holds for the \code{rateEffects} in 
-#' \code{\link{aomstats}}. 
+#' Specifies an intercept for the tie-oriented model or the sender activity 
+#' rate step of the actor-oriented model in the same manner as in 
+#' \code{\link[stats]{lm}} (see Details).
 #' 
 #' @details
+#' A baseline effect is automatically specified for the tie-oriented model and 
+#' the sender activity rate step of the actor-oriented model when the
+#' \code{ordinal} argument in \code{\link{remstats}}, \code{\link{tomstats}}, 
+#' \code{\link{aomstats}} is set to FALSE (default) and automatically removed 
+#' when this argument is set to TRUE. Alternatively, a baseline effect can be 
+#' explicitly specified by adding '1' to the equation or explicitly removed by 
+#' adding '-1' to the equation. 
+#' 
 #' The baseline effect refers to the baseline tendency to interact. In the 
 #' tie-oriented model, the log-inverse of the estimated parameter translates to 
 #' the average number of observed events per time unit per dyad. In the 
@@ -21,18 +25,19 @@
 #' @aliases intercept
 #' 
 #' @examples
+#' remstats(edgelist = history, tie_effects = ~ 1)
+#' remstats(edgelist = history, sender_effects = ~ 1)
 #' tomstats(~ 1, edgelist = history)
-#' aomstats(rateEffects = ~ 1, edgelist = history)
+#' aomstats(sender_effects = ~ 1, edgelist = history)
 NULL
 
 #' send
 #' 
-#' Specifies the statistic for a `send` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}} or the \code{rateEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for a `send` effect in the tie-oriented model or the 
+#' actor activity rate step of the actor-oriented model. 
 #' 
 #' @details
-#' A send effect refers to an exogenous actor attribute that affects actor 
+#' A `send` effect refers to an exogenous actor attribute that affects actor 
 #' i's rate of sending events. The statistic at timepoint \emph{t} is equal to 
 #' the value of the exogenous attribute for actor \emph{i} at time \emph{t} for 
 #' all dyads in the riskset that have actor \emph{i} as sender. Note that a 
@@ -46,7 +51,8 @@ NULL
 #' time). Subsequent columns contain the attributes that are called in the 
 #' specifications of exogenous statistics. Alternatively, a dataframe with 
 #' attributes for all exogenous effects can be defined in the \code{attributes} 
-#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+#' \code{\link{aomstats}}. 
 #' 
 #' @param variable string with the name of the column in the 
 #' \code{attributes} object for which the statistic has to be computed. 
@@ -59,8 +65,10 @@ NULL
 #' 
 #' @examples 
 #' effects <- ~ send("extraversion")
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
+#' remstats(edgelist = history, sender_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(rateEffects = effects, edgelist = history, attributes = info)
+#' aomstats(sender_effects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
 send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -110,9 +118,8 @@ send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 
 #' receive
 #' 
-#' Specifies the statistic for a `receive` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for a `receive` effect in the tie-oriented model or 
+#' the receiver choice step of the actor-oriented model.
 #' 
 #' @details
 #' A receive effect refers to an exogenous actor attribute that affects actor 
@@ -129,14 +136,17 @@ send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' time). Subsequent columns contain the attributes that are called in the 
 #' specifications of exogenous statistics. Alternatively, a dataframe with 
 #' attributes for all exogenous effects can be defined in the \code{attributes} 
-#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+#' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
 #' 
 #' @examples 
 #' effects <- ~ receive("extraversion") 
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
+#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+#' aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
 receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -186,13 +196,13 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 # TO DO: timevarying tie effect
 #' tie
 #' 
-#' Specifies the statistic for a `tie` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for a `tie` effect in the tie-oriented model or the 
+#' receiver choice step of the actor-oriented model. 
 #' 
 #' @details 
 #' A tie effect refers to an exogenous dyad attribute that affects dyad 
-#' \emph{(i,j)}'s rate of interacting. 
+#' \emph{(i,j)}'s rate of interacting. The statistic is equal to the value of 
+#' the exogenous attribute for dyad \emph{(i,j)}. 
 #' 
 #' @param x a matrix with attribute information, rows and columns should refer 
 #' to actors in the edgelist
@@ -211,8 +221,10 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #'      ifelse(age[i] & age[j] == 1 & i != j, 1, 0)
 #'  })})
 #' effects <- ~ tie(bothOld, variableName = "both.old")
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
+#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export
 tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
@@ -233,16 +245,21 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 
 #' same
 #' 
-#' Specifies the statistic for a `same` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for a `same` effect in the tie-oriented model or the 
+#' receiver choice step of the actor-oriented model. 
 #' 
 #' @details
-#' A same effect refers to an exogenous actor attribute that affects dyad 
-#' \emph{(i,j)}'s rate of interacting based on whether they have the same value 
-#' (or not) on this attribute. The statistic at timepoint \emph{t} is equal to 
-#' one for dyads \emph{(i,j)} that have the same value on the attribute at 
-#' timepoint \emph{t} and equal to 0 for dyads that do not have the same value. 
+#' A `same` effect refers to an exogenous actor attribute that affects dyad 
+#' \emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s  
+#' probability of being chosen as a receiver for the event send by the active 
+#' sender \emph{i} at time \emph{t} (actor-oriented model) based on whether 
+#' actors \emph{i} and \emph{j} have the same value (or not) on this attribute. 
+#' The statistic at timepoint \emph{t} is equal to one for dyads \emph{(i,j)} 
+#' that have the same value on the attribute at timepoint \emph{t} 
+#' (tie-oriented model) or one for receivers \emph{j} that have the same value 
+#' on the attribute as the active sender \emph{i} at timepoint \emph{t} 
+#' (actor-oriented model) and equal to 0 for dyads resp. receivers that do not 
+#' have the same value. 
 #' 
 #' The \code{attributes} object should be constructed as follows: Each row 
 #' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
@@ -252,14 +269,17 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 #' time). Subsequent columns contain the attributes that are called in the 
 #' specifications of exogenous statistics. Alternatively, a dataframe with 
 #' attributes for all exogenous effects can be defined in the \code{attributes} 
-#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+#' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
 #' 
 #' @examples 
 #' effects <- ~ same("age") 
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
+#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+#' aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
 same <- function(variable, attributes = NULL) {
@@ -305,16 +325,18 @@ same <- function(variable, attributes = NULL) {
 
 #' difference
 #' 
-#' Specifies the statistic for a `difference` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for a `difference` effect in the tie-oriented model 
+#' or the receiver choice step of the actor-oriented model. 
 #' 
 #' @details 
 #' A difference effect refers to an exogenous actor attribute that affects dyad 
-#' \emph{(i,j)}'s rate of interacting based on the difference between their 
-#' values on this attribute. The statistic at timepoint \emph{t} for dyad 
-#' \emph{(i,j)} is equal to the absolute difference between the values of actor 
-#' \emph{i} and \emph{j} on the attribute at timepoint \emph{t}.  
+#' \emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s  
+#' probability of being chosen as a receiver for the event send by the active 
+#' sender \emph{i} at time \emph{t} (actor-oriented model) based on the 
+#' difference between the values of actors \emph{i} and \emph{j} on this 
+#' attribute. The statistic at timepoint \emph{t} is equal to the (absolute)
+#' difference between the values of actor \emph{i} and \emph{j} on the att
+#' ribute at timepoint \emph{t}.  
 #' 
 #' The \code{attributes} object should be constructed as follows: Each row 
 #' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
@@ -324,7 +346,8 @@ same <- function(variable, attributes = NULL) {
 #' time). Subsequent columns contain the attributes that are called in the 
 #' specifications of exogenous statistics. Alternatively, a dataframe with 
 #' attributes for all exogenous effects can be defined in the \code{attributes} 
-#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+#' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
 #' @param absolute logical value indicating whether the difference values 
@@ -332,8 +355,10 @@ same <- function(variable, attributes = NULL) {
 #' 
 #' @examples 
 #' effects <- ~ difference("extraversion", absolute = TRUE) 
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
+#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+#' aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
 difference <- function(variable, attributes = NULL, 
@@ -388,17 +413,18 @@ difference <- function(variable, attributes = NULL,
 
 #' average
 #' 
-#' Specifies the statistic for an `average` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for an `average` effect in the tie-oriented model or 
+#' the receiver choice step of the actor-oriented model. 
 #' 
-#'  
 #' @details 
-#' An average effect refers to an exogenous actor attribute that affects dyad 
-#' \emph{(i,j)}'s rate of interacting based on the average of their values on 
-#' this attribute. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
-#' equal to the average of the values of actor \emph{i} and \emph{j} on the 
-#' attribute at timepoint \emph{t}.  
+#' An `average` effect refers to an exogenous actor attribute that affects dyad 
+#' \emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s  
+#' probability of being chosen as a receiver for the event send by the active 
+#' sender \emph{i} at time \emph{t} (actor-oriented model) based on the average 
+#' of the values of actors \emph{i} and \emph{j} on this attribute. The 
+#' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the 
+#' average of the values of actor \emph{i} and \emph{j} on the attribute at 
+#' timepoint \emph{t}.  
 #' 
 #' The \code{attributes} object should be constructed as follows: Each row 
 #' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
@@ -408,14 +434,17 @@ difference <- function(variable, attributes = NULL,
 #' time). Subsequent columns contain the attributes that are called in the 
 #' specifications of exogenous statistics. Alternatively, a dataframe with 
 #' attributes for all exogenous effects can be defined in the \code{attributes} 
-#' argument of \code{\link{tomstats}} or \code{\link{aomstats}}. 
+#' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+#' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
 #' 
 #' @examples 
 #' effects <- ~ average("extraversion") 
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
+#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(choiceEffects = effects, edgelist = history, attributes = info)
+#' aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 #' 
 #' @export 
 average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -464,15 +493,15 @@ average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 
 #' minimum
 #' 
-#' Specifies the statistic for a `minimum` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a `minimum` effect in the tie-oriented model. 
 #' 
 #' @details 
-#' A minimum effect refers to an exogenous actor attribute that affects dyad 
-#' \emph{(i,j)}'s rate of interacting based on the minimum of their values on 
-#' this attribute. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
-#' equal to the minimum of the values of actor \emph{i} and \emph{j} on the 
-#' attribute at timepoint \emph{t}.   
+#' A `minimum` effect refers to an exogenous actor attribute that affects dyad 
+#' \emph{(i,j)}'s rate of interacting based on the minimum of the values of 
+#' actors \emph{i} and \emph{j} on this attribute. The statistic at 
+#' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of the 
+#' values of actor \emph{i} and \emph{j} on the attribute at 
+#' timepoint \emph{t}.   
 #' 
 #' The \code{attributes} object should be constructed as follows: Each row 
 #' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
@@ -482,12 +511,14 @@ average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' time). Subsequent columns contain the attributes that are called in the 
 #' specifications of exogenous statistics. Alternatively, a dataframe with 
 #' attributes for all exogenous effects can be defined in the \code{attributes} 
-#' argument of \code{\link{tomstats}}. 
+#' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+#' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
 #' 
 #' @examples 
 #' effects <- ~ minimum("extraversion") 
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history, attributes = info)
 #' 
 #' @export 
@@ -537,8 +568,7 @@ minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 
 #' maximum
 #' 
-#' Specifies the statistic for a `maximum` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a `maximum` effect in the tie-oriented model. 
 #' 
 #' @details 
 #' A maximum effect refers to an exogenous actor attribute that affects dyad 
@@ -555,12 +585,14 @@ minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' time). Subsequent columns contain the attributes that are called in the 
 #' specifications of exogenous statistics. Alternatively, a dataframe with 
 #' attributes for all exogenous effects can be defined in the \code{attributes} 
-#' argument of \code{\link{tomstats}}. 
+#' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+#' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
 #' 
 #' @examples 
 #' effects <- ~ maximum("extraversion") 
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history, attributes = info)
 #' 
 #' @export 
@@ -610,24 +642,24 @@ maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 
 #' event
 #' 
-#' Specifies the statistic for an event effect in the \code{effects} argument 
-#' of \code{\link{tomstats}}.
+#' Specifies the statistic for an `event` effect in the tie-oriented model. 
 #' 
 #' @details 
-#' An event effect refers to an exogenous event attribute that affects the 
+#' An `event` effect refers to an exogenous event attribute that affects the 
 #' waiting time between events. The statistic at timepoint \emph{t} is for all 
 #' dyads in the riskset equal to the attribute of the event at timepoint 
 #' \emph{t}. 
 #' 
 #' @param variable string with the name of the column in the 
-#' \code{edgelist} object supplied to \code{\link{tomstats}} with the 
-#' event attribute. 
+#' \code{edgelist} object supplied to \code{\link{remstats}} or 
+#' \code{\link{tomstats}} with the event attribute. 
 #' 
 #' @seealso \code{\link{FEtype}}
 #' 
 #' @examples 
 #' history$work <- ifelse(history$setting == "work", 1, 0)
 #' effects <- ~ event("work")
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history)
 #' 
 #' @export 
@@ -643,14 +675,13 @@ event <- function(variable) {
 #' FEtype
 #' 
 #' Specifies the statistic for fixed effects for event types in the 
-#' \code{effects} argument of \code{\link{tomstats}}.
+#' tie-oriented model. 
 #' 
 #' @details 
 #' Fixed effects for event types capture the variation in event rate across 
 #' different event types (e.g., see Butts, 2008). The specification of FEtype 
-#' in the \code{effects} argument of \code{\link{tomstats}} results in the 
-#' specification of C-1 statistics, were C is the number of different event 
-#' types in the riskset. Let one of the event types, e.g. \emph{c = 1}, 
+#' results in the creation of C-1 statistics, were C is the number of different 
+#' event types in the riskset. Let one of the event types, e.g. \emph{c = 1}, 
 #' represent the reference category. Than, for every event type 
 #' \emph{c = 2, ..., C}, a statistic is created that at timepoint \emph{t} for 
 #' dyad \emph{(i,j,c)} is equal to 1 if \emph{c} is equal to the respective 
@@ -663,6 +694,7 @@ event <- function(variable) {
 #' @examples 
 #' history$type <- history$setting
 #' effects <- ~ FEtype()
+#' remstats(edgelist = history, tie_effects = effects, attributes = info)
 #' tomstats(effects, edgelist = history)
 #' 
 #' @export 
@@ -676,13 +708,14 @@ FEtype <- function() {
 
 #' inertia
 #' 
-#' Specifies the statistic for an inertia effect in the \code{effects} argument 
-#' of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for an inertia effect in the tie-oriented model or 
+#' the receiver choice step of the actor-oriented model.
 #' 
 #' @details
-#' An inertia effect refers to the tendency for actors to repeat past 
-#' interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
+#' An inertia effect refers to the tendency for dyads to repeatedly interact 
+#' with each other (tie-oriented model) or for actors to repeatedly choose the 
+#' same actor as receiver of their events (actor-oriented model). The statistic 
+#' at timepoint \emph{t} for dyad \emph{(i,j)} resp. receiver \emph{j} is 
 #' equal to the number of \emph{(i,j)} events before timepoint \emph{t}. 
 #' 
 #' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
@@ -706,8 +739,10 @@ FEtype <- function() {
 #' 
 #' @examples 
 #' effects <- ~ inertia()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #'
 #' @export 
 inertia <- function(scaling = c("as.is", "prop", "std"), 
@@ -733,15 +768,15 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
 
 #' reciprocity
 #' 
-#' Specifies the statistic for a reciprocity effect in the \code{effects} 
-#' argument of \code{\link{tomstats}} or the \code{choiceEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for a reciprocity effect in the tie-oriented model 
+#' or the receiver choice step of the actor-oriented model.
 #' 
 #' @details 
 #' A reciprocity effect refers to the tendency for actors to reciprocate past 
-#' interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
-#' equal to the number of \emph{(j,i)} events before timepoint \emph{t}. Note 
-#' that a reciprocity effect is only defined for directed events. 
+#' interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} 
+#' (tie-oriented model) or receiver \emph{j} (actor-oriented model) is equal to 
+#' the number of \emph{(j,i)} events before timepoint \emph{t}. Note that a 
+#' reciprocity effect is only defined for directed events. 
 #' 
 #' Optionally, a scaling method can be set with \code{scaling}.  By scaling the 
 #' reciprocity count by the indegree of the sender, the statistic refers to the 
@@ -762,8 +797,10 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
 #' 
 #' @examples 
 #' effects <- ~ reciprocity()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #'
 #' @export 
 reciprocity <- function(scaling = c("as.is", "prop", "std"), 
@@ -789,14 +826,14 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 
 #' indegreeSender
 #' 
-#' Specifies the statistic for an `indegreeSender` effect in the \code{effects} 
-#' argument of \code{\link{tomstats}} or the \code{rateEffects} argument of 
-#' \code{\link{aomstats}}.
+#' Specifies the statistic for an `indegreeSender` effect in the tie-oriented 
+#' model or the sender activity rate step of the actor-oriented model.
 #' 
 #' @details 
 #' An indegree of the sender effect refers to the tendency for actors to send 
 #' events if they have received more past events. The statistic at timepoint 
-#' \emph{t} for dyad \emph{(i,j)} is equal to the number of events received by 
+#' \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or sender \emph{i} 
+#' (actor-oriented model) is equal to the number of events received by 
 #' actor \emph{i} before timepoint \emph{t}. Note that the 'indegreeSender' 
 #' effect is only defined for directed events. 
 #' 
@@ -823,8 +860,10 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 #' 
 #' @examples 
 #' effects <- ~ indegreeSender()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, sender_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(rateEffects = effects, edgelist = history)
+#' aomstats(sender_effects = effects, edgelist = history)
 #'
 #' @export
 indegreeSender <- function(scaling = c("as.is", "prop", "std"), 
@@ -850,14 +889,14 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
 
 #' indegreeReceiver
 #' 
-#' Specifies the statistic for an `indegreeReceiver` effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' Specifies the statistic for an `indegreeReceiver` effect in the tie-oriented 
+#' model or the receiver choice step of the actor-oriented model.
 #' 
 #' @details 
 #' An indegree of the receiver effect refers to the tendency for actors to 
 #' receive events if they have received more past events. The statistic at 
-#' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
+#' timepoint \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or 
+#' receiver \emph{j} (actor-oriented model) is equal to the number of events 
 #' received by actor \emph{j} before timepoint \emph{t}. Note that the 
 #' 'indegreeReceiver' effect is only defined for directed events. 
 #' 
@@ -876,8 +915,10 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' 
 #' @examples 
 #' effects <- ~ indegreeReceiver()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #'
 #' @export
 indegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
@@ -903,14 +944,14 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 
 #' outdegreeSender
 #' 
-#' Specifies the statistic for an `outdegreeSender` effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the \code{rateEffects} 
-#' argument of \code{\link{aomstats}}.
+#' Specifies the statistic for an `outdegreeSender` effect in the tie-oriented 
+#' model or the sender activity rate step of the actor-oriented model.
 #' 
 #' @details 
 #' An outdegree of the sender effect refers to the tendency for actors to send 
 #' events if they have send more past events. The statistic at timepoint 
-#' \emph{t} for dyad \emph{(i,j)} is equal to the number of events send by 
+#' \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or sender \emph{i} 
+#' (actor-oriented model) is equal to the number of events send by 
 #' actor \emph{i} before timepoint \emph{t}. Note that the 'outdegreeSender' 
 #' effect is only defined for directed events. 
 #' 
@@ -930,8 +971,10 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' 
 #' @examples 
 #' effects <- ~ outdegreeSender()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, sender_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(rateEffects = effects, edgelist = history)
+#' aomstats(sender_effects = effects, edgelist = history)
 #'
 #' @export
 outdegreeSender <- function(scaling = c("as.is", "prop", "std"), 
@@ -958,13 +1001,13 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' outdegreeReceiver
 #' 
 #' Specifies the statistic for an `outdegreeReceiver` effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' tie-oriented model or the receiver choice step of the actor-oriented model.
 #' 
 #' @details 
 #' An outdegree of the receiver effect refers to the tendency for actors to 
 #' receive events if they have send more past events. The statistic at 
-#' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
+#' timepoint \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or 
+#' receiver \emph{j} (actor-oriented model) is equal to the number of events 
 #' send by actor \emph{j} before timepoint \emph{t}. Note that the 
 #' 'outdegreeReceiver' effect is only defined for directed events. 
 #' 
@@ -983,8 +1026,10 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' 
 #' @examples 
 #' effects <- ~ outdegreeReceiver()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #'
 #' @export
 outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
@@ -1011,13 +1056,14 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' totaldegreeSender
 #' 
 #' Specifies the statistic for an `totaldegreeSender` effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the \code{rateEffects} 
-#' argument of \code{\link{aomstats}}.
+#' tie-oriented model or the sender activity rate step of the actor-oriented 
+#' model.
 #' 
 #' @details 
 #' A total degree of the sender effect refers to the tendency for actors to 
 #' send events if they have send and received more past events. The statistic 
-#' at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of events 
+#' at timepoint \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or sender 
+#' \emph{i} (actor-oriented model) is equal to the number of events 
 #' send and received by actor \emph{i} before timepoint \emph{t}. Note that the 
 #' 'totaldegreeSender' effect is only defined for directed events.
 #' 
@@ -1044,8 +1090,10 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' 
 #' @examples 
 #' effects <- ~ totaldegreeSender()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, sender_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(rateEffects = effects, edgelist = history)
+#' aomstats(sender_effects = effects, edgelist = history)
 #'
 #' @export
 totaldegreeSender <- function(scaling = c("as.is", "prop", "std"), 
@@ -1072,13 +1120,13 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' totaldegreeReceiver
 #' 
 #' Specifies the statistic for an `totaldegreeReceiver` effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' tie-oriented model or the receiver choice step of the actor-oriented model.
 #' 
 #' @details 
 #' A total degree of the receiver effect refers to the tendency for actors to 
 #' receive events if they have send and received more past events. The 
-#' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number 
+#' statistic at timepoint \emph{t} for dyad \emph{(i,j)} (tie-oriented model) 
+#' or receiver \emph{j} (actor-oriented model) is equal to the number 
 #' of events send and received by actor \emph{j} before timepoint \emph{t}. 
 #' Note that the 'totaldegreeReceiver' effect is only defined for directed 
 #' events.
@@ -1098,8 +1146,10 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' 
 #' @examples 
 #' effects <- ~ totaldegreeReceiver()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #'
 #' @export
 totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
@@ -1125,9 +1175,8 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 
 #' otp
 #' 
-#' Specifies the statistic for an outgoing two-path effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' Specifies the statistic for an outgoing two-path effect in the tie-oriented 
+#' model or the receiver choice step of the actor-oriented model.
 #' 
 #' @details 
 #' An outgoing two-path effect refers to the tendency of dyads to interact if 
@@ -1153,8 +1202,10 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' 
 #' @examples 
 #' effects <- ~ otp()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export  
 otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1179,9 +1230,8 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
 #' itp
 #' 
-#' Specifies the statistic for an incoming two-path effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}. 
+#' Specifies the statistic for an incoming two-path effect in the tie-oriented 
+#' model or the receiver choice step of the actor-oriented model.
 #' 
 #' @details
 #' An incomping two-path effect refers to the tendency of dyads to interact if 
@@ -1200,8 +1250,10 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' 
 #' @examples 
 #' effects <- ~ itp()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export  
 itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1227,8 +1279,7 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' osp
 #' 
 #' Specifies the statistic for an outgoing shared partners effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' tie-oriented model or the receiver choice step of the actor-oriented model.
 #' 
 #' @details
 #' An outgoing shared partners effect refers to the tendency of dyads to 
@@ -1253,8 +1304,10 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' 
 #' @examples 
 #' effects <- ~ osp()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export  
 osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1280,8 +1333,7 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' isp
 #' 
 #' Specifies the statistic for an incoming shared partners effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' tie-oriented model or the receiver choice step of the actor-oriented model.
 #' 
 #' @details
 #' An incoming shared partners effect refers to the tendency of dyads to 
@@ -1300,8 +1352,10 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' 
 #' @examples 
 #' effects <- ~ isp()
+#' remstats(edgelist = history, tie_effects = effects)
+#' remstats(edgelist = history, receiver_effects = effects)
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export  
 isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1702,7 +1756,7 @@ psABAY <- function(consider_type = FALSE) {
 #' 
 #' Specifies the statistic for a recency rank send effect in the 
 #' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' \code{receiver_effects} argument of \code{\link{aomstats}}.
 #' 
 #' The rrankSend effect refers to a rank-based recency effect, as described in 
 #' section 2.2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) 
@@ -1723,7 +1777,7 @@ psABAY <- function(consider_type = FALSE) {
 #' @examples 
 #' effects <- ~ rrankSend()
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #'
 #' @export 
 rrankSend <- function(consider_type = FALSE) {
@@ -1746,7 +1800,7 @@ rrankSend <- function(consider_type = FALSE) {
 #' 
 #' Specifies the statistic for a recency rank receive effect in the 
 #' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' \code{receiver_effects} argument of \code{\link{aomstats}}.
 #' 
 #' The rrankSend effect refers to a rank-based recency effect, as described in 
 #' section 2.2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) 
@@ -1764,7 +1818,7 @@ rrankSend <- function(consider_type = FALSE) {
 #' @examples
 #' effects <- ~ rrankReceive()
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #'
 #' @export 
 rrankReceive <- function(consider_type = FALSE) {
@@ -1787,7 +1841,7 @@ rrankReceive <- function(consider_type = FALSE) {
 #' recencySendSender
 #' 
 #' Specifies the statistic for a recency send of sender effect in the 
-#' \code{effects} argument of \code{\link{tomstats}} or the \code{rateEffects} 
+#' \code{effects} argument of \code{\link{tomstats}} or the \code{sender_effects} 
 #' argument of \code{\link{aomstats}}.
 #' 
 #' The recencySendSender effect refers to a recency statistic similar to what 
@@ -1808,7 +1862,7 @@ rrankReceive <- function(consider_type = FALSE) {
 #' @examples
 #' effects <- ~ recencySendSender()
 #' tomstats(effects, edgelist = history)
-#' aomstats(rateEffects = effects, edgelist = history)
+#' aomstats(sender_effects = effects, edgelist = history)
 #' 
 #' @export 
 recencySendSender <- function(consider_type = FALSE) {
@@ -1832,7 +1886,7 @@ recencySendSender <- function(consider_type = FALSE) {
 #' 
 #' Specifies the statistic for a recency send of receiver effect in the 
 #' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' \code{receiver_effects} argument of \code{\link{aomstats}}.
 #' 
 #' The recencySendReceiver effect refers to a recency statistic similar to what 
 #' is described in Vu et al. (2017) and Mulder and Leenders (2019). For each 
@@ -1850,7 +1904,7 @@ recencySendSender <- function(consider_type = FALSE) {
 #' @examples
 #' effects <- ~ recencySendReceiver()
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export 
 recencySendReceiver <- function(consider_type = FALSE) {
@@ -1874,7 +1928,7 @@ recencySendReceiver <- function(consider_type = FALSE) {
 #' 
 #' Specifies the statistic for a recency receive of sender effect in the 
 #' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{rateEffects} argument of \code{\link{aomstats}}.
+#' \code{sender_effects} argument of \code{\link{aomstats}}.
 #' 
 #' The recencyReceiveSender effect refers to a recency statistic similar to 
 #' what is described in Vu et al. (2017) and Mulder and Leenders (2019). For 
@@ -1892,7 +1946,7 @@ recencySendReceiver <- function(consider_type = FALSE) {
 #' @examples
 #' effects <- ~ recencyReceiveSender()
 #' tomstats(effects, edgelist = history)
-#' aomstats(rateEffects = effects, edgelist = history)
+#' aomstats(sender_effects = effects, edgelist = history)
 #' 
 #' @export 
 recencyReceiveSender <- function(consider_type = FALSE) {
@@ -1916,7 +1970,7 @@ recencyReceiveSender <- function(consider_type = FALSE) {
 #' 
 #' Specifies the statistic for a recency receive of receiver effect in the 
 #' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' \code{receiver_effects} argument of \code{\link{aomstats}}.
 #' 
 #' The recencyReceiveReceiver effect refers to a recency statistic similar to 
 #' what is described in Vu et al. (2017) and Mulder and Leenders (2019). For 
@@ -1935,7 +1989,7 @@ recencyReceiveSender <- function(consider_type = FALSE) {
 #' @examples
 #' effects <- ~ recencyReceiveReceiver()
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export 
 recencyReceiveReceiver <- function(consider_type = FALSE) {
@@ -1959,7 +2013,7 @@ recencyReceiveReceiver <- function(consider_type = FALSE) {
 #' 
 #' Specifies the statistic for a recency continue effect in the 
 #' \code{effects} argument of \code{\link{tomstats}} or the 
-#' \code{choiceEffects} argument of \code{\link{aomstats}}.
+#' \code{receiver_effects} argument of \code{\link{aomstats}}.
 #' 
 #' The recencyContinue effect refers to a recency statistic similar to what is 
 #' described in Vu et al. (2017) and Mulder and Leenders (2019). For each 
@@ -1978,7 +2032,7 @@ recencyReceiveReceiver <- function(consider_type = FALSE) {
 #' @examples
 #' effects <- ~ recencyContinue()
 #' tomstats(effects, edgelist = history)
-#' aomstats(choiceEffects = effects, edgelist = history)
+#' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export 
 recencyContinue <- function(consider_type = FALSE) {

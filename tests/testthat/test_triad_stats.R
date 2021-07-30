@@ -7,7 +7,7 @@ test_that("otp and itp", {
 	
 	effects <- ~ otp() + itp()
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	aomres <- aomstats(receiver_effects = effects, edgelist = history)
 	
 	riskset <- tomres$riskset
 	rd <- apply(riskset, 1, function(x) {
@@ -15,21 +15,21 @@ test_that("otp and itp", {
 	})
 	
 	expect_equal(tomres$statistics[,,2], tomres$statistics[,rd,3])
-	expect_true(all(sapply(1:nrow(aomres$statistics$choice[,,1]), function(i) {
-		aomres$statistics$choice[i,,1] %in% c(tomres$statistics[i,,2], 0)
+	expect_true(all(sapply(1:nrow(aomres$statistics$receiver_stats[,,1]), function(i) {
+		aomres$statistics$receiver_stats[i,,1] %in% c(tomres$statistics[i,,2], 0)
 	})))
-	expect_true(all(sapply(1:nrow(aomres$statistics$choice[,,2]), function(i) {
-		aomres$statistics$choice[i,,2] %in% c(tomres$statistics[i,,3], 0)
+	expect_true(all(sapply(1:nrow(aomres$statistics$receiver_stats[,,2]), function(i) {
+		aomres$statistics$receiver_stats[i,,2] %in% c(tomres$statistics[i,,3], 0)
 	})))
 	
 	effects <- ~ otp(scaling = "std") + itp(scaling = "std")
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	aomres <- aomstats(receiver_effects = effects, edgelist = history)
 	
 	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
-	expect_equal(rowMeans(aomres$statistics$choice[,,1]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$receiver_stats[,,1]), rep(0, nrow(history)))
 	expect_equal(rowMeans(tomres$statistics[,,3]), rep(0, nrow(history)))
-	expect_equal(rowMeans(aomres$statistics$choice[,,2]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$receiver_stats[,,2]), rep(0, nrow(history)))
 	
 	colnames(history)[4] <- "type"
 	effects <- ~ otp(consider_type = TRUE) + itp(consider_type = TRUE)
@@ -50,7 +50,7 @@ test_that("osp and isp", {
 	
 	effects <- ~ osp() + isp()
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	aomres <- aomstats(receiver_effects = effects, edgelist = history)
 	
 	riskset <- tomres$riskset
 	rd <- apply(riskset, 1, function(x) {
@@ -59,21 +59,21 @@ test_that("osp and isp", {
 	
 	expect_equal(tomres$statistics[,,2], tomres$statistics[,rd,2])
 	expect_equal(tomres$statistics[,,3], tomres$statistics[,rd,3])
-	expect_true(all(sapply(1:nrow(aomres$statistics$choice[,,1]), function(i) {
-		aomres$statistics$choice[i,,1] %in% c(tomres$statistics[i,,2], 0)
+	expect_true(all(sapply(1:nrow(aomres$statistics$receiver_stats[,,1]), function(i) {
+		aomres$statistics$receiver_stats[i,,1] %in% c(tomres$statistics[i,,2], 0)
 	})))
-	expect_true(all(sapply(1:nrow(aomres$statistics$choice[,,2]), function(i) {
-		aomres$statistics$choice[i,,2] %in% c(tomres$statistics[i,,3], 0)
+	expect_true(all(sapply(1:nrow(aomres$statistics$receiver_stats[,,2]), function(i) {
+		aomres$statistics$receiver_stats[i,,2] %in% c(tomres$statistics[i,,3], 0)
 	})))
 	
 	effects <- ~ osp(scaling = "std") + isp(scaling = "std")
 	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(choiceEffects = effects, edgelist = history)
+	aomres <- aomstats(receiver_effects = effects, edgelist = history)
 	
 	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
-	expect_equal(rowMeans(aomres$statistics$choice[,,1]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$receiver_stats[,,1]), rep(0, nrow(history)))
 	expect_equal(rowMeans(tomres$statistics[,,3]), rep(0, nrow(history)))
-	expect_equal(rowMeans(aomres$statistics$choice[,,2]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$receiver_stats[,,2]), rep(0, nrow(history)))
 	
 	colnames(history)[4] <- "type"
 	effects <- ~ osp(consider_type = TRUE) + isp(consider_type = TRUE)

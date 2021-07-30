@@ -19,15 +19,15 @@ the statistic but keep it "as.is". Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 }
 \description{
-Specifies the statistic for a `minimum` effect in the \code{effects} 
-argument of \code{\link{tomstats}}.
+Specifies the statistic for a `minimum` effect in the tie-oriented model.
 }
 \details{
-A minimum effect refers to an exogenous actor attribute that affects dyad 
-\emph{(i,j)}'s rate of interacting based on the minimum of their values on 
-this attribute. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
-equal to the minimum of the values of actor \emph{i} and \emph{j} on the 
-attribute at timepoint \emph{t}.   
+A `minimum` effect refers to an exogenous actor attribute that affects dyad 
+\emph{(i,j)}'s rate of interacting based on the minimum of the values of 
+actors \emph{i} and \emph{j} on this attribute. The statistic at 
+timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of the 
+values of actor \emph{i} and \emph{j} on the attribute at 
+timepoint \emph{t}.   
 
 The \code{attributes} object should be constructed as follows: Each row 
 refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
@@ -37,10 +37,12 @@ time when attributes change (set to zero if none of the attributes vary over
 time). Subsequent columns contain the attributes that are called in the 
 specifications of exogenous statistics. Alternatively, a dataframe with 
 attributes for all exogenous effects can be defined in the \code{attributes} 
-argument of \code{\link{tomstats}}.
+argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
+\code{\link{aomstats}}.
 }
 \examples{
 effects <- ~ minimum("extraversion") 
+remstats(edgelist = history, tie_effects = effects, attributes = info)
 tomstats(effects, edgelist = history, attributes = info)
 
 }

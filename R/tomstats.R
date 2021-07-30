@@ -1,17 +1,91 @@
 #' tomstats
 #' 
 #' Computes statistics for modeling relational event history data with Butts' 
-#' (2008) tie-oriented relational event model. 
+#' (2008) relational event model. 
 #' 
 #' @details 
 #' The statistics to be computed are defined symbolically and should be 
 #' supplied to the \code{effects} argument in the form \code{~ effects}. The 
-#' terms are separated by + operators. Interactions between two effects can be 
-#' included with * or : operators. 
+#' terms are separated by + operators. For example: 
+#' \code{effects = ~ inertia() + otp()}. Interactions between two effects 
+#' can be included with * or : operators. For example: 
+#' \code{effects = ~ inertia():otp()}. A list of available effects and their 
+#' corresponding statistics follows at the bottom. 
 #' 
-#' A list of available effects and their corresponding statistics follows: 
+#' For the computation of the \emph{exogenous} statistics an attributes object 
+#' with the exogenous covariate information has to be supplied to the 
+#' \code{attributes} argument in either \code{tomstats()} or in the separate 
+#' effect functions supplied to the \code{effects} argument (e.g., see 
+#' \code{\link{send}}). This \code{attributes} object should be constructed as 
+#' follows: A dataframe with rows refering to the attribute value of actor 
+#' \emph{i} at timepoint \emph{t}. An `id` column is required that contains the 
+#' actor id (corresponding to the actor id's in the edgelist). A `time` column 
+#' is required that contains the time when attributes change (set to zero if 
+#' none of the attributes vary over time). Subsequent columns contain the 
+#' attributes that are called in the specifications of exogenous statistics 
+#' (column name corresponding to the string supplied to the \code{variable} 
+#' argument in the effect function). Note that the procedure for the exogenous 
+#' effects `tie' and `event' deviates from this, here the exogenous covariate 
+#' information has to be specified in a different way, see \code{\link{tie}} 
+#' and \code{\link{event}}. 
+#' 
+#' The majority of the statistics can be scaled in some way, see 
+#' the documentation of the \code{scaling} argument in the separate effect 
+#' functions for more information on this. 
+#' 
+#' The majority of the statistics can account for the event type 
+#' included as a dependent variable, see the documentation of the 
+#' \code{consider_type} argument in the separate effect functions for more 
+#' information on this. 
+#' 
+#' Note that events in the edgelist can be directed or undirected. Some 
+#' statistics are only defined for either directed or undirected events (see 
+#' the documentation of the statistics). 
+#' 
+#' Two more elements can affect the computation of the 
+#' \emph{endogenous} statistics: the settings of the \code{memory} and 
+#' \code{memoryValue} arguments in \code{tomstats} and the events weights in 
+#' the supplied \code{edgelist} object. First, the memory settings affect the 
+#' way past events are included in the computation of the endogenous 
+#' statistics. Options are one of "full" (all past events are considered), 
+#' "window" (only past events within a given time interval are considered) or 
+#' "Brandes" (the weight of events depends on the elapsed time through an 
+#' exponential decay with a half-life parameter). Second, the weight of the 
+#' events affect the way past events are summed in the computation of the 
+#' endogenous statistics, namely based on their weight. Note that if the 
+#' edgelist contains a column that is named ``weight'', it is assumed that 
+#' these affect the endogenous statistics. These settings are defined globally 
+#' in the \code{tomstats} function and affect the computation of all endogenous 
+#' statistics with the following exceptions (that follow logically from their 
+#' definition). Since spUnique is a count of the number of unique interaction 
+#' partners, and the recency statistics (recencyContinue, 
+#' recencySendSender, recencySendReceiver, recencyReceiveSender, 
+#' recencyReceiveReceiver) depend on the time past, the computation of these 
+#' statistics do not depend on event weights and are therefore affected by 
+#' "window" memory but not by "Brandes" memory or supplied event weights. Since 
+#' the baseline statistic is always one, the FEtype statistic is binary and 
+#' does not depend on past events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, 
+#' PSAB-XB, PSAB-XY and PSAB-AY) are binary and only dependent on the previous 
+#' event, these statistics are not affected by the memory settings or the 
+#' supplied event weights. The recency-rank statistics (rrankSend, 
+#' rrankReceive) are (for now) only available with the "full" memory, and are, 
+#' per definition, not affected by supplied event weights.  
+#' 
+#' Optionally, statistics can be computed for a slice of the edgelist - but 
+#' based on the entire history. This is achieved by setting the start and 
+#' stop values equal to the index of the first and last event for which 
+#' statistics are requested. For example, start = 5 and stop = 5 computes the 
+#' statistics for only the 5th event in the edgelist, based on the history that 
+#' consists of events 1-4. 
+#' 
+#' Optionally, a previously computed adjacency matrix can be supplied. Note 
+#' that the endogenous statistics will be computed based on this adjacency 
+#' matrix. Hence, supplying a previously computed adjacency matrix can reduce 
+#' computation time but the user should be absolutely sure the adjacency matrix 
+#' is accurate. 
+#' 
+#' Exogenous statistics:
 #' \itemize{
-#'  \item \code{\link{baseline}()}
 #'  \item \code{\link{send}()}
 #'  \item \code{\link{receive}()}
 #'  \item \code{\link{tie}()}
@@ -21,6 +95,11 @@
 #'  \item \code{\link{minimum}()}
 #'  \item \code{\link{maximum}()}
 #'  \item \code{\link{event}()}
+#' }
+#' 
+#' Endogenous statistics:
+#' \itemize{
+#'  \item \code{\link{baseline}()}
 #'  \item \code{\link{FEtype}()}
 #'  \item \code{\link{indegreeSender}()}
 #'  \item \code{\link{indegreeReceiver}()}
@@ -50,23 +129,6 @@
 #'  \item \code{\link{recencyReceiveReceiver}()}
 #'  \item \code{\link{recencyContinue}()}
 #' }
-#' 
-#' The \code{attributes} object should be constructed as follows: Each row 
-#' refers to the attribute value of actor \emph{i} at timepoint \emph{t}. An 
-#' `id` column is required that contains the actor id (corresponding to the 
-#' actor id's in the edgelist). A `time` column is required that contains the 
-#' time when attributes change (set to zero if none of the attributes vary over 
-#' time). Subsequent columns contain the attributes that are called in the 
-#' specifications of exogenous statistics. Alternatively, a 
-#' dataframe with attributes can be defined in the separate effect functions 
-#' supplied to the \code{effects} argument.
-#' 
-#' Optionally, statistics can be computed for a slice of the edgelist - but 
-#' based on the entire history. This is achieved by setting the start and 
-#' stop values equal to the index of the first and last event for which 
-#' statistics are requested. For example, start = 5 and stop = 5 computes the 
-#' statistics for only the 5th event in the edgelist, based on the history that 
-#' consists of events 1-4. 
 #' 
 #' @param effects an object of class \code{"\link[stats]{formula}"} (or one 
 #' that can be coerced to that class): a symbolic description of the effects in 
@@ -100,8 +162,7 @@
 #' potential edges) in the risk set and slices refer to statistics 
 #' @return \code{evls } Matrix with the edgelist, processed such that it can be 
 #' used to estimate a relational event model with \code{"\link[relevent]{rem}"} 
-#' @return \code{edgelist } An object class \code{"\link[remify]{reh}"}, i.e., 
-#' the processed edgelist used for the computation of the statistics
+#' @return \code{edgelist } Dataframe with the edgelist
 #' @return \code{adjmat } Matrix with the adjacency matrix, rows refer to 
 #' timepoints and columns to riskset entries
 #' 
@@ -109,6 +170,10 @@
 #' library(remstats)
 #' effects <- ~ inertia():send("extraversion") + otp()
 #' tomstats(effects, edgelist = history, attributes = info)
+#' 
+#' @references Butts, C. T. (2008). A relational event framework for social 
+#' action. Sociological Methodology, 38(1), 155–200. 
+#' \url{https://doi.org/10.1111/j.1467-9531.2008.00203.x}
 #' 
 #' @export 
 tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL, 
@@ -298,8 +363,8 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         )))
 
     # Add variable name to exogenous statistics 
-    dimnames(statistics)[[3]][which(effectsN %in% c(2:9, 33))] <- 
-        sapply(effects[which(effectsN %in% c(2:9, 33))], 
+    dimnames(statistics)[[3]][which(effectsN %in% c(2:8, 33, 39))] <- 
+        sapply(effects[which(effectsN %in% c(2:8, 33, 39))], 
         function(x) {
            if(!is.null(x$variable)) {
                 paste0(x$effect, ".", x$variable)
@@ -351,6 +416,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         statistics = statistics, 
         edgelist = edgelist,
         riskset = riskset, 
+        actors = actors[,1],
         evls = evls[(start+1):(stop+1),],
         adjmat = adjmat
     )

@@ -1,8 +1,8 @@
 Package: remstats
 Type: Package
 Title: Computes Statistics For Relational Event History Data
-Version: 2.0.0
-Date: 2021-04-09
+Version: 2.0.1
+Date: 2021-07-14
 Authors@R: 
     c(
         person(
@@ -47,12 +47,16 @@ Authors@R:
             email = "j.mulder3@tilburguniversity.edu")
     )
 Maintainer: Marlyne Meijerink-Bosman <m.l.meijerink@tilburguniversity.edu>
-Description: Butts' (2008) relational event model allows researchers to    
-    investigate the exogenous and endogenous predictors of how a time-ordered 
-    sequence of relational events (a relational event history) evolves over 
-    time. This package is developed to assist researchers in applying 
-    relational event modeling to their own data: it computes a range of 
-    exogenous and endogenous statistics for relational event history data. 
+Description: Relational event modeling approaches enable researchers to study 
+    the exogenous and endogenous predictors of how a time-ordered sequence of 
+    relational events - a so-called relational event history - evolves over 
+    time. Relational event models can be distinguished in "tie-oriented 
+    models", in which the probability of a dyad to interact next is modeled in 
+    one step (e.g., see Butts, 2008), and "actor-oriented models", in which 
+    first the probability of a sender to start an interaction is modeled and 
+    subsequently the probability of the choice of a receiver of the interaction 
+    by the active sender (e.g., see Stadtfeld & Block, 2017). The `R`-package 
+    `remstats` computes a variety of statistics for both type of models.  
 License: GPL (>= 3)
 URL: https://github.com/TilburgNetworkGroup/remstats
 BugReports: https://github.com/TilburgNetworkGroup/renstats/issues
