@@ -612,8 +612,8 @@ RcppExport SEXP _remstats_FEtype_tie(SEXP covariatesSEXP, SEXP edgelistSEXP, SEX
     return rcpp_result_gen;
 }
 // compute_stats_tie
-arma::cube compute_stats_tie(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, const arma::mat& riskset, const arma::vec& scaling, const Rcpp::List& covariates, const Rcpp::List& interactions, int start, int stop, bool directed);
-static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP typesSEXP, SEXP risksetSEXP, SEXP scalingSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP) {
+arma::cube compute_stats_tie(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, const arma::mat& riskset, const arma::vec& scaling, const Rcpp::List& covariates, const Rcpp::List& interactions, int start, int stop, bool directed, bool verbose);
+static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP typesSEXP, SEXP risksetSEXP, SEXP scalingSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type effects(effectsSEXP);
@@ -628,15 +628,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_stats_tie(effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_stats_tie(effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed, verbose));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP typesSEXP, SEXP risksetSEXP, SEXP scalingSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP) {
+RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP typesSEXP, SEXP risksetSEXP, SEXP scalingSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP verboseSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_stats_tie_try(effectsSEXP, edgelistSEXP, adjmatSEXP, actorsSEXP, typesSEXP, risksetSEXP, scalingSEXP, covariatesSEXP, interactionsSEXP, startSEXP, stopSEXP, directedSEXP));
+        rcpp_result_gen = PROTECT(_remstats_compute_stats_tie_try(effectsSEXP, edgelistSEXP, adjmatSEXP, actorsSEXP, typesSEXP, risksetSEXP, scalingSEXP, covariatesSEXP, interactionsSEXP, startSEXP, stopSEXP, directedSEXP, verboseSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -1117,7 +1118,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*tie_tie)(const arma::mat&,const arma::mat&,const arma::mat&,int,int)");
         signatures.insert("arma::mat(*event_tie)(const arma::mat&,const arma::mat&,const arma::mat&,int,int)");
         signatures.insert("arma::mat(*FEtype_tie)(const arma::mat&,const arma::mat&,const arma::mat&,int,int)");
-        signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int,bool)");
+        signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int,bool,bool)");
         signatures.insert("arma::mat(*actorStat_rc)(const arma::mat&,const arma::mat&,const arma::mat&,const arma::vec&,int,int,int)");
         signatures.insert("arma::mat(*degree_rc)(int,const arma::mat&,const arma::vec&,const arma::mat&)");
         signatures.insert("arma::mat(*recency_rc)(int,const arma::mat&,const arma::mat&,int,int,int)");
@@ -1182,7 +1183,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_tie_tie", (DL_FUNC) &_remstats_tie_tie, 5},
     {"_remstats_event_tie", (DL_FUNC) &_remstats_event_tie, 5},
     {"_remstats_FEtype_tie", (DL_FUNC) &_remstats_FEtype_tie, 5},
-    {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 12},
+    {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 13},
     {"_remstats_actorStat_rc", (DL_FUNC) &_remstats_actorStat_rc, 7},
     {"_remstats_degree_rc", (DL_FUNC) &_remstats_degree_rc, 4},
     {"_remstats_recency_rc", (DL_FUNC) &_remstats_recency_rc, 6},

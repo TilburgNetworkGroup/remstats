@@ -18,7 +18,8 @@ aomstats(
   memory_value = Inf,
   start = 1,
   stop = Inf,
-  adjmat = NULL
+  adjmat = NULL,
+  verbose = FALSE
 )
 }
 \arguments{

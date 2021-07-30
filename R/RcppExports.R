@@ -61,8 +61,8 @@ FEtype_tie <- function(covariates, edgelist, riskset, start, stop) {
     .Call(`_remstats_FEtype_tie`, covariates, edgelist, riskset, start, stop)
 }
 
-compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed) {
-    .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed)
+compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed, verbose) {
+    .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed, verbose)
 }
 
 actorStat_rc <- function(covariates, edgelist, riskset, actors, start, stop, scaling) {

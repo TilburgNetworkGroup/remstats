@@ -1,3 +1,8 @@
+# remstats 2.0.2
+
+## New features
+* Added `verbose` argument that, when set to TRUE, outputs a progress update on the statistics computation.
+
 # remstats 2.0.1
 
 ## New features

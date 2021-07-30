@@ -162,7 +162,7 @@
 aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,  
     attributes = NULL, actors = NULL, types = NULL, ordinal = FALSE, 
     origin = NULL, omit_dyad = NULL, memory = "full", 
-    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL) {
+    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL, verbose = FALSE) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {

@@ -1889,16 +1889,43 @@ arma::cube compute_stats_tie(const arma::vec& effects,
     const arma::vec& actors, const arma::vec& types,
     const arma::mat& riskset, const arma::vec& scaling, 
     const Rcpp::List& covariates, const Rcpp::List& interactions, 
-    int start, int stop, bool directed) {
+    int start, int stop, bool directed, bool verbose) {
 
     // Initialize saving space
     arma::cube stats(edgelist.n_rows, riskset.n_rows, effects.n_elem);
     stats = stats.rows(start, stop);
+    
+    // All effects for progress update
+    Rcpp::CharacterVector all_effects = {
+	"baseline", "send", "receive", "same", "difference", "average", 
+	"minimum", "maximum", "removed", "inertia", "reciprocity", 
+	"indegreeSender", "indegreeReceiver", "outdegreeSender", "outdegreeReceiver", 
+	"totaldegreeSender", "totaldegreeReceiver", "otp", "itp", "osp", "isp", 
+	"sp", "spUnique", "psABBA", "psABBY", "psABXA",  
+	"psABXB", "psABXY", "psABAY", "rrankSend", "rrankReceive",  
+	"FEtype", "event", "recencyContinue", "recencySendSender","recencySendReceiver", 
+	"recencyReceiveSender","recencyReceiveReceiver", "tie",  
+	"indegreeSender.type", "indegreeReceiver.type", 
+	"outdegreeSender.type", "outdegreeReceiver.type", 
+	"totaldegreeSender.type", "totaldegreeReceiver.type", 
+	"psABBA.type", "psABBY.type", "psABXA.type",  
+	"psABXB.type", "psABXY.type", "psABAY.type",  
+	"inertia.type", "reciprocity.type", 
+	"otp.type", "itp.type", "osp.type", "isp.type", 
+	"sp.type", "spUnique.type", 
+	"rrankSend.type", "rrankReceive.type",  
+	"recencyContinue.type", 
+	"recencySendSender.type","recencySendReceiver.type", 
+	"recencyReceiveSender.type","recencyReceiveReceiver.type", 
+	"interact"};
 
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
+
+        // Progress update
+        if(verbose) {Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;}
 
         // Initialize saving space
         arma::mat stat(stats.n_rows, stats.n_cols, arma::fill::zeros);
