@@ -79,6 +79,9 @@ event for which statistics are requested (see 'Details')}
 
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the 
 rows the timepoints and on the columns the riskset entries}
+
+\item{verbose}{logical, should an update on the progress of the statistics 
+computation be outputted?}
 }
 \value{
 \code{statistics } In case of the tie-oriented model, an array with 

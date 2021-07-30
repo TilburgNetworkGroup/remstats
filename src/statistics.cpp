@@ -3493,16 +3493,29 @@ arma::cube compute_stats_rate(const arma::vec& effects,
     const arma::mat& edgelist, const arma::mat& riskset,
     const arma::mat& adjmat, const arma::vec& actors, 
     const arma::vec& scaling, const Rcpp::List& covariates,
-    const Rcpp::List& interactions, int start, int stop) {
+    const Rcpp::List& interactions, int start, int stop, bool verbose) {
 
     // Initialize saving space
     arma::cube rateStats(edgelist.n_rows, actors.n_elem, effects.n_elem);
     rateStats = rateStats.rows(start, stop);
 
+    // Progress update
+    if(verbose) {
+        Rcpp::Rcout << "Computing statistics in the rate-step" << std::endl;
+    }
+
+    // All effects for progress update
+    Rcpp::CharacterVector all_effects = {"baseline", "send", "indegreeSender", 
+        "outdegreeSender", "totaldegreeSender", "recencySendSender", 
+        "recencyReceiveSender", "interact"};
+
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
+
+        // Progress update
+        if(verbose) {Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;}
 
         // Initialize saving space
         arma::mat stat(rateStats.n_rows, rateStats.n_cols, arma::fill::zeros);
@@ -3604,16 +3617,31 @@ arma::cube compute_stats_choice(const arma::vec& effects,
     const arma::mat& edgelist, const arma::mat& adjmat,
     const arma::vec& actors, const arma::mat& riskset,
     const arma::vec& scaling, const Rcpp::List& covariates,
-    const Rcpp::List& interactions, int start, int stop) {
+    const Rcpp::List& interactions, int start, int stop, bool verbose) {
 
     // Initialize saving space
     arma::cube choiceStats(edgelist.n_rows, actors.n_elem, effects.n_elem);
     choiceStats = choiceStats.rows(start, stop);
 
+    // Progress update
+    if(verbose) {
+        Rcpp::Rcout << "Computing statistics in the choice-step" << std::endl;
+    }
+
+    // All effects for progress update
+    Rcpp::CharacterVector all_effects = {"receive", "same", "difference", 
+        "average", "tie", "inertia", "reciprocity", "indegreeReceiver", 
+        "outdegreeReceiver", "totaldegreeReceiver", "otp", "itp", "osp", "isp",
+        "rrankSend", "rrankReceive", "recencySendReceiver", 
+        "recencyReceiveReceiver", "recencyContinue", "interact"};
+
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
+
+        // Progress update
+        if(verbose) {Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;}
 
         // Initialize saving space
         arma::mat stat(choiceStats.n_rows, choiceStats.n_cols,

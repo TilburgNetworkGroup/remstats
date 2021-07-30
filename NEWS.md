@@ -2,6 +2,15 @@
 
 ## New features
 * Added `verbose` argument that, when set to TRUE, outputs a progress update on the statistics computation.
+* Added vector with types names to output object of `tomstats()`. 
+
+## Major changes 
+* Changed the specification of the variable in the `event()` effect. 
+
+## To do
+* rrank efficiency
+* triad efficiency
+* event variable: does not match with remify::reh input
 
 # remstats 2.0.1
 

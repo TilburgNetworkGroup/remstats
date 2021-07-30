@@ -70,6 +70,9 @@ event for which statistics are requested (see Details)}
 
 \item{adjmat}{optionally, an adjacency matrix with on the rows the 
 timepoints and on the columns the riskset entries}
+
+\item{verbose}{logical, should an update on the progress of the statistics 
+computation be outputted?}
 }
 \value{
 \code{edgelist } Dataframe with the edgelist

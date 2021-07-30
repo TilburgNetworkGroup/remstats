@@ -156,6 +156,8 @@
 #' event for which statistics are requested (see 'Details')
 #' @param adjmat optionally, a previously computed adjacency matrix with on the 
 #' rows the timepoints and on the columns the riskset entries 
+#' @param verbose logical, should an update on the progress of the statistics 
+#' computation be outputted?
 #' 
 #' @return \code{statistics } Array with the computed statistics, where rows 
 #' refer to time points, columns refer to potential relational event (i.e., 
@@ -309,16 +311,18 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
                 )
                 dat$id <- actors[match(dat$id, actors[,1]),2]
                 colnames(dat)[3] <- x$variable
+                dat <- dat[order(as.numeric(dat$id)),]
                 as.matrix(dat)
             } else {
                 dat <- x$x
                 dat$id <- actors[match(dat$id, actors[,1]),2]
+                dat <- dat[order(as.numeric(dat$id)),]
                 as.matrix(dat)
             }
         } else if(x$effect == "tie") {
             parse_tie(x, prep)
         } else if(x$effect == "event") {
-            dat <- edgelist[,x$variable]
+            dat <- x$x
             as.matrix(dat)
         } else if(x$effect == "FEtype") {
             dat <- x$typeID
@@ -417,7 +421,8 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         statistics = statistics, 
         edgelist = edgelist,
         riskset = riskset, 
-        actors = actors[,1],
+        actors = actors[,2],
+        types = types[,2],
         evls = evls[(start+1):(stop+1),],
         adjmat = adjmat
     )

@@ -650,9 +650,9 @@ maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' dyads in the riskset equal to the attribute of the event at timepoint 
 #' \emph{t}. 
 #' 
-#' @param variable string with the name of the column in the 
-#' \code{edgelist} object supplied to \code{\link{remstats}} or 
-#' \code{\link{tomstats}} with the event attribute. 
+#' @param x vector with the event attribute 
+#' @param variableName optionally, a string indicating the variable name, used 
+#' for the dimnames of the output statistics object 
 #' 
 #' @seealso \code{\link{FEtype}}
 #' 
@@ -663,11 +663,12 @@ maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' tomstats(effects, edgelist = history)
 #' 
 #' @export 
-event <- function(variable) {
+event <- function(x, variableName = NULL) {
     # Output
     list(
         effect = "event",
-        variable = variable,
+        x = x,
+        variable = variableName,
         scaling = 1
     )
 }

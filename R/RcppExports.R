@@ -101,12 +101,12 @@ rrank_choice <- function(type, edgelist, riskset, actors, start, stop) {
     .Call(`_remstats_rrank_choice`, type, edgelist, riskset, actors, start, stop)
 }
 
-compute_stats_rate <- function(effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, start, stop) {
-    .Call(`_remstats_compute_stats_rate`, effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, start, stop)
+compute_stats_rate <- function(effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, start, stop, verbose) {
+    .Call(`_remstats_compute_stats_rate`, effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, start, stop, verbose)
 }
 
-compute_stats_choice <- function(effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, start, stop) {
-    .Call(`_remstats_compute_stats_choice`, effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, start, stop)
+compute_stats_choice <- function(effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, start, stop, verbose) {
+    .Call(`_remstats_compute_stats_choice`, effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, start, stop, verbose)
 }
 
 # Register entry points for exported C++ functions

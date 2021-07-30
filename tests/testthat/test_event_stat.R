@@ -5,7 +5,7 @@ library(remstats)
 test_that("event", {
 	
 	history$work <- ifelse(history$setting == "work", 1, 0)
-	tomres <- tomstats(~ event("work"), edgelist = history)
+	tomres <- tomstats(~ event(history$work, variableName = "work"), edgelist = history)
 	stats <- tomres$statistics
 	riskset <- tomres$riskset
 	
