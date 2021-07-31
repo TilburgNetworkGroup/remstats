@@ -859,12 +859,12 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 	arma::mat stat(slice.n_rows, adjmat.n_cols, arma::fill::zeros);
 	
 	// New adjmat with only zeros and ones 
-    arma::mat new_adjmat = adjmat;
+    arma::mat new_adjmat = adjmat.rows(start, stop);
 
 	if(type == 6) {
-		for(arma::uword i = 0; i < adjmat.n_rows; ++i) {
-			for(arma::uword j = 0; j < adjmat.n_cols; ++j) {
-				if(adjmat(i,j) > 0) {
+		for(arma::uword i = 0; i < new_adjmat.n_rows; ++i) {
+			for(arma::uword j = 0; j < new_adjmat.n_cols; ++j) {
+				if(new_adjmat(i,j) > 0) {
                     new_adjmat(i,j) = 1;
                 } else {
                     new_adjmat(i,j) = 0;
@@ -934,13 +934,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 					a2 = find_dyad(actors(h), j, c, actors.n_elem, FALSE);
 				}
 
-                if(type == 6) {
-                    c1 += new_adjmat.col(a1);
-				    c2 += new_adjmat.col(a2);
-                } else {
-                    c1 += adjmat.col(a1);
-				    c2 += adjmat.col(a2);
-                }
+                c1 += new_adjmat.col(a1);
+				c2 += new_adjmat.col(a2);
 				
 				stat.col(d) += min(c1, c2);
 			}
@@ -1009,13 +1004,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 						a2 = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
 					}
 					
-					if(type == 6) {
-                        c1 += new_adjmat.col(a1);
-                        c2 += new_adjmat.col(a2);
-                    } else {
-                        c1 += adjmat.col(a1);
-                        c2 += adjmat.col(a2);
-                    }
+					c1 += new_adjmat.col(a1);
+				    c2 += new_adjmat.col(a2);
 				}
 				
 				stat.col(d) += min(c1, c2);
