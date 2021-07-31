@@ -1932,7 +1932,13 @@ arma::cube compute_stats_tie(const arma::vec& effects,
         int effect = effects(i);
 
         // Progress update
-        if(verbose) {Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;}
+        if(verbose) {
+            if(effect == 99) {
+                Rcpp::Rcout << "Computing interaction effect" << std::endl;
+            } else {
+                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
+            }
+        }
 
         // Initialize saving space
         arma::mat stat(stats.n_rows, stats.n_cols, arma::fill::zeros);
@@ -3522,7 +3528,13 @@ arma::cube compute_stats_rate(const arma::vec& effects,
         int effect = effects(i);
 
         // Progress update
-        if(verbose) {Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;}
+        if(verbose) {
+            if(effect == 99) {
+                Rcpp::Rcout << "Computing interaction effect" << std::endl;
+            } else {
+                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
+            }
+        }
 
         // Initialize saving space
         arma::mat stat(rateStats.n_rows, rateStats.n_cols, arma::fill::zeros);
@@ -3648,7 +3660,13 @@ arma::cube compute_stats_choice(const arma::vec& effects,
         int effect = effects(i);
 
         // Progress update
-        if(verbose) {Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;}
+        if(verbose) {
+            if(effect == 99) {
+                Rcpp::Rcout << "Computing interaction effect" << std::endl;
+            } else {
+                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
+            }
+        }
 
         // Initialize saving space
         arma::mat stat(choiceStats.n_rows, choiceStats.n_cols,

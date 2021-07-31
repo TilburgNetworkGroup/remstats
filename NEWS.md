@@ -12,7 +12,6 @@
 
 ## To do
 * rrank efficiency
-* triad efficiency
 
 # remstats 2.0.1
 
