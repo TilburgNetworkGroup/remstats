@@ -12,6 +12,7 @@
 
 ## To do
 * rrank efficiency
+* interaction names
 
 # remstats 2.0.1
 

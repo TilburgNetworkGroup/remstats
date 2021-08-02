@@ -859,12 +859,12 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 	arma::mat stat(slice.n_rows, adjmat.n_cols, arma::fill::zeros);
 	
 	// New adjmat with only zeros and ones 
-    arma::mat new_adjmat = adjmat.rows(start, stop);
+    arma::mat new_adjmat = adjmat;
 
 	if(type == 6) {
-		for(arma::uword i = 0; i < new_adjmat.n_rows; ++i) {
-			for(arma::uword j = 0; j < new_adjmat.n_cols; ++j) {
-				if(new_adjmat(i,j) > 0) {
+		for(arma::uword i = 0; i < adjmat.n_rows; ++i) {
+			for(arma::uword j = 0; j < adjmat.n_cols; ++j) {
+				if(adjmat(i,j) > 0) {
                     new_adjmat(i,j) = 1;
                 } else {
                     new_adjmat(i,j) = 0;
@@ -887,8 +887,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 				
 				// Saving space
 				int a1; int a2;
-				arma::colvec c1(edgelist.n_rows);
-				arma::colvec c2(edgelist.n_rows);
+				arma::colvec c1(slice.n_rows);
+				arma::colvec c2(slice.n_rows);
 				
 				// otp
 				if(type == 1) {
@@ -951,8 +951,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 			for(arma::uword h = 0; h < actors.n_elem; ++h) {
 				if((h == i) || (h == j)) {continue;}
 				
-				arma::colvec c1(edgelist.n_rows);
-				arma::colvec c2(edgelist.n_rows);
+				arma::colvec c1(slice.n_rows);
+				arma::colvec c2(slice.n_rows);
 				
 				// For loop over event types
 				for(arma::uword c = 0; c < types.n_elem; ++c) {
@@ -991,6 +991,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 						// arrow2 = actor h sends to receiver j
 						a2 = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
 					}
+
+                    Rcpp::Rcout << actors(h) << ", " << j << std::endl;
 					
 					// sp or spUnique
 					if((type == 5) || (type == 6)) {
@@ -998,17 +1000,14 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 						a2 = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
 					}
 					
-					// sp or spUnique
-					if((type == 5) || (type == 6)) {
-						a1 = find_dyad(actors(h),i,c,actors.n_elem,FALSE);
-						a2 = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
-					}
+                    Rcpp::Rcout << a1 << ", " << a2 << std::endl;
 					
 					c1 += new_adjmat.col(a1);
 				    c2 += new_adjmat.col(a2);
 				}
 				
 				stat.col(d) += min(c1, c2);
+
 			}
 		}          
 	}     
