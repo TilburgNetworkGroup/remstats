@@ -354,18 +354,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
 
     # Dimnames statistics
     dimnames(statistics) <- 
-        list(NULL, NULL, unlist(c(
-            # Main effects
-            all_effects[effectsN[which(effectsN!=99)]],
-            # Interaction effects
-            sapply(effects_int, function(x) {
-                names(x) <- c(
-                    strsplit(names(x[1]), "[()]")[[1]][1], 
-                    strsplit(names(x[2]), "[()]")[[1]][1])
-                y <- all_effects[match(names(x), all_effects)]
-                paste0(y[1], ".x.", y[2])
-            })
-        )))
+        list(NULL, NULL, unlist(c(all_effects[effectsN])))
 
     # Add variable name to exogenous statistics 
     dimnames(statistics)[[3]][which(effectsN %in% c(2:8, 33, 39))] <- 
@@ -377,6 +366,16 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
                 x$effect
             }          
         }) 
+
+    # Add variable name to interaction statistics
+    dimnames(statistics)[[3]][which(effectsN == 99)] <- 
+        sapply(interactions[which(effectsN == 99)], 
+        function(x) {
+             paste0(
+                 dimnames(statistics)[[3]][as.numeric(x[1])],
+                 ".x.",
+                 dimnames(statistics)[[3]][as.numeric(x[2])])
+        })    
     
     # Transform edgelist to evls
     # Get riskset position

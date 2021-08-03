@@ -991,16 +991,12 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 						// arrow2 = actor h sends to receiver j
 						a2 = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
 					}
-
-                    Rcpp::Rcout << actors(h) << ", " << j << std::endl;
-					
+			
 					// sp or spUnique
 					if((type == 5) || (type == 6)) {
 						a1 = find_dyad(actors(h),i,c,actors.n_elem,FALSE);
 						a2 = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
 					}
-					
-                    Rcpp::Rcout << a1 << ", " << a2 << std::endl;
 					
 					c1 += new_adjmat.col(a1);
 				    c2 += new_adjmat.col(a2);
@@ -1933,7 +1929,7 @@ arma::cube compute_stats_tie(const arma::vec& effects,
         // Progress update
         if(verbose) {
             if(effect == 99) {
-                Rcpp::Rcout << "Computing interaction effect" << std::endl;
+                Rcpp::Rcout << "Computing interaction effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
             } else {
                 Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
             }
