@@ -9,10 +9,10 @@
 
 ## Minor changes
 * Updated computation procedure for triadic statistics for greater efficiency and less computation time. 
+* Changed the way interaction dimnames of the statistics are defined so its more informative. 
 
 ## To do
 * rrank efficiency
-* interaction names
 
 # remstats 2.0.1
 

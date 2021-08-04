@@ -4,9 +4,9 @@ library(remstats)
 test_that("rrankSend", {
 	data(history)
 	
-	effects <- ~ rrankSend()
-	tomres <- tomstats(edgelist = history, effects = effects)
-	aomres <- aomstats(edgelist = history, receiver_effects = effects)
+	rehObject <- reh(edgelist = history)
+	tomres <- tomstats(edgelist = rehObject, effects = ~ rrankSend())
+	aomres <- aomstats(edgelist = rehObject, receiver_effects = ~ rrankSend())
 	
 	# The value of the recency statistic is between 0 and 1
 	expect_true(all(tomres$statistics[,,2] >= 0) & all(tomres$statistics[,,2] <= 1))
@@ -18,14 +18,23 @@ test_that("rrankSend", {
 	expect_true(max(tomres$statistics[,,2]) < n)
 	ranks <- 1/aomres$statistics$receiver_stats
 	expect_true(max(aomres$statistics$receiver_stats) < n)
+
+	# Randomly select timepoint and check for most recent event
+	edgelist <- tomres$edgelist
+	riskset <- tomres$riskset
+	rt <- sample(1:nrow(edgelist), 1)
+	event <- edgelist[rt-1,]
+	stat <- tomres$statistics[,,2]
+	expect_equal(stat[rt, which(riskset[,1] == as.character(event[2]) & 
+			riskset[,2] == as.character(event[3]))], 1)
 })
 
 test_that("rrankReceive", {
 	data(history)
 	
-	effects <- ~ rrankReceive()
-	tomres <- tomstats(edgelist = history, effects = effects)
-	aomres <- aomstats(edgelist = history, receiver_effects = effects)
+	rehObject <- reh(edgelist = history)
+	tomres <- tomstats(edgelist = rehObject, effects = ~ rrankReceive())
+	aomres <- aomstats(edgelist = rehObject, receiver_effects = ~ rrankReceive())
 	
 	# The value of the recency statistic is between 0 and 1
 	expect_true(all(tomres$statistics[,,2] >= 0) & all(tomres$statistics[,,2] <= 1))
@@ -37,4 +46,13 @@ test_that("rrankReceive", {
 	expect_true(max(tomres$statistics[,,2]) < n)
 	ranks <- 1/aomres$statistics$receiver_stats
 	expect_true(max(aomres$statistics$receiver_stats) < n)
+	
+	# Randomly select timepoint and check for most recent event
+	edgelist <- tomres$edgelist
+	riskset <- tomres$riskset
+	rt <- sample(1:nrow(edgelist), 1)
+	event <- edgelist[rt-1,]
+	stat <- tomres$statistics[,,2]
+	expect_equal(stat[rt, which(riskset[,1] == as.character(event[3]) & 
+			riskset[,2] == as.character(event[2]))], 1)
 })

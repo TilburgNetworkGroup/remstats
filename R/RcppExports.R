@@ -41,6 +41,10 @@ pshift_tie <- function(type, edgelist, riskset, N, C, start, stop, consider_type
     .Call(`_remstats_pshift_tie`, type, edgelist, riskset, N, C, start, stop, consider_type)
 }
 
+rankR <- function(x, N) {
+    .Call(`_remstats_rankR`, x, N)
+}
+
 rrank_tie <- function(type, edgelist, riskset, N, C, start, stop, consider_type) {
     .Call(`_remstats_rrank_tie`, type, edgelist, riskset, N, C, start, stop, consider_type)
 }

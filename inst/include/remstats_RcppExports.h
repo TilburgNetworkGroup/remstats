@@ -235,6 +235,27 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
+    inline arma::rowvec rankR(arma::rowvec x, int N) {
+        typedef SEXP(*Ptr_rankR)(SEXP,SEXP);
+        static Ptr_rankR p_rankR = NULL;
+        if (p_rankR == NULL) {
+            validateSignature("arma::rowvec(*rankR)(arma::rowvec,int)");
+            p_rankR = (Ptr_rankR)R_GetCCallable("remstats", "_remstats_rankR");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_rankR(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(N)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::rowvec >(rcpp_result_gen);
+    }
+
     inline arma::mat rrank_tie(int type, const arma::mat& edgelist, const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type) {
         typedef SEXP(*Ptr_rrank_tie)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_rrank_tie p_rrank_tie = NULL;

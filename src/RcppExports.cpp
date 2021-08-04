@@ -414,6 +414,41 @@ RcppExport SEXP _remstats_pshift_tie(SEXP typeSEXP, SEXP edgelistSEXP, SEXP risk
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// rankR
+arma::rowvec rankR(arma::rowvec x, int N);
+static SEXP _remstats_rankR_try(SEXP xSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< arma::rowvec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(rankR(x, N));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _remstats_rankR(SEXP xSEXP, SEXP NSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_remstats_rankR_try(xSEXP, NSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // rrank_tie
 arma::mat rrank_tie(int type, const arma::mat& edgelist, const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type);
 static SEXP _remstats_rrank_tie_try(SEXP typeSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP NSEXP, SEXP CSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP consider_typeSEXP) {
@@ -1115,6 +1150,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*degree_tie)(int,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,int,int,bool)");
         signatures.insert("arma::mat(*triad_tie)(int,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,const arma::mat&,int,int,bool)");
         signatures.insert("arma::mat(*pshift_tie)(int,const arma::mat&,const arma::mat&,int,int,int,int,bool)");
+        signatures.insert("arma::rowvec(*rankR)(arma::rowvec,int)");
         signatures.insert("arma::mat(*rrank_tie)(int,const arma::mat&,const arma::mat&,int,int,int,int,bool)");
         signatures.insert("arma::mat(*recency_tie)(int,const arma::mat&,const arma::mat&,int,int,int,int,bool,bool)");
         signatures.insert("arma::mat(*tie_tie)(const arma::mat&,const arma::mat&,const arma::mat&,int,int)");
@@ -1148,6 +1184,7 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
     R_RegisterCCallable("remstats", "_remstats_degree_tie", (DL_FUNC)_remstats_degree_tie_try);
     R_RegisterCCallable("remstats", "_remstats_triad_tie", (DL_FUNC)_remstats_triad_tie_try);
     R_RegisterCCallable("remstats", "_remstats_pshift_tie", (DL_FUNC)_remstats_pshift_tie_try);
+    R_RegisterCCallable("remstats", "_remstats_rankR", (DL_FUNC)_remstats_rankR_try);
     R_RegisterCCallable("remstats", "_remstats_rrank_tie", (DL_FUNC)_remstats_rrank_tie_try);
     R_RegisterCCallable("remstats", "_remstats_recency_tie", (DL_FUNC)_remstats_recency_tie_try);
     R_RegisterCCallable("remstats", "_remstats_tie_tie", (DL_FUNC)_remstats_tie_tie_try);
@@ -1180,6 +1217,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_degree_tie", (DL_FUNC) &_remstats_degree_tie, 8},
     {"_remstats_triad_tie", (DL_FUNC) &_remstats_triad_tie, 9},
     {"_remstats_pshift_tie", (DL_FUNC) &_remstats_pshift_tie, 8},
+    {"_remstats_rankR", (DL_FUNC) &_remstats_rankR, 2},
     {"_remstats_rrank_tie", (DL_FUNC) &_remstats_rrank_tie, 8},
     {"_remstats_recency_tie", (DL_FUNC) &_remstats_recency_tie, 9},
     {"_remstats_tie_tie", (DL_FUNC) &_remstats_tie_tie, 5},

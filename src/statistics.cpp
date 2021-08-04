@@ -1191,6 +1191,16 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
     return stat;
 }
 
+//[[Rcpp::export]]
+arma::rowvec rankR(arma::rowvec x, int N) {
+		arma::uvec ranksU = N - sort_index(sort_index(x));
+        arma::rowvec ranks = arma::conv_to<arma::rowvec>::from(ranksU);
+		arma::uvec indices = arma::find(x == 0);
+		arma::rowvec reps(indices.n_elem, arma::fill::zeros);
+		ranks(indices) = reps;
+		return ranks;
+	}
+
 // rrank_tie
 // 
 // Computes statistic for a recency-rank effect (rrankSend, rrankReceive) in 
@@ -1211,323 +1221,136 @@ arma::mat rrank_tie(int type, const arma::mat& edgelist,
     const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type) {
 
     // Slice the edgelist according to "start" and "stop"
-	arma::mat slice = edgelist.rows(start, stop);
+	arma::mat ESlice = edgelist.rows(start, stop);
 
-	// Initialize saving space
-	arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+    // Saving space
+    arma::mat stat(ESlice.n_rows, riskset.n_rows, arma::fill::zeros);
 
-    if(consider_type) {
-        // Storage space ranks
-        arma::cube ranks(N, N, C, arma::fill::zeros);
-        
-        // Initialize the ranks at the first timepoint
-        // Determine the past
-        double time = slice(0,0);
-        arma::uvec past = find(edgelist.col(0) < time);
-
-        // For loop over events in the past
-        for(arma::uword j = 0; j < past.n_elem; ++j) {
-            // Sender, receiver and type of the event
-            int event = edgelist(past(j), 1);
-            int sender = riskset(event, 0);
-            int receiver = riskset(event, 1);
-            int eventtype = riskset(event, 2);
-                    
-            if(type == 1) {
-                // To whom the sender has most recently send events
-                int rank = ranks(sender, receiver, eventtype);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: 
-                    // nothing changes
-                    continue;
-                } else {
-                    arma::mat typeranks = ranks.slice(eventtype);
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(typeranks.row(sender) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the 
-                        // rank of the current actor
-                        change = find(typeranks.row(sender) > 0 && 
-                            typeranks.row(sender) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = typeranks.row(sender);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(receiver) = 1;
-                    // Update ranks 
-                    typeranks.row(sender) = rowranks;
-                    ranks.slice(eventtype) = typeranks;
+    if(!consider_type) {
+        // Initialize lastTime array
+        arma::cube lastTime(N, N, ESlice.n_rows, arma::fill::zeros);
+        if(start > 0) {
+            arma::mat past = edgelist.rows(0, start-1);
+            for(arma::uword i = 0; i < past.n_rows; ++i) {
+                // rrankSend: to whom the sender has most recently send events 
+                // (most recent times)
+                int d = past(i,1);
+                if(type == 1) {
+                    lastTime(riskset(d,0), riskset(d,1), 0) = past(i,0);
                 }
-            }
-            if(type == 2) {
-                // From whom the sender has most recently received events
-                int rank = ranks(receiver, sender, eventtype);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: 
-                    // nothing changes
-                    continue;
-                } else {
-                    arma::mat typeranks = ranks.slice(eventtype);
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(typeranks.row(receiver) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the 
-                        // rank of the current actor
-                        change = find(typeranks.row(receiver) > 0 && 
-                            typeranks.row(receiver) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = typeranks.row(receiver);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(sender) = 1;
-                    // Update ranks 
-                    typeranks.row(receiver) = rowranks;
-                    ranks.slice(eventtype) = typeranks;
+                // rrankReceive: from whom the sender has most recently 
+                // received events (most recent times)
+                if(type == 2) {
+                    lastTime(riskset(d,1), riskset(d,0), 0) = past(i,0);
                 }
             }
         }
-            
-        // For loop over the sequence
-        for(arma::uword i = 0; i < slice.n_rows; ++i) {
-            
-            // Compute the statistic based on the current ranks
-            for(arma::uword d = 0; d < riskset.n_rows; ++d) {
-                int dyadsender = riskset(d,0);
-                int dyadreceiver = riskset(d,1);
-                int dyadtype = riskset(d,2);
 
-                stat(i,d) = 1/ranks(dyadsender, dyadreceiver, dyadtype);
-                stat.replace(arma::datum::inf, 0);
-            }
-
-            // Update the ranks 
-            // Sender, receiver and type of the event
-            int event = slice(i, 1);
-            int sender = riskset(event, 0);
-            int receiver = riskset(event, 1);
-            int eventtype = riskset(event, 2);
-           
+        // Fill lastTime for every event in the sequence
+        for(arma::uword i = 0; i < (ESlice.n_rows - 1); ++i) {
+            // Update slice
+            lastTime.slice(i + 1) = lastTime.slice(i);
+            // rrankSend: to whom the sender has most recently send events 
+            // (most recent times)
+            int d = ESlice(i,1);
             if(type == 1) {
-                // To whom the sender has most recently send events
-                int rank = ranks(sender, receiver, eventtype);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: nothing 
-                    // changes
-                    continue;
-                } else {
-                    arma::mat typeranks = ranks.slice(eventtype);
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(typeranks.row(sender) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the rank of 
-                        // the current actor
-                        change = find(typeranks.row(sender) > 0 && 
-                            typeranks.row(sender) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = typeranks.row(sender);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(receiver) = 1;
-                    // Update ranks 
-                    typeranks.row(sender) = rowranks;
-                    ranks.slice(eventtype) = typeranks;
-                }
+                lastTime(riskset(d,0), riskset(d,1), i + 1) = ESlice(i,0);
             }
+            // rrankReceive: from whom the sender has most recently received 
+            // events (most recent times)
             if(type == 2) {
-                // From whom the sender has most recently received events
-                int rank = ranks(receiver, sender, eventtype);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: nothing 
-                    // changes
-                    continue;
-                } else {
-                    arma::mat typeranks = ranks.slice(eventtype);
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(typeranks.row(receiver) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the rank of 
-                        // the current actor
-                        change = find(typeranks.row(receiver) > 0 && 
-                            typeranks.row(receiver) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = typeranks.row(receiver);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(sender) = 1;
-                    // Update ranks 
-                    typeranks.row(receiver) = rowranks;
-                    ranks.slice(eventtype) = typeranks;
-                }
+                lastTime(riskset(d,1), riskset(d,0), i + 1) = ESlice(i,0);
             }
+        } 
+
+        // Compute ranks based on lastTime
+        arma::cube ranks(N, N, ESlice.n_rows, arma::fill::zeros);
+        for(arma::uword i = 0; i < ESlice.n_rows; ++i) {
+            arma::mat lastTimeS = lastTime.slice(i);
+            arma::mat ranksS = ranks.slice(i);
+            for(arma::uword j = 0; j < N; ++j) {
+                ranksS.row(j) = rankR(lastTimeS.row(j), N);
+            }
+            ranks.slice(i) = ranksS;
+        }  
+
+        // Statistics value
+        arma::cube values = 1/ranks; 
+        values.replace(arma::datum::inf, 0);
+
+        // Transform to statistics matrix
+        for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+            stat.col(i) = arma::vectorise(values.tube(riskset(i,0), riskset(i,1)));
         }
     } else {
-        // Storage space ranks
-        arma::mat ranks(N, N, arma::fill::zeros);
+        // Initialize lastTime array
+        arma::cube lastTime(N, N*C, ESlice.n_rows, arma::fill::zeros);
+        if(start > 0) {
+            arma::mat past = edgelist.rows(0, start-1);
+            for(arma::uword i = 0; i < past.n_rows; ++i) {
+                int d = past(i,1);
+                // rrankSend: to whom the sender has most recently send events 
+                // of this type (most recent times)
+                if(type == 1) {
+                    lastTime(riskset(d,0), riskset(d,1) + riskset(d,2)*N, 0) =  
+                        past(i,0);
+                }
+                // rrankReceive: from whom the sender has most recently 
+                // received events of this type (most recent times)
+                if(type == 2) {
+                    lastTime(riskset(d,1), riskset(d,0) + riskset(d,2)*N, 0) = 
+                        past(i,0);
+                }
+            }
+        }
+
+        // Fill lastTime for every event in the sequence
+        for(arma::uword i = 0; i < (ESlice.n_rows - 1); ++i) {
+            // Update slice
+            lastTime.slice(i + 1) = lastTime.slice(i);
+            // rrankSend: to whom the sender has most recently send events 
+            // of this type (most recent times)
+            int d = ESlice(i,1);
+            if(type == 1) {
+                lastTime(riskset(d,0), riskset(d,1) + riskset(d,2)*N, i + 1) = 
+                    ESlice(i,0);
+            }
+            // rrankReceive: from whom the sender has most recently received 
+            // of this type events (most recent times)
+            if(type == 2) {
+                lastTime(riskset(d,1), riskset(d,0) + riskset(d,2)*N, i + 1) = 
+                    ESlice(i,0);
+            }
+        } 
+
+        // Compute ranks based on lastTime
+        // Saving space
+        arma::cube ranks(N, N*C, ESlice.n_rows, arma::fill::zeros);
+        // For loop over timepoints 
+        for(arma::uword i = 0; i < ESlice.n_rows; ++i) {
+            // Slice at the current timepoint 
+            arma::mat lastTimeS = lastTime.slice(i);
+            arma::mat ranksS = ranks.slice(i);
+            // For loop over senders
+            for(arma::uword j = 0; j < N; ++j) {
+                // Compute ranks
+                ranksS.row(j) = rankR(lastTimeS.row(j), N*C);
+            }
+            // Save ranks
+            ranks.slice(i) = ranksS;
+        }  
+
+        // Statistics value
+        arma::cube values = 1/ranks; 
+        values.replace(arma::datum::inf, 0);
+
+        // Transform to statistics matrix
+        for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+            stat.col(i) = arma::vectorise(
+                values.tube(riskset(i,0), riskset(i,1) + riskset(i,2)*N));
+        }
         
-        // Initialize the ranks at the first timepoint
-        // Determine the past
-        double time = slice(0,0);
-        arma::uvec past = find(edgelist.col(0) < time);
-
-        // For loop over events in the past
-        for(arma::uword j = 0; j < past.n_elem; ++j) {
-
-            // Sender, receiver and type of the event
-            int event = edgelist(past(j), 1);
-            int sender = riskset(event, 0);
-            int receiver = riskset(event, 1);
-                    
-            if(type == 1) {
-                // To whom the sender has most recently send events
-                int rank = ranks(sender, receiver);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: 
-                    // nothing changes
-                    continue;
-                } else {
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(ranks.row(sender) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the 
-                        // rank of the current actor
-                        change = find(ranks.row(sender) > 0 && 
-                            ranks.row(sender) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = ranks.row(sender);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(receiver) = 1;
-                    // Update ranks 
-                    ranks.row(sender) = rowranks;
-                }
-            }
-            if(type == 2) {
-                // From whom the sender has most recently received events
-                int rank = ranks(receiver, sender);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: 
-                    // nothing changes
-                    continue;
-                } else {
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(ranks.row(receiver) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the 
-                        // rank of the current actor
-                        change = find(ranks.row(receiver) > 0 && 
-                            ranks.row(receiver) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = ranks.row(receiver);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(sender) = 1;
-                    // Update ranks 
-                    ranks.row(receiver) = rowranks;
-                }
-            }
-        }
-
-        // For loop over the sequence
-        for(arma::uword i = 0; i < slice.n_rows; ++i) {
-           
-            // Compute the statistic based on the current ranks
-            for(arma::uword d = 0; d < riskset.n_rows; ++d) {
-                int dyadsender = riskset(d,0);
-                int dyadreceiver = riskset(d,1);
-                int dyadtype = riskset(d,2);
-
-                stat(i,d) = 1/ranks(dyadsender, dyadreceiver);
-                stat.replace(arma::datum::inf, 0);
-            }
-
-            // Update the ranks 
-            // Sender, receiver and type of the event
-            int event = slice(i, 1);
-            int sender = riskset(event, 0);
-            int receiver = riskset(event, 1);
-            
-            if(type == 1) {
-                // To whom the sender has most recently send events
-                int rank = ranks(sender, receiver);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: nothing 
-                    // changes
-                    continue;
-                } else {
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(ranks.row(sender) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the rank of 
-                        // the current actor
-                        change = find(ranks.row(sender) > 0 && 
-                            ranks.row(sender) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = ranks.row(sender);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(receiver) = 1;
-                    // Update ranks 
-                    ranks.row(sender) = rowranks;
-                }
-            }
-            if(type == 2) {
-                // From whom the sender has most recently received events
-                int rank = ranks(receiver, sender);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: nothing 
-                    // changes
-                    continue;
-                } else {
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(ranks.row(receiver) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the rank of 
-                        // the current actor
-                        change = find(ranks.row(receiver) > 0 && 
-                            ranks.row(receiver) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = ranks.row(receiver);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(sender) = 1;
-                    // Update ranks 
-                    ranks.row(receiver) = rowranks;
-                }
-            }
-        }
-    }   
+    }
 
     return stat;
 }
@@ -3259,43 +3082,43 @@ arma::mat triad_choice(int type, const arma::mat& edgelist,
                 if((h == s) || (h == r)) {continue;}
 
                 // Saving space
-                int arrow1; int arrow2;
+                int a1; int a2;
 
                 // otp
                 if(type == 1) {
                     // arrow1 = sender i sends to actor h
-                    arrow1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
+                    a1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
                     // arrow2 = actor h sends to receiver j
-                    arrow2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
+                    a2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
                 }
 
                 // itp
                 if(type == 2) {
                     // arrow1 = actor h sends to sender i
-                    arrow1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
+                    a1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
                     // arrow2 = receiver j sends to actor h
-                    arrow2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
+                    a2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
                 }
 
                 // osp
                 if(type == 3) {
                     // arrow1 = sender i sends to actor h
-                    arrow1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
+                    a1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
                     // arrow2 = receiver j sends to actor h
-                    arrow2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
+                    a2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
                 }
 
                 // isp
                 if(type == 4) {
                     // arrow1 = actor h sends to sender i
-                    arrow1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
+                    a1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
                     // arrow2 = actor h sends to receiver j
-                    arrow2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
+                    a2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
                 }
 
                 // Sum past events
-                double count1 = adjmat(m, arrow1);
-                double count2 = adjmat(m, arrow2);
+                double count1 = adjmat(m, a1);
+                double count2 = adjmat(m, a2);
                 arma::vec count = {count1, count2};
                 stat(m, r) += min(count);
             }
