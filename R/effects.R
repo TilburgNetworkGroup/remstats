@@ -25,10 +25,12 @@
 #' @aliases intercept
 #' 
 #' @examples
-#' remstats(edgelist = history, tie_effects = ~ 1)
-#' remstats(edgelist = history, sender_effects = ~ 1)
-#' tomstats(~ 1, edgelist = history)
-#' aomstats(sender_effects = ~ 1, edgelist = history)
+#' library(remify)
+#' rehObject <- reh(history)
+#' remstats(edgelist = rehObject, tie_effects = ~ 1)
+#' remstats(edgelist = rehObject, sender_effects = ~ 1)
+#' tomstats(~ 1, edgelist = rehObject)
+#' aomstats(sender_effects = ~ 1, edgelist = rehObject)
 NULL
 
 #' send
@@ -64,11 +66,13 @@ NULL
 #' statistic per time point can be requested with "std". 
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history)
 #' effects <- ~ send("extraversion")
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' remstats(edgelist = history, sender_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(sender_effects = effects, edgelist = history, attributes = info)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' remstats(edgelist = rehObject, sender_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject, attributes = info)
+#' aomstats(sender_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
 send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -142,11 +146,13 @@ send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @inheritParams send
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history)
 #' effects <- ~ receive("extraversion") 
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(receiver_effects = effects, edgelist = history, attributes = info)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject, attributes = info)
+#' aomstats(receiver_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
 receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -213,18 +219,20 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' statistic per time point can be requested with "std". 
 #' 
 #' @examples 
+#' library(remify)
 #' data(info)
 #' actors <- unique(info$id)
 #' age <- info[match(actors, info$id), "age"]
 #' bothOld <- sapply(1:length(actors), function(i) {
 #'  sapply(1:length(actors), function(j) {
-#'      ifelse(age[i] & age[j] == 1 & i != j, 1, 0)
+#'      ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)
 #'  })})
+#' rehObject <- reh(history)
 #' effects <- ~ tie(bothOld, variableName = "both.old")
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export
 tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
@@ -275,11 +283,13 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 #' @inheritParams send
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history)
 #' effects <- ~ same("age") 
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(receiver_effects = effects, edgelist = history, attributes = info)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject, attributes = info)
+#' aomstats(receiver_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
 same <- function(variable, attributes = NULL) {
@@ -354,11 +364,13 @@ same <- function(variable, attributes = NULL) {
 #' should be converted to the absolute difference
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history)
 #' effects <- ~ difference("extraversion", absolute = TRUE) 
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(receiver_effects = effects, edgelist = history, attributes = info)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject, attributes = info)
+#' aomstats(receiver_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
 difference <- function(variable, attributes = NULL, 
@@ -440,11 +452,13 @@ difference <- function(variable, attributes = NULL,
 #' @inheritParams send
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history)
 #' effects <- ~ average("extraversion") 
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' remstats(edgelist = history, receiver_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history, attributes = info)
-#' aomstats(receiver_effects = effects, edgelist = history, attributes = info)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject, attributes = info)
+#' aomstats(receiver_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
 average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -517,9 +531,11 @@ average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @inheritParams send
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history)
 #' effects <- ~ minimum("extraversion") 
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history, attributes = info)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
 minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -591,9 +607,11 @@ minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @inheritParams send
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history)
 #' effects <- ~ maximum("extraversion") 
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history, attributes = info)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
 maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -650,24 +668,27 @@ maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' dyads in the riskset equal to the attribute of the event at timepoint 
 #' \emph{t}. 
 #' 
-#' @param variable string with the name of the column in the 
-#' \code{edgelist} object supplied to \code{\link{remstats}} or 
-#' \code{\link{tomstats}} with the event attribute. 
+#' @param x vector with the event attribute 
+#' @param variableName optionally, a string indicating the variable name, used 
+#' for the dimnames of the output statistics object 
 #' 
 #' @seealso \code{\link{FEtype}}
 #' 
 #' @examples 
-#' history$work <- ifelse(history$setting == "work", 1, 0)
-#' effects <- ~ event("work")
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history)
+#' library(remify)
+#' rehObject <- reh(history)
+#' work <- ifelse(history$setting == "work", 1, 0)
+#' effects <- ~ event(work, "setting.is.work")
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export 
-event <- function(variable) {
+event <- function(x, variableName = NULL) {
     # Output
     list(
         effect = "event",
-        variable = variable,
+        x = x,
+        variable = variableName,
         scaling = 1
     )
 }
@@ -692,10 +713,12 @@ event <- function(variable) {
 #' @seealso \code{\link{event}}
 #' 
 #' @examples 
+#' library(remify)
 #' history$type <- history$setting
+#' rehObject <- reh(history)
 #' effects <- ~ FEtype()
-#' remstats(edgelist = history, tie_effects = effects, attributes = info)
-#' tomstats(effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export 
 FEtype <- function() {
@@ -737,12 +760,14 @@ FEtype <- function() {
 #' events separately for each event type (TRUE) or sum across different event 
 #' types (FALSE, default).
 #' 
-#' @examples 
+#' @examples
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ inertia()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export 
 inertia <- function(scaling = c("as.is", "prop", "std"), 
@@ -796,11 +821,13 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
 #' different event types (FALSE, default).
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ reciprocity()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export 
 reciprocity <- function(scaling = c("as.is", "prop", "std"), 
@@ -859,11 +886,13 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ indegreeSender()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, sender_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(sender_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, sender_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(sender_effects = effects, edgelist = rehObject)
 #'
 #' @export
 indegreeSender <- function(scaling = c("as.is", "prop", "std"), 
@@ -914,11 +943,13 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ indegreeReceiver()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export
 indegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
@@ -970,11 +1001,13 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ outdegreeSender()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, sender_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(sender_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, sender_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(sender_effects = effects, edgelist = rehObject)
 #'
 #' @export
 outdegreeSender <- function(scaling = c("as.is", "prop", "std"), 
@@ -1025,11 +1058,13 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ outdegreeReceiver()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export
 outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
@@ -1089,11 +1124,12 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #' 
 #' @examples 
-#' effects <- ~ totaldegreeSender()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, sender_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(sender_effects = effects, edgelist = history)
+#' library(remify)
+#' rehObject <- reh(history) 
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, sender_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(sender_effects = effects, edgelist = rehObject)
 #'
 #' @export
 totaldegreeSender <- function(scaling = c("as.is", "prop", "std"), 
@@ -1145,11 +1181,13 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeSender}} for other types of degree effects.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ totaldegreeReceiver()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export
 totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
@@ -1201,11 +1239,13 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' undirected relational events.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ otp()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export  
 otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1249,11 +1289,13 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' undirected relational events.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ itp()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export  
 itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1303,11 +1345,13 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' undirected relational events.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ osp()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export  
 osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1351,11 +1395,13 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' undirected relational events.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ isp()
-#' remstats(edgelist = history, tie_effects = effects)
-#' remstats(edgelist = history, receiver_effects = effects)
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(edgelist = rehObject, tie_effects = effects)
+#' remstats(edgelist = rehObject, receiver_effects = effects)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export  
 isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1399,8 +1445,10 @@ isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' relational events.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history, directed = FALSE) 
 #' effects <- ~ sp()
-#' tomstats(effects, edgelist = history, directed = FALSE)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export  
 sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1445,8 +1493,10 @@ sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' relational events.
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history, directed = FALSE) 
 #' effects <- ~ spUnique()
-#' tomstats(effects, edgelist = history, directed = FALSE)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export  
 spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1498,8 +1548,10 @@ spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' shifts. 
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ psABBA()
-#' tomstats(effects, edgelist = history)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
 psABBA <- function(consider_type = FALSE) {
@@ -1545,8 +1597,10 @@ psABBA <- function(consider_type = FALSE) {
 #' shifts. 
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ psABBY()
-#' tomstats(effects, edgelist = history)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
 psABBY <- function(consider_type = FALSE) {
@@ -1592,8 +1646,10 @@ psABBY <- function(consider_type = FALSE) {
 #' shifts. 
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ psABXA()
-#' tomstats(effects, edgelist = history)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
 psABXA <- function(consider_type = FALSE) {
@@ -1639,8 +1695,10 @@ psABXA <- function(consider_type = FALSE) {
 #' shifts. 
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ psABXB()
-#' tomstats(effects, edgelist = history)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
 psABXB <- function(consider_type = FALSE) {
@@ -1685,8 +1743,10 @@ psABXB <- function(consider_type = FALSE) {
 #' shifts. 
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ psABXY()
-#' tomstats(effects, edgelist = history)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
 psABXY <- function(consider_type = FALSE) {
@@ -1732,8 +1792,10 @@ psABXY <- function(consider_type = FALSE) {
 #' shifts. 
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ psABAY()
-#' tomstats(effects, edgelist = history)
+#' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
 psABAY <- function(consider_type = FALSE) {
@@ -1764,9 +1826,8 @@ psABAY <- function(consider_type = FALSE) {
 #' actors to which sender i has most recently send past events. Note that the 
 #' 'rrankSend' effect is only defined for directed events. 
 #' 
-#' @param consider_type logical, indicates whether to determine the rank 
-#' separately for each event type (TRUE) or regardless of event types (FALSE, 
-#' default).
+#' @param consider_type logical, indicates whether to discriminate between 
+#' event types in determining the event rank (TRUE) or not (FALSE, default).
 #' 
 #' @aliases recencyRank rrank
 #' @seealso \code{\link{rrankReceive}}, \code{\link{recencySendSender}}, 
@@ -1775,9 +1836,13 @@ psABAY <- function(consider_type = FALSE) {
 #' other type of recency effects
 #' 
 #' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ rrankSend()
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' remstats(tie_effects = effects, edgelist = rehObject)
+#' remstats(receiver_effects = effects, edgelist = rehObject)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export 
 rrankSend <- function(consider_type = FALSE) {
@@ -1816,9 +1881,11 @@ rrankSend <- function(consider_type = FALSE) {
 #' other type of recency effects
 #' 
 #' @examples
+#' library(remify)
+#' rehObject <- reh(history) 
 #' effects <- ~ rrankReceive()
-#' tomstats(effects, edgelist = history)
-#' aomstats(receiver_effects = effects, edgelist = history)
+#' tomstats(effects, edgelist = rehObject)
+#' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export 
 rrankReceive <- function(consider_type = FALSE) {

@@ -30,11 +30,13 @@ Optionally, a scaling method can be set with \code{scaling}. Note that an
 'otp' effect is only defined for directed events.
 }
 \examples{
+library(remify)
+rehObject <- reh(history) 
 effects <- ~ otp()
-remstats(edgelist = history, tie_effects = effects)
-remstats(edgelist = history, receiver_effects = effects)
-tomstats(effects, edgelist = history)
-aomstats(receiver_effects = effects, edgelist = history)
+remstats(edgelist = rehObject, tie_effects = effects)
+remstats(edgelist = rehObject, receiver_effects = effects)
+tomstats(effects, edgelist = rehObject)
+aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }
 \seealso{

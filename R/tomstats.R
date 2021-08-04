@@ -156,6 +156,8 @@
 #' event for which statistics are requested (see 'Details')
 #' @param adjmat optionally, a previously computed adjacency matrix with on the 
 #' rows the timepoints and on the columns the riskset entries 
+#' @param verbose logical, should an update on the progress of the statistics 
+#' computation be outputted?
 #' 
 #' @return \code{statistics } Array with the computed statistics, where rows 
 #' refer to time points, columns refer to potential relational event (i.e., 
@@ -179,7 +181,7 @@
 tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL, 
     types = NULL, directed = TRUE, ordinal = FALSE, origin = NULL, 
     omit_dyad = NULL, memory = "full", memory_value = Inf, start = 1, 
-    stop = Inf, adjmat = NULL) {
+    stop = Inf, adjmat = NULL, verbose = FALSE) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
@@ -309,16 +311,18 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
                 )
                 dat$id <- actors[match(dat$id, actors[,1]),2]
                 colnames(dat)[3] <- x$variable
+                dat <- dat[order(as.numeric(dat$id)),]
                 as.matrix(dat)
             } else {
                 dat <- x$x
                 dat$id <- actors[match(dat$id, actors[,1]),2]
+                dat <- dat[order(as.numeric(dat$id)),]
                 as.matrix(dat)
             }
         } else if(x$effect == "tie") {
             parse_tie(x, prep)
         } else if(x$effect == "event") {
-            dat <- edgelist[,x$variable]
+            dat <- x$x
             as.matrix(dat)
         } else if(x$effect == "FEtype") {
             dat <- x$typeID
@@ -345,22 +349,12 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
 
     # Compute statistics
     statistics <- compute_stats_tie(effectsN, newE, adjmat, actors[,2], 
-        types[,2], prepR, scaling, covar, interactions, start, stop, directed)
+        types[,2], prepR, scaling, covar, interactions, start, stop, directed, 
+        verbose)
 
     # Dimnames statistics
     dimnames(statistics) <- 
-        list(NULL, NULL, unlist(c(
-            # Main effects
-            all_effects[effectsN[which(effectsN!=99)]],
-            # Interaction effects
-            sapply(effects_int, function(x) {
-                names(x) <- c(
-                    strsplit(names(x[1]), "[()]")[[1]][1], 
-                    strsplit(names(x[2]), "[()]")[[1]][1])
-                y <- all_effects[match(names(x), all_effects)]
-                paste0(y[1], ".x.", y[2])
-            })
-        )))
+        list(NULL, NULL, unlist(c(all_effects[effectsN])))
 
     # Add variable name to exogenous statistics 
     dimnames(statistics)[[3]][which(effectsN %in% c(2:8, 33, 39))] <- 
@@ -372,6 +366,16 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
                 x$effect
             }          
         }) 
+
+    # Add variable name to interaction statistics
+    dimnames(statistics)[[3]][which(effectsN == 99)] <- 
+        sapply(interactions[which(effectsN == 99)], 
+        function(x) {
+             paste0(
+                 dimnames(statistics)[[3]][as.numeric(x[1])],
+                 ".x.",
+                 dimnames(statistics)[[3]][as.numeric(x[2])])
+        })    
     
     # Transform edgelist to evls
     # Get riskset position
@@ -417,6 +421,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         edgelist = edgelist,
         riskset = riskset, 
         actors = actors[,1],
+        types = types[,1],
         evls = evls[(start+1):(stop+1),],
         adjmat = adjmat
     )

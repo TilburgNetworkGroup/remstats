@@ -38,11 +38,13 @@ that every actor is equally likely to receive a message and the statistic is
 set equal to 1/n, where n refers to the number of actors.
 }
 \examples{
+library(remify)
+rehObject <- reh(history) 
 effects <- ~ totaldegreeReceiver()
-remstats(edgelist = history, tie_effects = effects)
-remstats(edgelist = history, receiver_effects = effects)
-tomstats(effects, edgelist = history)
-aomstats(receiver_effects = effects, edgelist = history)
+remstats(edgelist = rehObject, tie_effects = effects)
+remstats(edgelist = rehObject, receiver_effects = effects)
+tomstats(effects, edgelist = rehObject)
+aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }
 \seealso{

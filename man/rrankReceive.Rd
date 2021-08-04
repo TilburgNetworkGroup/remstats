@@ -7,9 +7,8 @@
 rrankReceive(consider_type = FALSE)
 }
 \arguments{
-\item{consider_type}{logical, indicates whether to determine the rank 
-separately for each event type (TRUE) or regardless of event types (FALSE, 
-default).}
+\item{consider_type}{logical, indicates whether to discriminate between 
+event types in determining the event rank (TRUE) or not (FALSE, default).}
 }
 \description{
 Specifies the statistic for a recency rank receive effect in the 
@@ -24,9 +23,11 @@ actors from which sender i has most recently received past events. Note that
 the 'rrankReceive' effect is only defined for directed events.
 }
 \examples{
+library(remify)
+rehObject <- reh(history) 
 effects <- ~ rrankReceive()
-tomstats(effects, edgelist = history)
-aomstats(receiver_effects = effects, edgelist = history)
+tomstats(effects, edgelist = rehObject)
+aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }
 \seealso{

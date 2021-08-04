@@ -849,165 +849,167 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
 // 
 // [[Rcpp::export]]
 arma::mat triad_tie(int type, const arma::mat& edgelist, 
-    const arma::vec& actors, const arma::vec& types, const arma::mat& adjmat, 
-    const arma::mat& riskset,int start, int stop, bool consider_type) {
-
-    // Slice the edgelist according to "start" and "stop"
+	const arma::vec& actors, const arma::vec& types, const arma::mat& adjmat, 
+	const arma::mat& riskset, int start, int stop, bool consider_type) {
+	
+	// Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
-
+	
 	// Initialize saving space
 	arma::mat stat(slice.n_rows, adjmat.n_cols, arma::fill::zeros);
+	
+	// New adjmat with only zeros and ones 
+    arma::mat new_adjmat = adjmat;
 
-    if(consider_type) {
-        // For loop over dyads
-        for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
-            // Sender i, receiver j and event type c
-            int i = riskset(d,0);
-            int j = riskset(d,1);
-            int c = riskset(d,2);
-            
-            // For loop over actors h
-            for(arma::uword h = 0; h < actors.n_elem; ++h) {
-                if((h == i) || (h == j)) {continue;}
-
-                // Saving space
-                int arrow1; int arrow2;
-                
-                // otp
-                if(type == 1) {
-                    // arrow1 = sender i sends to actor h
-                    arrow1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
-                    // arrow2 = actor h sends to receiver j
-                    arrow2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
+	if(type == 6) {
+		for(arma::uword i = 0; i < adjmat.n_rows; ++i) {
+			for(arma::uword j = 0; j < adjmat.n_cols; ++j) {
+				if(adjmat(i,j) > 0) {
+                    new_adjmat(i,j) = 1;
+                } else {
+                    new_adjmat(i,j) = 0;
                 }
+			}
+		}
+	}
+	
+	if(consider_type) {
+		// For loop over dyads
+		for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
+			// Sender i, receiver j and event type c
+			int i = riskset(d,0);
+			int j = riskset(d,1);
+			int c = riskset(d,2);
+			
+			// For loop over actors h
+			for(arma::uword h = 0; h < actors.n_elem; ++h) {
+				if((h == i) || (h == j)) {continue;}
+				
+				// Saving space
+				int a1; int a2;
+				arma::colvec c1(slice.n_rows);
+				arma::colvec c2(slice.n_rows);
+				
+				// otp
+				if(type == 1) {
+					// arrow1 = sender i sends to actor h
+					a1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
+					// arrow2 = actor h sends to receiver j
+					a2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
+				}
+				
+				// itp
+				if(type == 2) {
+					// arrow1 = actor h sends to sender i
+					a1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
+					// arrow2 = receiver j sends to actor h
+					a2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
+				}
+				
+				// osp
+				if(type == 3) {
+					// arrow1 = sender i sends to actor h
+					a1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
+					// arrow2 = receiver j sends to actor h
+					a2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
+				}
+				
+				// isp
+				if(type == 4) {
+					// arrow1 = actor h sends to sender i
+					a1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
+					// arrow2 = actor h sends to receiver j
+					a2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
+				}
+				
+				// sp or spUnique
+				if((type == 5) || (type == 6)) {
+					// arrow1 = actor h sends to sender i OR sender i sends to 
+					// actor h (undirected events, only one exists) ~ corrected 
+					// for by setting directed = FALSE
+					a1 = find_dyad(actors(h), i, c, actors.n_elem, FALSE);
+					
+					// arrow2 = receiver j sends to actor h OR actor h sends to 
+					// receiver j (undirected events, only one exists)
+					a2 = find_dyad(actors(h), j, c, actors.n_elem, FALSE);
+				}
 
-                // itp
-                if(type == 2) {
-                    // arrow1 = actor h sends to sender i
-                    arrow1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
-                    // arrow2 = receiver j sends to actor h
-                    arrow2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
-                }
+                c1 += new_adjmat.col(a1);
+				c2 += new_adjmat.col(a2);
+				
+				stat.col(d) += min(c1, c2);
+			}
+		}
+	} else {
+		// For loop over dyads
+		for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
+			// Sender i and receiver j 
+			int i = riskset(d,0);
+			int j = riskset(d,1);
+			
+			// For loop over actors h
+			for(arma::uword h = 0; h < actors.n_elem; ++h) {
+				if((h == i) || (h == j)) {continue;}
+				
+				arma::colvec c1(slice.n_rows);
+				arma::colvec c2(slice.n_rows);
+				
+				// For loop over event types
+				for(arma::uword c = 0; c < types.n_elem; ++c) {
+					
+					int a1 = 0;
+					int a2 = 0;
+					
+					// otp
+					if(type == 1) {
+						// arrow1 = sender i sends to actor h
+						a1 = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
+						// arrow2 = actor h sends to receiver j
+						a2 = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
+					}
+					
+					// itp
+					if(type == 2) {
+						// arrow1 = actor h sends to sender i
+						a1 = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
+						// arrow2 = receiver j sends to actor h
+						a2 = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
+					}
+					
+					// osp
+					if(type == 3) {
+						// arrow1 = sender i sends to actor h
+						a1 = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
+						// arrow2 = receiver j sends to actor h
+						a2 = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
+					}
+					
+					// isp
+					if(type == 4) {
+						// arrow1 = actor h sends to sender i
+						a1 = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
+						// arrow2 = actor h sends to receiver j
+						a2 = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
+					}
+			
+					// sp or spUnique
+					if((type == 5) || (type == 6)) {
+						a1 = find_dyad(actors(h),i,c,actors.n_elem,FALSE);
+						a2 = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
+					}
+					
+					c1 += new_adjmat.col(a1);
+				    c2 += new_adjmat.col(a2);
+				}
+				
+				stat.col(d) += min(c1, c2);
 
-                // osp
-                if(type == 3) {
-                    // arrow1 = sender i sends to actor h
-                    arrow1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
-                    // arrow2 = receiver j sends to actor h
-                    arrow2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
-                }
-
-                // isp
-                if(type == 4) {
-                    // arrow1 = actor h sends to sender i
-                    arrow1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
-                    // arrow2 = actor h sends to receiver j
-                    arrow2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
-                }
-
-                // sp or spUnique
-                if((type == 5) || (type == 6)) {
-                    // arrow1 = actor h sends to sender i OR sender i sends to 
-                    // actor h (undirected events, only one exists) ~ corrected 
-                    // for by setting directed = FALSE
-                    arrow1 = find_dyad(actors(h), i, c, actors.n_elem, FALSE);
-
-                    // arrow2 = receiver j sends to actor h OR actor h sends to 
-                    // receiver j (undirected events, only one exists)
-                    arrow2 = find_dyad(actors(h), j, c, actors.n_elem, FALSE);
-                }
-
-                // For loop over timepoints
-                for(arma::uword t = 0; t < slice.n_rows; ++t) {
-                    double count1 = adjmat(t, arrow1);
-                    double count2 = adjmat(t, arrow2);
-                    if(type == 6) {
-                        if(count1 > 0) {count1 = 1;}
-                        if(count2 > 0) {count2 = 1;}
-                    }
-                    arma::vec count = {count1, count2};
-                    stat(t, d) += min(count);
-                }
-            }
-        }
-    } else {
-        // For loop over dyads
-        for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
-            // Sender i and receiver j 
-            int i = riskset(d,0);
-            int j = riskset(d,1);
-            
-            // For loop over actors h
-            for(arma::uword h = 0; h < actors.n_elem; ++h) {
-                if((h == i) || (h == j)) {continue;}
-
-                // Saving space
-                arma::vec arrow1(types.n_elem); 
-                arma::vec arrow2(types.n_elem);
-
-                // For loop over event types
-                for(arma::uword c = 0; c < types.n_elem; ++c) {
-                                        
-                    // otp
-                    if(type == 1) {
-                        // arrow1 = sender i sends to actor h
-                        arrow1(c) = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
-                        // arrow2 = actor h sends to receiver j
-                        arrow2(c) = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
-                    }
-
-                    // itp
-                    if(type == 2) {
-                        // arrow1 = actor h sends to sender i
-                        arrow1(c) = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
-                        // arrow2 = receiver j sends to actor h
-                        arrow2(c) = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
-                    }
-
-                    // osp
-                    if(type == 3) {
-                        // arrow1 = sender i sends to actor h
-                        arrow1(c) = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
-                        // arrow2 = receiver j sends to actor h
-                        arrow2(c) = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
-                    }
-
-                    // isp
-                    if(type == 4) {
-                        // arrow1 = actor h sends to sender i
-                        arrow1(c) = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
-                        // arrow2 = actor h sends to receiver j
-                        arrow2(c) = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
-                    }
-
-                    // sp or spUnique
-                    if((type == 5) || (type == 6)) {
-                        arrow1(c) = find_dyad(actors(h),i,c,actors.n_elem,FALSE);
-                        arrow2(c) = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
-                    }
-                }
-
-                arma::uvec arrow1U = arma::conv_to<arma::uvec>::from(arrow1);
-                arma::uvec arrow2U = arma::conv_to<arma::uvec>::from(arrow2);
-
-                // For loop over timepoints
-                for(arma::uword t = 0; t < slice.n_rows; ++t) {
-                    arma::rowvec adjmatrow = adjmat.row(t);
-                    double count1 = arma::sum(adjmatrow(arrow1U));
-                    double count2 = arma::sum(adjmatrow(arrow2U));
-                    if(type == 6) {
-                        if(count1 > 0) {count1 = 1;}
-                        if(count2 > 0) {count2 = 1;}
-                    }
-                    arma::vec count = {count1, count2};
-                    stat(t, d) += arma::min(count);
-                }     
-            }
-        }          
-    }     
-
-    // Output the computed stat
-    return stat;
+			}
+		}          
+	}     
+	
+	// Output the computed stat
+	return stat;
 }
 
 // pshift_tie
@@ -1189,6 +1191,16 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
     return stat;
 }
 
+//[[Rcpp::export]]
+arma::rowvec rankR(arma::rowvec x, int N) {
+		arma::uvec ranksU = N - sort_index(sort_index(x));
+        arma::rowvec ranks = arma::conv_to<arma::rowvec>::from(ranksU);
+		arma::uvec indices = arma::find(x == 0);
+		arma::rowvec reps(indices.n_elem, arma::fill::zeros);
+		ranks(indices) = reps;
+		return ranks;
+	}
+
 // rrank_tie
 // 
 // Computes statistic for a recency-rank effect (rrankSend, rrankReceive) in 
@@ -1209,323 +1221,136 @@ arma::mat rrank_tie(int type, const arma::mat& edgelist,
     const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type) {
 
     // Slice the edgelist according to "start" and "stop"
-	arma::mat slice = edgelist.rows(start, stop);
+	arma::mat ESlice = edgelist.rows(start, stop);
 
-	// Initialize saving space
-	arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+    // Saving space
+    arma::mat stat(ESlice.n_rows, riskset.n_rows, arma::fill::zeros);
 
-    if(consider_type) {
-        // Storage space ranks
-        arma::cube ranks(N, N, C, arma::fill::zeros);
-        
-        // Initialize the ranks at the first timepoint
-        // Determine the past
-        double time = slice(0,0);
-        arma::uvec past = find(edgelist.col(0) < time);
-
-        // For loop over events in the past
-        for(arma::uword j = 0; j < past.n_elem; ++j) {
-            // Sender, receiver and type of the event
-            int event = edgelist(past(j), 1);
-            int sender = riskset(event, 0);
-            int receiver = riskset(event, 1);
-            int eventtype = riskset(event, 2);
-                    
-            if(type == 1) {
-                // To whom the sender has most recently send events
-                int rank = ranks(sender, receiver, eventtype);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: 
-                    // nothing changes
-                    continue;
-                } else {
-                    arma::mat typeranks = ranks.slice(eventtype);
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(typeranks.row(sender) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the 
-                        // rank of the current actor
-                        change = find(typeranks.row(sender) > 0 && 
-                            typeranks.row(sender) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = typeranks.row(sender);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(receiver) = 1;
-                    // Update ranks 
-                    typeranks.row(sender) = rowranks;
-                    ranks.slice(eventtype) = typeranks;
+    if(!consider_type) {
+        // Initialize lastTime array
+        arma::cube lastTime(N, N, ESlice.n_rows, arma::fill::zeros);
+        if(start > 0) {
+            arma::mat past = edgelist.rows(0, start-1);
+            for(arma::uword i = 0; i < past.n_rows; ++i) {
+                // rrankSend: to whom the sender has most recently send events 
+                // (most recent times)
+                int d = past(i,1);
+                if(type == 1) {
+                    lastTime(riskset(d,0), riskset(d,1), 0) = past(i,0);
                 }
-            }
-            if(type == 2) {
-                // From whom the sender has most recently received events
-                int rank = ranks(receiver, sender, eventtype);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: 
-                    // nothing changes
-                    continue;
-                } else {
-                    arma::mat typeranks = ranks.slice(eventtype);
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(typeranks.row(receiver) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the 
-                        // rank of the current actor
-                        change = find(typeranks.row(receiver) > 0 && 
-                            typeranks.row(receiver) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = typeranks.row(receiver);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(sender) = 1;
-                    // Update ranks 
-                    typeranks.row(receiver) = rowranks;
-                    ranks.slice(eventtype) = typeranks;
+                // rrankReceive: from whom the sender has most recently 
+                // received events (most recent times)
+                if(type == 2) {
+                    lastTime(riskset(d,1), riskset(d,0), 0) = past(i,0);
                 }
             }
         }
-            
-        // For loop over the sequence
-        for(arma::uword i = 0; i < slice.n_rows; ++i) {
-            
-            // Compute the statistic based on the current ranks
-            for(arma::uword d = 0; d < riskset.n_rows; ++d) {
-                int dyadsender = riskset(d,0);
-                int dyadreceiver = riskset(d,1);
-                int dyadtype = riskset(d,2);
 
-                stat(i,d) = 1/ranks(dyadsender, dyadreceiver, dyadtype);
-                stat.replace(arma::datum::inf, 0);
-            }
-
-            // Update the ranks 
-            // Sender, receiver and type of the event
-            int event = slice(i, 1);
-            int sender = riskset(event, 0);
-            int receiver = riskset(event, 1);
-            int eventtype = riskset(event, 2);
-           
+        // Fill lastTime for every event in the sequence
+        for(arma::uword i = 0; i < (ESlice.n_rows - 1); ++i) {
+            // Update slice
+            lastTime.slice(i + 1) = lastTime.slice(i);
+            // rrankSend: to whom the sender has most recently send events 
+            // (most recent times)
+            int d = ESlice(i,1);
             if(type == 1) {
-                // To whom the sender has most recently send events
-                int rank = ranks(sender, receiver, eventtype);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: nothing 
-                    // changes
-                    continue;
-                } else {
-                    arma::mat typeranks = ranks.slice(eventtype);
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(typeranks.row(sender) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the rank of 
-                        // the current actor
-                        change = find(typeranks.row(sender) > 0 && 
-                            typeranks.row(sender) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = typeranks.row(sender);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(receiver) = 1;
-                    // Update ranks 
-                    typeranks.row(sender) = rowranks;
-                    ranks.slice(eventtype) = typeranks;
-                }
+                lastTime(riskset(d,0), riskset(d,1), i + 1) = ESlice(i,0);
             }
+            // rrankReceive: from whom the sender has most recently received 
+            // events (most recent times)
             if(type == 2) {
-                // From whom the sender has most recently received events
-                int rank = ranks(receiver, sender, eventtype);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: nothing 
-                    // changes
-                    continue;
-                } else {
-                    arma::mat typeranks = ranks.slice(eventtype);
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(typeranks.row(receiver) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the rank of 
-                        // the current actor
-                        change = find(typeranks.row(receiver) > 0 && 
-                            typeranks.row(receiver) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = typeranks.row(receiver);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(sender) = 1;
-                    // Update ranks 
-                    typeranks.row(receiver) = rowranks;
-                    ranks.slice(eventtype) = typeranks;
-                }
+                lastTime(riskset(d,1), riskset(d,0), i + 1) = ESlice(i,0);
             }
+        } 
+
+        // Compute ranks based on lastTime
+        arma::cube ranks(N, N, ESlice.n_rows, arma::fill::zeros);
+        for(arma::uword i = 0; i < ESlice.n_rows; ++i) {
+            arma::mat lastTimeS = lastTime.slice(i);
+            arma::mat ranksS = ranks.slice(i);
+            for(arma::uword j = 0; j < N; ++j) {
+                ranksS.row(j) = rankR(lastTimeS.row(j), N);
+            }
+            ranks.slice(i) = ranksS;
+        }  
+
+        // Statistics value
+        arma::cube values = 1/ranks; 
+        values.replace(arma::datum::inf, 0);
+
+        // Transform to statistics matrix
+        for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+            stat.col(i) = arma::vectorise(values.tube(riskset(i,0), riskset(i,1)));
         }
     } else {
-        // Storage space ranks
-        arma::mat ranks(N, N, arma::fill::zeros);
+        // Initialize lastTime array
+        arma::cube lastTime(N, N*C, ESlice.n_rows, arma::fill::zeros);
+        if(start > 0) {
+            arma::mat past = edgelist.rows(0, start-1);
+            for(arma::uword i = 0; i < past.n_rows; ++i) {
+                int d = past(i,1);
+                // rrankSend: to whom the sender has most recently send events 
+                // of this type (most recent times)
+                if(type == 1) {
+                    lastTime(riskset(d,0), riskset(d,1) + riskset(d,2)*N, 0) =  
+                        past(i,0);
+                }
+                // rrankReceive: from whom the sender has most recently 
+                // received events of this type (most recent times)
+                if(type == 2) {
+                    lastTime(riskset(d,1), riskset(d,0) + riskset(d,2)*N, 0) = 
+                        past(i,0);
+                }
+            }
+        }
+
+        // Fill lastTime for every event in the sequence
+        for(arma::uword i = 0; i < (ESlice.n_rows - 1); ++i) {
+            // Update slice
+            lastTime.slice(i + 1) = lastTime.slice(i);
+            // rrankSend: to whom the sender has most recently send events 
+            // of this type (most recent times)
+            int d = ESlice(i,1);
+            if(type == 1) {
+                lastTime(riskset(d,0), riskset(d,1) + riskset(d,2)*N, i + 1) = 
+                    ESlice(i,0);
+            }
+            // rrankReceive: from whom the sender has most recently received 
+            // of this type events (most recent times)
+            if(type == 2) {
+                lastTime(riskset(d,1), riskset(d,0) + riskset(d,2)*N, i + 1) = 
+                    ESlice(i,0);
+            }
+        } 
+
+        // Compute ranks based on lastTime
+        // Saving space
+        arma::cube ranks(N, N*C, ESlice.n_rows, arma::fill::zeros);
+        // For loop over timepoints 
+        for(arma::uword i = 0; i < ESlice.n_rows; ++i) {
+            // Slice at the current timepoint 
+            arma::mat lastTimeS = lastTime.slice(i);
+            arma::mat ranksS = ranks.slice(i);
+            // For loop over senders
+            for(arma::uword j = 0; j < N; ++j) {
+                // Compute ranks
+                ranksS.row(j) = rankR(lastTimeS.row(j), N*C);
+            }
+            // Save ranks
+            ranks.slice(i) = ranksS;
+        }  
+
+        // Statistics value
+        arma::cube values = 1/ranks; 
+        values.replace(arma::datum::inf, 0);
+
+        // Transform to statistics matrix
+        for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+            stat.col(i) = arma::vectorise(
+                values.tube(riskset(i,0), riskset(i,1) + riskset(i,2)*N));
+        }
         
-        // Initialize the ranks at the first timepoint
-        // Determine the past
-        double time = slice(0,0);
-        arma::uvec past = find(edgelist.col(0) < time);
-
-        // For loop over events in the past
-        for(arma::uword j = 0; j < past.n_elem; ++j) {
-
-            // Sender, receiver and type of the event
-            int event = edgelist(past(j), 1);
-            int sender = riskset(event, 0);
-            int receiver = riskset(event, 1);
-                    
-            if(type == 1) {
-                // To whom the sender has most recently send events
-                int rank = ranks(sender, receiver);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: 
-                    // nothing changes
-                    continue;
-                } else {
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(ranks.row(sender) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the 
-                        // rank of the current actor
-                        change = find(ranks.row(sender) > 0 && 
-                            ranks.row(sender) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = ranks.row(sender);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(receiver) = 1;
-                    // Update ranks 
-                    ranks.row(sender) = rowranks;
-                }
-            }
-            if(type == 2) {
-                // From whom the sender has most recently received events
-                int rank = ranks(receiver, sender);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: 
-                    // nothing changes
-                    continue;
-                } else {
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(ranks.row(receiver) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the 
-                        // rank of the current actor
-                        change = find(ranks.row(receiver) > 0 && 
-                            ranks.row(receiver) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = ranks.row(receiver);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(sender) = 1;
-                    // Update ranks 
-                    ranks.row(receiver) = rowranks;
-                }
-            }
-        }
-
-        // For loop over the sequence
-        for(arma::uword i = 0; i < slice.n_rows; ++i) {
-           
-            // Compute the statistic based on the current ranks
-            for(arma::uword d = 0; d < riskset.n_rows; ++d) {
-                int dyadsender = riskset(d,0);
-                int dyadreceiver = riskset(d,1);
-                int dyadtype = riskset(d,2);
-
-                stat(i,d) = 1/ranks(dyadsender, dyadreceiver);
-                stat.replace(arma::datum::inf, 0);
-            }
-
-            // Update the ranks 
-            // Sender, receiver and type of the event
-            int event = slice(i, 1);
-            int sender = riskset(event, 0);
-            int receiver = riskset(event, 1);
-            
-            if(type == 1) {
-                // To whom the sender has most recently send events
-                int rank = ranks(sender, receiver);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: nothing 
-                    // changes
-                    continue;
-                } else {
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(ranks.row(sender) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the rank of 
-                        // the current actor
-                        change = find(ranks.row(sender) > 0 && 
-                            ranks.row(sender) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = ranks.row(sender);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(receiver) = 1;
-                    // Update ranks 
-                    ranks.row(sender) = rowranks;
-                }
-            }
-            if(type == 2) {
-                // From whom the sender has most recently received events
-                int rank = ranks(receiver, sender);
-                if(rank == 1) {
-                    // If the current actor is the most recent actor: nothing 
-                    // changes
-                    continue;
-                } else {
-                    // Find all elements that should be changed
-                    arma::uvec change = {0};
-                    if(rank == 0) {
-                        // All non-zero elements
-                        change = find(ranks.row(receiver) > 0);
-                    } else {
-                        // All non-zero elements that are smaller than the rank of 
-                        // the current actor
-                        change = find(ranks.row(receiver) > 0 && 
-                            ranks.row(receiver) < rank);
-                    }
-                    // Add one to all elements that should be changed
-                    arma::rowvec rowranks = ranks.row(receiver);
-                    rowranks(change) += 1;
-                    // Set the rank of the current actor to one 
-                    rowranks(sender) = 1;
-                    // Update ranks 
-                    ranks.row(receiver) = rowranks;
-                }
-            }
-        }
-    }   
+    }
 
     return stat;
 }
@@ -1889,16 +1714,49 @@ arma::cube compute_stats_tie(const arma::vec& effects,
     const arma::vec& actors, const arma::vec& types,
     const arma::mat& riskset, const arma::vec& scaling, 
     const Rcpp::List& covariates, const Rcpp::List& interactions, 
-    int start, int stop, bool directed) {
+    int start, int stop, bool directed, bool verbose) {
 
     // Initialize saving space
     arma::cube stats(edgelist.n_rows, riskset.n_rows, effects.n_elem);
     stats = stats.rows(start, stop);
+    
+    // All effects for progress update
+    Rcpp::CharacterVector all_effects = {
+	"baseline", "send", "receive", "same", "difference", "average", 
+	"minimum", "maximum", "removed", "inertia", "reciprocity", 
+	"indegreeSender", "indegreeReceiver", "outdegreeSender", "outdegreeReceiver", 
+	"totaldegreeSender", "totaldegreeReceiver", "otp", "itp", "osp", "isp", 
+	"sp", "spUnique", "psABBA", "psABBY", "psABXA",  
+	"psABXB", "psABXY", "psABAY", "rrankSend", "rrankReceive",  
+	"FEtype", "event", "recencyContinue", "recencySendSender","recencySendReceiver", 
+	"recencyReceiveSender","recencyReceiveReceiver", "tie",  
+	"indegreeSender.type", "indegreeReceiver.type", 
+	"outdegreeSender.type", "outdegreeReceiver.type", 
+	"totaldegreeSender.type", "totaldegreeReceiver.type", 
+	"psABBA.type", "psABBY.type", "psABXA.type",  
+	"psABXB.type", "psABXY.type", "psABAY.type",  
+	"inertia.type", "reciprocity.type", 
+	"otp.type", "itp.type", "osp.type", "isp.type", 
+	"sp.type", "spUnique.type", 
+	"rrankSend.type", "rrankReceive.type",  
+	"recencyContinue.type", 
+	"recencySendSender.type","recencySendReceiver.type", 
+	"recencyReceiveSender.type","recencyReceiveReceiver.type", 
+	"interact"};
 
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
+
+        // Progress update
+        if(verbose) {
+            if(effect == 99) {
+                Rcpp::Rcout << "Computing interaction effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
+            } else {
+                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
+            }
+        }
 
         // Initialize saving space
         arma::mat stat(stats.n_rows, stats.n_cols, arma::fill::zeros);
@@ -3224,43 +3082,43 @@ arma::mat triad_choice(int type, const arma::mat& edgelist,
                 if((h == s) || (h == r)) {continue;}
 
                 // Saving space
-                int arrow1; int arrow2;
+                int a1; int a2;
 
                 // otp
                 if(type == 1) {
                     // arrow1 = sender i sends to actor h
-                    arrow1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
+                    a1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
                     // arrow2 = actor h sends to receiver j
-                    arrow2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
+                    a2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
                 }
 
                 // itp
                 if(type == 2) {
                     // arrow1 = actor h sends to sender i
-                    arrow1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
+                    a1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
                     // arrow2 = receiver j sends to actor h
-                    arrow2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
+                    a2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
                 }
 
                 // osp
                 if(type == 3) {
                     // arrow1 = sender i sends to actor h
-                    arrow1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
+                    a1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
                     // arrow2 = receiver j sends to actor h
-                    arrow2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
+                    a2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
                 }
 
                 // isp
                 if(type == 4) {
                     // arrow1 = actor h sends to sender i
-                    arrow1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
+                    a1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
                     // arrow2 = actor h sends to receiver j
-                    arrow2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
+                    a2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
                 }
 
                 // Sum past events
-                double count1 = adjmat(m, arrow1);
-                double count2 = adjmat(m, arrow2);
+                double count1 = adjmat(m, a1);
+                double count2 = adjmat(m, a2);
                 arma::vec count = {count1, count2};
                 stat(m, r) += min(count);
             }
@@ -3466,16 +3324,35 @@ arma::cube compute_stats_rate(const arma::vec& effects,
     const arma::mat& edgelist, const arma::mat& riskset,
     const arma::mat& adjmat, const arma::vec& actors, 
     const arma::vec& scaling, const Rcpp::List& covariates,
-    const Rcpp::List& interactions, int start, int stop) {
+    const Rcpp::List& interactions, int start, int stop, bool verbose) {
 
     // Initialize saving space
     arma::cube rateStats(edgelist.n_rows, actors.n_elem, effects.n_elem);
     rateStats = rateStats.rows(start, stop);
 
+    // Progress update
+    if(verbose) {
+        Rcpp::Rcout << "Computing statistics in the rate-step" << std::endl;
+    }
+
+    // All effects for progress update
+    Rcpp::CharacterVector all_effects = {"baseline", "send", "indegreeSender", 
+        "outdegreeSender", "totaldegreeSender", "recencySendSender", 
+        "recencyReceiveSender", "interact"};
+
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
+
+        // Progress update
+        if(verbose) {
+            if(effect == 99) {
+                Rcpp::Rcout << "Computing interaction effect" << std::endl;
+            } else {
+                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
+            }
+        }
 
         // Initialize saving space
         arma::mat stat(rateStats.n_rows, rateStats.n_cols, arma::fill::zeros);
@@ -3577,16 +3454,37 @@ arma::cube compute_stats_choice(const arma::vec& effects,
     const arma::mat& edgelist, const arma::mat& adjmat,
     const arma::vec& actors, const arma::mat& riskset,
     const arma::vec& scaling, const Rcpp::List& covariates,
-    const Rcpp::List& interactions, int start, int stop) {
+    const Rcpp::List& interactions, int start, int stop, bool verbose) {
 
     // Initialize saving space
     arma::cube choiceStats(edgelist.n_rows, actors.n_elem, effects.n_elem);
     choiceStats = choiceStats.rows(start, stop);
 
+    // Progress update
+    if(verbose) {
+        Rcpp::Rcout << "Computing statistics in the choice-step" << std::endl;
+    }
+
+    // All effects for progress update
+    Rcpp::CharacterVector all_effects = {"receive", "same", "difference", 
+        "average", "tie", "inertia", "reciprocity", "indegreeReceiver", 
+        "outdegreeReceiver", "totaldegreeReceiver", "otp", "itp", "osp", "isp",
+        "rrankSend", "rrankReceive", "recencySendReceiver", 
+        "recencyReceiveReceiver", "recencyContinue", "interact"};
+
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
+
+        // Progress update
+        if(verbose) {
+            if(effect == 99) {
+                Rcpp::Rcout << "Computing interaction effect" << std::endl;
+            } else {
+                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
+            }
+        }
 
         // Initialize saving space
         arma::mat stat(choiceStats.n_rows, choiceStats.n_cols,

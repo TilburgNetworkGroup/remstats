@@ -9,9 +9,8 @@
 rrankSend(consider_type = FALSE)
 }
 \arguments{
-\item{consider_type}{logical, indicates whether to determine the rank 
-separately for each event type (TRUE) or regardless of event types (FALSE, 
-default).}
+\item{consider_type}{logical, indicates whether to discriminate between 
+event types in determining the event rank (TRUE) or not (FALSE, default).}
 }
 \description{
 Specifies the statistic for a recency rank send effect in the 
@@ -26,9 +25,13 @@ actors to which sender i has most recently send past events. Note that the
 'rrankSend' effect is only defined for directed events.
 }
 \examples{
+library(remify)
+rehObject <- reh(history) 
 effects <- ~ rrankSend()
-tomstats(effects, edgelist = history)
-aomstats(receiver_effects = effects, edgelist = history)
+remstats(tie_effects = effects, edgelist = rehObject)
+remstats(receiver_effects = effects, edgelist = rehObject)
+tomstats(effects, edgelist = rehObject)
+aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }
 \seealso{

@@ -1,3 +1,19 @@
+# remstats 2.0.2
+
+## New features
+* Added `verbose` argument that, when set to TRUE, outputs a progress update on the statistics computation.
+* Added vector with types names to output object of `tomstats()`. 
+
+## Major changes 
+* Changed the specification of the variable in the `event()` effect. 
+
+## Minor changes
+* Updated computation procedure for triadic and rrank statistics in the 
+tie-oriented model (`tomstats`) for greater efficiency and less computation 
+time. 
+* Changed the way interaction dimnames of the statistics are defined so its more informative. 
+* Updated documentation. 
+
 # remstats 2.0.1
 
 ## New features

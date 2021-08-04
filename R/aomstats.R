@@ -138,6 +138,8 @@
 #' event for which statistics are requested (see Details)
 #' @param adjmat optionally, an adjacency matrix with on the rows the 
 #' timepoints and on the columns the riskset entries
+#' @param verbose logical, should an update on the progress of the statistics 
+#' computation be outputted?
 #' 
 #' @return \code{edgelist } Dataframe with the edgelist
 #' @return \code{statistics  } List with in the first element the statistics 
@@ -162,7 +164,7 @@
 aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,  
     attributes = NULL, actors = NULL, types = NULL, ordinal = FALSE, 
     origin = NULL, omit_dyad = NULL, memory = "full", 
-    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL) {
+    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL, verbose = FALSE) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
@@ -270,32 +272,31 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the rate statistics 
         rateStats <- compute_stats_rate(sender_effectsN, newE, prepR, adjmat, 
             actors[,2], rateScaling, rateCovar, rate_interactions, start, 
-            stop)    
+            stop, verbose)    
 
         # Reset the adjacency matrix to null 
         if(all(dim(adjmat) == c(1,1))) {
             adjmat <- NULL
         }
 
-        # Dimnames rateStats
+        # Dimnames statistics
         dimnames(rateStats) <- 
-            list(NULL, NULL, unlist(c(
-                # Main effects
-                all_sender_effects[sender_effectsN[which(sender_effectsN!=99)]],
-                # Interaction effects
-                sapply(sender_effects_int, function(x) {
-                    names(x) <- c(
-                        strsplit(names(x[1]), "[()]")[[1]][1], 
-                        strsplit(names(x[2]), "[()]")[[1]][1])
-                    y <- all_sender_effects[match(names(x), all_sender_effects)]
-                    paste0(y[1], ".x.", y[2])
-                })
-            )))
+            list(NULL, NULL, unlist(c(all_sender_effects[sender_effectsN])))
 
         # Add variable name to exogenous rateStats 
         dimnames(rateStats)[[3]][which(sender_effectsN==2)] <- 
             sapply(sender_effects[which(sender_effectsN==2)], function(x) {
                 paste0(x$effect, ".", x$variable)
+            })
+
+        # Add variable name to interaction statistics
+        dimnames(rateStats)[[3]][which(sender_effectsN == 99)] <- 
+            sapply(rate_interactions[which(sender_effectsN == 99)], 
+            function(x) {
+                paste0(
+                    dimnames(rateStats)[[3]][as.numeric(x[1])],
+                    ".x.",
+                    dimnames(rateStats)[[3]][as.numeric(x[2])])
             })
     }
 
@@ -369,27 +370,16 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the choice statistics 
         choiceStats <- compute_stats_choice(receiver_effectsN, newE, adjmat, 
             actors[,2], prepR, choiceScaling, choiceCovar, choice_interactions, 
-            start, stop)   
+            start, stop, verbose)   
 
         # Reset the adjacency matrix to null 
         if(all(dim(adjmat) == c(1,1))) {
             adjmat <- NULL
         }
 
-        # Dimnames choiceStats
+        # Dimnames statistics
         dimnames(choiceStats) <- 
-            list(NULL, NULL, unlist(c(
-                # Main effects
-                all_receiver_effects[receiver_effectsN[which(receiver_effectsN!=99)]],
-                # Interaction effects
-                sapply(receiver_effects_int, function(x) {
-                    names(x) <- c(
-                        strsplit(names(x[1]), "[()]")[[1]][1], 
-                        strsplit(names(x[2]), "[()]")[[1]][1])
-                    y <- all_receiver_effects[match(names(x), all_receiver_effects)]
-                    paste0(y[1], ".x.", y[2])
-                })
-            )))
+            list(NULL, NULL, unlist(c(all_receiver_effects[receiver_effectsN])))
 
         # Add variable name to exogenous choiceStats 
         dimnames(choiceStats)[[3]][which(receiver_effectsN %in% c(1:5))] <- 
@@ -401,6 +391,16 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
                     x$effect
                 }          
             }) 
+
+        # Add variable name to interaction statistics
+        dimnames(choiceStats)[[3]][which(receiver_effectsN == 99)] <- 
+            sapply(choice_interactions[which(receiver_effectsN == 99)], 
+            function(x) {
+                paste0(
+                    dimnames(choiceStats)[[3]][as.numeric(x[1])],
+                    ".x.",
+                    dimnames(choiceStats)[[3]][as.numeric(x[2])])
+            })     
     }
 
     # Edgelist output
