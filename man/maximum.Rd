@@ -40,8 +40,10 @@ argument of \code{\link{remstats}}, \code{\link{tomstats}} or
 \code{\link{aomstats}}.
 }
 \examples{
+library(remify)
+rehObject <- reh(history)
 effects <- ~ maximum("extraversion") 
-remstats(edgelist = history, tie_effects = effects, attributes = info)
-tomstats(effects, edgelist = history, attributes = info)
+remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+tomstats(effects, edgelist = rehObject, attributes = info)
 
 }

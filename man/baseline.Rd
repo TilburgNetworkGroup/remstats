@@ -27,8 +27,10 @@ statistic is equal to one for all dyads resp. actors in the riskset at all
 timepoints.
 }
 \examples{
-remstats(edgelist = history, tie_effects = ~ 1)
-remstats(edgelist = history, sender_effects = ~ 1)
-tomstats(~ 1, edgelist = history)
-aomstats(sender_effects = ~ 1, edgelist = history)
+library(remify)
+rehObject <- reh(history)
+remstats(edgelist = rehObject, tie_effects = ~ 1)
+remstats(edgelist = rehObject, sender_effects = ~ 1)
+tomstats(~ 1, edgelist = rehObject)
+aomstats(sender_effects = ~ 1, edgelist = rehObject)
 }

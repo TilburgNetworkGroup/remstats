@@ -8,11 +8,11 @@
 * Changed the specification of the variable in the `event()` effect. 
 
 ## Minor changes
-* Updated computation procedure for triadic statistics for greater efficiency and less computation time. 
+* Updated computation procedure for triadic and rrank statistics in the 
+tie-oriented model (`tomstats`) for greater efficiency and less computation 
+time. 
 * Changed the way interaction dimnames of the statistics are defined so its more informative. 
-
-## To do
-* rrank efficiency
+* Updated documentation. 
 
 # remstats 2.0.1
 

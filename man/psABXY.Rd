@@ -29,8 +29,10 @@ the order of these events determines whether the p-shift is observed. Note
 that the AB-XY pshift is only defined for directed events.
 }
 \examples{
+library(remify)
+rehObject <- reh(history) 
 effects <- ~ psABXY()
-tomstats(effects, edgelist = history)
+tomstats(effects, edgelist = rehObject)
 
 }
 \seealso{

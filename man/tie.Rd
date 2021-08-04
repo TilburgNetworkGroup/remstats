@@ -27,17 +27,19 @@ A tie effect refers to an exogenous dyad attribute that affects dyad
 the exogenous attribute for dyad \emph{(i,j)}.
 }
 \examples{
+library(remify)
 data(info)
 actors <- unique(info$id)
 age <- info[match(actors, info$id), "age"]
 bothOld <- sapply(1:length(actors), function(i) {
  sapply(1:length(actors), function(j) {
-     ifelse(age[i] & age[j] == 1 & i != j, 1, 0)
+     ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)
  })})
+rehObject <- reh(history)
 effects <- ~ tie(bothOld, variableName = "both.old")
-remstats(edgelist = history, tie_effects = effects, attributes = info)
-remstats(edgelist = history, receiver_effects = effects, attributes = info)
-tomstats(effects, edgelist = history)
-aomstats(receiver_effects = effects, edgelist = history)
+remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
+tomstats(effects, edgelist = rehObject)
+aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }

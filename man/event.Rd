@@ -22,10 +22,12 @@ dyads in the riskset equal to the attribute of the event at timepoint
 \emph{t}.
 }
 \examples{
-history$work <- ifelse(history$setting == "work", 1, 0)
-effects <- ~ event("work")
-remstats(edgelist = history, tie_effects = effects, attributes = info)
-tomstats(effects, edgelist = history)
+library(remify)
+rehObject <- reh(history)
+work <- ifelse(history$setting == "work", 1, 0)
+effects <- ~ event(work, "setting.is.work")
+remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
+tomstats(effects, edgelist = rehObject)
 
 }
 \seealso{

@@ -30,8 +30,10 @@ whether the p-shift is observed. Note that the AB-XB pshift is only defined
 for directed events.
 }
 \examples{
+library(remify)
+rehObject <- reh(history) 
 effects <- ~ psABXB()
-tomstats(effects, edgelist = history)
+tomstats(effects, edgelist = rehObject)
 
 }
 \seealso{
