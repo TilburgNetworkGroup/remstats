@@ -1211,6 +1211,122 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
     }
 }
 
+#' degreeMin
+#' 
+#' Specifies the statistic for an `degreeMin` effect in the tie-oriented 
+#' model with undirected events. 
+#' 
+#' @details 
+#' An degreeMin effect refers to the tendency for dyads to increase their 
+#' interaction rate if the total degree of the least active actor in the pair 
+#' increases. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
+#' equal to the minimum of the following two values: the number of events 
+#' before timepoint \emph{t} that involved actor \emph{i} and actor \emph{j}, 
+#' respectively. Note that the degreeMin effect is only defined for undirected 
+#' events. 
+#' 
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events, the statistic refers to the 
+#' fraction of past events that the least active actor was involved in. At the 
+#' first time point, when no events did previously occur, it is assumed that 
+#' every actor is equally likely to be involved in an event and the statistic 
+#' is set equal to 1/n, where n refers to the number of actors. 
+#' 
+#' @inheritParams totaldegreeSender
+#' 
+#' @aliases degree 
+#' @seealso \code{\link{degreeMax}}, \code{\link{indegreeSender}}, 
+#' \code{\link{indegreeReceiver}}, \code{\link{outdegreeSender}}, 
+#' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
+#' \code{\link{totaldegreeReceiver}} for other types of degree effects.
+#' 
+#' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
+#' effects <- ~ degreeMin()
+#' remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
+#' tomstats(effects, edgelist = rehObject, directed = FALSE)
+#'
+#' @export
+degreeMin <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
+
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "degreeMin",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "degreeMin.type",
+            scaling = scaling
+        )
+    }
+}
+
+#' degreeMax
+#' 
+#' Specifies the statistic for an `degreeMax` effect in the tie-oriented 
+#' model with undirected events. 
+#' 
+#' @details 
+#' An degreeMax effect refers to the tendency for dyads to increase their 
+#' interaction rate if the total degree of the most active actor in the pair 
+#' increases. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
+#' equal to the maximum of the following two values: the number of events 
+#' before timepoint \emph{t} that involved actor \emph{i} and actor \emph{j}, 
+#' respectively. Note that the degreeMax effect is only defined for undirected 
+#' events. 
+#' 
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events, the statistic refers to the 
+#' fraction of past events that the most active actor was involved in. At the 
+#' first time point, when no events did previously occur, it is assumed that 
+#' every actor is equally likely to be involved in an event and the statistic 
+#' is set equal to 1/n, where n refers to the number of actors. 
+#' 
+#' @inheritParams totaldegreeSender
+#' 
+#' @aliases degree 
+#' @seealso \code{\link{degreeMin}}, \code{\link{indegreeSender}}, 
+#' \code{\link{indegreeReceiver}}, \code{\link{outdegreeSender}}, 
+#' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
+#' \code{\link{totaldegreeReceiver}} for other types of degree effects.
+#' 
+#' @examples 
+#' library(remify)
+#' rehObject <- reh(history) 
+#' effects <- ~ degreeMax()
+#' remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
+#' tomstats(effects, edgelist = rehObject, directed = FALSE)
+#'
+#' @export
+degreeMax <- function(scaling = c("as.is", "prop", "std"), 
+    consider_type = FALSE) {
+
+    # Match scaling
+    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "degreeMax",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "degreeMax.type",
+            scaling = scaling
+        )
+    }
+}
+
 #' otp
 #' 
 #' Specifies the statistic for an outgoing two-path effect in the tie-oriented 

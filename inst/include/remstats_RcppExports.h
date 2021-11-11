@@ -193,6 +193,27 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
+    inline arma::mat degree_undirected_tie(int type, const arma::mat& edgelist, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, int start, int stop, bool consider_type) {
+        typedef SEXP(*Ptr_degree_undirected_tie)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_degree_undirected_tie p_degree_undirected_tie = NULL;
+        if (p_degree_undirected_tie == NULL) {
+            validateSignature("arma::mat(*degree_undirected_tie)(int,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,int,int,bool)");
+            p_degree_undirected_tie = (Ptr_degree_undirected_tie)R_GetCCallable("remstats", "_remstats_degree_undirected_tie");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_degree_undirected_tie(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(adjmat)), Shield<SEXP>(Rcpp::wrap(actors)), Shield<SEXP>(Rcpp::wrap(types)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(consider_type)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
     inline arma::mat triad_tie(int type, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& types, const arma::mat& adjmat, const arma::mat& riskset, int start, int stop, bool consider_type) {
         typedef SEXP(*Ptr_triad_tie)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_triad_tie p_triad_tie = NULL;

@@ -33,6 +33,10 @@ degree_tie <- function(type, edgelist, adjmat, actors, types, start, stop, consi
     .Call(`_remstats_degree_tie`, type, edgelist, adjmat, actors, types, start, stop, consider_type)
 }
 
+degree_undirected_tie <- function(type, edgelist, adjmat, actors, types, start, stop, consider_type) {
+    .Call(`_remstats_degree_undirected_tie`, type, edgelist, adjmat, actors, types, start, stop, consider_type)
+}
+
 triad_tie <- function(type, edgelist, actors, types, adjmat, riskset, start, stop, consider_type) {
     .Call(`_remstats_triad_tie`, type, edgelist, actors, types, adjmat, riskset, start, stop, consider_type)
 }

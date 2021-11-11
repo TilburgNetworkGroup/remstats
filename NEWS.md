@@ -1,6 +1,9 @@
 # remstats 2.0.3
 Date: 11-Nov-21
 
+## New features
+* `degreeMin` and `degreeMax` statistics for undirected events.
+
 ## Changes
 * Updated computation ``Brandes memory'' in adjmat to include normalization factor. 
 

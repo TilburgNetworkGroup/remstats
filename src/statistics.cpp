@@ -833,6 +833,147 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
     return stat;
 }
 
+// degree_undirected_tie
+// 
+// Function to compute the degree statistics for the tie-oriented model with 
+// undirected events. 
+//
+// type: integer, 1 = degreeMin, 2 = degreeMax, 
+// edgelist: matrix (time, event, weight)
+// adjmat: matrix (events x dyads)
+// actors: vector, actor ids
+// start: integer, first event in the edgelist for which the statistic is 
+// computed
+// stop: integer, last event in the edgelist for which the statistic is 
+// computed
+// consider_type: boolean indicating whether to compute the degree per 
+// event type (TRUE) or sum across types (FALSE)
+// 
+// [[Rcpp::export]]
+arma::mat degree_undirected_tie(int type, const arma::mat& edgelist, 
+    const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, int start, int stop, bool consider_type) {
+
+    // Slice the edgelist according to "start" and "stop"
+	arma::mat slice = edgelist.rows(start, stop);
+
+	// Initialize saving space
+	arma::mat stat(slice.n_rows, adjmat.n_cols, arma::fill::zeros);
+
+    // Consider event type? 
+    if(consider_type) {
+        // Initialize saving space 
+        arma::cube deg(slice.n_rows, actors.n_elem, types.n_elem, arma::fill::zeros);
+
+        // For loop over event types 
+        for(arma::uword c = 0; c < types.n_elem; ++c) {
+            // Select the slice from the deg cube
+            arma::mat degType = deg.slice(c);
+
+            // (1) Step 1: Compute the degree
+            // For loop over actors k
+            for(arma::uword k = 0; k < actors.n_elem; ++k) {
+                // Actor
+                int actor = actors(k);
+
+                // For loop over actors h
+                for(arma::uword h = 0; h < actors.n_elem; ++h) {
+                    // Skip when actor h = actor k
+                    if(actors(h) == actor) {continue;}
+
+                    // Get the index for the column in the riskset for when the dyad is (k,h) and the type is the current type
+                    int dyad = find_dyad(actor, actors(h), types(c), 
+                        actors.n_elem, FALSE);
+                    // Add the counts
+                    degType.col(actor) += adjmat.col(dyad);
+                }
+            }
+
+            // (2) Step 2: Save the degree in the correct place 
+            // For loop over actors k
+            for(arma::uword k = 0; k < actors.n_elem; k++) {
+                // Actor
+                int actor = actors(k);
+
+                // For loop over actors h
+                for(arma::uword h = 0; h < actors.n_elem; ++h) {
+                    // Skip when actor h = actor k
+                    if(actors(h) == actor) {continue;}
+
+                    
+                    // Get the index for the column in the riskset for when the dyad is (k,h) and the type is the current type
+                    int dyad = find_dyad(actor, actors(h), types(c), 
+                        actors.n_elem, FALSE);
+                    // Save the statistic 
+                    if(type == 1) {
+                        stat.col(dyad) = min(degType.col(actor), degType.col(actors(h)));
+                    }
+                    if(type == 2) {
+                        stat.col(dyad) = max(degType.col(actor), degType.col(actors(h)));
+                    }
+                    
+                }
+            }
+
+        }
+
+    } else {
+        // Initialize saving space
+        arma::mat deg(slice.n_rows, actors.n_elem, arma::fill::zeros);
+
+        // (1) Step 1: Compute the degree
+        // For loop over actors k
+        for(arma::uword k = 0; k < actors.n_elem; k++) {
+            // Actor
+            int actor = actors(k);
+
+            // For loop over actors h
+            for(arma::uword h = 0; h < actors.n_elem; ++h) {
+                // Skip when actor h = actor k
+                if(actors(h) == actor) {continue;}
+
+                // For loop over event types
+                for(arma::uword c = 0; c < types.n_elem; ++c) {
+                    // Get the index for the column in the riskset for when the dyad is (k,h) and the type is the current type
+                    int dyad = find_dyad(actor, actors(h), types(c), 
+                        actors.n_elem, FALSE);
+                    // Add the counts
+                    deg.col(actor) += adjmat.col(dyad);
+                }
+            }
+        }
+
+        // (2) Step 2: Save the degree in the correct place 
+        // For loop over actors k
+        for(arma::uword k = 0; k < actors.n_elem; k++) {
+            // Actor
+            int actor = actors(k);
+
+            // For loop over actors h
+            for(arma::uword h = 0; h < actors.n_elem; ++h) {
+                // Skip when actor h = actor k
+                if(actors(h) == actor) {continue;}
+
+                // For loop over event types
+                for(arma::uword c = 0; c < types.n_elem; ++c) {
+                    // Get the index for the column in the riskset for when the dyad is (k,h) and the type is the current type
+                    int dyad = find_dyad(actor, actors(h), types(c), 
+                        actors.n_elem, FALSE);
+                    // Save the statistic 
+                    if(type == 1) {
+                        stat.col(dyad) = min(deg.col(actor), deg.col(actors(h)));
+                    }
+                    if(type == 2) {
+                        stat.col(dyad) = max(deg.col(actor), deg.col(actors(h)));
+                    }
+                }
+            }
+        }
+    }
+
+    // Output the computed stat
+    return stat;
+}
+
 // triad_tie
 // 
 // Computes the triad statistics for the tie-oriented model. 
@@ -1741,7 +1882,8 @@ arma::cube compute_stats_tie(const arma::vec& effects,
 	"rrankSend.type", "rrankReceive.type",  
 	"recencyContinue.type", 
 	"recencySendSender.type","recencySendReceiver.type", 
-	"recencyReceiveSender.type","recencyReceiveReceiver.type", 
+	"recencyReceiveSender.type","recencyReceiveReceiver.type",
+    "degreeMin", "degreeMax", 
 	"interact"};
 
     // For loop over effects
@@ -2475,6 +2617,78 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 // Compute statistic
                 stat = recency_tie(5, edgelist, riskset, actors.n_elem, 
                     types.n_elem, start, stop, TRUE, directed);
+                break;
+
+            // 67 degreeMin
+            case 67 : 
+                // Compute statistic
+                stat = degree_undirected_tie(1, edgelist, adjmat, actors, 
+                    types, start, stop, FALSE);
+                // Divide by the number/weight of past events
+                if(scaling(i) == 2) {
+                    for(arma::uword t = 0; t < stat.n_rows; ++t) {
+                        stat.row(t) = stat.row(t)/(sum(adjmat.row(t)));
+                    }
+                    stat.replace(arma::datum::nan, 0);
+                }
+                // Standardize 
+                if(scaling(i) == 3) {
+                    stat = standardize(stat);
+                }
+                break;
+
+            // 68 degreeMax
+            case 68 : 
+                // Compute statistic
+                stat = degree_undirected_tie(2, edgelist, adjmat, actors, 
+                    types, start, stop, FALSE);
+                // Divide by the number/weight of past events
+                if(scaling(i) == 2) {
+                    for(arma::uword t = 0; t < stat.n_rows; ++t) {
+                        stat.row(t) = stat.row(t)/(sum(adjmat.row(t)));
+                    }
+                    stat.replace(arma::datum::nan, 0);
+                }
+                // Standardize 
+                if(scaling(i) == 3) {
+                    stat = standardize(stat);
+                }
+                break;
+
+            // 69 degreeMin.type
+            case 69 : 
+                // Compute statistic
+                stat = degree_undirected_tie(1, edgelist, adjmat, actors, 
+                    types, start, stop, TRUE);
+                // Divide by the number/weight of past events
+                if(scaling(i) == 2) {
+                    for(arma::uword t = 0; t < stat.n_rows; ++t) {
+                        stat.row(t) = stat.row(t)/(sum(adjmat.row(t)));
+                    }
+                    stat.replace(arma::datum::nan, 0);
+                }
+                // Standardize 
+                if(scaling(i) == 3) {
+                    stat = standardize(stat);
+                }
+                break;
+
+            // 70 degreeMax.type
+            case 70 : 
+                // Compute statistic
+                stat = degree_undirected_tie(2, edgelist, adjmat, actors, 
+                    types, start, stop, TRUE);
+                // Divide by the number/weight of past events
+                if(scaling(i) == 2) {
+                    for(arma::uword t = 0; t < stat.n_rows; ++t) {
+                        stat.row(t) = stat.row(t)/(sum(adjmat.row(t)));
+                    }
+                    stat.replace(arma::datum::nan, 0);
+                }
+                // Standardize 
+                if(scaling(i) == 3) {
+                    stat = standardize(stat);
+                }
                 break;
              
             // 99 interact

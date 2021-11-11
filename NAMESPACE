@@ -3,6 +3,8 @@
 export(FEtype)
 export(aomstats)
 export(average)
+export(degreeMax)
+export(degreeMin)
 export(difference)
 export(event)
 export(indegreeReceiver)

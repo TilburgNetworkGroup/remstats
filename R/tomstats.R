@@ -258,6 +258,9 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         "recencySendSender.type","recencySendReceiver.type", #63 #64
         "recencyReceiveSender.type","recencyReceiveReceiver.type", #65 #66
 
+        "degreeMin", "degreeMax", #67 #68
+        "degreeMin.type", "degreeMax.type", #69 #70
+
         "interact") #99
     effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
    
@@ -271,7 +274,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     }
 
     if(directed) {
-        if(any(effectsN %in% c(22:23, 58:59))) {
+        if(any(effectsN %in% c(22:23, 58:59, 67:70))) {
             stop(paste("Attemping to request effects that are not defined for directed events"))
         }
     }
@@ -336,7 +339,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     scaling <- as.numeric(sapply(effects, function(x) x$scaling))
 
     # Compute the adjacency matrix 
-    if(any(effectsN %in% c(10:23, 40:45, 52:59))) {
+    if(any(effectsN %in% c(10:23, 40:45, 52:59, 67:70))) {
         if(is.null(adjmat)) {
             adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
                 directed, memory, memory_value, start, stop)
