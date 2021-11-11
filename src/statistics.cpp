@@ -167,7 +167,7 @@ arma::mat compute_adjmat(const arma::mat& edgelist, int N, int D, bool directed,
 
                 // Brandes weight
                 double te = past(j, 0);
-                we = we*exp(-(time-te)*(log(2)/memory_value));
+                we = we*exp(-(time-te)*(log(2)/memory_value))*(log(2)/memory_value);
 
                 // Add weight to adjacency matrix
                 adjmat(i, past(j, 1)) += we;

@@ -1,3 +1,9 @@
+# remstats 2.0.3
+Date: 11-Nov-21
+
+## Changes
+* Updated computation ``Brandes memory'' in adjmat to include normalization factor. 
+
 # remstats 2.0.2
 
 ## New features

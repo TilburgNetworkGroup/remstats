@@ -33,7 +33,7 @@ test_that("adjacency matrix", {
 	expect_equal(rowSums(adjmat),
 		apply(history, 1, function(x) {
 			past <- history[history$time < as.numeric(x[1]),]
-			sum(past$weight * exp(- (as.numeric(x[1]) - as.numeric(past$time)) * (log(2)/400)))
+			sum(past$weight * exp(- (as.numeric(x[1]) - as.numeric(past$time)) * (log(2)/400)) * log(2)/400)
 		}))
 	
 	# Event weights
