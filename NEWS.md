@@ -2,9 +2,10 @@
 Date: 11-Nov-21
 
 ## New features
-* `degreeMin` and `degreeMax` statistics for undirected events.
+* Added `degreeMin` and `degreeMax` statistics for undirected events.
+* Added `ccp` statistic for undirected, dyadic events. 
 
-## Changes
+## Major changes
 * Updated computation ``Brandes memory'' in adjmat to include normalization factor. 
 
 # remstats 2.0.2
@@ -50,8 +51,8 @@ time.
 * The recency statistics have been extended and include the following:
     + recencyContinue: refers to the time that has past since dyad *(i,j)* last interacted.
     + recencyReceiveReceiver: refers to the time that has past since receiver *j* last received an event.
-    + recencyReceiveSender: refers to the time that has past since receiver *j* last received an event.
-    + recencySendReceiver: refers to the time that has past since receiver *j* last received an event.
+    + recencyReceiveSender: refers to the time that has past since sender *i* last received an event.
+    + recencySendReceiver: refers to the time that has past since receiver *j* last sent an event.
     + recencySendSender: refers to the time that has past since sender *i* last sent an event.
 * The option `Brandes` is added to the `memory` functionality. This refers to the exponential decay of the weight of past events, depending on the time that has past since the event occurred. The `memoryValue` argument refers to the halftime parameter (see Brandes et al., 2009). 
 

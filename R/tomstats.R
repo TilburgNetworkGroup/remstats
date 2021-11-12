@@ -260,6 +260,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
 
         "degreeMin", "degreeMax", #67 #68
         "degreeMin.type", "degreeMax.type", #69 #70
+        "ccp", #71
 
         "interact") #99
     effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
@@ -269,13 +270,13 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         if(any(effectsN %in% 
             c(2, 3, 11:21, 24:31, 35:38, 40:51, 53:57, 60:61, 63:66))) {
             
-            stop(paste("Attempting to request effects that are not defined for undirected events"))
+            stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
         }
     }
 
     if(directed) {
-        if(any(effectsN %in% c(22:23, 58:59, 67:70))) {
-            stop(paste("Attemping to request effects that are not defined for directed events"))
+        if(any(effectsN %in% c(22:23, 58:59, 67:71))) {
+            stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
         }
     }
 
@@ -329,6 +330,9 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             as.matrix(dat)
         } else if(x$effect == "FEtype") {
             dat <- x$typeID
+            as.matrix(dat)
+        } else if(x$effect == "ccp") {
+            dat <- x$x
             as.matrix(dat)
         } else {
             matrix()

@@ -69,6 +69,10 @@ FEtype_tie <- function(covariates, edgelist, riskset, start, stop) {
     .Call(`_remstats_FEtype_tie`, covariates, edgelist, riskset, start, stop)
 }
 
+current_common_partners <- function(edgelist, riskset, actors, duration, start, stop) {
+    .Call(`_remstats_current_common_partners`, edgelist, riskset, actors, duration, start, stop)
+}
+
 compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed, verbose) {
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed, verbose)
 }

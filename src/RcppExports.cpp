@@ -687,6 +687,45 @@ RcppExport SEXP _remstats_FEtype_tie(SEXP covariatesSEXP, SEXP edgelistSEXP, SEX
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// current_common_partners
+arma::mat current_common_partners(const arma::mat& edgelist, const arma::mat& riskset, const arma::vec& actors, const arma::vec& duration, int start, int stop);
+static SEXP _remstats_current_common_partners_try(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP actorsSEXP, SEXP durationSEXP, SEXP startSEXP, SEXP stopSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type actors(actorsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type duration(durationSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    rcpp_result_gen = Rcpp::wrap(current_common_partners(edgelist, riskset, actors, duration, start, stop));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _remstats_current_common_partners(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP actorsSEXP, SEXP durationSEXP, SEXP startSEXP, SEXP stopSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_remstats_current_common_partners_try(edgelistSEXP, risksetSEXP, actorsSEXP, durationSEXP, startSEXP, stopSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // compute_stats_tie
 arma::cube compute_stats_tie(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, const arma::mat& riskset, const arma::vec& scaling, const Rcpp::List& covariates, const Rcpp::List& interactions, int start, int stop, bool directed, bool verbose);
 static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP typesSEXP, SEXP risksetSEXP, SEXP scalingSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP verboseSEXP) {
@@ -1198,6 +1237,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*tie_tie)(const arma::mat&,const arma::mat&,const arma::mat&,int,int)");
         signatures.insert("arma::mat(*event_tie)(const arma::mat&,const arma::mat&,const arma::mat&,int,int)");
         signatures.insert("arma::mat(*FEtype_tie)(const arma::mat&,const arma::mat&,const arma::mat&,int,int)");
+        signatures.insert("arma::mat(*current_common_partners)(const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,int,int)");
         signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int,bool,bool)");
         signatures.insert("arma::mat(*actorStat_rc)(const arma::mat&,const arma::mat&,const arma::mat&,const arma::vec&,int,int,int)");
         signatures.insert("arma::mat(*degree_rc)(int,const arma::mat&,const arma::vec&,const arma::mat&)");
@@ -1233,6 +1273,7 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
     R_RegisterCCallable("remstats", "_remstats_tie_tie", (DL_FUNC)_remstats_tie_tie_try);
     R_RegisterCCallable("remstats", "_remstats_event_tie", (DL_FUNC)_remstats_event_tie_try);
     R_RegisterCCallable("remstats", "_remstats_FEtype_tie", (DL_FUNC)_remstats_FEtype_tie_try);
+    R_RegisterCCallable("remstats", "_remstats_current_common_partners", (DL_FUNC)_remstats_current_common_partners_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_tie", (DL_FUNC)_remstats_compute_stats_tie_try);
     R_RegisterCCallable("remstats", "_remstats_actorStat_rc", (DL_FUNC)_remstats_actorStat_rc_try);
     R_RegisterCCallable("remstats", "_remstats_degree_rc", (DL_FUNC)_remstats_degree_rc_try);
@@ -1267,6 +1308,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_tie_tie", (DL_FUNC) &_remstats_tie_tie, 5},
     {"_remstats_event_tie", (DL_FUNC) &_remstats_event_tie, 5},
     {"_remstats_FEtype_tie", (DL_FUNC) &_remstats_FEtype_tie, 5},
+    {"_remstats_current_common_partners", (DL_FUNC) &_remstats_current_common_partners, 6},
     {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 13},
     {"_remstats_actorStat_rc", (DL_FUNC) &_remstats_actorStat_rc, 7},
     {"_remstats_degree_rc", (DL_FUNC) &_remstats_degree_rc, 4},

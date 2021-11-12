@@ -1635,6 +1635,24 @@ spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
     }    
 }
 
+#' ccp 
+#' 
+#' Specifies the statistic for a 'common current partner' effect for the 
+#' tie-oriented model. NOTE: currently only defined for undirected, dyadic 
+#' events.
+#' 
+#' @param duration vector with event durations. 
+#' 
+#' @export 
+ccp <- function(duration) {
+    # Output
+    list(
+        effect = "ccp",
+        x = duration, 
+        scaling = 1
+    )  
+} 
+
 #' psABBA
 #' 
 #' Specifies the statistic for a pshift AB-BA effect in the \code{effects} 

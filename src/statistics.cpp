@@ -1849,6 +1849,73 @@ arma::mat FEtype_tie(const arma::mat& covariates,
     return(stat);
 }
 
+// current_common_partners (CPP)
+//
+// [[Rcpp::export]]
+arma::mat current_common_partners(const arma::mat& edgelist, 
+    const arma::mat& riskset, const arma::vec& actors, 
+    const arma::vec& duration, int start, int stop) {
+
+    // Slice the edgelist according to "start" and "stop"
+	arma::mat slice = edgelist.rows(start, stop);
+
+    // Initialize saving space
+    arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+    arma::mat adjC(actors.n_elem, actors.n_elem);
+
+    // For loop over events in the sliced edgelist
+    for(arma::uword m = 0; m < slice.n_rows; ++m) {
+        // Current time
+        double time = slice(m,0);
+
+        // Active events
+        arma::uvec ind = arma::find(edgelist.col(0) < time && 
+            edgelist.col(0) + duration >= time);
+        arma::mat active = edgelist.rows(ind);
+        
+        // For loop over active events to set adjC
+        for(arma::uword i = 0; i < active.n_rows; ++i) {
+            arma::rowvec event = riskset.row(active(i,1));
+            adjC(event(0), event(1)) += 1;
+        }
+
+        // Select actors with more than one active event 
+        arma::rowvec colSumsR = sum(adjC, 0); 
+        arma::vec colSums = colSumsR.as_col();
+        arma::vec rowSums = sum(adjC, 1);
+        arma::vec actorSums = colSums + rowSums;
+        arma::uvec ind2 = arma::find(actorSums > 1);
+        arma::vec middle = actors(ind2);
+
+        if(middle.n_elem > 0) {
+            // For loop over these "middle" actors
+            for(arma::uword i = 0; i < middle.n_elem; ++i) {
+                // Find the actors they were communicating with 
+                arma::uvec ind3 = arma::find(adjC.row(middle[i]) > 0);
+                arma::uvec ind4 = arma::find(adjC.col(middle[i]) > 0);
+                arma::uvec ind5 = join_cols(ind3, ind4);
+                arma::vec ends = actors(ind5);
+
+                // Actor combinations (for loop over pairs)
+                for(arma::uword j = 0; j < ends.n_elem; ++j) {
+                    for(arma::uword h = 0; h < ends.n_elem; ++h) {
+                        if(h > j) {
+                            int dyad = find_dyad(ends(h), ends(j), 0, actors.n_elem, FALSE);
+                            stat(m, dyad) += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Reset adjC 
+        adjC.fill(0);
+    }
+
+    // Return
+    return stat;
+}
+
 //[[Rcpp::export]]
 arma::cube compute_stats_tie(const arma::vec& effects,
     const arma::mat& edgelist, const arma::mat& adjmat,
@@ -1883,7 +1950,7 @@ arma::cube compute_stats_tie(const arma::vec& effects,
 	"recencyContinue.type", 
 	"recencySendSender.type","recencySendReceiver.type", 
 	"recencyReceiveSender.type","recencyReceiveReceiver.type",
-    "degreeMin", "degreeMax", 
+    "degreeMin", "degreeMax", "ccp",
 	"interact"};
 
     // For loop over effects
@@ -2689,6 +2756,13 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 if(scaling(i) == 3) {
                     stat = standardize(stat);
                 }
+                break;
+
+            // 71 ccp
+            case 71 :
+                // Compute statistic
+                stat = current_common_partners(edgelist, riskset,    
+                    actors, covariates[i], start, stop);
                 break;
              
             // 99 interact

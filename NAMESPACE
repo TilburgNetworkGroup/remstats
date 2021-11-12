@@ -3,6 +3,7 @@
 export(FEtype)
 export(aomstats)
 export(average)
+export(ccp)
 export(degreeMax)
 export(degreeMin)
 export(difference)
