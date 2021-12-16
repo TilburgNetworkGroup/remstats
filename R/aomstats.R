@@ -138,8 +138,6 @@
 #' event for which statistics are requested (see Details)
 #' @param adjmat optionally, an adjacency matrix with on the rows the 
 #' timepoints and on the columns the riskset entries
-#' @param verbose logical, should an update on the progress of the statistics 
-#' computation be outputted?
 #' 
 #' @return \code{edgelist } Dataframe with the edgelist
 #' @return \code{statistics  } List with in the first element the statistics 
@@ -164,7 +162,7 @@
 aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,  
     attributes = NULL, actors = NULL, types = NULL, ordinal = FALSE, 
     origin = NULL, omit_dyad = NULL, memory = "full", 
-    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL, verbose = FALSE) {
+    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
@@ -272,7 +270,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the rate statistics 
         rateStats <- compute_stats_rate(sender_effectsN, newE, prepR, adjmat, 
             actors[,2], rateScaling, rateCovar, rate_interactions, start, 
-            stop, verbose)    
+            stop)    
 
         # Reset the adjacency matrix to null 
         if(all(dim(adjmat) == c(1,1))) {
@@ -370,7 +368,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the choice statistics 
         choiceStats <- compute_stats_choice(receiver_effectsN, newE, adjmat, 
             actors[,2], prepR, choiceScaling, choiceCovar, choice_interactions, 
-            start, stop, verbose)   
+            start, stop)   
 
         # Reset the adjacency matrix to null 
         if(all(dim(adjmat) == c(1,1))) {
