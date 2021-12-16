@@ -19,7 +19,7 @@ tomstats(
   start = 1,
   stop = Inf,
   adjmat = NULL,
-  verbose = FALSE
+  output = "all"
 )
 }
 \arguments{
@@ -68,8 +68,9 @@ event for which statistics are requested (see 'Details')}
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the 
 rows the timepoints and on the columns the riskset entries}
 
-\item{verbose}{logical, should an update on the progress of the statistics 
-computation be outputted?}
+\item{output}{indicates which output objects need to be provided, i.e., only 
+the statistics matrix ("only_stats") or all the below defined objects ("all")
+? Outputting only the statistics can save a lot of time.}
 }
 \value{
 \code{statistics } Array with the computed statistics, where rows 
@@ -82,7 +83,9 @@ used to estimate a relational event model with \code{"\link[relevent]{rem}"}
 \code{edgelist } Dataframe with the edgelist
 
 \code{adjmat } Matrix with the adjacency matrix, rows refer to 
-timepoints and columns to riskset entries
+timepoints and columns to riskset entries. At timepoint t, it gives the 
+cumulative weight until t-1 (i.e., the events that occurred before time 
+poin t).
 }
 \description{
 Computes statistics for modeling relational event history data with Butts' 

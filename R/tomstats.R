@@ -156,8 +156,9 @@
 #' event for which statistics are requested (see 'Details')
 #' @param adjmat optionally, a previously computed adjacency matrix with on the 
 #' rows the timepoints and on the columns the riskset entries 
-#' @param verbose logical, should an update on the progress of the statistics 
-#' computation be outputted?
+#' @param output indicates which output objects need to be provided, i.e., only 
+#' the statistics matrix ("only_stats") or all the below defined objects ("all")
+#' ? Outputting only the statistics can save a lot of time. 
 #' 
 #' @return \code{statistics } Array with the computed statistics, where rows 
 #' refer to time points, columns refer to potential relational event (i.e., 
@@ -166,7 +167,9 @@
 #' used to estimate a relational event model with \code{"\link[relevent]{rem}"} 
 #' @return \code{edgelist } Dataframe with the edgelist
 #' @return \code{adjmat } Matrix with the adjacency matrix, rows refer to 
-#' timepoints and columns to riskset entries
+#' timepoints and columns to riskset entries. At timepoint t, it gives the 
+#' cumulative weight until t-1 (i.e., the events that occurred before time 
+#' poin t). 
 #' 
 #' @examples 
 #' library(remstats)
@@ -181,7 +184,7 @@
 tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL, 
     types = NULL, directed = TRUE, ordinal = FALSE, origin = NULL, 
     omit_dyad = NULL, memory = "full", memory_value = Inf, start = 1, 
-    stop = Inf, adjmat = NULL, verbose = FALSE) {
+    stop = Inf, adjmat = NULL, output = "all") {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
@@ -356,8 +359,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
 
     # Compute statistics
     statistics <- compute_stats_tie(effectsN, newE, adjmat, actors[,2], 
-        types[,2], prepR, scaling, covar, interactions, start, stop, directed, 
-        verbose)
+        types[,2], prepR, scaling, covar, interactions, start, stop, directed)
 
     # Dimnames statistics
     dimnames(statistics) <- 
@@ -383,55 +385,62 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
                  ".x.",
                  dimnames(statistics)[[3]][as.numeric(x[2])])
         })    
+
+    if(output == "all") {
+        # Transform edgelist to evls
+        # Get riskset position
+        rp <- apply(prepE, 1, function(x) {
+            prepRC[as.numeric(x[2])+1, as.numeric(x[3])+1, as.numeric(x[4])+1] + 1
+        })
+
+        evls <- cbind(rp, cumsum(prep$intereventTime))
+        colnames(evls) <- c("event", "time")
+
+        # Edgelist output
+        edgelist <- prep$edgelist
+        edgelist$actor1 <- sapply(edgelist$actor1, function(a) {
+            remify::actorName(prep, a)
+        })
+        edgelist$actor2 <- sapply(edgelist$actor2, function(a) {
+            remify::actorName(prep, a)
+        })
+        edgelist$type <- sapply(edgelist$type, function(a) {
+            remify::typeName(prep, a)
+        })
+        edgelist <- as.data.frame(edgelist)
+
+        # Riskset output
+        riskset <- prep$risksetMatrix
+        riskset <- as.data.frame(riskset)
+        colnames(riskset) <- c("actor1", "actor2", "type", "id")
+        riskset$actor1 <- sapply(riskset$actor1, function(a) {
+            remify::actorName(prep, a)
+        })
+        riskset$actor2 <- sapply(riskset$actor2, function(a) {
+            remify::actorName(prep, a)
+        })
+        riskset$type <- sapply(riskset$type, function(a) {
+            remify::typeName(prep, a)
+        })
+        riskset$id <- riskset$id + 1
+        riskset <- as.data.frame(riskset)
+
+        # Output
+        out <- list(
+            statistics = statistics, 
+            edgelist = edgelist,
+            riskset = riskset, 
+            actors = actors[,1],
+            types = types[,1],
+            evls = evls[(start+1):(stop+1),],
+            adjmat = adjmat
+        )
+    } else {
+        # Output
+        out <- list(
+            statistics = statistics)
+    } 
     
-    # Transform edgelist to evls
-    # Get riskset position
-    rp <- apply(prepE, 1, function(x) {
-        prepRC[as.numeric(x[2])+1, as.numeric(x[3])+1, as.numeric(x[4])+1] + 1
-    })
-
-    evls <- cbind(rp, cumsum(prep$intereventTime))
-    colnames(evls) <- c("event", "time")
-
-    # Edgelist output
-    edgelist <- prep$edgelist
-    edgelist$actor1 <- sapply(edgelist$actor1, function(a) {
-        remify::actorName(prep, a)
-    })
-    edgelist$actor2 <- sapply(edgelist$actor2, function(a) {
-        remify::actorName(prep, a)
-    })
-    edgelist$type <- sapply(edgelist$type, function(a) {
-        remify::typeName(prep, a)
-    })
-    edgelist <- as.data.frame(edgelist)
-
-    # Riskset output
-    riskset <- prep$risksetMatrix
-    riskset <- as.data.frame(riskset)
-    colnames(riskset) <- c("actor1", "actor2", "type", "id")
-    riskset$actor1 <- sapply(riskset$actor1, function(a) {
-        remify::actorName(prep, a)
-    })
-    riskset$actor2 <- sapply(riskset$actor2, function(a) {
-        remify::actorName(prep, a)
-    })
-    riskset$type <- sapply(riskset$type, function(a) {
-        remify::typeName(prep, a)
-    })
-    riskset$id <- riskset$id + 1
-    riskset <- as.data.frame(riskset)
-
-    # Output
-    out <- list(
-        statistics = statistics, 
-        edgelist = edgelist,
-        riskset = riskset, 
-        actors = actors[,1],
-        types = types[,1],
-        evls = evls[(start+1):(stop+1),],
-        adjmat = adjmat
-    )
     class(out) <- "tomstats"
     out
 }

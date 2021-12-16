@@ -1,9 +1,10 @@
 # remstats 2.0.3
-Date: 11-Nov-21
+Date: 16-Dec-21
 
 ## New features
 * Added `degreeMin` and `degreeMax` statistics for undirected events.
 * Added `ccp` statistic for undirected, dyadic events. 
+* Option to output only statistics (since outputting all objects may take a lot of time).
 
 ## Major changes
 * Updated computation ``Brandes memory'' in adjmat to include normalization factor. 

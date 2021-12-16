@@ -21,7 +21,7 @@ remstats(
   start = 1,
   stop = Inf,
   adjmat = NULL,
-  verbose = FALSE
+  output = "all"
 )
 }
 \arguments{
@@ -80,8 +80,9 @@ event for which statistics are requested (see 'Details')}
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the 
 rows the timepoints and on the columns the riskset entries}
 
-\item{verbose}{logical, should an update on the progress of the statistics 
-computation be outputted?}
+\item{output}{indicates which output objects need to be provided, i.e., only 
+the statistics matrix ("only_stats") or all the below defined objects ("all")
+? Outputting only the statistics can save a lot of time.}
 }
 \value{
 \code{statistics } In case of the tie-oriented model, an array with 

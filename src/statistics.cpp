@@ -1922,50 +1922,16 @@ arma::cube compute_stats_tie(const arma::vec& effects,
     const arma::vec& actors, const arma::vec& types,
     const arma::mat& riskset, const arma::vec& scaling, 
     const Rcpp::List& covariates, const Rcpp::List& interactions, 
-    int start, int stop, bool directed, bool verbose) {
+    int start, int stop, bool directed) {
 
     // Initialize saving space
     arma::cube stats(edgelist.n_rows, riskset.n_rows, effects.n_elem);
     stats = stats.rows(start, stop);
-    
-    // All effects for progress update
-    Rcpp::CharacterVector all_effects = {
-	"baseline", "send", "receive", "same", "difference", "average", 
-	"minimum", "maximum", "removed", "inertia", "reciprocity", 
-	"indegreeSender", "indegreeReceiver", "outdegreeSender", "outdegreeReceiver", 
-	"totaldegreeSender", "totaldegreeReceiver", "otp", "itp", "osp", "isp", 
-	"sp", "spUnique", "psABBA", "psABBY", "psABXA",  
-	"psABXB", "psABXY", "psABAY", "rrankSend", "rrankReceive",  
-	"FEtype", "event", "recencyContinue", "recencySendSender","recencySendReceiver", 
-	"recencyReceiveSender","recencyReceiveReceiver", "tie",  
-	"indegreeSender.type", "indegreeReceiver.type", 
-	"outdegreeSender.type", "outdegreeReceiver.type", 
-	"totaldegreeSender.type", "totaldegreeReceiver.type", 
-	"psABBA.type", "psABBY.type", "psABXA.type",  
-	"psABXB.type", "psABXY.type", "psABAY.type",  
-	"inertia.type", "reciprocity.type", 
-	"otp.type", "itp.type", "osp.type", "isp.type", 
-	"sp.type", "spUnique.type", 
-	"rrankSend.type", "rrankReceive.type",  
-	"recencyContinue.type", 
-	"recencySendSender.type","recencySendReceiver.type", 
-	"recencyReceiveSender.type","recencyReceiveReceiver.type",
-    "degreeMin", "degreeMax", "ccp",
-	"interact"};
 
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
-
-        // Progress update
-        if(verbose) {
-            if(effect == 99) {
-                Rcpp::Rcout << "Computing interaction effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
-            } else {
-                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
-            }
-        }
 
         // Initialize saving space
         arma::mat stat(stats.n_rows, stats.n_cols, arma::fill::zeros);
@@ -3612,35 +3578,16 @@ arma::cube compute_stats_rate(const arma::vec& effects,
     const arma::mat& edgelist, const arma::mat& riskset,
     const arma::mat& adjmat, const arma::vec& actors, 
     const arma::vec& scaling, const Rcpp::List& covariates,
-    const Rcpp::List& interactions, int start, int stop, bool verbose) {
+    const Rcpp::List& interactions, int start, int stop) {
 
     // Initialize saving space
     arma::cube rateStats(edgelist.n_rows, actors.n_elem, effects.n_elem);
     rateStats = rateStats.rows(start, stop);
 
-    // Progress update
-    if(verbose) {
-        Rcpp::Rcout << "Computing statistics in the rate-step" << std::endl;
-    }
-
-    // All effects for progress update
-    Rcpp::CharacterVector all_effects = {"baseline", "send", "indegreeSender", 
-        "outdegreeSender", "totaldegreeSender", "recencySendSender", 
-        "recencyReceiveSender", "interact"};
-
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
-
-        // Progress update
-        if(verbose) {
-            if(effect == 99) {
-                Rcpp::Rcout << "Computing interaction effect" << std::endl;
-            } else {
-                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
-            }
-        }
 
         // Initialize saving space
         arma::mat stat(rateStats.n_rows, rateStats.n_cols, arma::fill::zeros);
@@ -3742,37 +3689,16 @@ arma::cube compute_stats_choice(const arma::vec& effects,
     const arma::mat& edgelist, const arma::mat& adjmat,
     const arma::vec& actors, const arma::mat& riskset,
     const arma::vec& scaling, const Rcpp::List& covariates,
-    const Rcpp::List& interactions, int start, int stop, bool verbose) {
+    const Rcpp::List& interactions, int start, int stop) {
 
     // Initialize saving space
     arma::cube choiceStats(edgelist.n_rows, actors.n_elem, effects.n_elem);
     choiceStats = choiceStats.rows(start, stop);
 
-    // Progress update
-    if(verbose) {
-        Rcpp::Rcout << "Computing statistics in the choice-step" << std::endl;
-    }
-
-    // All effects for progress update
-    Rcpp::CharacterVector all_effects = {"receive", "same", "difference", 
-        "average", "tie", "inertia", "reciprocity", "indegreeReceiver", 
-        "outdegreeReceiver", "totaldegreeReceiver", "otp", "itp", "osp", "isp",
-        "rrankSend", "rrankReceive", "recencySendReceiver", 
-        "recencyReceiveReceiver", "recencyContinue", "interact"};
-
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {
         // Current effect
         int effect = effects(i);
-
-        // Progress update
-        if(verbose) {
-            if(effect == 99) {
-                Rcpp::Rcout << "Computing interaction effect" << std::endl;
-            } else {
-                Rcpp::Rcout << "Computing " << all_effects(effect - 1) << " effect (" << i + 1 << "/" << effects.n_elem << ")" << std::endl;
-            }
-        }
 
         // Initialize saving space
         arma::mat stat(choiceStats.n_rows, choiceStats.n_cols,
