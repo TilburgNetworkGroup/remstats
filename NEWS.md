@@ -1,3 +1,9 @@
+# remstats 2.0.4
+Date: 21-Dec-21
+
+## New features
+* Enabled ARMA_64BIT_WORD
+
 # remstats 2.0.3
 Date: 16-Dec-21
 
