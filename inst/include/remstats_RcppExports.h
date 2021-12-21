@@ -655,27 +655,6 @@ namespace remstats {
         return Rcpp::as<arma::cube >(rcpp_result_gen);
     }
 
-    inline arma::mat compute_adjmat_update(const arma::mat& edgelist, arma::mat adjmat, int N, int D, bool directed, int memory, double memory_value, int start, int stop) {
-        typedef SEXP(*Ptr_compute_adjmat_update)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_compute_adjmat_update p_compute_adjmat_update = NULL;
-        if (p_compute_adjmat_update == NULL) {
-            validateSignature("arma::mat(*compute_adjmat_update)(const arma::mat&,arma::mat,int,int,bool,int,double,int,int)");
-            p_compute_adjmat_update = (Ptr_compute_adjmat_update)R_GetCCallable("remstats", "_remstats_compute_adjmat_update");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_compute_adjmat_update(Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(adjmat)), Shield<SEXP>(Rcpp::wrap(N)), Shield<SEXP>(Rcpp::wrap(D)), Shield<SEXP>(Rcpp::wrap(directed)), Shield<SEXP>(Rcpp::wrap(memory)), Shield<SEXP>(Rcpp::wrap(memory_value)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<arma::mat >(rcpp_result_gen);
-    }
-
 }
 
 #endif // RCPP_remstats_RCPPEXPORTS_H_GEN_

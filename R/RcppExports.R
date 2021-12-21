@@ -121,10 +121,6 @@ compute_stats_choice <- function(effects, edgelist, adjmat, actors, riskset, sca
     .Call(`_remstats_compute_stats_choice`, effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, start, stop)
 }
 
-compute_adjmat_update <- function(edgelist, adjmat, N, D, directed, memory, memory_value, start, stop) {
-    .Call(`_remstats_compute_adjmat_update`, edgelist, adjmat, N, D, directed, memory, memory_value, start, stop)
-}
-
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
     .Call('_remstats_RcppExport_registerCCallable', PACKAGE = 'remstats')

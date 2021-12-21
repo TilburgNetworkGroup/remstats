@@ -1212,48 +1212,6 @@ RcppExport SEXP _remstats_compute_stats_choice(SEXP effectsSEXP, SEXP edgelistSE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// compute_adjmat_update
-arma::mat compute_adjmat_update(const arma::mat& edgelist, arma::mat adjmat, int N, int D, bool directed, int memory, double memory_value, int start, int stop);
-static SEXP _remstats_compute_adjmat_update_try(SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP NSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type adjmat(adjmatSEXP);
-    Rcpp::traits::input_parameter< int >::type N(NSEXP);
-    Rcpp::traits::input_parameter< int >::type D(DSEXP);
-    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
-    Rcpp::traits::input_parameter< int >::type memory(memorySEXP);
-    Rcpp::traits::input_parameter< double >::type memory_value(memory_valueSEXP);
-    Rcpp::traits::input_parameter< int >::type start(startSEXP);
-    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_adjmat_update(edgelist, adjmat, N, D, directed, memory, memory_value, start, stop));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remstats_compute_adjmat_update(SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP NSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_adjmat_update_try(edgelistSEXP, adjmatSEXP, NSEXP, DSEXP, directedSEXP, memorySEXP, memory_valueSEXP, startSEXP, stopSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
 
 // validate (ensure exported C++ functions exist before calling them)
 static int _remstats_RcppExport_validate(const char* sig) { 
@@ -1289,7 +1247,6 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*rrank_choice)(int,const arma::mat&,const arma::mat&,const arma::vec&,int,int)");
         signatures.insert("arma::cube(*compute_stats_rate)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int)");
         signatures.insert("arma::cube(*compute_stats_choice)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int)");
-        signatures.insert("arma::mat(*compute_adjmat_update)(const arma::mat&,arma::mat,int,int,bool,int,double,int,int)");
     }
     return signatures.find(sig) != signatures.end();
 }
@@ -1326,7 +1283,6 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
     R_RegisterCCallable("remstats", "_remstats_rrank_choice", (DL_FUNC)_remstats_rrank_choice_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_rate", (DL_FUNC)_remstats_compute_stats_rate_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_choice", (DL_FUNC)_remstats_compute_stats_choice_try);
-    R_RegisterCCallable("remstats", "_remstats_compute_adjmat_update", (DL_FUNC)_remstats_compute_adjmat_update_try);
     R_RegisterCCallable("remstats", "_remstats_RcppExport_validate", (DL_FUNC)_remstats_RcppExport_validate);
     return R_NilValue;
 }
@@ -1362,7 +1318,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_rrank_choice", (DL_FUNC) &_remstats_rrank_choice, 6},
     {"_remstats_compute_stats_rate", (DL_FUNC) &_remstats_compute_stats_rate, 10},
     {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 10},
-    {"_remstats_compute_adjmat_update", (DL_FUNC) &_remstats_compute_adjmat_update, 9},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };
