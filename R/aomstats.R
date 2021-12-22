@@ -166,19 +166,15 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
-        prep <- remify::reh(edgelist = edgelist, actors = actors, 
-            types = types, directed = TRUE, ordinal = ordinal, origin = origin, 
-            omit_dyad = omit_dyad)
+        prep <- remify::reh(edgelist = edgelist, actors = actors,
+            types = types, directed = TRUE, ordinal = ordinal, 
+            origin = origin, omit_dyad = omit_dyad, model = "actor")
     } else {
         prep <- edgelist 
     }
 
     # Extract relevant elements from the prepared remify::reh object 
-    prepE <- as.matrix(prep$edgelist)
-    prepE[,1] <- as.numeric(prep$edgelist$time)
-    prepE <- t(apply(prepE, 1, as.numeric))
-    prepR <- prep$risksetMatrix
-    prepRC <- prep$risksetCube #(not given in new version remify)
+    edgelist.reh <- prep$edgelist
     actors <- attr(prep, "dictionary")$actors
     types <- attr(prep, "dictionary")$types
 
@@ -187,14 +183,6 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         stop("Multiple event types are not (yet) defined for the actor-oriented model.")
     }
 
-    # Edgelist in new version of remify
-    rp <- apply(prepE, 1, function(x) {
-        prepRC[as.numeric(x[2])+1, as.numeric(x[3])+1, as.numeric(x[4])+1] 
-    })
-
-    newE <- cbind(prepE[,1], rp, prepE[,5])
-    colnames(newE) <- c("time", "event", "weight")
-
     # Match memory
     memory <- match(memory, c("full", "window", "Brandes"))
     if(memory %in% c(2,3) & memory_value == Inf) {
@@ -202,9 +190,15 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
     }
     
     # Convert R start and stop indices to C++ (indexing starts at 0)
+    if(start < 1) {stop("start should be set to 1 or larger.")}
+    if(stop < start) {stop("stop cannot be smaller than start.")}
     start <- start - 1
-    if(stop == Inf) {stop <- nrow(prepE)}
-    stop <- stop - 1
+    if(stop == Inf) {stop <- nrow(edgelist.reh)}
+    stop <- stop - 1  
+
+    # Riskset
+    prepR <- getRisksetMatrix(actors$actorID, types$typeID, nrow(actors), 
+        nrow(types), TRUE)
 
     # Initialize stats
     rateStats <- NULL
@@ -260,17 +254,17 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the adjacency matrix 
         if(any(sender_effectsN %in% c(3,4,5))) {
             if(is.null(adjmat)) {
-                adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
-                    TRUE, memory, memory_value, start, stop)
+                adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
+                TRUE, memory, memory_value, start, stop)
             }
         } else {
             adjmat <- matrix()
         }   
 
         # Compute the rate statistics 
-        rateStats <- compute_stats_rate(sender_effectsN, newE, prepR, adjmat, 
-            actors[,2], rateScaling, rateCovar, rate_interactions, start, 
-            stop)    
+        rateStats <- compute_stats_rate(sender_effectsN, edgelist.reh, prepR, 
+            adjmat, actors[,2], rateScaling, rateCovar, rate_interactions, 
+            start, stop)    
 
         # Reset the adjacency matrix to null 
         if(all(dim(adjmat) == c(1,1))) {
@@ -314,8 +308,8 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
             "recencySendReceiver", "recencyReceiveReceiver", #17 #18
             "recencyContinue", #19
             "interact") #99
-        receiver_effectsN  <- match(sapply(receiver_effects, function(x) x$effect), 
-            all_receiver_effects)
+        receiver_effectsN  <- match(sapply(receiver_effects, 
+            function(x) x$effect), all_receiver_effects)
 
         # Prepare interaction receiver_effects
         receiver_effects_int <- parse_int(choiceFormula, "choiceEffects", 
@@ -323,7 +317,8 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         receiver_effectsN <- append(receiver_effectsN, 
             rep(99, length(receiver_effects_int)), length(receiver_effectsN))
         choice_interactions <- list()
-        choice_interactions[which(receiver_effectsN==99)] <- receiver_effects_int
+        choice_interactions[which(receiver_effectsN==99)] <- 
+            receiver_effects_int
 
         # Prepare receiver_effects covariate information
         choiceCovar <- lapply(receiver_effects, function(x) {
@@ -334,12 +329,14 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
                         time = attributes$time,
                         x = attributes[, x$variable]
                     )
-                    dat$id <- attr(prep, "dictionary")$actors[match(dat$id, attr(prep, "dictionary")$actors[,1]),2]
+                    dat$id <- attr(prep, "dictionary")$actors[match(dat$id, 
+                        attr(prep, "dictionary")$actors[,1]),2]
                     colnames(dat)[3] <- x$variable
                     as.matrix(dat)
                 } else {
                     dat <- x$x
-                    dat$id <- attr(prep, "dictionary")$actors[match(dat$id, attr(prep, "dictionary")$actors[,1]),2]
+                    dat$id <- attr(prep, "dictionary")$actors[match(dat$id, 
+                        attr(prep, "dictionary")$actors[,1]),2]
                     as.matrix(dat)
                 }
             } else if(x$effect == "tie") {
@@ -356,7 +353,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the adjacency matrix 
         if(any(receiver_effectsN %in% 6:14)) {
             if(is.null(adjmat)) {
-                adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
+                adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
                     TRUE, memory, memory_value, start, stop)
             }
         } else {
@@ -366,14 +363,9 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         }   
 
         # Compute the choice statistics 
-        choiceStats <- compute_stats_choice(receiver_effectsN, newE, adjmat, 
-            actors[,2], prepR, choiceScaling, choiceCovar, choice_interactions, 
-            start, stop)   
-
-        # Reset the adjacency matrix to null 
-        if(all(dim(adjmat) == c(1,1))) {
-            adjmat <- NULL
-        }
+        choiceStats <- compute_stats_choice(receiver_effectsN, edgelist.reh, 
+            adjmat, actors[,2], prepR, choiceScaling, choiceCovar, 
+            choice_interactions, start, stop)   
 
         # Dimnames statistics
         dimnames(choiceStats) <- 
@@ -401,40 +393,40 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
             })     
     }
 
-    # Edgelist output
-    edgelist <- prep$edgelist
-    edgelist$actor1 <- sapply(edgelist$actor1, function(a) {
-        remify::actorName(prep, a)
-    })
-    edgelist$actor2 <- sapply(edgelist$actor2, function(a) {
-        remify::actorName(prep, a)
-    })
-    edgelist$type <- sapply(edgelist$type, function(a) {
-        remify::typeName(prep, a)
-    })
-    edgelist <- as.data.frame(edgelist)
-
     # Riskset output
-    riskset <- prep$risksetMatrix
+    riskset <- prepR
     riskset <- as.data.frame(riskset)
-    colnames(riskset) <- c("actor1", "actor2", "type", "id")
-    riskset$actor1 <- sapply(riskset$actor1, function(a) {
+    colnames(riskset) <- c("sender", "receiver", "type", "id")
+    riskset[,1] <- sapply(riskset[,1], function(a) {
         remify::actorName(prep, a)
     })
-    riskset$actor2 <- sapply(riskset$actor2, function(a) {
+    riskset[,2] <- sapply(riskset[,2], function(a) {
         remify::actorName(prep, a)
     })
-    riskset$type <- sapply(riskset$type, function(a) {
+    riskset[,3] <- sapply(riskset[,3], function(a) {
         remify::typeName(prep, a)
     })
-    riskset$id <- riskset$id + 1
+    if(!("reh" %in% class(edgelist))) {
+        riskset$id <- riskset$id + 1
+    } else {
+        riskset$stat_column <- riskset$id + 1
+    }
     riskset <- as.data.frame(riskset)
+
+    # Edgelist output
+    if("reh" %in% class(edgelist)) {
+        edgelist <- prep$edgelist
+    }
 
     # Output
-    out <- list(statistics = 
-        list(sender_stats = rateStats, receiver_stats = choiceStats),
-        edgelist = edgelist, riskset = riskset, actors = actors[,1], 
+    out <- list(
+        statistics = list(
+            sender_stats = rateStats, receiver_stats = choiceStats),
+        edgelist = edgelist, 
+        riskset = riskset, 
+        actors = actors[,1], 
         adjmat = adjmat)
-    class(out) <- "aomstats"
+    class(out) <- c("aomstats", "remstats")
+    attr(out, "model") <- "actor"
     out
 }

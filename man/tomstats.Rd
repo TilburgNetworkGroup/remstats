@@ -68,9 +68,9 @@ event for which statistics are requested (see 'Details')}
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the 
 rows the timepoints and on the columns the riskset entries}
 
-\item{output}{indicates which output objects need to be provided, i.e., only 
-the statistics matrix ("only_stats") or all the below defined objects ("all")
-? Outputting only the statistics can save a lot of time.}
+\item{output}{indicates which output objects need to be provided, i.e., 
+either only the statistics matrix ("only_stats", faster!) or all the below 
+defined information objects ("all", default).}
 }
 \value{
 \code{statistics } Array with the computed statistics, where rows 

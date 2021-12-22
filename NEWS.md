@@ -1,3 +1,9 @@
+# remstats 3.0.0
+Date: 22-Dec-21
+
+## Changes
+* Integrated latest (Sept-21) version of remify. 
+
 # remstats 2.0.4
 Date: 21-Dec-21
 

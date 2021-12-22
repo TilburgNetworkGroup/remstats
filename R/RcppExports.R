@@ -5,6 +5,10 @@ find_dyad <- function(i, j, c, N, directed) {
     .Call(`_remstats_find_dyad`, i, j, c, N, directed)
 }
 
+getRisksetMatrix <- function(actorID, typeID, N, C, directed) {
+    .Call(`_remstats_getRisksetMatrix`, actorID, typeID, N, C, directed)
+}
+
 standardize <- function(stat) {
     .Call(`_remstats_standardize`, stat)
 }

@@ -52,6 +52,44 @@ RcppExport SEXP _remstats_find_dyad(SEXP iSEXP, SEXP jSEXP, SEXP cSEXP, SEXP NSE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// getRisksetMatrix
+arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed);
+static SEXP _remstats_getRisksetMatrix_try(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP NSEXP, SEXP CSEXP, SEXP directedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type actorID(actorIDSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type typeID(typeIDSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type N(NSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type C(CSEXP);
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
+    rcpp_result_gen = Rcpp::wrap(getRisksetMatrix(actorID, typeID, N, C, directed));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _remstats_getRisksetMatrix(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP NSEXP, SEXP CSEXP, SEXP directedSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_remstats_getRisksetMatrix_try(actorIDSEXP, typeIDSEXP, NSEXP, CSEXP, directedSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // standardize
 arma::mat standardize(arma::mat stat);
 static SEXP _remstats_standardize_try(SEXP statSEXP) {
@@ -1218,6 +1256,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
     static std::set<std::string> signatures;
     if (signatures.empty()) {
         signatures.insert("int(*find_dyad)(int,int,int,int,bool)");
+        signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
         signatures.insert("arma::mat(*standardize)(arma::mat)");
         signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,int,bool,int,double,int,int)");
         signatures.insert("arma::mat(*actorStat_tie)(int,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,int,int,int)");
@@ -1254,6 +1293,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _remstats_RcppExport_registerCCallable() { 
     R_RegisterCCallable("remstats", "_remstats_find_dyad", (DL_FUNC)_remstats_find_dyad_try);
+    R_RegisterCCallable("remstats", "_remstats_getRisksetMatrix", (DL_FUNC)_remstats_getRisksetMatrix_try);
     R_RegisterCCallable("remstats", "_remstats_standardize", (DL_FUNC)_remstats_standardize_try);
     R_RegisterCCallable("remstats", "_remstats_compute_adjmat", (DL_FUNC)_remstats_compute_adjmat_try);
     R_RegisterCCallable("remstats", "_remstats_actorStat_tie", (DL_FUNC)_remstats_actorStat_tie_try);
@@ -1289,6 +1329,7 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
 
 static const R_CallMethodDef CallEntries[] = {
     {"_remstats_find_dyad", (DL_FUNC) &_remstats_find_dyad, 5},
+    {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
     {"_remstats_standardize", (DL_FUNC) &_remstats_standardize, 1},
     {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 8},
     {"_remstats_actorStat_tie", (DL_FUNC) &_remstats_actorStat_tie, 8},

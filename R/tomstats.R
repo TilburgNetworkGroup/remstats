@@ -156,9 +156,9 @@
 #' event for which statistics are requested (see 'Details')
 #' @param adjmat optionally, a previously computed adjacency matrix with on the 
 #' rows the timepoints and on the columns the riskset entries 
-#' @param output indicates which output objects need to be provided, i.e., only 
-#' the statistics matrix ("only_stats") or all the below defined objects ("all")
-#' ? Outputting only the statistics can save a lot of time. 
+#' @param output indicates which output objects need to be provided, i.e., 
+#' either only the statistics matrix ("only_stats", faster!) or all the below 
+#' defined information objects ("all", default). 
 #' 
 #' @return \code{statistics } Array with the computed statistics, where rows 
 #' refer to time points, columns refer to potential relational event (i.e., 
@@ -188,29 +188,17 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
-        prep <- remify::reh(edgelist = edgelist, actors = actors, 
+        prep <- remify::reh(edgelist = edgelist, actors = actors,
             types = types, directed = directed, ordinal = ordinal, 
-            origin = origin, omit_dyad = omit_dyad)
+            origin = origin, omit_dyad = omit_dyad, model = "tie")
     } else {
         prep <- edgelist 
     }
 
     # Extract relevant elements from the prepared remify::reh object 
-    prepE <- as.matrix(prep$edgelist)
-    prepE[,1] <- as.numeric(prep$edgelist$time)
-    prepE <- t(apply(prepE, 1, as.numeric))
-    prepR <- prep$risksetMatrix
-    prepRC <- prep$risksetCube #(not given in new version remify)
+    edgelist.reh <- prep$edgelist
     actors <- attr(prep, "dictionary")$actors
     types <- attr(prep, "dictionary")$types
-
-    # Edgelist in new version of remify
-    rp <- apply(prepE, 1, function(x) {
-        prepRC[as.numeric(x[2])+1, as.numeric(x[3])+1, as.numeric(x[4])+1] 
-    })
-
-    newE <- cbind(prepE[,1], rp, prepE[,5])
-    colnames(newE) <- c("time", "event", "weight")
 
     # Match memory
     memory <- match(memory, c("full", "window", "Brandes"))
@@ -222,7 +210,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     if(start < 1) {stop("start should be set to 1 or larger.")}
     if(stop < start) {stop("stop cannot be smaller than start.")}
     start <- start - 1
-    if(stop == Inf) {stop <- nrow(prepE)}
+    if(stop == Inf) {stop <- nrow(edgelist.reh)}
     stop <- stop - 1  
     
     # Prepare main effects
@@ -348,7 +336,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     # Compute the adjacency matrix 
     if(any(effectsN %in% c(10:23, 40:45, 52:59, 67:70))) {
         if(is.null(adjmat)) {
-            adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
+            adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
                 directed, memory, memory_value, start, stop)
         }
     } else {
@@ -356,9 +344,13 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             adjmat <- matrix()
         }
     }   
+    
+    # Riskset
+    prepR <- getRisksetMatrix(actors$actorID, types$typeID, nrow(actors), 
+        nrow(types), directed)
 
     # Compute statistics
-    statistics <- compute_stats_tie(effectsN, newE, adjmat, actors[,2], 
+    statistics <- compute_stats_tie(effectsN, edgelist.reh, adjmat, actors[,2], 
         types[,2], prepR, scaling, covar, interactions, start, stop, directed)
 
     # Dimnames statistics
@@ -387,44 +379,40 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         })    
 
     if(output == "all") {
-        # Transform edgelist to evls
-        # Get riskset position
-        rp <- apply(prepE, 1, function(x) {
-            prepRC[as.numeric(x[2])+1, as.numeric(x[3])+1, as.numeric(x[4])+1] + 1
-        })
-
-        evls <- cbind(rp, cumsum(prep$intereventTime))
+        # Transform edgelist to evls (for estimation with relevent::rem)
+        evls <- edgelist.reh[,c(2,1)]
+        evls[,1] <- evls[,1] + 1
         colnames(evls) <- c("event", "time")
 
-        # Edgelist output
-        edgelist <- prep$edgelist
-        edgelist$actor1 <- sapply(edgelist$actor1, function(a) {
-            remify::actorName(prep, a)
-        })
-        edgelist$actor2 <- sapply(edgelist$actor2, function(a) {
-            remify::actorName(prep, a)
-        })
-        edgelist$type <- sapply(edgelist$type, function(a) {
-            remify::typeName(prep, a)
-        })
-        edgelist <- as.data.frame(edgelist)
-
         # Riskset output
-        riskset <- prep$risksetMatrix
+        riskset <- prepR
         riskset <- as.data.frame(riskset)
-        colnames(riskset) <- c("actor1", "actor2", "type", "id")
-        riskset$actor1 <- sapply(riskset$actor1, function(a) {
+        if(directed) {
+            colnames(riskset) <- c("sender", "receiver", "type", "id")
+        } else {
+            colnames(riskset) <- c("actor1", "actor2", "type", "id")
+        }
+        riskset[,1] <- sapply(riskset[,1], function(a) {
             remify::actorName(prep, a)
         })
-        riskset$actor2 <- sapply(riskset$actor2, function(a) {
+        riskset[,2] <- sapply(riskset[,2], function(a) {
             remify::actorName(prep, a)
         })
-        riskset$type <- sapply(riskset$type, function(a) {
+        riskset[,3] <- sapply(riskset[,3], function(a) {
             remify::typeName(prep, a)
         })
-        riskset$id <- riskset$id + 1
+        if(!("reh" %in% class(edgelist))) {
+            riskset$id <- riskset$id + 1
+        } else {
+            riskset$stat_column <- riskset$id + 1
+        }
         riskset <- as.data.frame(riskset)
 
+        # Edgelist output
+        if("reh" %in% class(edgelist)) {
+            edgelist <- prep$edgelist
+        }
+        
         # Output
         out <- list(
             statistics = statistics, 
@@ -441,6 +429,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             statistics = statistics)
     } 
     
-    class(out) <- "tomstats"
+    class(out) <- c("tomstats", "remstats")
+    attr(out, "model") <- "tie"
     out
 }

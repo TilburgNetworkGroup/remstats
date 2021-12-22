@@ -7,6 +7,7 @@
 // find_dyad
 // 
 // Helper function that finds the position of a dyad in the riskset.
+// Source: remify
 // [[Rcpp::export]]
 int find_dyad(int i, int j, int c, int N, bool directed) {
     
@@ -32,6 +33,64 @@ int find_dyad(int i, int j, int c, int N, bool directed) {
     }
 
     return dyad;
+}
+
+// @title getRisksetMatrix (obtain permutations of actors' ids and event types).
+//
+// @param actorID vector of actors' id's.
+// @param typeID vector of types' id's.
+// @param N number of actors in the dataset.
+// @param C number of event types
+// @param direcred boolean value: are events directed (1) or undirected (0)?
+// source: remify
+//
+// @return matrix of possible dyadic events.
+// [[Rcpp::export]]
+arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed){
+    switch(directed){
+    case 0: { // for undirected network
+        arma::uword i,j,c;
+        arma::uword col_index = 0;
+        arma::mat riskset(((N*(N-1))/2)*C,4); 
+        for(c = 0; c < C; c++){
+            for(i = 0; i < N; i++){
+                for(j = (i+1); j < N ; j++){
+                        // unit increase col_index 
+                        riskset(col_index,0) = actorID(i);
+                        riskset(col_index,1) = actorID(j);
+                        riskset(col_index,2) = typeID(c);
+                        riskset(col_index,3) = col_index;
+                        col_index += 1;       
+                }
+            }
+        }
+        return riskset; 
+    }
+
+    case 1: { // for directed network
+        arma::uword i,j,c;
+        arma::mat riskset(N*N*C,4);
+        arma::uvec indices_to_shed(N*C); // this is the vector where to store the indices of selfedges to remove at the end of the function
+        indices_to_shed.fill(N*N*C);
+        for(c = 0; c < C; c++){
+            for(i = 0; i < N; i++){
+                for(j = 0; j < N ; j++){
+                        if(j != i){
+                        riskset(j+i*N+c*(N*N),0) = actorID(i);
+                        riskset(j+i*N+c*(N*N),1) = actorID(j);
+                        riskset(j+i*N+c*(N*N),2) = typeID(c);
+                    }
+                    else {
+                        indices_to_shed(j+c*N) = (j+i*N+c*(N*N));
+                    }
+                }
+            }
+        }
+        riskset.shed_rows(indices_to_shed); 
+        riskset.col(3) = arma::linspace(0,riskset.n_rows-1,riskset.n_rows);
+        return riskset;
+    }
+    }
 }
 
 // standardize
