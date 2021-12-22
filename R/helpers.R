@@ -61,31 +61,65 @@ parse_int <- function(formula, type, effects, ordinal = FALSE) {
 }
 
 parse_tie <- function(List, prep) {
-
+	
 	x <- List$x
 	dictionary <- attr(prep, "dictionary")$actors
-
+	
+	# Error message in the case of missing actors
+	m1 <- "One or more actors are missing from the input given to tie()."
+	if(nrow(x) < nrow(dictionary)) {
+		stop(m1)
+	}
+	
+	if(ncol(x) < nrow(dictionary)) {
+		stop(m1)
+	}
+	
+	# Error message/actions in the case of redundant actors
+	w1 <- FALSE
+	m2 <- "Not all actors from the input given to `x` in tie() are in the dictionary. 
+	Remove the redundant actors from `x`, or supply the actor names to the row and column 
+	names of `x` so tie() knows which rows and columns to select."
+	m3 <- "Not all actors from the input given to `x` in tie() are in the dictionary: 
+	Redundant actors were removed from `x`."
+	if(nrow(x) > nrow(dictionary)) {
+		if(is.null(rownames(x))) {
+			stop(m2)
+		} else {
+			x <- x[rownames(x) %in% dictionary[,1],]
+			warning(m3)
+			w1 <- TRUE
+		}
+	}
+	
+	if(ncol(x) > nrow(dictionary)) {
+		if(is.null(colnames(x))) {
+			stop(m2)
+		} else {
+			x <- x[,colnames(x) %in% dictionary[,1]]
+			if(!w1) {warning(m3)}
+		}
+	}
+	
 	if(is.null(rownames(x))) {
 		rownames(x) <- dictionary[,2]
 	} else if(!all(rownames(x) %in% dictionary[,1])) {
-		warning("rownames `x` in tie don't match actor ids")
-		rownames(x) <- dictionary[,2]
+		stop("rownames `x` in tie don't match actor names in dictionary")
 	} else {
 		rownames(x) <- dictionary[match(rownames(x), dictionary[,1]),2]
 	}
-
+	
 	if(is.null(colnames(x))) {
 		colnames(x) <- dictionary[,2]
 	} else if(!all(colnames(x) %in% dictionary[,1])) {
-		warning("colnames `x` in tie don't match actor ids")
-		colnames(x) <- dictionary[,2]
+		stop("colnames `x` in tie don't match actor ids")
 	} else {
 		colnames(x) <- dictionary[match(colnames(x), dictionary[,1]),2]
 	}	
 	
 	x <- x[order(as.numeric(rownames(x))),]
 	x <- x[,order(as.numeric(colnames(x)))]
-
+	
 	if(!attr(prep, "directed")) {
 		if(!isSymmetric(x)) {
 			if(all(is.na(x[upper.tri(x)]))) {
@@ -97,6 +131,6 @@ parse_tie <- function(List, prep) {
 			}
 		}
 	}
-
+	
 	as.matrix(x)
 }

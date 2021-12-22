@@ -1,8 +1,11 @@
 # remstats 3.0.0
 Date: 22-Dec-21
 
-## Changes
+## Major changes
 * Integrated latest (Sept-21) version of remify. 
+
+## Minor changes
+* Fixed bug in `tie()` (see issue [#29](https://github.com/TilburgNetworkGroup/remstats/issues/29)).
 
 # remstats 2.0.4
 Date: 21-Dec-21
