@@ -42,34 +42,36 @@
 #' statistics are only defined for either directed or undirected events (see 
 #' the documentation of the statistics). 
 #' 
-#' Two more elements can affect the computation of the 
-#' \emph{endogenous} statistics: the settings of the \code{memory} and 
-#' \code{memoryValue} arguments in \code{tomstats} and the events weights in 
-#' the supplied \code{edgelist} object. First, the memory settings affect the 
-#' way past events are included in the computation of the endogenous 
-#' statistics. Options are one of "full" (all past events are considered), 
-#' "window" (only past events within a given time interval are considered) or 
-#' "Brandes" (the weight of events depends on the elapsed time through an 
-#' exponential decay with a half-life parameter). Second, the weight of the 
-#' events affect the way past events are summed in the computation of the 
-#' endogenous statistics, namely based on their weight. Note that if the 
-#' edgelist contains a column that is named ``weight'', it is assumed that 
-#' these affect the endogenous statistics. These settings are defined globally 
-#' in the \code{tomstats} function and affect the computation of all endogenous 
-#' statistics with the following exceptions (that follow logically from their 
-#' definition). Since spUnique is a count of the number of unique interaction 
-#' partners, and the recency statistics (recencyContinue, 
+#' The default `memory` setting is `"full"`, which implies that at each time 
+#' point $t$ the entire event history before $t$ is included in the computation 
+#' of the statistics. Alternatively, when `memory` is set to `"window"`, only 
+#' the past event history within a given time interval is considered (see 
+#' Mulders & Leenders, 2019). This length of this time interval is set by the 
+#' `memory_value` parameter. For example, when `memory_value = 100` and `memory 
+#' = "window"`, at time point $t$ only the past events that happened at most 
+#' 100 time units ago are included in the computation of the statistics. A 
+#' third option is to set `memory` to `Brandes`. In this case, the weight of 
+#' the past event in the computation of the statistics depend on the elapsed 
+#' time between $t$ and the past event. This weight is determined based on an 
+#' exponential decay function with half-life parameter `memory_value` (see 
+#' Brandes et al., 2009). 
+#' 
+#' Note that if the  edgelist contains a column that is named ``weight'', it is 
+#' assumed that these affect the endogenous statistics. These settings are 
+#' defined globally in the \code{tomstats} function and affect the computation 
+#' of all endogenous statistics with the following exceptions (that follow 
+#' logically from their definition). Since spUnique is a count of the number of 
+#' unique interaction partners, and the recency statistics (recencyContinue, 
 #' recencySendSender, recencySendReceiver, recencyReceiveSender, 
 #' recencyReceiveReceiver) depend on the time past, the computation of these 
-#' statistics do not depend on event weights and are therefore affected by 
-#' "window" memory but not by "Brandes" memory or supplied event weights. Since 
-#' the baseline statistic is always one, the FEtype statistic is binary and 
-#' does not depend on past events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, 
-#' PSAB-XB, PSAB-XY and PSAB-AY) are binary and only dependent on the previous 
-#' event, these statistics are not affected by the memory settings or the 
-#' supplied event weights. The recency-rank statistics (rrankSend, 
-#' rrankReceive) are (for now) only available with the "full" memory, and are, 
-#' per definition, not affected by supplied event weights.  
+#' statistics do not depend on event weights. Since the baseline statistic is 
+#' always one, the FEtype statistic is binary and does not depend on past 
+#' events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and 
+#' PSAB-AY) are binary and only dependent on the previous event, these 
+#' statistics are not affected by the memory settings or the supplied event 
+#' weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now) 
+#' only available with the "full" memory, and are, per definition, not affected 
+#' by supplied event weights.  
 #' 
 #' Optionally, statistics can be computed for a slice of the edgelist - but 
 #' based on the entire history. This is achieved by setting the start and 
@@ -142,14 +144,9 @@
 #' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
 #' Details).
 #' @inheritParams remify::reh
-#' @param memory indicates the type of memory effect, i.e., how past events 
-#' influence future events. One of "full" (all past events are considered), 
-#' "window" (only past events within a given time interval are considered) or 
-#' "Brandes" (the weight of events depends on the elapsed time through an 
-#' exponential decay with a half-life parameter)
-#' @param memory_value numeric value indicating the memory parameter, i.e., the 
-#' window width if memory is "full", and the half-life time if memory is 
-#' "Brandes"
+#' @param memory The memory to be used. See `Details'. 
+#' @param memory_value Numeric value indicating the memory parameter. See 
+#' `Details'.
 #' @param start integer value, refers to the index in the edgelist of the first 
 #' event for which statistics are requested (see 'Details')
 #' @param stop integer value, refers to the index in the edgelist of the last 
@@ -157,7 +154,7 @@
 #' @param adjmat optionally, a previously computed adjacency matrix with on the 
 #' rows the timepoints and on the columns the riskset entries 
 #' @param output indicates which output objects need to be provided, i.e., 
-#' either only the statistics matrix ("only_stats", faster!) or all the below 
+#' either only the statistics matrix ("stats_only", faster!) or all the below 
 #' defined information objects ("all", default). 
 #' 
 #' @return \code{statistics } Array with the computed statistics, where rows 
@@ -183,8 +180,9 @@
 #' @export 
 tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL, 
     types = NULL, directed = TRUE, ordinal = FALSE, origin = NULL, 
-    omit_dyad = NULL, memory = "full", memory_value = Inf, start = 1, 
-    stop = Inf, adjmat = NULL, output = "all") {
+    omit_dyad = NULL, memory = c("full", "window", "Brandes"), 
+    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL, 
+    output = c("all", "stats_only")) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
@@ -200,7 +198,11 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     actors <- attr(prep, "dictionary")$actors
     types <- attr(prep, "dictionary")$types
 
+    # Match output
+    output <- match.arg(output)
+
     # Match memory
+    memory <- match.arg(memory)
     memory <- match(memory, c("full", "window", "Brandes"))
     if(memory %in% c(2,3) & memory_value == Inf) {
         stop("A memory_value should be supplied when memory is `window' or `Brandes'.")

@@ -45,34 +45,36 @@
 #' the documentation of the statistics). Note that undirected events are only 
 #' available for the tie-oriented model. 
 #' 
-#' Two more elements can affect the computation of the 
-#' \emph{endogenous} statistics: the settings of the \code{memory} and 
-#' \code{memoryValue} arguments in \code{remstats} and the events weights in 
-#' the supplied \code{edgelist} object. First, the memory settings affect the 
-#' way past events are included in the computation of the endogenous 
-#' statistics. Options are one of "full" (all past events are considered), 
-#' "window" (only past events within a given time interval are considered) or 
-#' "Brandes" (the weight of events depends on the elapsed time through an 
-#' exponential decay with a half-life parameter). Second, the weight of the 
-#' events affect the way past events are summed in the computation of the 
-#' endogenous statistics, namely based on their weight. Note that if the 
-#' edgelist contains a column that is named ``weight'', it is assumed that 
-#' these affect the endogenous statistics. These settings are defined globally 
-#' in the \code{remstats} function and affect the computation of all endogenous 
-#' statistics with the following exceptions (that follow logically from their 
-#' definition). Since spUnique is a count of the number of unique interaction 
-#' partners, and the recency statistics (recencyContinue, 
+#' The default `memory` setting is `"full"`, which implies that at each time 
+#' point $t$ the entire event history before $t$ is included in the computation 
+#' of the statistics. Alternatively, when `memory` is set to `"window"`, only 
+#' the past event history within a given time interval is considered (see 
+#' Mulders & Leenders, 2019). This length of this time interval is set by the 
+#' `memory_value` parameter. For example, when `memory_value = 100` and `memory 
+#' = "window"`, at time point $t$ only the past events that happened at most 
+#' 100 time units ago are included in the computation of the statistics. A 
+#' third option is to set `memory` to `Brandes`. In this case, the weight of 
+#' the past event in the computation of the statistics depend on the elapsed 
+#' time between $t$ and the past event. This weight is determined based on an 
+#' exponential decay function with half-life parameter `memory_value` (see 
+#' Brandes et al., 2009). 
+#' 
+#' Note that if the  edgelist contains a column that is named ``weight'', it is 
+#' assumed that these affect the endogenous statistics. These settings are 
+#' defined globally in the \code{remstats} function and affect the computation 
+#' of all endogenous statistics with the following exceptions (that follow 
+#' logically from their definition). Since spUnique is a count of the number of 
+#' unique interaction partners, and the recency statistics (recencyContinue, 
 #' recencySendSender, recencySendReceiver, recencyReceiveSender, 
 #' recencyReceiveReceiver) depend on the time past, the computation of these 
-#' statistics do not depend on event weights and are therefore affected by 
-#' "window" memory but not by "Brandes" memory or supplied event weights. Since 
-#' the baseline statistic is always one, the FEtype statistic is binary and 
-#' does not depend on past events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, 
-#' PSAB-XB, PSAB-XY and PSAB-AY) are binary and only dependent on the previous 
-#' event, these statistics are not affected by the memory settings or the 
-#' supplied event weights. The recency-rank statistics (rrankSend, 
-#' rrankReceive) are (for now) only available with the "full" memory, and are, 
-#' per definition, not affected by supplied event weights.
+#' statistics do not depend on event weights. Since the baseline statistic is 
+#' always one, the FEtype statistic is binary and does not depend on past 
+#' events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and 
+#' PSAB-AY) are binary and only dependent on the previous event, these 
+#' statistics are not affected by the memory settings or the supplied event 
+#' weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now) 
+#' only available with the "full" memory, and are, per definition, not affected 
+#' by supplied event weights.  
 #' 
 #' Optionally, statistics can be computed for a slice of the edgelist - but 
 #' based on the entire history. This is achieved by setting the start and 
@@ -177,8 +179,7 @@
 remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,   
     receiver_effects = NULL, attributes = NULL, actors = NULL, types = NULL, 
     directed = TRUE, ordinal = FALSE, origin = NULL, omit_dyad = NULL, 
-    memory = "full", memory_value = Inf, start = 1, stop = Inf, adjmat = NULL,
-    output = "all") {
+    memory = c("full", "window", "Brandes"), memory_value = Inf, start = 1, stop = Inf, adjmat = NULL, output = c("all", "stats_only")) {
 
     if(!is.null(tie_effects) & 
         (!is.null(sender_effects) | !is.null(receiver_effects))) {
