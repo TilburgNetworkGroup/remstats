@@ -6,6 +6,7 @@ Date: 22-Dec-21
 
 ## Minor changes
 * Fixed bug in `tie()` (see issue [#29](https://github.com/TilburgNetworkGroup/remstats/issues/29)).
+* Added warning messages when redundant actors are present in input data for the exogenous stats (see issue [#30](https://github.com/TilburgNetworkGroup/remstats/issues/30)).
 
 # remstats 2.0.4
 Date: 21-Dec-21

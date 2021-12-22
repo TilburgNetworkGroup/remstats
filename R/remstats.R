@@ -179,16 +179,21 @@
 remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,   
     receiver_effects = NULL, attributes = NULL, actors = NULL, types = NULL, 
     directed = TRUE, ordinal = FALSE, origin = NULL, omit_dyad = NULL, 
-    memory = c("full", "window", "Brandes"), memory_value = Inf, start = 1, stop = Inf, adjmat = NULL, output = c("all", "stats_only")) {
+    memory = c("full", "window", "Brandes"), memory_value = Inf, start = 1, 
+    stop = Inf, adjmat = NULL, output = c("all", "stats_only")) {
 
     if(!is.null(tie_effects) & 
         (!is.null(sender_effects) | !is.null(receiver_effects))) {
-            stop("Supply effects for the tie-oriented model to tie_effects OR effects for the actor-oriented model to sender_effects or receiver_effects.")
+            stop("Supply effects for the tie-oriented model to tie_effects OR 
+            effects for the actor-oriented model to sender_effects or 
+            receiver_effects.")
         }
 
     if(is.null(tie_effects) & 
         (is.null(sender_effects) & is.null(receiver_effects))) {
-            stop("Supply effects for the tie-oriented model to tie_effects or effects for the actor-oriented model to sender_effects or receiver_effects.")
+            stop("Supply effects for the tie-oriented model to tie_effects or 
+            effects for the actor-oriented model to sender_effects or 
+            receiver_effects.")
         }    
 
     if(!is.null(tie_effects)) {

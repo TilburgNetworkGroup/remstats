@@ -314,8 +314,13 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
                 dat <- x$x
                 dat$id <- actors[match(dat$id, actors[,1]),2]
                 dat <- dat[order(as.numeric(dat$id)),]
-                as.matrix(dat)
             }
+            if(any(is.na(dat$id))) {
+                w1 <- paste0("Redunant actors in ", x$effect, ". These are not included in the computation of the statistics.")
+                warning(w1)
+                dat <- dat[!is.na(dat$id),]
+            }
+            as.matrix(dat)
         } else if(x$effect == "tie") {
             parse_tie(x, prep)
         } else if(x$effect == "event") {
