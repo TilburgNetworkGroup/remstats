@@ -1986,8 +1986,8 @@ arma::cube compute_stats_tie(const arma::vec& effects,
     int start, int stop, bool directed) {
 
     // Initialize saving space
-    arma::cube stats(edgelist.n_rows, riskset.n_rows, effects.n_elem);
-    stats = stats.rows(start, stop);
+    int M = stop-start + 1;
+    arma::cube stats(M, riskset.n_rows, effects.n_elem);
 
     // For loop over effects
     for(arma::uword i = 0; i < effects.n_elem; ++i) {

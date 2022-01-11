@@ -388,8 +388,15 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     if(output == "all") {
         # Transform edgelist to evls (for estimation with relevent::rem)
         evls <- edgelist.reh[,c(2,1)]
-        evls[,1] <- evls[,1] + 1
-        colnames(evls) <- c("event", "time")
+        if(is.null(nrow(evls))) {
+            evls[1] <- evls[1] + 1
+            names(evls) <- c("event", "time")
+        } else {
+            evls[,1] <- evls[,1] + 1
+            colnames(evls) <- c("event", "time")
+            evls[(start+1):(stop+1),]
+        }
+        
 
         # Riskset output
         riskset <- prepR
@@ -427,7 +434,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             riskset = riskset, 
             actors = actors[,1],
             types = types[,1],
-            evls = evls[(start+1):(stop+1),],
+            evls = evls,
             adjmat = adjmat
         )
     } else {

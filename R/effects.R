@@ -56,11 +56,13 @@ NULL
 #' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
 #' \code{\link{aomstats}}. 
 #' 
+#' 
+#' 
 #' @param variable string with the name of the column in the 
 #' \code{attributes} object for which the statistic has to be computed. 
 #' @param attributes optionally, an object of class 
-#' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
-#' details). 
+#' \code{"\link[base]{data.frame}"} that contains the exogenous attributes, see 
+#' 'Details.'
 #' @param scaling the method for scaling the statistic. Default is to not scale 
 #' the statistic but keep it "as.is". Alternatively, standardization of the 
 #' statistic per time point can be requested with "std". 

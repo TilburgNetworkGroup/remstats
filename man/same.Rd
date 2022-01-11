@@ -11,8 +11,8 @@ same(variable, attributes = NULL)
 \code{attributes} object for which the statistic has to be computed.}
 
 \item{attributes}{optionally, an object of class 
-\code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
-details).}
+\code{"\link[base]{data.frame}"} that contains the exogenous attributes, see 
+'Details.'}
 }
 \description{
 Specifies the statistic for a `same` effect in the tie-oriented model or the 
