@@ -16,8 +16,8 @@ difference(
 \code{attributes} object for which the statistic has to be computed.}
 
 \item{attributes}{optionally, an object of class 
-\code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
-details).}
+\code{"\link[base]{data.frame}"} that contains the exogenous attributes, see 
+'Details.'}
 
 \item{scaling}{the method for scaling the statistic. Default is to not scale 
 the statistic but keep it "as.is". Alternatively, standardization of the 

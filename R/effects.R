@@ -56,11 +56,13 @@ NULL
 #' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
 #' \code{\link{aomstats}}. 
 #' 
+#' 
+#' 
 #' @param variable string with the name of the column in the 
 #' \code{attributes} object for which the statistic has to be computed. 
 #' @param attributes optionally, an object of class 
-#' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
-#' details). 
+#' \code{"\link[base]{data.frame}"} that contains the exogenous attributes, see 
+#' 'Details.'
 #' @param scaling the method for scaling the statistic. Default is to not scale 
 #' the statistic but keep it "as.is". Alternatively, standardization of the 
 #' statistic per time point can be requested with "std". 
@@ -78,7 +80,7 @@ NULL
 send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Prepare effect 
@@ -157,7 +159,7 @@ send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @export 
 receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Prepare effect 
@@ -238,7 +240,7 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Output
@@ -377,7 +379,7 @@ difference <- function(variable, attributes = NULL,
     scaling = c("as.is", "std"), absolute = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     temp <- scaling
     if(temp == "as.is" & !absolute) {scaling <- 1}
     if(temp == "as.is" & absolute) {scaling <- 2}  # absolute values
@@ -463,7 +465,7 @@ difference <- function(variable, attributes = NULL,
 #' @export 
 average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Prepare effect 
@@ -540,7 +542,7 @@ average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @export 
 minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Prepare effect 
@@ -616,7 +618,7 @@ minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @export 
 maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Prepare effect 
@@ -774,7 +776,7 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -834,7 +836,7 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -899,7 +901,7 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -956,7 +958,7 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -1014,7 +1016,7 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -1071,7 +1073,7 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -1136,7 +1138,7 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -1194,7 +1196,7 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -1252,7 +1254,7 @@ degreeMin <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -1310,7 +1312,7 @@ degreeMax <- function(scaling = c("as.is", "prop", "std"),
     consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "prop", "std"))
 
     # Output
@@ -1367,7 +1369,7 @@ degreeMax <- function(scaling = c("as.is", "prop", "std"),
 otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Output
@@ -1417,7 +1419,7 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Output
@@ -1473,7 +1475,7 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Output
@@ -1523,7 +1525,7 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Output
@@ -1570,7 +1572,7 @@ isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Output
@@ -1618,7 +1620,7 @@ sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 
     # Match scaling
-    if(length(scaling) > 1) {scaling <- scaling[1]}
+    scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
 
     # Output

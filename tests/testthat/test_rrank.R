@@ -4,7 +4,7 @@ library(remstats)
 test_that("rrankSend", {
 	data(history)
 	
-	rehObject <- reh(edgelist = history)
+	rehObject <- reh(edgelist = history, model = "tie")
 	tomres <- tomstats(edgelist = rehObject, effects = ~ rrankSend())
 	aomres <- aomstats(edgelist = rehObject, receiver_effects = ~ rrankSend())
 	
@@ -25,14 +25,13 @@ test_that("rrankSend", {
 	rt <- sample(1:nrow(edgelist), 1)
 	event <- edgelist[rt-1,]
 	stat <- tomres$statistics[,,2]
-	expect_equal(stat[rt, which(riskset[,1] == as.character(event[2]) & 
-			riskset[,2] == as.character(event[3]))], 1)
+	expect_equal(stat[rt, event[2] + 1], 1)
 })
 
 test_that("rrankReceive", {
 	data(history)
 	
-	rehObject <- reh(edgelist = history)
+	rehObject <- reh(edgelist = history, model = "tie")
 	tomres <- tomstats(edgelist = rehObject, effects = ~ rrankReceive())
 	aomres <- aomstats(edgelist = rehObject, receiver_effects = ~ rrankReceive())
 	
@@ -53,6 +52,7 @@ test_that("rrankReceive", {
 	rt <- sample(1:nrow(edgelist), 1)
 	event <- edgelist[rt-1,]
 	stat <- tomres$statistics[,,2]
-	expect_equal(stat[rt, which(riskset[,1] == as.character(event[3]) & 
-			riskset[,2] == as.character(event[2]))], 1)
+	revent <- which(riskset$receiver == riskset$sender[event[2] + 1] &
+			riskset$sender == riskset$receiver[event[2] + 1])
+	expect_equal(stat[rt, revent], 1)
 })

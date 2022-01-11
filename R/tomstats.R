@@ -42,34 +42,36 @@
 #' statistics are only defined for either directed or undirected events (see 
 #' the documentation of the statistics). 
 #' 
-#' Two more elements can affect the computation of the 
-#' \emph{endogenous} statistics: the settings of the \code{memory} and 
-#' \code{memoryValue} arguments in \code{tomstats} and the events weights in 
-#' the supplied \code{edgelist} object. First, the memory settings affect the 
-#' way past events are included in the computation of the endogenous 
-#' statistics. Options are one of "full" (all past events are considered), 
-#' "window" (only past events within a given time interval are considered) or 
-#' "Brandes" (the weight of events depends on the elapsed time through an 
-#' exponential decay with a half-life parameter). Second, the weight of the 
-#' events affect the way past events are summed in the computation of the 
-#' endogenous statistics, namely based on their weight. Note that if the 
-#' edgelist contains a column that is named ``weight'', it is assumed that 
-#' these affect the endogenous statistics. These settings are defined globally 
-#' in the \code{tomstats} function and affect the computation of all endogenous 
-#' statistics with the following exceptions (that follow logically from their 
-#' definition). Since spUnique is a count of the number of unique interaction 
-#' partners, and the recency statistics (recencyContinue, 
+#' The default `memory` setting is `"full"`, which implies that at each time 
+#' point $t$ the entire event history before $t$ is included in the computation 
+#' of the statistics. Alternatively, when `memory` is set to `"window"`, only 
+#' the past event history within a given time interval is considered (see 
+#' Mulders & Leenders, 2019). This length of this time interval is set by the 
+#' `memory_value` parameter. For example, when `memory_value = 100` and `memory 
+#' = "window"`, at time point $t$ only the past events that happened at most 
+#' 100 time units ago are included in the computation of the statistics. A 
+#' third option is to set `memory` to `Brandes`. In this case, the weight of 
+#' the past event in the computation of the statistics depend on the elapsed 
+#' time between $t$ and the past event. This weight is determined based on an 
+#' exponential decay function with half-life parameter `memory_value` (see 
+#' Brandes et al., 2009). 
+#' 
+#' Note that if the  edgelist contains a column that is named ``weight'', it is 
+#' assumed that these affect the endogenous statistics. These settings are 
+#' defined globally in the \code{tomstats} function and affect the computation 
+#' of all endogenous statistics with the following exceptions (that follow 
+#' logically from their definition). Since spUnique is a count of the number of 
+#' unique interaction partners, and the recency statistics (recencyContinue, 
 #' recencySendSender, recencySendReceiver, recencyReceiveSender, 
 #' recencyReceiveReceiver) depend on the time past, the computation of these 
-#' statistics do not depend on event weights and are therefore affected by 
-#' "window" memory but not by "Brandes" memory or supplied event weights. Since 
-#' the baseline statistic is always one, the FEtype statistic is binary and 
-#' does not depend on past events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, 
-#' PSAB-XB, PSAB-XY and PSAB-AY) are binary and only dependent on the previous 
-#' event, these statistics are not affected by the memory settings or the 
-#' supplied event weights. The recency-rank statistics (rrankSend, 
-#' rrankReceive) are (for now) only available with the "full" memory, and are, 
-#' per definition, not affected by supplied event weights.  
+#' statistics do not depend on event weights. Since the baseline statistic is 
+#' always one, the FEtype statistic is binary and does not depend on past 
+#' events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and 
+#' PSAB-AY) are binary and only dependent on the previous event, these 
+#' statistics are not affected by the memory settings or the supplied event 
+#' weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now) 
+#' only available with the "full" memory, and are, per definition, not affected 
+#' by supplied event weights.  
 #' 
 #' Optionally, statistics can be computed for a slice of the edgelist - but 
 #' based on the entire history. This is achieved by setting the start and 
@@ -142,23 +144,18 @@
 #' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
 #' Details).
 #' @inheritParams remify::reh
-#' @param memory indicates the type of memory effect, i.e., how past events 
-#' influence future events. One of "full" (all past events are considered), 
-#' "window" (only past events within a given time interval are considered) or 
-#' "Brandes" (the weight of events depends on the elapsed time through an 
-#' exponential decay with a half-life parameter)
-#' @param memory_value numeric value indicating the memory parameter, i.e., the 
-#' window width if memory is "full", and the half-life time if memory is 
-#' "Brandes"
+#' @param memory The memory to be used. See `Details'. 
+#' @param memory_value Numeric value indicating the memory parameter. See 
+#' `Details'.
 #' @param start integer value, refers to the index in the edgelist of the first 
 #' event for which statistics are requested (see 'Details')
 #' @param stop integer value, refers to the index in the edgelist of the last 
 #' event for which statistics are requested (see 'Details')
 #' @param adjmat optionally, a previously computed adjacency matrix with on the 
 #' rows the timepoints and on the columns the riskset entries 
-#' @param output indicates which output objects need to be provided, i.e., only 
-#' the statistics matrix ("only_stats") or all the below defined objects ("all")
-#' ? Outputting only the statistics can save a lot of time. 
+#' @param output indicates which output objects need to be provided, i.e., 
+#' either only the statistics matrix ("stats_only", faster!) or all the below 
+#' defined information objects ("all", default). 
 #' 
 #' @return \code{statistics } Array with the computed statistics, where rows 
 #' refer to time points, columns refer to potential relational event (i.e., 
@@ -183,36 +180,29 @@
 #' @export 
 tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL, 
     types = NULL, directed = TRUE, ordinal = FALSE, origin = NULL, 
-    omit_dyad = NULL, memory = "full", memory_value = Inf, start = 1, 
-    stop = Inf, adjmat = NULL, output = "all") {
+    omit_dyad = NULL, memory = c("full", "window", "Brandes"), 
+    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL, 
+    output = c("all", "stats_only")) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
-        prep <- remify::reh(edgelist = edgelist, actors = actors, 
+        prep <- remify::reh(edgelist = edgelist, actors = actors,
             types = types, directed = directed, ordinal = ordinal, 
-            origin = origin, omit_dyad = omit_dyad)
+            origin = origin, omit_dyad = omit_dyad, model = "tie")
     } else {
         prep <- edgelist 
     }
 
     # Extract relevant elements from the prepared remify::reh object 
-    prepE <- as.matrix(prep$edgelist)
-    prepE[,1] <- as.numeric(prep$edgelist$time)
-    prepE <- t(apply(prepE, 1, as.numeric))
-    prepR <- prep$risksetMatrix
-    prepRC <- prep$risksetCube #(not given in new version remify)
+    edgelist.reh <- prep$edgelist
     actors <- attr(prep, "dictionary")$actors
     types <- attr(prep, "dictionary")$types
 
-    # Edgelist in new version of remify
-    rp <- apply(prepE, 1, function(x) {
-        prepRC[as.numeric(x[2])+1, as.numeric(x[3])+1, as.numeric(x[4])+1] 
-    })
-
-    newE <- cbind(prepE[,1], rp, prepE[,5])
-    colnames(newE) <- c("time", "event", "weight")
+    # Match output
+    output <- match.arg(output)
 
     # Match memory
+    memory <- match.arg(memory)
     memory <- match(memory, c("full", "window", "Brandes"))
     if(memory %in% c(2,3) & memory_value == Inf) {
         stop("A memory_value should be supplied when memory is `window' or `Brandes'.")
@@ -222,7 +212,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     if(start < 1) {stop("start should be set to 1 or larger.")}
     if(stop < start) {stop("stop cannot be smaller than start.")}
     start <- start - 1
-    if(stop == Inf) {stop <- nrow(prepE)}
+    if(stop == Inf) {stop <- nrow(edgelist.reh)}
     stop <- stop - 1  
     
     # Prepare main effects
@@ -324,8 +314,13 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
                 dat <- x$x
                 dat$id <- actors[match(dat$id, actors[,1]),2]
                 dat <- dat[order(as.numeric(dat$id)),]
-                as.matrix(dat)
             }
+            if(any(is.na(dat$id))) {
+                w1 <- paste0("Redunant actors in ", x$effect, ". These are not included in the computation of the statistics.")
+                warning(w1)
+                dat <- dat[!is.na(dat$id),]
+            }
+            as.matrix(dat)
         } else if(x$effect == "tie") {
             parse_tie(x, prep)
         } else if(x$effect == "event") {
@@ -348,7 +343,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     # Compute the adjacency matrix 
     if(any(effectsN %in% c(10:23, 40:45, 52:59, 67:70))) {
         if(is.null(adjmat)) {
-            adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
+            adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
                 directed, memory, memory_value, start, stop)
         }
     } else {
@@ -356,9 +351,13 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             adjmat <- matrix()
         }
     }   
+    
+    # Riskset
+    prepR <- getRisksetMatrix(actors$actorID, types$typeID, nrow(actors), 
+        nrow(types), directed)
 
     # Compute statistics
-    statistics <- compute_stats_tie(effectsN, newE, adjmat, actors[,2], 
+    statistics <- compute_stats_tie(effectsN, edgelist.reh, adjmat, actors[,2], 
         types[,2], prepR, scaling, covar, interactions, start, stop, directed)
 
     # Dimnames statistics
@@ -387,44 +386,47 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         })    
 
     if(output == "all") {
-        # Transform edgelist to evls
-        # Get riskset position
-        rp <- apply(prepE, 1, function(x) {
-            prepRC[as.numeric(x[2])+1, as.numeric(x[3])+1, as.numeric(x[4])+1] + 1
-        })
-
-        evls <- cbind(rp, cumsum(prep$intereventTime))
-        colnames(evls) <- c("event", "time")
-
-        # Edgelist output
-        edgelist <- prep$edgelist
-        edgelist$actor1 <- sapply(edgelist$actor1, function(a) {
-            remify::actorName(prep, a)
-        })
-        edgelist$actor2 <- sapply(edgelist$actor2, function(a) {
-            remify::actorName(prep, a)
-        })
-        edgelist$type <- sapply(edgelist$type, function(a) {
-            remify::typeName(prep, a)
-        })
-        edgelist <- as.data.frame(edgelist)
+        # Transform edgelist to evls (for estimation with relevent::rem)
+        evls <- edgelist.reh[,c(2,1)]
+        if(is.null(nrow(evls))) {
+            evls[1] <- evls[1] + 1
+            names(evls) <- c("event", "time")
+        } else {
+            evls[,1] <- evls[,1] + 1
+            colnames(evls) <- c("event", "time")
+            evls[(start+1):(stop+1),]
+        }
+        
 
         # Riskset output
-        riskset <- prep$risksetMatrix
+        riskset <- prepR
         riskset <- as.data.frame(riskset)
-        colnames(riskset) <- c("actor1", "actor2", "type", "id")
-        riskset$actor1 <- sapply(riskset$actor1, function(a) {
+        if(directed) {
+            colnames(riskset) <- c("sender", "receiver", "type", "id")
+        } else {
+            colnames(riskset) <- c("actor1", "actor2", "type", "id")
+        }
+        riskset[,1] <- sapply(riskset[,1], function(a) {
             remify::actorName(prep, a)
         })
-        riskset$actor2 <- sapply(riskset$actor2, function(a) {
+        riskset[,2] <- sapply(riskset[,2], function(a) {
             remify::actorName(prep, a)
         })
-        riskset$type <- sapply(riskset$type, function(a) {
+        riskset[,3] <- sapply(riskset[,3], function(a) {
             remify::typeName(prep, a)
         })
-        riskset$id <- riskset$id + 1
+        if(!("reh" %in% class(edgelist))) {
+            riskset$id <- riskset$id + 1
+        } else {
+            riskset$stat_column <- riskset$id + 1
+        }
         riskset <- as.data.frame(riskset)
 
+        # Edgelist output
+        if("reh" %in% class(edgelist)) {
+            edgelist <- prep$edgelist
+        }
+        
         # Output
         out <- list(
             statistics = statistics, 
@@ -432,7 +434,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             riskset = riskset, 
             actors = actors[,1],
             types = types[,1],
-            evls = evls[(start+1):(stop+1),],
+            evls = evls,
             adjmat = adjmat
         )
     } else {
@@ -441,6 +443,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             statistics = statistics)
     } 
     
-    class(out) <- "tomstats"
+    class(out) <- c("tomstats", "remstats")
+    attr(out, "model") <- "tie"
     out
 }

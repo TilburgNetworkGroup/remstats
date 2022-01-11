@@ -11,6 +11,5 @@ test_that("event", {
 	stats <- tomres$statistics
 	riskset <- tomres$riskset
 	
-	expect_equal(stats[,,"event.work"], 
-		replicate(n = nrow(riskset), history$work))
+	expect_equal(stats[,,"event.work"], replicate(n = nrow(riskset), work))
 })

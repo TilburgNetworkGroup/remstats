@@ -35,29 +35,36 @@
 #' the documentation of the \code{scaling} argument in the separate effect 
 #' functions for more information on this. 
 #' 
-#' Two more elements can affect the computation of the 
-#' \emph{endogenous} statistics: the settings of the \code{memory} and 
-#' \code{memoryValue} arguments in \code{aomstats} and the events weights in 
-#' the supplied \code{edgelist} object. First, the memory settings affect the 
-#' way past events are included in the computation of the endogenous 
-#' statistics. Options are one of "full" (all past events are considered), 
-#' "window" (only past events within a given time interval are considered) or 
-#' "Brandes" (the weight of events depends on the elapsed time through an 
-#' exponential decay with a half-life parameter). Second, the weight of the 
-#' events affect the way past events are summed in the computation of the 
-#' endogenous statistics, namely based on their weight. Note that if the 
-#' edgelist contains a column that is named ``weight'', it is assumed that 
-#' these affect the endogenous statistics. These settings are defined globally 
-#' in the \code{aomstats} function and affect the computation of all endogenous 
-#' statistics with the following exceptions (that follow logically from their 
-#' definition). Since the recency statistics (recencyContinue, 
+#' The default `memory` setting is `"full"`, which implies that at each time 
+#' point $t$ the entire event history before $t$ is included in the computation 
+#' of the statistics. Alternatively, when `memory` is set to `"window"`, only 
+#' the past event history within a given time interval is considered (see 
+#' Mulders & Leenders, 2019). This length of this time interval is set by the 
+#' `memory_value` parameter. For example, when `memory_value = 100` and `memory 
+#' = "window"`, at time point $t$ only the past events that happened at most 
+#' 100 time units ago are included in the computation of the statistics. A 
+#' third option is to set `memory` to `Brandes`. In this case, the weight of 
+#' the past event in the computation of the statistics depend on the elapsed 
+#' time between $t$ and the past event. This weight is determined based on an 
+#' exponential decay function with half-life parameter `memory_value` (see 
+#' Brandes et al., 2009). 
+#' 
+#' Note that if the edgelist contains a column that is named ``weight'', it is 
+#' assumed that these affect the endogenous statistics. These settings are 
+#' defined globally in the \code{aomstats} function and affect the computation 
+#' of all endogenous statistics with the following exceptions (that follow 
+#' logically from their definition). Since spUnique is a count of the number of 
+#' unique interaction partners, and the recency statistics (recencyContinue, 
 #' recencySendSender, recencySendReceiver, recencyReceiveSender, 
 #' recencyReceiveReceiver) depend on the time past, the computation of these 
-#' statistics do not depend on event weights and are therefore affected by 
-#' "window" memory but not by "Brandes" memory or supplied event weights. The 
-#' recency-rank statistics (rrankSend, rrankReceive) are (for now) only 
-#' available with the "full" memory, and are, per definition, not affected by 
-#' supplied event weights.  
+#' statistics do not depend on event weights. Since the baseline statistic is 
+#' always one, the FEtype statistic is binary and does not depend on past 
+#' events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and 
+#' PSAB-AY) are binary and only dependent on the previous event, these 
+#' statistics are not affected by the memory settings or the supplied event 
+#' weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now) 
+#' only available with the "full" memory, and are, per definition, not affected 
+#' by supplied event weights.  
 #' 
 #' Optionally, statistics can be computed for a slice of the edgelist - but 
 #' based on the entire history. This is achieved by setting the start and 
@@ -124,14 +131,9 @@
 #' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
 #' Details).
 #' @inheritParams remify::reh
-#' @param memory indicates the type of memory effect, i.e., how past events 
-#' influence future events. One of "full" (all past events are considered), 
-#' "window" (only past events within a given time interval are considered) or 
-#' "Brandes" (the weight of events depends on the elapsed time through an 
-#' exponential decay with a half-life parameter)
-#' @param memory_value numeric value indicating the memory parameter, i.e., the 
-#' window width if memory is "full", and the half-life time if memory is 
-#' "Brandes"
+#' @param memory The memory to be used. See `Details'. 
+#' @param memory_value Numeric value indicating the memory parameter. See 
+#' `Details'.
 #' @param start integer value, refers to the index in the edgelist of the first 
 #' event for which statistics are requested (see Details)
 #' @param stop integer value, refers to the index in the edgelist of the last 
@@ -161,24 +163,20 @@
 #' @export 
 aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,  
     attributes = NULL, actors = NULL, types = NULL, ordinal = FALSE, 
-    origin = NULL, omit_dyad = NULL, memory = "full", 
+    origin = NULL, omit_dyad = NULL, memory = c("full", "window", "Brandes"), 
     memory_value = Inf, start = 1, stop = Inf, adjmat = NULL) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
-        prep <- remify::reh(edgelist = edgelist, actors = actors, 
-            types = types, directed = TRUE, ordinal = ordinal, origin = origin, 
-            omit_dyad = omit_dyad)
+        prep <- remify::reh(edgelist = edgelist, actors = actors,
+            types = types, directed = TRUE, ordinal = ordinal, 
+            origin = origin, omit_dyad = omit_dyad, model = "actor")
     } else {
         prep <- edgelist 
     }
 
     # Extract relevant elements from the prepared remify::reh object 
-    prepE <- as.matrix(prep$edgelist)
-    prepE[,1] <- as.numeric(prep$edgelist$time)
-    prepE <- t(apply(prepE, 1, as.numeric))
-    prepR <- prep$risksetMatrix
-    prepRC <- prep$risksetCube #(not given in new version remify)
+    edgelist.reh <- prep$edgelist
     actors <- attr(prep, "dictionary")$actors
     types <- attr(prep, "dictionary")$types
 
@@ -187,24 +185,23 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         stop("Multiple event types are not (yet) defined for the actor-oriented model.")
     }
 
-    # Edgelist in new version of remify
-    rp <- apply(prepE, 1, function(x) {
-        prepRC[as.numeric(x[2])+1, as.numeric(x[3])+1, as.numeric(x[4])+1] 
-    })
-
-    newE <- cbind(prepE[,1], rp, prepE[,5])
-    colnames(newE) <- c("time", "event", "weight")
-
     # Match memory
+    memory <- match.arg(memory)
     memory <- match(memory, c("full", "window", "Brandes"))
     if(memory %in% c(2,3) & memory_value == Inf) {
         stop("A memory_value should be supplied when memory is `window' or `Brandes'.")
     }
     
     # Convert R start and stop indices to C++ (indexing starts at 0)
+    if(start < 1) {stop("start should be set to 1 or larger.")}
+    if(stop < start) {stop("stop cannot be smaller than start.")}
     start <- start - 1
-    if(stop == Inf) {stop <- nrow(prepE)}
-    stop <- stop - 1
+    if(stop == Inf) {stop <- nrow(edgelist.reh)}
+    stop <- stop - 1  
+
+    # Riskset
+    prepR <- getRisksetMatrix(actors$actorID, types$typeID, nrow(actors), 
+        nrow(types), TRUE)
 
     # Initialize stats
     rateStats <- NULL
@@ -260,17 +257,17 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the adjacency matrix 
         if(any(sender_effectsN %in% c(3,4,5))) {
             if(is.null(adjmat)) {
-                adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
-                    TRUE, memory, memory_value, start, stop)
+                adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
+                TRUE, memory, memory_value, start, stop)
             }
         } else {
             adjmat <- matrix()
         }   
 
         # Compute the rate statistics 
-        rateStats <- compute_stats_rate(sender_effectsN, newE, prepR, adjmat, 
-            actors[,2], rateScaling, rateCovar, rate_interactions, start, 
-            stop)    
+        rateStats <- compute_stats_rate(sender_effectsN, edgelist.reh, prepR, 
+            adjmat, actors[,2], rateScaling, rateCovar, rate_interactions, 
+            start, stop)    
 
         # Reset the adjacency matrix to null 
         if(all(dim(adjmat) == c(1,1))) {
@@ -314,8 +311,8 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
             "recencySendReceiver", "recencyReceiveReceiver", #17 #18
             "recencyContinue", #19
             "interact") #99
-        receiver_effectsN  <- match(sapply(receiver_effects, function(x) x$effect), 
-            all_receiver_effects)
+        receiver_effectsN  <- match(sapply(receiver_effects, 
+            function(x) x$effect), all_receiver_effects)
 
         # Prepare interaction receiver_effects
         receiver_effects_int <- parse_int(choiceFormula, "choiceEffects", 
@@ -323,7 +320,8 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         receiver_effectsN <- append(receiver_effectsN, 
             rep(99, length(receiver_effects_int)), length(receiver_effectsN))
         choice_interactions <- list()
-        choice_interactions[which(receiver_effectsN==99)] <- receiver_effects_int
+        choice_interactions[which(receiver_effectsN==99)] <- 
+            receiver_effects_int
 
         # Prepare receiver_effects covariate information
         choiceCovar <- lapply(receiver_effects, function(x) {
@@ -334,12 +332,14 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
                         time = attributes$time,
                         x = attributes[, x$variable]
                     )
-                    dat$id <- attr(prep, "dictionary")$actors[match(dat$id, attr(prep, "dictionary")$actors[,1]),2]
+                    dat$id <- attr(prep, "dictionary")$actors[match(dat$id, 
+                        attr(prep, "dictionary")$actors[,1]),2]
                     colnames(dat)[3] <- x$variable
                     as.matrix(dat)
                 } else {
                     dat <- x$x
-                    dat$id <- attr(prep, "dictionary")$actors[match(dat$id, attr(prep, "dictionary")$actors[,1]),2]
+                    dat$id <- attr(prep, "dictionary")$actors[match(dat$id, 
+                        attr(prep, "dictionary")$actors[,1]),2]
                     as.matrix(dat)
                 }
             } else if(x$effect == "tie") {
@@ -356,7 +356,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the adjacency matrix 
         if(any(receiver_effectsN %in% 6:14)) {
             if(is.null(adjmat)) {
-                adjmat <- compute_adjmat(newE, nrow(actors), nrow(prepR), 
+                adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
                     TRUE, memory, memory_value, start, stop)
             }
         } else {
@@ -366,14 +366,9 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         }   
 
         # Compute the choice statistics 
-        choiceStats <- compute_stats_choice(receiver_effectsN, newE, adjmat, 
-            actors[,2], prepR, choiceScaling, choiceCovar, choice_interactions, 
-            start, stop)   
-
-        # Reset the adjacency matrix to null 
-        if(all(dim(adjmat) == c(1,1))) {
-            adjmat <- NULL
-        }
+        choiceStats <- compute_stats_choice(receiver_effectsN, edgelist.reh, 
+            adjmat, actors[,2], prepR, choiceScaling, choiceCovar, 
+            choice_interactions, start, stop)   
 
         # Dimnames statistics
         dimnames(choiceStats) <- 
@@ -401,40 +396,40 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
             })     
     }
 
-    # Edgelist output
-    edgelist <- prep$edgelist
-    edgelist$actor1 <- sapply(edgelist$actor1, function(a) {
-        remify::actorName(prep, a)
-    })
-    edgelist$actor2 <- sapply(edgelist$actor2, function(a) {
-        remify::actorName(prep, a)
-    })
-    edgelist$type <- sapply(edgelist$type, function(a) {
-        remify::typeName(prep, a)
-    })
-    edgelist <- as.data.frame(edgelist)
-
     # Riskset output
-    riskset <- prep$risksetMatrix
+    riskset <- prepR
     riskset <- as.data.frame(riskset)
-    colnames(riskset) <- c("actor1", "actor2", "type", "id")
-    riskset$actor1 <- sapply(riskset$actor1, function(a) {
+    colnames(riskset) <- c("sender", "receiver", "type", "id")
+    riskset[,1] <- sapply(riskset[,1], function(a) {
         remify::actorName(prep, a)
     })
-    riskset$actor2 <- sapply(riskset$actor2, function(a) {
+    riskset[,2] <- sapply(riskset[,2], function(a) {
         remify::actorName(prep, a)
     })
-    riskset$type <- sapply(riskset$type, function(a) {
+    riskset[,3] <- sapply(riskset[,3], function(a) {
         remify::typeName(prep, a)
     })
-    riskset$id <- riskset$id + 1
+    if(!("reh" %in% class(edgelist))) {
+        riskset$id <- riskset$id + 1
+    } else {
+        riskset$stat_column <- riskset$id + 1
+    }
     riskset <- as.data.frame(riskset)
+
+    # Edgelist output
+    if("reh" %in% class(edgelist)) {
+        edgelist <- prep$edgelist
+    }
 
     # Output
-    out <- list(statistics = 
-        list(sender_stats = rateStats, receiver_stats = choiceStats),
-        edgelist = edgelist, riskset = riskset, actors = actors[,1], 
+    out <- list(
+        statistics = list(
+            sender_stats = rateStats, receiver_stats = choiceStats),
+        edgelist = edgelist, 
+        riskset = riskset, 
+        actors = actors[,1], 
         adjmat = adjmat)
-    class(out) <- "aomstats"
+    class(out) <- c("aomstats", "remstats")
+    attr(out, "model") <- "actor"
     out
 }
