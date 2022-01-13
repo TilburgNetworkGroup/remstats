@@ -49,17 +49,17 @@ computed, see `Details'}
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
 Details).}
 
-\item{actors}{vector of actors that may be observed interacting in the network. If \code{NULL}, actor names will be drawn from the input edgelist.}
+\item{actors}{vector of actors that may be observed interacting in the network. If \code{NULL}, actor names will be taken from the input edgelist.}
 
-\item{types}{vector of event types that may occur in the network. If \code{NULL}, type names will be drawn from the input edgelist.}
+\item{types}{vector of event types that may occur in the network. If \code{NULL}, type names will be taken from the input edgelist.}
 
 \item{directed}{logical value indicating whether dyadic events are directed (\code{TRUE}) or undirected (\code{FALSE}).}
 
 \item{ordinal}{logical value indicating whether only the order of events matters in the model (\code{TRUE}) or also the waiting time must be considered in the model (\code{FALSE}).}
 
-\item{origin}{time point since which when events could occur (default is \code{NULL}). If it is defined, it must have the same class of the time column in the input edgelist.}
+\item{origin}{time point since when events could occur (default is \code{NULL}). If it is defined, it must have the same class of the time column in the input edgelist.}
 
-\item{omit_dyad}{list of lists of two elements: `time`, that is a vector of the time points which to omit dyads from, `dyad`, which is a \code{"\link[base]{data.frame}"} where dyads to be omitted are supplied.}
+\item{omit_dyad}{list of lists. Each list must have two objects: a first object named `time`, that is a vector of two values defining the first and last time point of the time window where to apply the change to the risk set and a second object, named `dyad`, which is a \code{"\link[base]{data.frame}"} where dyads to be removed are supplied in the format \code{actor1,actor2,type} (by row).}
 
 \item{memory}{The memory to be used. See `Details'.}
 

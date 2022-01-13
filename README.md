@@ -2,11 +2,11 @@
 
 Relational event modeling approaches enable researchers to study the exogenous and endogenous predictors of how a time-ordered sequence of relational events - a so-called *relational event history* - evolves over time. Relational event models can be distinguished in so-called *tie-oriented models*, in which the probability of a dyad to interact next is modeled in one step (e.g., see Butts, 2008), and *actor-oriented models*, in which first the probability of a sender to start an interaction is modeled and subsequently the probability of the choice of a receiver of the interaction by the active sender (e.g., see Stadtfeld & Block, 2017). The `R`-package `remstats` computes a variety of statistics for both type of models. 
 
-The `R`-package `remstats` is part of a bundle of `R`-packages developed by researchers from Tilburg University with the aim to assist applied researchers in the application of relational event modeling. For the preparation of the relational event history, `remstats` calls `remify` internally. Estimation of the model can be performed with `remstimate` (when finished). Alternatively (for now), the function `tomstats()` in the `remstats` packages provides the user with every object necessary to perform estimation of a tie-oriented model with `relevent::rem()`.
+The `R`-package `remstats` is part of a bundle of `R`-packages developed by researchers from Tilburg University with the aim to assist applied researchers in the application of relational event modeling. For the preparation of the relational event history, `remstats` calls `remify` internally. Estimation of the model can be performed with `remstimate` (when finished). Alternatively (for now), the function `remstats()` in the `remstats` packages provides the user with every object necessary to perform estimation of a *tie-oriented model* with `relevent::rem()`.
 
 A table with `remstats` equivalents for statistics in `relevent::rem.dyad()` can be found through [this link](relations.md). 
 
-The following provides a brief introduction in computing statistics for relational event history data with `remstats`. Firstly, we describe the procedure for the tie-oriented model (use the main function `tomstats()`) and secondly for the actor-oriented model (use the main function `aomstats()`). 
+The following provides a brief introduction in computing statistics for relational event history data with `remstats`. Firstly, we describe the procedure for the tie-oriented model, and, secondly, for the actor-oriented model.
 
 ## Getting started 
 
@@ -22,6 +22,25 @@ Load the packages with:
 ```r
 library(remify)
 library(remstats)
+```
+
+### Quick example 
+```r
+# Load data
+data(history)
+data(info)
+
+# Define effects
+effects <- ~ 1 + send("extraversion", info) + inertia()
+
+# Compute statistics
+statObject <- remstats(edgelist = history, tie_effects = effects)
+
+# Estimate model parameters
+fit <- relevent::rem(eventlist = statObject$evls, statslist = statObject$statistics,
+	estimator = "MLE", timing = "interval")
+summary(fit)
+
 ```
 
 ### Data 
@@ -70,20 +89,20 @@ id  | time  | age   | sex   | extraversion  | agreeableness
 102 | 18864 | 0     | 0     | -0.13         | -0.43
 
 ### The riskset 
-The riskset is an important part of relational event modeling. It contains all events that can potentially be observed in the relational event history. Statistics are computed for every event in the riskset for every timepoint. The riskset is prepared by `remify::reh()`, called internally by both `remstats::tomstats()` and `remstats::aomstats()`. 
+The riskset is an important part of relational event modeling. It contains all events that can potentially be observed in the relational event history. Statistics are computed for every event in the riskset for every timepoint. 
 
-If nothing is specified by the user, `remify::reh()` assumes that all actors that can potentially interact are observed in the edgelist and creates a riskset with every directed pair of observed actors, for which statistics are then computed. Alternatively, the user can tailor the riskset to its application:
+If nothing is specified by the user, `remstats()` assumes that all actors that can potentially interact are observed in the edgelist and creates a riskset with every directed pair of observed actors, for which statistics are subsequently computed. Alternatively, the user can tailor the riskset to its application:
 
-* If not every actor that can potentially interact is observed in the edgelist, the user should supply every actor that can potentially interact to the `actors` argument of `tomstats()` or `aomstats()`. 
-* If the relational events in the edgelist and in the riskset are undirected (i.e., no distinction is made between i --> j and j --> i), the user should set `directed = FALSE` in `tomstats()` or `aomstats()`.  
+* If not every actor that can potentially interact is observed in the edgelist, the user should supply every actor that can potentially interact to the `actors` argument of `remstats()`. 
+* If the relational events in the edgelist and in the riskset are undirected (i.e., no distinction is made between i --> j and j --> i), the user should set `directed = FALSE` in `remstats()`.  
 * If the user wants to distinguish between events of different types in the riskset, the user should include a column named `type` with the event types to the edgelist. For example, we could view the settings of the events in `history` as different event types. If we want to distinguish between interaction in a work-related or leisure setting, we rename the fourth column: `names(history)[4] <- "type"`.
-* If the user wants to distinguish between events of different types in the riskset but not every type that can potentially occur is observed in the edgelist, the user should supply every type that can potentially occur to the `types` argument of `tomstats()` or `aomstats()`. 
+* If the user wants to distinguish between events of different types in the riskset but not every type that can potentially occur is observed in the edgelist, the user should supply every type that can potentially occur to the `types` argument of `remstats()`. 
 * For other non-standard riskset situations, the user can use the `omit_dyad` argument (see `vignette("remify::reh")`). 
 
 ### Compute statistics for the tie-oriented model
-The `tomstats()` function in the `remstats`-package computes statistics for modeling relational event history data with a tie-oriented model. The statistics that are requested need to be supplied to the `effects` argument of the function, specified in an object of class `formula`. This specification should be in the form `~ terms`.
+First, we will compute statistics for modeling relational event history data with a tie-oriented model. The statistics that are requested need to be supplied to the `tie_effects` argument of `remstats()`, specified in an object of class `formula`. This specification should be in the form `~ terms`.
 
-An overview of the statistics that can be computed with `tomstats()` is available in the "details" section of the `tomstats()` function documentation (access with `?tomstats`). 
+An overview of the statistics that can be computed with `remstats()` is available in the "details" section of the `remstats()` function documentation (access with `?remstats`). 
 
 In this illustration, we start with requesting only one statistic: the inertia statistic. Most statistics can be tailored to the user's needs. For example, lets view the description for the `inertia` statistic:
 ```r
@@ -91,27 +110,27 @@ In this illustration, we start with requesting only one statistic: the inertia s
 ```
 Here, we can read that the inertia statistic computes for every timepoint *t* for every pair of actors *(i,j)* in the riskset the number of past events. With the `scaling` argument, one of the methods for scaling the statistic can be chosen. With the `consider_type` argument, the user can request to count events between the actor pair *(i,j)* of different types separately. 
 
-In this illustration, we will standardize the inertia statistic. To request this statistic, we define the formula as follows:
+In this illustration, we will standardize the inertia statistic. To request this statistic, we define the formula as follows:s
 ```r
 effects <- ~ inertia(scaling = "std")
 ```
 
 Now, we have everything we need to compute our first statistic:
 ```r
-out <- tomstats(effects, edgelist = history)
+out <- remstats(tie_effects = effects, edgelist = history)
 ```
 
-The `tomstats()` function outputs a list with multiple objects. We can view the names of these objects with:
+The `remstats()` function outputs a list with multiple objects. We can view the names of these objects with:
 ```r
 names(out)
 ```
-Here, we can see that `tomstats()` outputs an object named `statistics`, `edgelist`, `riskset`, `evls` and `adjmat`. 
+Here, we can see that `remstats()` outputs an object named `statistics`, `edgelist`, `riskset`, `actors`, `types`, `evls` and `adjmat`. 
 
 The `statistics` object is a 3-dimensional array. On the rows of this array are the timepoints, the columns refer to the potential events in the riskset and the slices refer to the different statistics:
 ```r
 dim(out$statistics)
 ```
-Our statistics object has 115 rows, corresponding to the 115 events in the edgelist. It has 90 columns, corresponding to the 90 events in the riskset. The statistics object has two slices, that is because the baseline statistics is automatically computed when the timing of the events in the relational event history is exact (unless removed by specifying `-1` in the `effects` formula) and saved in the first slice. The `tomstats()` procedure assumes that the timing of the events in the relational event history is exact and the full likelihood is used in the estimation, unless the argument `ordinal` is set `TRUE`. 
+Our statistics object has 115 rows, corresponding to the 115 events in the edgelist. It has 90 columns, corresponding to the 90 events in the riskset. The statistics object has two slices, that is because the baseline statistics is automatically computed when the timing of the events in the relational event history is exact (unless removed by specifying `-1` in the `effects` formula) and saved in the first slice. The `remstats()` procedure assumes that the timing of the events in the relational event history is exact and the full likelihood is used in the estimation, unless the argument `ordinal` is set `TRUE`. 
 
 We can view the names of the statistics that are in the statistics object with:
 ```r
@@ -123,7 +142,7 @@ Since we did not request anything special for the riskset, it consists of every 
 ```r
 head(out$riskset)
 ```
-actor1  | actor2| type  | id
+sender  | receiver | type  | id
 ---     | ---   | ---   | ---
 101     | 103   | 0     | 1
 101     | 104   | 0     | 2
@@ -134,22 +153,20 @@ actor1  | actor2| type  | id
 
 Here, we see that the first event in the riskset is the event were actor 101 sends an interaction directed towards actor 103. The type column contains the different event types, since we did not specify event types these are all equal to 0 here. Finally, the id column refers to the column in the statistic object that contains the statistic(s) for this specific dyad. The first column in the statistic object refers to this first event in the riskset, the second column in the statistic object to the second event in the riskset, and so forth. 
 
-The outputted `edgelist` object by `tomstats()` is mainly a control object. It shows the information used by `tomstats()` to create the riskset compute the statistics and should be largely the same as the inputted `edgelist` object. 
+The outputted `edgelist` object by `remstats()` is mainly a control object. It shows the information used by `remstats()` to create the riskset and compute the statistics and should be the same as the inputted `edgelist` object. 
 ```r
 head(out$edgelist)
 ```
-time  | actor1    | actor2    | type    | weight
+time  | actor1    | actor2    | setting | weight
 ---   | ---       | ---       | ---     | ---
-238   | 105       | 113       | 0       | 1.33
-317   | 105       | 108       | 0       | 1.64
-345   | 115       | 112       | 0       | 1.82
-627   | 101       | 115       | 0       | 1.25
-832   | 113       | 107       | 0       | 1.67
-842   | 105       | 109       | 0       | 2.30
+238   | 105       | 113       | work    | 1.33
+317   | 105       | 108       | work    | 1.64
+345   | 115       | 112       | work    | 1.82
+627   | 101       | 115       | social  | 1.25
+832   | 113       | 107       | social  | 1.67
+842   | 105       | 109       | work    | 2.30
 
-Again, because we did not request the event type to be considered as a dependent variable, the type column here only contains zeros. 
-
-The adjacency matrix object is a helper function that is used internally by `tomstats` but, once obtained, could be supplied in a next run to save computation time. It contains per timepoint (on the rows) per dyad (on the columns) the number or weight of the past events. The weight is affected by the weight of the events in the edgelist and the `memory` and `memoryValue` arguments. 
+The adjacency matrix object is a helper object that is used internally by `remstats`, and, once obtained, could be supplied in a next run to save computation time. It contains per timepoint (on the rows) per dyad (on the columns) the number or weight of the past events. The weight is affected by the weight of the events in the edgelist (the column named `weight`) and the `memory` and `memoryValue` arguments. 
 
 Finally, the outputted `evls` object is a transformation of the edgelist into a form such that it can be used by `rem()` function of the `relevent` R-package to estimate a relational event model:
 ```r
@@ -164,19 +181,17 @@ As an illustration, we are going to request the statistic for an effect of extra
 ```r
 ?send
 ```
-Here, we read that we need to supply the variable for which we want to specify a sender effect and that this variable should correspond to a column in the attributes object that we supply. Thus, we specify a send effect of extraversion with `send("extraversion", attributes = info)`. Here, we specify the attributes object within the `send()` function. Alternatively, it can be supplied to `tomstats()`. 
+Here, we read that we need to supply the variable for which we want to specify a sender effect and that this variable should correspond to a column in the attributes object that we supply. Thus, we specify a send effect of extraversion with `send("extraversion", attributes = info)`. Here, we specify the attributes object within the `send()` function. Alternatively, it can be supplied to `remstats()`. 
 
 Statistics in the `effects` formula should be separated with the `+`. Finally, we add an interaction between the `inertia()` statistic and the `send()` statistic. This can be done by using the `*` or `:` operator:
 ```r
 effects <- ~ inertia(scaling = "std") + send("extraversion", info) + 
     inertia(scaling = "std"):send("extraversion", info) 
-out <- tomstats(effects, edgelist = history)
+out <- remstats(tie_effects, edgelist = history)
 ```
 
 ### Compute statistics for the actor-oriented model
 The procedure to compute statistics for the actor-oriented model is largely similar to what is written above, except that statistics have to be specified separately for the sender activity rate step of the model and the receiver choice step of the model. The statistics requested for these two modeling steps need to be supplied to two different effects arguments, namely `sender_effects` and `receiver_effects`, respectively.
-
-An overview of the statistics that can be computed in the sender activity rate step and the receiver choice step with `aomstats()` is available in the "details" section of the `aomstats()` function documentation (access with `?aomstats`). 
 
 In this illustration, we start with requesting only one statistic for the sender activity rate step: the *outdegreeSender* statistic. First, lets view the description for the `outdegreeSender` statistic:
 ```r
@@ -184,13 +199,13 @@ In this illustration, we start with requesting only one statistic for the sender
 ```
 Here, we can read that, in the sender activity rate step of the actor-oriented model, the outdegreeSender statistic computes for every timepoint *t* for every actors *i* the number of outgoing past events. With the `scaling` argument, one of the methods for scaling the statistic can be chosen. With the `consider_type` argument, the user can request to count events of different types separately. 
 
-To compute the outdegreeSender statistic for the sender activity rate step we supply it to the `sender_effects` argument of `aomstats()`:
+To compute the outdegreeSender statistic for the sender activity rate step we supply it to the `sender_effects` argument of `remstats()`:
 ```r 
 effects <- ~ outdegreeSender()
-out <- aomstats(sender_effects = effects, edgelist = history)
+out <- remstats(sender_effects = effects, edgelist = history)
 ```
 
-The outputted list of objects is largely similar to the list outputted by `tomstats()`:
+The outputted list of objects is largely similar to the list outputted for the tie-oriented model. 
 ```r
 names(out)
 ```
@@ -206,7 +221,7 @@ Lets extend our model and also request a statistic for the receiver choice step:
 ```r
 sender_effects <- ~ outdegreeSender()
 receiver_effects <- ~ inertia()
-out <- aomstats(sender_effects = sender_effects, receiver_effects = receiver_effects, edgelist = history)
+out <- remstats(sender_effects = sender_effects, receiver_effects = receiver_effects, edgelist = history)
 ```
 
 We can access the statistic computed for the receiver choice step with `out$statistics$receiver_stats`. In this step, the baseline statistic is not automatically computed (and not defined). Hence, the dimensions of the statistics object for the receiver choice step are 115 x 10 x 1. On the rows we have again the timepoints, on the columns now the receivers and on the slices the statistics. 
