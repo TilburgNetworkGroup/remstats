@@ -59,7 +59,7 @@ Description: Relational event modeling approaches enable researchers to study
     `remstats` computes a variety of statistics for both type of models.  
 License: GPL (>= 3)
 URL: https://github.com/TilburgNetworkGroup/remstats
-BugReports: https://github.com/TilburgNetworkGroup/renstats/issues
+BugReports: https://github.com/TilburgNetworkGroup/remstats/issues
 LazyData: true
 Encoding: UTF-8
 RoxygenNote: 7.1.2
