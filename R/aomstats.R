@@ -208,9 +208,9 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
     choiceStats <- NULL
 
     # sender_effects
+    rateFormula <- sender_effects
     if(!is.null(sender_effects)) {
         # Prepare main sender_effects
-        rateFormula <- sender_effects
         sender_effects <- parse_formula(rateFormula, "rateEffects")
         all_sender_effects <- c("baseline", "send", # 1,2
             "indegreeSender", "outdegreeSender", "totaldegreeSender", # 3,4,5
@@ -296,9 +296,9 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
     }
 
     # receiver_effects
+    choiceFormula <- receiver_effects
     if(!is.null(receiver_effects)) {
         # Prepare main receiver_effects
-        choiceFormula <- receiver_effects
         receiver_effects <- parse_formula(choiceFormula, "choiceEffects")
         all_receiver_effects <- c(
             "receive", "same", "difference", "average", #1, 2, 3, 4
@@ -431,5 +431,6 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         adjmat = adjmat)
     class(out) <- c("aomstats", "remstats")
     attr(out, "model") <- "actor"
+    attr(out, "formula") <- list(rate = rateFormula, choice = choiceFormula)
     out
 }

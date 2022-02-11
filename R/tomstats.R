@@ -445,5 +445,6 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     
     class(out) <- c("tomstats", "remstats")
     attr(out, "model") <- "tie"
+    attr(out, "formula") <- form
     out
 }
