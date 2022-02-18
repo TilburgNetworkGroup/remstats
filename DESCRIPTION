@@ -72,7 +72,8 @@ Imports:
     remify (>= 2.0.0)
 LinkingTo: 
     Rcpp, 
-    RcppArmadillo
+    RcppArmadillo,
+    remify
 Suggests:
     graphics,
     testthat

@@ -1,39 +1,9 @@
 #define ARMA_64BIT_WORD 1
 #include "RcppArmadillo.h"
+#include <remify.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]] 
 // [[Rcpp::interfaces(r, cpp)]]
-
-// find_dyad
-// 
-// Helper function that finds the position of a dyad in the riskset.
-// Source: remify
-// [[Rcpp::export]]
-int find_dyad(int i, int j, int c, int N, bool directed) {
-    
-    int dyad = 0;
-    
-    if(!directed){
-        if(i < j){
-            dyad = (N*(N-1)/2)*c+(N-1)*i+j-i-1-(i*i)/2;
-            if(i>0){
-                dyad += i/2;
-            }
-        } else {
-            dyad = (N*(N-1)/2)*c+(N-1)*j+i-j-1-(j*j)/2;
-            if(j>0){
-                dyad += j/2;
-            }
-        }
-    } else { 
-        dyad = N*(N-1)*c+(N-1)*i+j;
-        if(j>i){
-            dyad -= 1;
-        }
-    }
-
-    return dyad;
-}
 
 // @title getRisksetMatrix (obtain permutations of actors' ids and event types).
 //
@@ -109,8 +79,6 @@ arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, arma::uword N,
 // model and to all possible receivers in the choice model. 
 //
 // *return [stat] statistic matrix standardized per time point, i.e., per row. 
-//
-// [[Rcpp::export]]
 arma::mat standardize(arma::mat stat) {
 
     // For loop over timepoints, i.e., rows
@@ -266,8 +234,6 @@ arma::mat compute_adjmat(const arma::mat& edgelist, int N, int D, bool directed,
 //
 // *return [stat] matrix with the exogenous actor statistic. Rows refer to the 
 // timepoints and columns refer to the actors. 
-// 
-// [[Rcpp::export]]
 arma::mat actorStat_tie(int type, const arma::mat& covariates, 
     const arma::mat& edgelist, const arma::vec& actors, const arma::vec& types, 
     int D, int start, int stop) {
@@ -305,7 +271,7 @@ arma::mat actorStat_tie(int type, const arma::mat& covariates,
                 if(actors(j) == actor) {continue;}
                 // For loop over event types
                 for(arma::uword c = 0; c < types.n_elem; ++c) {
-                    stat(0, find_dyad(actor, actors(j), types(c), 
+                    stat(0, remify::getDyadIndex(actor, actors(j), types(c), 
                         actors.n_elem, TRUE)) = value;
                 }
             }
@@ -319,7 +285,7 @@ arma::mat actorStat_tie(int type, const arma::mat& covariates,
                 if(actors(i) == actor) {continue;}
                 // For loop over event types
                 for(arma::uword c = 0; c < types.n_elem; ++c) {
-                    stat(0, find_dyad(actors(i), actor, types(c), 
+                    stat(0, remify::getDyadIndex(actors(i), actor, types(c), 
                         actors.n_elem, TRUE)) = value;
                 }
             }
@@ -366,7 +332,7 @@ arma::mat actorStat_tie(int type, const arma::mat& covariates,
                                 if(actors(j) == actor) {continue;}
                                 // For loop over event types
                                 for(arma::uword c = 0; c < types.n_elem; ++c) {
-                                    stat(0, find_dyad(actor, actors(j), 
+                                    stat(0, remify::getDyadIndex(actor, actors(j), 
                                         types(c), actors.n_elem, TRUE)) = 
                                         value;
                                 }
@@ -381,7 +347,7 @@ arma::mat actorStat_tie(int type, const arma::mat& covariates,
                                 if(actors(i) == actor) {continue;}
                                 // For loop over event types
                                 for(arma::uword c = 0; c < types.n_elem; ++c) {
-                                    stat(0, find_dyad(actors(i), actor, 
+                                    stat(0, remify::getDyadIndex(actors(i), actor, 
                                         types(c), actors.n_elem, TRUE)) = 
                                         value;
                                 }
@@ -418,8 +384,6 @@ arma::mat actorStat_tie(int type, const arma::mat& covariates,
 // computed
 // stop: integer, last event in the edgelist for which the statistic is 
 // computed
-// 
-// [[Rcpp::export]]
 arma::mat dyadStat_tie(int type, const arma::mat& covariates,
 	const arma::mat& edgelist, const arma::mat& riskset, 
     int start, int stop) {
@@ -563,8 +527,6 @@ arma::mat dyadStat_tie(int type, const arma::mat& covariates,
 // computed
 // consider_type: boolean indicating whether to compute the inertia per 
 // event type (TRUE) or sum across types (FALSE)
-// 
-// [[Rcpp::export]]
 arma::mat inertia_tie(const arma::mat& edgelist, const arma::mat& adjmat, 
     const arma::mat& riskset, int N, bool directed, const arma::vec& types, 
     int start, int stop, bool consider_type) {
@@ -590,7 +552,7 @@ arma::mat inertia_tie(const arma::mat& edgelist, const arma::mat& adjmat,
                 // For loop over event types
                 for(arma::uword c = 0; c < types.n_elem; ++c) {
                     // Find the position of the dyad
-                    int dyad = find_dyad(ac1, ac2, types(c), N, directed);
+                    int dyad = remify::getDyadIndex(ac1, ac2, types(c), N, directed);
                     // Set the values
                     stat.col(d) += adjmat.col(dyad);   
                 }
@@ -619,8 +581,6 @@ arma::mat inertia_tie(const arma::mat& edgelist, const arma::mat& adjmat,
 // computed
 // consider_type: boolean indicating whether to compute the degree per 
 // event type (TRUE) or sum across types (FALSE)
-// 
-// [[Rcpp::export]]
 arma::mat reciprocity_tie(const arma::mat& edgelist, 
     const arma::mat& adjmat, const arma::mat& riskset, int N,  
     const arma::vec&types, int start, int stop, bool consider_type) {
@@ -641,7 +601,7 @@ arma::mat reciprocity_tie(const arma::mat& edgelist,
             // For loop over event types
             for(arma::uword c = 0; c < types.n_elem; ++c) {
                 // Find the position of the reverse dyad
-                int rev = find_dyad(ac2, ac1, types(c), N, TRUE);
+                int rev = remify::getDyadIndex(ac2, ac1, types(c), N, TRUE);
                 // Set the values
                 stat.col(j) += adjmat.col(rev);   
             }
@@ -655,7 +615,7 @@ arma::mat reciprocity_tie(const arma::mat& edgelist,
             int c = riskset(j,2);
 
             // Find the position of the reverse dyad
-            int rev = find_dyad(ac2, ac1, c, N, TRUE);
+            int rev = remify::getDyadIndex(ac2, ac1, c, N, TRUE);
 
             // Set the values
             stat.col(j) = adjmat.col(rev);   
@@ -683,8 +643,6 @@ arma::mat reciprocity_tie(const arma::mat& edgelist,
 // computed
 // consider_type: boolean indicating whether to compute the degree per 
 // event type (TRUE) or sum across types (FALSE)
-// 
-// [[Rcpp::export]]
 arma::mat degree_tie(int type, const arma::mat& edgelist, 
     const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, int start, int stop, bool consider_type) {
 
@@ -725,7 +683,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the receiver, actor h is the sender and 
                         // the type is the current type 
-                        int dyad = find_dyad(actors(h), actor, types(c), 
+                        int dyad = remify::getDyadIndex(actors(h), actor, types(c), 
                             actors.n_elem, TRUE);
 
                         // Add the counts
@@ -744,7 +702,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
-                        int dyad = find_dyad(actor, actors(h), types(c), 
+                        int dyad = remify::getDyadIndex(actor, actors(h), types(c), 
                             actors.n_elem, TRUE);
 
                         // Add the counts
@@ -764,7 +722,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
-                        dyad = find_dyad(actor, actors(h), types(c), 
+                        dyad = remify::getDyadIndex(actor, actors(h), types(c), 
                             actors.n_elem, TRUE);
                     }
 
@@ -772,7 +730,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
-                        dyad = find_dyad(actors(h), actor, types(c), 
+                        dyad = remify::getDyadIndex(actors(h), actor, types(c), 
                             actors.n_elem, TRUE);
                     }
 
@@ -815,7 +773,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the receiver, actor h is the sender and 
                         // the type is the current type 
-                        int dyad = find_dyad(actors(h), actor, types(c), 
+                        int dyad = remify::getDyadIndex(actors(h), actor, types(c), 
                             actors.n_elem, TRUE);
 
                         // Add the counts
@@ -837,7 +795,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
-                        int dyad = find_dyad(actor, actors(h), types(c), 
+                        int dyad = remify::getDyadIndex(actor, actors(h), types(c), 
                             actors.n_elem, TRUE);
 
                         // Add the counts
@@ -861,7 +819,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
-                        dyad = find_dyad(actor, actors(h), types(c), 
+                        dyad = remify::getDyadIndex(actor, actors(h), types(c), 
                             actors.n_elem, TRUE);
                     }
 
@@ -869,7 +827,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
-                        dyad = find_dyad(actors(h), actor, types(c), 
+                        dyad = remify::getDyadIndex(actors(h), actor, types(c), 
                             actors.n_elem, TRUE);
                     }
 
@@ -909,8 +867,6 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
 // computed
 // consider_type: boolean indicating whether to compute the degree per 
 // event type (TRUE) or sum across types (FALSE)
-// 
-// [[Rcpp::export]]
 arma::mat degree_undirected_tie(int type, const arma::mat& edgelist, 
     const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, int start, int stop, bool consider_type) {
 
@@ -942,7 +898,7 @@ arma::mat degree_undirected_tie(int type, const arma::mat& edgelist,
                     if(actors(h) == actor) {continue;}
 
                     // Get the index for the column in the riskset for when the dyad is (k,h) and the type is the current type
-                    int dyad = find_dyad(actor, actors(h), types(c), 
+                    int dyad = remify::getDyadIndex(actor, actors(h), types(c), 
                         actors.n_elem, FALSE);
                     // Add the counts
                     degType.col(actor) += adjmat.col(dyad);
@@ -962,7 +918,7 @@ arma::mat degree_undirected_tie(int type, const arma::mat& edgelist,
 
                     
                     // Get the index for the column in the riskset for when the dyad is (k,h) and the type is the current type
-                    int dyad = find_dyad(actor, actors(h), types(c), 
+                    int dyad = remify::getDyadIndex(actor, actors(h), types(c), 
                         actors.n_elem, FALSE);
                     // Save the statistic 
                     if(type == 1) {
@@ -995,7 +951,7 @@ arma::mat degree_undirected_tie(int type, const arma::mat& edgelist,
                 // For loop over event types
                 for(arma::uword c = 0; c < types.n_elem; ++c) {
                     // Get the index for the column in the riskset for when the dyad is (k,h) and the type is the current type
-                    int dyad = find_dyad(actor, actors(h), types(c), 
+                    int dyad = remify::getDyadIndex(actor, actors(h), types(c), 
                         actors.n_elem, FALSE);
                     // Add the counts
                     deg.col(actor) += adjmat.col(dyad);
@@ -1017,7 +973,7 @@ arma::mat degree_undirected_tie(int type, const arma::mat& edgelist,
                 // For loop over event types
                 for(arma::uword c = 0; c < types.n_elem; ++c) {
                     // Get the index for the column in the riskset for when the dyad is (k,h) and the type is the current type
-                    int dyad = find_dyad(actor, actors(h), types(c), 
+                    int dyad = remify::getDyadIndex(actor, actors(h), types(c), 
                         actors.n_elem, FALSE);
                     // Save the statistic 
                     if(type == 1) {
@@ -1048,8 +1004,6 @@ arma::mat degree_undirected_tie(int type, const arma::mat& edgelist,
 // computed
 // consider_type: boolean indicating whether to compute the degree per 
 // event type (TRUE) or sum across types (FALSE)
-// 
-// [[Rcpp::export]]
 arma::mat triad_tie(int type, const arma::mat& edgelist, 
 	const arma::vec& actors, const arma::vec& types, const arma::mat& adjmat, 
 	const arma::mat& riskset, int start, int stop, bool consider_type) {
@@ -1095,33 +1049,33 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 				// otp
 				if(type == 1) {
 					// arrow1 = sender i sends to actor h
-					a1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
+					a1 = remify::getDyadIndex(i, actors(h), c, actors.n_elem, TRUE);
 					// arrow2 = actor h sends to receiver j
-					a2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
+					a2 = remify::getDyadIndex(actors(h), j, c, actors.n_elem, TRUE);
 				}
 				
 				// itp
 				if(type == 2) {
 					// arrow1 = actor h sends to sender i
-					a1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
+					a1 = remify::getDyadIndex(actors(h), i, c, actors.n_elem, TRUE);
 					// arrow2 = receiver j sends to actor h
-					a2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
+					a2 = remify::getDyadIndex(j, actors(h), c, actors.n_elem, TRUE);
 				}
 				
 				// osp
 				if(type == 3) {
 					// arrow1 = sender i sends to actor h
-					a1 = find_dyad(i, actors(h), c, actors.n_elem, TRUE);
+					a1 = remify::getDyadIndex(i, actors(h), c, actors.n_elem, TRUE);
 					// arrow2 = receiver j sends to actor h
-					a2 = find_dyad(j, actors(h), c, actors.n_elem, TRUE);
+					a2 = remify::getDyadIndex(j, actors(h), c, actors.n_elem, TRUE);
 				}
 				
 				// isp
 				if(type == 4) {
 					// arrow1 = actor h sends to sender i
-					a1 = find_dyad(actors(h), i, c, actors.n_elem, TRUE);
+					a1 = remify::getDyadIndex(actors(h), i, c, actors.n_elem, TRUE);
 					// arrow2 = actor h sends to receiver j
-					a2 = find_dyad(actors(h), j, c, actors.n_elem, TRUE);
+					a2 = remify::getDyadIndex(actors(h), j, c, actors.n_elem, TRUE);
 				}
 				
 				// sp or spUnique
@@ -1129,11 +1083,11 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 					// arrow1 = actor h sends to sender i OR sender i sends to 
 					// actor h (undirected events, only one exists) ~ corrected 
 					// for by setting directed = FALSE
-					a1 = find_dyad(actors(h), i, c, actors.n_elem, FALSE);
+					a1 = remify::getDyadIndex(actors(h), i, c, actors.n_elem, FALSE);
 					
 					// arrow2 = receiver j sends to actor h OR actor h sends to 
 					// receiver j (undirected events, only one exists)
-					a2 = find_dyad(actors(h), j, c, actors.n_elem, FALSE);
+					a2 = remify::getDyadIndex(actors(h), j, c, actors.n_elem, FALSE);
 				}
 
                 c1 += new_adjmat.col(a1);
@@ -1165,39 +1119,39 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 					// otp
 					if(type == 1) {
 						// arrow1 = sender i sends to actor h
-						a1 = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
+						a1 = remify::getDyadIndex(i,actors(h),types(c),actors.n_elem,TRUE);
 						// arrow2 = actor h sends to receiver j
-						a2 = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
+						a2 = remify::getDyadIndex(actors(h),j,types(c),actors.n_elem,TRUE);
 					}
 					
 					// itp
 					if(type == 2) {
 						// arrow1 = actor h sends to sender i
-						a1 = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
+						a1 = remify::getDyadIndex(actors(h),i,types(c),actors.n_elem,TRUE);
 						// arrow2 = receiver j sends to actor h
-						a2 = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
+						a2 = remify::getDyadIndex(j,actors(h),types(c),actors.n_elem,TRUE);
 					}
 					
 					// osp
 					if(type == 3) {
 						// arrow1 = sender i sends to actor h
-						a1 = find_dyad(i,actors(h),types(c),actors.n_elem,TRUE);
+						a1 = remify::getDyadIndex(i,actors(h),types(c),actors.n_elem,TRUE);
 						// arrow2 = receiver j sends to actor h
-						a2 = find_dyad(j,actors(h),types(c),actors.n_elem,TRUE);
+						a2 = remify::getDyadIndex(j,actors(h),types(c),actors.n_elem,TRUE);
 					}
 					
 					// isp
 					if(type == 4) {
 						// arrow1 = actor h sends to sender i
-						a1 = find_dyad(actors(h),i,types(c),actors.n_elem,TRUE);
+						a1 = remify::getDyadIndex(actors(h),i,types(c),actors.n_elem,TRUE);
 						// arrow2 = actor h sends to receiver j
-						a2 = find_dyad(actors(h),j,types(c),actors.n_elem,TRUE);
+						a2 = remify::getDyadIndex(actors(h),j,types(c),actors.n_elem,TRUE);
 					}
 			
 					// sp or spUnique
 					if((type == 5) || (type == 6)) {
-						a1 = find_dyad(actors(h),i,c,actors.n_elem,FALSE);
-						a2 = find_dyad(actors(h),j,c,actors.n_elem,FALSE);
+						a1 = remify::getDyadIndex(actors(h),i,c,actors.n_elem,FALSE);
+						a2 = remify::getDyadIndex(actors(h),j,c,actors.n_elem,FALSE);
 					}
 					
 					c1 += new_adjmat.col(a1);
@@ -1232,8 +1186,6 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 // which statistics have to be computed. 
 // *param [consider_type] boolean indicating whether to compute the pshift per 
 // event type (TRUE) or across types (FALSE)
-// 
-// [[Rcpp::export]]
 arma::mat pshift_tie(int type, const arma::mat& edgelist, 
     const arma::mat& riskset, int N, 
     int C, int start, int stop, bool consider_type) {
@@ -1271,11 +1223,11 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
                 // Find the reverse dyad
                 if(!consider_type) {                    
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(r,s,k,N,TRUE);
+                        int dyad = remify::getDyadIndex(r,s,k,N,TRUE);
                         stat(i, dyad) = 1.0;
                     }
                 } else {
-                    int dyad = find_dyad(r,s,c,N,TRUE);
+                    int dyad = remify::getDyadIndex(r,s,c,N,TRUE);
                     stat(i, dyad) = 1.0;
                 }
             break;
@@ -1287,14 +1239,14 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
                     for(arma::uword j = 0; j < N; ++j) {
                         if((j == r) | (j == s)) {continue;}
                         for(arma::uword k = 0; k < C; ++k) {
-                            int dyad = find_dyad(r,j,k,N,TRUE);
+                            int dyad = remify::getDyadIndex(r,j,k,N,TRUE);
                             stat(i, dyad) = 1.0;
                         }
                     }
                 } else {
                     for(arma::uword j = 0; j < N; ++j) {
                         if((j == r) | (j == s)) {continue;}
-                        int dyad = find_dyad(r,j,c,N,TRUE);
+                        int dyad = remify::getDyadIndex(r,j,c,N,TRUE);
                         stat(i, dyad) = 1.0;
                     }
                 }
@@ -1307,14 +1259,14 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
                     for(arma::uword j = 0; j < N; ++j) {
                         if((j == r) | (j == s)) {continue;}
                         for(arma::uword k = 0; k < C; ++k) {
-                            int dyad = find_dyad(j,s,k,N,TRUE);
+                            int dyad = remify::getDyadIndex(j,s,k,N,TRUE);
                             stat(i, dyad) = 1.0;
                         }
                     }
                 } else {
                     for(arma::uword j = 0; j < N; ++j) {
                         if((j == r) | (j == s)) {continue;}
-                        int dyad = find_dyad(j,s,c,N,TRUE);
+                        int dyad = remify::getDyadIndex(j,s,c,N,TRUE);
                         stat(i, dyad) = 1.0;
                     }
                 }
@@ -1327,14 +1279,14 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
                     for(arma::uword j = 0; j < N; ++j) {
                         if((j == r) | (j == s)) {continue;}
                         for(arma::uword k = 0; k < C; ++k) {
-                            int dyad = find_dyad(j,r,k,N,TRUE);
+                            int dyad = remify::getDyadIndex(j,r,k,N,TRUE);
                             stat(i, dyad) = 1.0;
                         }
                     }
                 } else {
                     for(arma::uword j = 0; j < N; ++j) {
                         if((j == r) | (j == s)) {continue;}
-                        int dyad = find_dyad(j,r,c,N,TRUE);
+                        int dyad = remify::getDyadIndex(j,r,c,N,TRUE);
                         stat(i, dyad) = 1.0;
                     }
                 }
@@ -1349,7 +1301,7 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
                         for(arma::uword l = 0; l < N; ++l) {
                             if((l == r) | (l == s) | (l == j)) {continue;}
                             for(arma::uword k = 0; k < C; ++k) {
-                                int dyad = find_dyad(j,l,k,N,TRUE);
+                                int dyad = remify::getDyadIndex(j,l,k,N,TRUE);
                                 stat(i, dyad) = 1.0;
                             }
                         }                        
@@ -1359,7 +1311,7 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
                         if((j == r) | (j == s)) {continue;}
                         for(arma::uword l = 0; l < N; ++l) {
                             if((l == r) | (l == s) | (l == j)) {continue;}
-                            int dyad = find_dyad(j,l,c,N,TRUE);
+                            int dyad = remify::getDyadIndex(j,l,c,N,TRUE);
                             stat(i, dyad) = 1.0;
                         }                        
                     }
@@ -1373,14 +1325,14 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
                     for(arma::uword j = 0; j < N; ++j) {
                         if((j == r) | (j == s)) {continue;}
                         for(arma::uword k = 0; k < C; ++k) {
-                            int dyad = find_dyad(s,j,k,N,TRUE);
+                            int dyad = remify::getDyadIndex(s,j,k,N,TRUE);
                             stat(i, dyad) = 1.0;
                         }
                     }
                 } else {
                     for(arma::uword j = 0; j < N; ++j) {
                         if((j == r) | (j == s)) {continue;}
-                        int dyad = find_dyad(s,j,c,N,TRUE);
+                        int dyad = remify::getDyadIndex(s,j,c,N,TRUE);
                         stat(i, dyad) = 1.0;
                     }
                 }
@@ -1393,7 +1345,6 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
     return stat;
 }
 
-//[[Rcpp::export]]
 arma::rowvec rankR(arma::rowvec x, int N) {
 		arma::uvec ranksU = N - sort_index(sort_index(x));
         arma::rowvec ranks = arma::conv_to<arma::rowvec>::from(ranksU);
@@ -1417,8 +1368,6 @@ arma::rowvec rankR(arma::rowvec x, int N) {
 // computed
 // consider_type: boolean indicating whether to compute the inertia per 
 // event type (TRUE) or sum across types (FALSE)
-// 
-//[[Rcpp::export]]
 arma::mat rrank_tie(int type, const arma::mat& edgelist, 
     const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type) {
 
@@ -1575,8 +1524,6 @@ arma::mat rrank_tie(int type, const arma::mat& edgelist,
 // consider_type: boolean indicating whether to compute the recency per 
 // event type (TRUE) or sum across types (FALSE)
 // directed: boolean, whether events are directed or undirected
-
-// [[Rcpp::export]]
 arma::mat recency_tie(int type, const arma::mat& edgelist,
     const arma::mat& riskset, int N, int C, int start, int stop, 
     bool consider_type, bool directed) {
@@ -1608,13 +1555,13 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
         if(type == 1) {
             // Last time active as dyad
             if(consider_type) {
-                int dyad = find_dyad(s, r, c, N, directed);
+                int dyad = remify::getDyadIndex(s, r, c, N, directed);
                 lastActive(dyad) = time;
                 continue;
             } else {
                 // For loop over event types
                 for(arma::uword k = 0; k < C; k++) {
-                    int dyad = find_dyad(s, r, k, N, directed);
+                    int dyad = remify::getDyadIndex(s, r, k, N, directed);
                     lastActive(dyad) = time;
                 }
             }
@@ -1625,7 +1572,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 // For loop over receivers
                 for(arma::uword j = 0; j < N; j++) {
                     if(j == s) {continue;}
-                    int dyad = find_dyad(s, j, c, N, directed);
+                    int dyad = remify::getDyadIndex(s, j, c, N, directed);
                     lastActive(dyad) = time;
                 }
             } else {
@@ -1634,7 +1581,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     if(j == s) {continue;}
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(s, j, k, N, directed);
+                        int dyad = remify::getDyadIndex(s, j, k, N, directed);
                         lastActive(dyad) = time;
                     }
                 }
@@ -1646,7 +1593,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 // For loop over senders
                 for(arma::uword i = 0; i < N; i++) {
                     if(i == s) {continue;}
-                    int dyad = find_dyad(i, s, c, N, directed);
+                    int dyad = remify::getDyadIndex(i, s, c, N, directed);
                     lastActive(dyad) = time;
                 }
             } else {
@@ -1655,7 +1602,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     if(i == s) {continue;}
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(i, s, k, N, directed);
+                        int dyad = remify::getDyadIndex(i, s, k, N, directed);
                         lastActive(dyad) = time;
                     }
                 }
@@ -1667,7 +1614,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 // For loop over receivers
                 for(arma::uword j = 0; j < N; j++) {
                     if(j == r) {continue;}
-                    int dyad = find_dyad(s, r, c, N, directed);
+                    int dyad = remify::getDyadIndex(s, r, c, N, directed);
                     lastActive(dyad) = time;
                 }
             } else {
@@ -1676,7 +1623,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     if(j == r) {continue;}
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(s, r, k, N, directed);
+                        int dyad = remify::getDyadIndex(s, r, k, N, directed);
                         lastActive(dyad) = time;
                     }
                 }
@@ -1688,7 +1635,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 // For loop over senders
                 for(arma::uword i = 0; i < N; i++) {
                     if(i == r) {continue;}
-                    int dyad = find_dyad(i, r, c, N, directed);
+                    int dyad = remify::getDyadIndex(i, r, c, N, directed);
                     lastActive(dyad) = time;
                 }
             } else {
@@ -1697,7 +1644,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     if(i == r) {continue;}
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(i, r, k, N, directed);
+                        int dyad = remify::getDyadIndex(i, r, k, N, directed);
                         lastActive(dyad) = time;
                     }
                 }
@@ -1734,7 +1681,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
             } else {
                 // For loop over event types
                 for(arma::uword k = 0; k < C; k++) {
-                    int dyad = find_dyad(s, r, k, N, directed);
+                    int dyad = remify::getDyadIndex(s, r, k, N, directed);
                     lastActive(dyad) = time;
                 }
             }
@@ -1745,7 +1692,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 // For loop over receivers
                 for(arma::uword j = 0; j < N; j++) {
                     if(j == s) {continue;}
-                    int dyad = find_dyad(s, j, c, N, directed);
+                    int dyad = remify::getDyadIndex(s, j, c, N, directed);
                     lastActive(dyad) = time;
                 }
             } else {
@@ -1754,7 +1701,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     if(j == s) {continue;}
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(s, j, k, N, directed);
+                        int dyad = remify::getDyadIndex(s, j, k, N, directed);
                         lastActive(dyad) = time;
                     }
                 }
@@ -1766,7 +1713,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 // For loop over senders
                 for(arma::uword i = 0; i < N; i++) {
                     if(i == s) {continue;}
-                    int dyad = find_dyad(i, s, c, N, directed);
+                    int dyad = remify::getDyadIndex(i, s, c, N, directed);
                     lastActive(dyad) = time;
                 }
             } else {
@@ -1775,7 +1722,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     if(i == s) {continue;}
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(i, s, k, N, directed);
+                        int dyad = remify::getDyadIndex(i, s, k, N, directed);
                         lastActive(dyad) = time;
                     }
                 }
@@ -1787,7 +1734,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 // For loop over receivers
                 for(arma::uword j = 0; j < N; j++) {
                     if(j == r) {continue;}
-                    int dyad = find_dyad(r, j, c, N, directed);
+                    int dyad = remify::getDyadIndex(r, j, c, N, directed);
                     lastActive(dyad) = time;
                 }
             } else {
@@ -1796,7 +1743,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     if(j == r) {continue;}
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(r, j, k, N, directed);
+                        int dyad = remify::getDyadIndex(r, j, k, N, directed);
                         lastActive(dyad) = time;
                     }
                 }
@@ -1808,7 +1755,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 // For loop over senders
                 for(arma::uword i = 0; i < N; i++) {
                     if(i == r) {continue;}
-                    int dyad = find_dyad(i, r, c, N, directed);
+                    int dyad = remify::getDyadIndex(i, r, c, N, directed);
                     lastActive(dyad) = time;
                 }
             } else {
@@ -1817,7 +1764,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     if(i == r) {continue;}
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
-                        int dyad = find_dyad(i, r, k, N, directed);
+                        int dyad = remify::getDyadIndex(i, r, k, N, directed);
                         lastActive(dyad) = time;
                     }
                 }
@@ -1829,8 +1776,6 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
 }
 
 // tie_tie
-
-//[[Rcpp::export]]
 arma::mat tie_tie(const arma::mat& covariates, const arma::mat& edgelist, 
     const arma::mat& riskset, int start, int stop) {
 
@@ -1865,7 +1810,6 @@ arma::mat tie_tie(const arma::mat& covariates, const arma::mat& edgelist,
 }
 
 // event_tie
-//[[Rcpp::export]]
 arma::mat event_tie(const arma::mat& covariates, const arma::mat& edgelist, 
     const arma::mat& riskset, int start, int stop) {
 
@@ -1887,7 +1831,6 @@ arma::mat event_tie(const arma::mat& covariates, const arma::mat& edgelist,
     return(stat);
 }
 
-//[[Rcpp::export]]
 arma::mat FEtype_tie(const arma::mat& covariates, 
     const arma::mat& edgelist, const arma::mat& riskset, int start, int stop) {
 
@@ -1911,8 +1854,6 @@ arma::mat FEtype_tie(const arma::mat& covariates,
 }
 
 // current_common_partners (CPP)
-//
-// [[Rcpp::export]]
 arma::mat current_common_partners(const arma::mat& edgelist, 
     const arma::mat& riskset, const arma::vec& actors, 
     const arma::vec& duration, int start, int stop) {
@@ -1961,7 +1902,7 @@ arma::mat current_common_partners(const arma::mat& edgelist,
                 for(arma::uword j = 0; j < ends.n_elem; ++j) {
                     for(arma::uword h = 0; h < ends.n_elem; ++h) {
                         if(h > j) {
-                            int dyad = find_dyad(ends(h), ends(j), 0, actors.n_elem, FALSE);
+                            int dyad = remify::getDyadIndex(ends(h), ends(j), 0, actors.n_elem, FALSE);
                             stat(m, dyad) += 1;
                         }
                     }
@@ -2827,8 +2768,6 @@ arma::cube compute_stats_tie(const arma::vec& effects,
 // computed
 // stop: integer, last event in the edgelist for which the statistic is 
 // computed 
-// 
-// [[Rcpp::export]]
 arma::mat actorStat_rc(const arma::mat& covariates, const arma::mat& edgelist, 
     const arma::mat& riskset, const arma::vec& actors, int start, int stop, 
     int scaling) {
@@ -2942,8 +2881,6 @@ arma::mat actorStat_rc(const arma::mat& covariates, const arma::mat& edgelist,
 // riskset: matrix, (actor1, actor2, type, event)
 // actors: vector, actor ids
 // adjmat: matrix (events x dyads)
-//
-// [[Rcpp::export]]
 arma::mat degree_rc(int type, const arma::mat& riskset, 
     const arma::vec& actors, const arma::mat& adjmat) {
 
@@ -2961,7 +2898,7 @@ arma::mat degree_rc(int type, const arma::mat& riskset,
             
             if(type == 1 | type == 3) {
                 // For the in-degree of actor i: get the (j,i) dyad
-                int dyad = find_dyad(j, i, 0, actors.n_elem, TRUE);
+                int dyad = remify::getDyadIndex(j, i, 0, actors.n_elem, TRUE);
                 // Extract this column from the adjmat and add it to actor i's 
                 // in-degree
                 ideg.col(i) += adjmat.col(dyad);
@@ -2969,7 +2906,7 @@ arma::mat degree_rc(int type, const arma::mat& riskset,
 
             if(type == 2 | type == 3) {
                 // For the out-degree of actor i: get the (i,j) dyad
-                int dyad = find_dyad(i, j, 0, actors.n_elem, TRUE);
+                int dyad = remify::getDyadIndex(i, j, 0, actors.n_elem, TRUE);
                 // Extract this column from the adjmat and add it to actor i's 
                 // in-degree
                 odeg.col(i) += adjmat.col(dyad);
@@ -3001,8 +2938,6 @@ arma::mat degree_rc(int type, const arma::mat& riskset,
 // consider_type: boolean indicating whether to compute the recency per 
 // event type (TRUE) or sum across types (FALSE)
 // directed: boolean, whether events are directed or undirected
-
-// [[Rcpp::export]]
 arma::mat recency_rc(int type, const arma::mat& edgelist,
     const arma::mat& riskset, int N, int start, int stop) {
 
@@ -3063,7 +2998,7 @@ arma::mat recency_rc(int type, const arma::mat& edgelist,
             // For loop over actors
             for(arma::uword i = 0; i < N; ++i) {
                 if(i == s) {continue;}
-                int dyad = find_dyad(s, i, 0, N, TRUE);
+                int dyad = remify::getDyadIndex(s, i, 0, N, TRUE);
                 double fr = 1/((time - lastActive(dyad)) + 1);
                 stat(m, i) = fr;
             }
@@ -3106,8 +3041,6 @@ arma::mat recency_rc(int type, const arma::mat& edgelist,
 // computed
 // stop: integer, last event in the edgelist for which the statistic is 
 // computed
-// 
-// [[Rcpp::export]]
 arma::mat dyadStat_choice(int type, const arma::mat& covariates,
 	const arma::mat& edgelist, const arma::mat& riskset, 
     const arma::vec& actors, int start, int stop) {
@@ -3163,7 +3096,6 @@ arma::mat dyadStat_choice(int type, const arma::mat& covariates,
 	return stat;
 }
 
-// [[Rcpp::export]]
 arma::mat tie_choice(const arma::mat& covariates, const arma::mat& edgelist, 
 	const arma::vec& actors, const arma::mat& riskset, int start, int stop) {
 
@@ -3200,8 +3132,6 @@ arma::mat tie_choice(const arma::mat& covariates, const arma::mat& edgelist,
 // stop: integer, last event in the edgelist for which the statistic is 
 // computed
 // scaling: integer, 1 = as.is, 2 = prop, 3 = std
-//
-// [[Rcpp::export]]
 arma::mat inertia_choice(const arma::mat& edgelist, const arma::mat& adjmat, 
     const arma::mat& riskset, const arma::vec& actors, int start, int stop, 
     int scaling) {
@@ -3233,7 +3163,7 @@ arma::mat inertia_choice(const arma::mat& edgelist, const arma::mat& adjmat,
 
 			// Get the index for the column in the riskset that refer to the 
 			// (i,j) event
-            int dyad = find_dyad(sender, r, 0, actors.n_elem, TRUE);
+            int dyad = remify::getDyadIndex(sender, r, 0, actors.n_elem, TRUE);
 
             // Extract the value from the adjmat
             stat(m, r) = adjmat(m, dyad);
@@ -3282,8 +3212,6 @@ arma::mat inertia_choice(const arma::mat& edgelist, const arma::mat& adjmat,
 // stop: integer, last event in the edgelist for which the statistic is 
 // computed
 // scaling: integer, 1 = as.is, 2 = prop, 3 = std
-//
-// [[Rcpp::export]]
 arma::mat reciprocity_choice(const arma::mat& edgelist, 
     const arma::mat& adjmat, const arma::mat& riskset, 
     const arma::vec& actors, int start, int stop, int scaling) {
@@ -3315,7 +3243,7 @@ arma::mat reciprocity_choice(const arma::mat& edgelist,
 
 			// Get the index for the column in the riskset that refers to the 
 			// (j,i) event
-            int dyad = find_dyad(r, sender, 0, actors.n_elem, TRUE);
+            int dyad = remify::getDyadIndex(r, sender, 0, actors.n_elem, TRUE);
 
             // Extract the value from the adjmat
             stat(m, r) = adjmat(m, dyad);
@@ -3366,8 +3294,6 @@ arma::mat reciprocity_choice(const arma::mat& edgelist,
 // stop: integer, last event in the edgelist for which the statistic is 
 // computed
 // scaling: integer, 1 = as.is, 2 = std
-// 
-// [[Rcpp::export]]
 arma::mat triad_choice(int type, const arma::mat& edgelist, 
     const arma::mat& adjmat, const arma::mat& riskset, 
     const arma::vec& actors, int start, int stop, int scaling) {
@@ -3402,33 +3328,33 @@ arma::mat triad_choice(int type, const arma::mat& edgelist,
                 // otp
                 if(type == 1) {
                     // arrow1 = sender i sends to actor h
-                    a1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
+                    a1 = remify::getDyadIndex(s, actors(h), 0, actors.n_elem, TRUE);
                     // arrow2 = actor h sends to receiver j
-                    a2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
+                    a2 = remify::getDyadIndex(actors(h), r, 0, actors.n_elem, TRUE);
                 }
 
                 // itp
                 if(type == 2) {
                     // arrow1 = actor h sends to sender i
-                    a1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
+                    a1 = remify::getDyadIndex(actors(h), s, 0, actors.n_elem, TRUE);
                     // arrow2 = receiver j sends to actor h
-                    a2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
+                    a2 = remify::getDyadIndex(r, actors(h), 0, actors.n_elem, TRUE);
                 }
 
                 // osp
                 if(type == 3) {
                     // arrow1 = sender i sends to actor h
-                    a1 = find_dyad(s, actors(h), 0, actors.n_elem, TRUE);
+                    a1 = remify::getDyadIndex(s, actors(h), 0, actors.n_elem, TRUE);
                     // arrow2 = receiver j sends to actor h
-                    a2 = find_dyad(r, actors(h), 0, actors.n_elem, TRUE);
+                    a2 = remify::getDyadIndex(r, actors(h), 0, actors.n_elem, TRUE);
                 }
 
                 // isp
                 if(type == 4) {
                     // arrow1 = actor h sends to sender i
-                    a1 = find_dyad(actors(h), s, 0, actors.n_elem, TRUE);
+                    a1 = remify::getDyadIndex(actors(h), s, 0, actors.n_elem, TRUE);
                     // arrow2 = actor h sends to receiver j
-                    a2 = find_dyad(actors(h), r, 0, actors.n_elem, TRUE);
+                    a2 = remify::getDyadIndex(actors(h), r, 0, actors.n_elem, TRUE);
                 }
 
                 // Sum past events
@@ -3474,8 +3400,6 @@ arma::mat triad_choice(int type, const arma::mat& edgelist,
 // computed
 // stop: integer, last event in the edgelist for which the statistic is 
 // computed
-// 
-//[[Rcpp::export]]
 arma::mat rrank_choice(int type, const arma::mat& edgelist, 
     const arma::mat& riskset, const arma::vec& actors, int start, int stop) {
 
