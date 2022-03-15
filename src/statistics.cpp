@@ -1655,6 +1655,9 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
 	// Initialize statistic
 	arma::mat stat(slice.n_rows, riskset.n_rows);
 
+    // Helper 
+    arma::vec updateActive = lastActive;
+
 	// For loop over time points
 	for(arma::uword m = 0; m < slice.n_rows; ++m) {
         // Compute statistic
@@ -1671,18 +1674,18 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
         // Event time
         double time = slice(m,0);
 
-		// Update last active
+		// Update updateActive
         // Find respective dyads
         if(type == 1) {
             // Last time active as dyad
             if(consider_type) {
-                lastActive(d) = time;
+                updateActive(d) = time;
                 continue;
             } else {
                 // For loop over event types
                 for(arma::uword k = 0; k < C; k++) {
                     int dyad = remify::getDyadIndex(s, r, k, N, directed);
-                    lastActive(dyad) = time;
+                    updateActive(dyad) = time;
                 }
             }
         }
@@ -1693,7 +1696,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 for(arma::uword j = 0; j < N; j++) {
                     if(j == s) {continue;}
                     int dyad = remify::getDyadIndex(s, j, c, N, directed);
-                    lastActive(dyad) = time;
+                    updateActive(dyad) = time;
                 }
             } else {
                 // For loop over receivers
@@ -1702,7 +1705,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
                         int dyad = remify::getDyadIndex(s, j, k, N, directed);
-                        lastActive(dyad) = time;
+                        updateActive(dyad) = time;
                     }
                 }
             }
@@ -1714,7 +1717,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 for(arma::uword i = 0; i < N; i++) {
                     if(i == s) {continue;}
                     int dyad = remify::getDyadIndex(i, s, c, N, directed);
-                    lastActive(dyad) = time;
+                    updateActive(dyad) = time;
                 }
             } else {
                 // For loop over senders
@@ -1723,7 +1726,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
                         int dyad = remify::getDyadIndex(i, s, k, N, directed);
-                        lastActive(dyad) = time;
+                        updateActive(dyad) = time;
                     }
                 }
             }
@@ -1735,7 +1738,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 for(arma::uword j = 0; j < N; j++) {
                     if(j == r) {continue;}
                     int dyad = remify::getDyadIndex(r, j, c, N, directed);
-                    lastActive(dyad) = time;
+                    updateActive(dyad) = time;
                 }
             } else {
                 // For loop over receivers
@@ -1744,7 +1747,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
                         int dyad = remify::getDyadIndex(r, j, k, N, directed);
-                        lastActive(dyad) = time;
+                        updateActive(dyad) = time;
                     }
                 }
             }
@@ -1756,7 +1759,7 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                 for(arma::uword i = 0; i < N; i++) {
                     if(i == r) {continue;}
                     int dyad = remify::getDyadIndex(i, r, c, N, directed);
-                    lastActive(dyad) = time;
+                    updateActive(dyad) = time;
                 }
             } else {
                 // For loop over senders
@@ -1765,11 +1768,18 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
                     // For loop over event types 
                     for(arma::uword k = 0; k < C; ++k) {
                         int dyad = remify::getDyadIndex(i, r, k, N, directed);
-                        lastActive(dyad) = time;
+                        updateActive(dyad) = time;
                     }
                 }
             }
 		}
+
+        // Update lastActive?
+        if(m < (slice.n_rows - 1)) {
+            if(slice(m + 1,0) > time) {
+                lastActive = updateActive;
+            }
+        }        
     }
 
   return stat;
