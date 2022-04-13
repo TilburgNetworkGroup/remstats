@@ -1213,6 +1213,41 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
     }
 }
 
+#' totaldegreeDyad
+#' 
+#' Specifies the statistic for a `totaldegreeDyad` effect in the tie-oriented 
+#' model. 
+#' 
+#' @inheritParams totaldegreeSender
+#' 
+#' @details 
+#' A totaldegreeDyad effect refers to the tendency for dyads to increase their 
+#' interaction rate if the total degree of the two actors in the pair 
+#' increases. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
+#' equal to the sum of the event before timepoint \emph{t} that involved at 
+#' least one actor of the pair \emph{(i,j)}. 
+#' 
+#' Optionally, a scaling method can be set with \code{scaling}. By scaling the 
+#' degree count by the total number of past events times two (i.e., use 
+#' \code{prop}), the statistic refers to the fraction of past events times two 
+#' that at least one actor in the pair was involved in. In this case, at the 
+#' first timepoint - when no events did previously occur - it is assumed that 
+#' every actor is equally likely to be involved in an event and the statistic 
+#' is set equal to 2/n, where n refers to the number of actors. 
+#' @export 
+totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
+
+    # Match scaling
+    scaling <- match.arg(scaling)
+    scaling <- match(scaling, c("as.is", "prop", "std"))
+
+    # Output
+    list(
+        effect = "totaldegreeDyad",
+        scaling = scaling
+    )
+}
+
 #' degreeMin
 #' 
 #' Specifies the statistic for an `degreeMin` effect in the tie-oriented 

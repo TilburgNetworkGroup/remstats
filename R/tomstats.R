@@ -254,6 +254,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         "degreeMin", "degreeMax", #67 #68
         "degreeMin.type", "degreeMax.type", #69 #70
         "ccp", #71
+        "totaldegreeDyad", #72
 
         "interact") #99
     effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
@@ -341,7 +342,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     scaling <- as.numeric(sapply(effects, function(x) x$scaling))
 
     # Compute the adjacency matrix 
-    if(any(effectsN %in% c(10:23, 40:45, 52:59, 67:70))) {
+    if(any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72))) {
         if(is.null(adjmat)) {
             adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
                 directed, memory, memory_value, start, stop)

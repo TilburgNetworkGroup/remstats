@@ -633,7 +633,7 @@ arma::mat reciprocity_tie(const arma::mat& edgelist,
 //
 // type: integer, 1 = indegreeSender, 2 = indegreeReceiver, 
 // 3 = outdegreeSender, 4 = outdegreeReceiver, 5 = totaldegreeSender, 
-// 6 = totaldegreeReceiver
+// 6 = totaldegreeReceiver, 7 = totaldegreeDyad
 // edgelist: matrix (time, event, weight)
 // adjmat: matrix (events x dyads)
 // actors: vector, actor ids
@@ -643,8 +643,9 @@ arma::mat reciprocity_tie(const arma::mat& edgelist,
 // computed
 // consider_type: boolean indicating whether to compute the degree per 
 // event type (TRUE) or sum across types (FALSE)
+// directed: boolean indicating whether events are directed or undirected
 arma::mat degree_tie(int type, const arma::mat& edgelist, 
-    const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, int start, int stop, bool consider_type) {
+    const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, int start, int stop, bool consider_type, bool directed) {
 
     // Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
@@ -683,8 +684,8 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the receiver, actor h is the sender and 
                         // the type is the current type 
-                        int dyad = remify::getDyadIndex(actors(h), actor, types(c), 
-                            actors.n_elem, TRUE);
+                        int dyad = remify::getDyadIndex(actors(h), actor, 
+                            types(c), actors.n_elem, directed);
 
                         // Add the counts
                         indegType.col(actor) += adjmat.col(dyad);
@@ -702,8 +703,8 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
-                        int dyad = remify::getDyadIndex(actor, actors(h), types(c), 
-                            actors.n_elem, TRUE);
+                        int dyad = remify::getDyadIndex(actor, actors(h), 
+                            types(c), actors.n_elem, directed);
 
                         // Add the counts
                         outdegType.col(actor) += adjmat.col(dyad);
@@ -723,7 +724,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
                         dyad = remify::getDyadIndex(actor, actors(h), types(c), 
-                            actors.n_elem, TRUE);
+                            actors.n_elem, directed);
                     }
 
                     if((type == 2) || (type == 4) || (type == 6)) {
@@ -731,7 +732,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
                         dyad = remify::getDyadIndex(actors(h), actor, types(c), 
-                            actors.n_elem, TRUE);
+                            actors.n_elem, directed);
                     }
 
                     if((type == 1) | (type == 2)) {
@@ -761,7 +762,8 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
             int actor = actors(k);
 
             // Actor's indegree
-            if((type == 1) || (type == 2) || (type == 5) || (type == 6)) {
+            if((type == 1) || (type == 2) || (type == 5) || (type == 6) 
+                || (type == 7)) {
                 
                 // For loop over actors h
                 for(arma::uword h = 0; h < actors.n_elem; ++h) {
@@ -773,8 +775,8 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the receiver, actor h is the sender and 
                         // the type is the current type 
-                        int dyad = remify::getDyadIndex(actors(h), actor, types(c), 
-                            actors.n_elem, TRUE);
+                        int dyad = remify::getDyadIndex(actors(h), actor, 
+                            types(c), actors.n_elem, directed);
 
                         // Add the counts
                         indeg.col(actor) += adjmat.col(dyad);
@@ -783,7 +785,8 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
             }
 
             // Actor's outdegree
-            if((type == 3) || (type == 4) || (type == 5) || (type == 6)) {
+            if((type == 3) || (type == 4) || (type == 5) || (type == 6) || 
+                (type == 7)) {
                 
                 // For loop over actors h
                 for(arma::uword h = 0; h < actors.n_elem; ++h) {
@@ -795,8 +798,8 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // Get the index for the column in the riskset in which 
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
-                        int dyad = remify::getDyadIndex(actor, actors(h), types(c), 
-                            actors.n_elem, TRUE);
+                        int dyad = remify::getDyadIndex(actor, actors(h), 
+                            types(c), actors.n_elem, directed);
 
                         // Add the counts
                         outdeg.col(actor) += adjmat.col(dyad);
@@ -820,7 +823,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
                         dyad = remify::getDyadIndex(actor, actors(h), types(c), 
-                            actors.n_elem, TRUE);
+                            actors.n_elem, directed);
                     }
 
                     if((type == 2) || (type == 4) || (type == 6)) {
@@ -828,7 +831,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         // actor k is the sender, actor h is the receiver and 
                         // the type is the current type 
                         dyad = remify::getDyadIndex(actors(h), actor, types(c), 
-                            actors.n_elem, TRUE);
+                            actors.n_elem, directed);
                     }
 
                     if((type == 1) | (type == 2)) {
@@ -843,9 +846,38 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
                         stat.col(dyad) = indeg.col(actor) +
                             outdeg.col(actor);
                     }
+
+                    if(type == 7) {
+                        // Get the index for the column in the riskset in which 
+                        // actor k is the sender, actor h is the receiver and 
+                        // the type is the current type 
+                        dyad = remify::getDyadIndex(actor, actors(h), types(c), 
+                            actors.n_elem, directed);
+
+                        // Add to the statistic
+                        stat.col(dyad) += indeg.col(actor) +
+                            outdeg.col(actor);
+                        
+                        // Get the index for the column in the riskset in which 
+                        // actor k is the sender, actor h is the receiver and 
+                        // the type is the current type 
+                        dyad = remify::getDyadIndex(actors(h), actor, types(c), 
+                            actors.n_elem, directed);
+
+                        // Add to the statistic
+                        stat.col(dyad) += indeg.col(actor) +
+                            outdeg.col(actor);
+
+                        
+                    }
                 }                             
             }        
         }
+    }
+
+    // Correct totaldegreeDyad
+    if(type == 7 & !directed) {
+        stat = stat/4.0;
     }
 
     // Output the computed stat
@@ -2041,7 +2073,7 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 // Scale by outdegree of the sender
                 if(scaling(i) == 2) {
                     arma::mat deg = degree_tie(3, edgelist, adjmat, 
-                        actors, types, start, stop, FALSE);
+                        actors, types, start, stop, FALSE, TRUE);
                     stat = stat/deg;
                     double rep = 1.0/(actors.n_elem-1.0);
                     stat.replace(arma::datum::nan, rep);
@@ -2060,7 +2092,7 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 // Scale by indegree of the sender
                 if(scaling(i) == 2) {
                     arma::mat deg = degree_tie(1, edgelist, adjmat, 
-                        actors, types, start, stop, FALSE);
+                        actors, types, start, stop, FALSE, TRUE);
                     stat = stat/deg;
                     double rep = 1.0/(actors.n_elem-1.0);
                     stat.replace(arma::datum::nan, rep);
@@ -2075,13 +2107,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 12 : 
                 // Compute statistic
                 stat = degree_tie(1, edgelist, adjmat, actors, 
-                    types, start, stop, FALSE);
+                    types, start, stop, FALSE, TRUE);
                 // Divide by the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/sum(adjmat.row(t));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2093,13 +2131,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 13 : 
                 // Compute statistic
                 stat = degree_tie(2, edgelist, adjmat, actors, 
-                    types, start, stop, FALSE);
+                    types, start, stop, FALSE, TRUE);
                 // Divide by the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/sum(adjmat.row(t));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2111,13 +2155,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 14 : 
                 // Compute statistic
                 stat = degree_tie(3, edgelist, adjmat, actors, 
-                    types, start, stop, FALSE);
+                    types, start, stop, FALSE, TRUE);
                 // Divide by the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/sum(adjmat.row(t));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2129,13 +2179,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 15 : 
                 // Compute statistic
                 stat = degree_tie(4, edgelist, adjmat, actors, 
-                    types, start, stop, FALSE);
+                    types, start, stop, FALSE, TRUE);
                 // Divide by the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/sum(adjmat.row(t));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2147,13 +2203,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 16 : 
                 // Compute statistic
                 stat = degree_tie(5, edgelist, adjmat, actors, 
-                    types, start, stop, FALSE);
+                    types, start, stop, FALSE, TRUE);
                 // Divide by two times the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/(2*sum(adjmat.row(t)));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2165,13 +2227,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 17 : 
                 // Compute statistic
                 stat = degree_tie(6, edgelist, adjmat, actors, 
-                    types, start, stop, FALSE);
+                    types, start, stop, FALSE, TRUE);
                 // Divide by two times the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/(2*sum(adjmat.row(t)));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2365,13 +2433,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 40 : 
                 // Compute statistic
                 stat = degree_tie(1, edgelist, adjmat, actors, 
-                    types, start, stop, TRUE);
+                    types, start, stop, TRUE, TRUE);
                 // Divide by the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/sum(adjmat.row(t));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2383,13 +2457,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 41 : 
                 // Compute statistic
                 stat = degree_tie(2, edgelist, adjmat, actors, 
-                    types, start, stop, TRUE);
+                    types, start, stop, TRUE, TRUE);
                 // Divide by the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/sum(adjmat.row(t));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2401,13 +2481,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 42 : 
                 // Compute statistic
                 stat = degree_tie(3, edgelist, adjmat, actors, 
-                    types, start, stop, TRUE);
+                    types, start, stop, TRUE, TRUE);
                 // Divide by the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/sum(adjmat.row(t));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2419,13 +2505,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 43 : 
                 // Compute statistic
                 stat = degree_tie(4, edgelist, adjmat, actors, 
-                    types, start, stop, TRUE);
+                    types, start, stop, TRUE, TRUE);
                 // Divide by the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/sum(adjmat.row(t));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2437,13 +2529,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 44 : 
                 // Compute statistic
                 stat = degree_tie(5, edgelist, adjmat, actors, 
-                    types, start, stop, TRUE);
+                    types, start, stop, TRUE, TRUE);
                 // Divide by two times the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/(2*sum(adjmat.row(t)));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2455,13 +2553,19 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 45 : 
                 // Compute statistic
                 stat = degree_tie(6, edgelist, adjmat, actors, 
-                    types, start, stop, TRUE);
+                    types, start, stop, TRUE, TRUE);
                 // Divide by two times the number/weight of past events
                 if(scaling(i) == 2) {
                     for(arma::uword t = 0; t < stat.n_rows; ++t) {
                         stat.row(t) = stat.row(t)/(2*sum(adjmat.row(t)));
                     }
                     stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(1.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
                 }
                 // Standardize 
                 if(scaling(i) == 3) {
@@ -2519,7 +2623,7 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 // Scale by outdegree of the sender, considering event type
                 if(scaling(i) == 2) {
                     arma::mat deg = degree_tie(3, edgelist, adjmat, 
-                        actors, types, start, stop, TRUE);
+                        actors, types, start, stop, TRUE, TRUE);
                     stat = stat/deg;
                     double rep = 1.0/(actors.n_elem-1.0);
                     stat.replace(arma::datum::nan, rep);
@@ -2538,7 +2642,7 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 // Scale by indegree of the sender, considering event type
                 if(scaling(i) == 2) {
                     arma::mat deg = degree_tie(1, edgelist, adjmat, 
-                        actors, types, start, stop, TRUE);
+                        actors, types, start, stop, TRUE, TRUE);
                     stat = stat/deg;
                     double rep = 1.0/(actors.n_elem-1.0);
                     stat.replace(arma::datum::nan, rep);
@@ -2741,6 +2845,30 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 // Compute statistic
                 stat = current_common_partners(edgelist, riskset,    
                     actors, covariates[i], start, stop);
+                break;
+
+            // 72 totaldegreeDyad
+            case 72 : 
+                // Compute statistic
+                stat = degree_tie(7, edgelist, adjmat, actors, 
+                    types, start, stop, FALSE, directed);
+                // Divide by two times the number/weight of past events
+                if(scaling(i) == 2) {
+                    for(arma::uword t = 0; t < stat.n_rows; ++t) {
+                        stat.row(t) = stat.row(t)/(2*sum(adjmat.row(t)));
+                    }
+                    stat.replace(arma::datum::nan, 0);
+                    // First row
+                    if(start == 0) {
+                        arma::rowvec rep = arma::rowvec(stat.n_cols, 
+                            arma::fill::value(2.0/actors.n_elem));
+                        stat.row(0) = rep;
+                    }
+                }
+                // Standardize 
+                if(scaling(i) == 3) {
+                    stat = standardize(stat);
+                }
                 break;
              
             // 99 interact
