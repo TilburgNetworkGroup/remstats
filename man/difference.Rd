@@ -8,7 +8,8 @@ difference(
   variable,
   attributes = NULL,
   scaling = c("as.is", "std"),
-  absolute = FALSE
+  absolute = FALSE,
+  param = NULL
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ statistic per time point can be requested with "std".}
 
 \item{absolute}{logical value indicating whether the difference values 
 should be converted to the absolute difference}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a `difference` effect in the tie-oriented model 

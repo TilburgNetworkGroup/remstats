@@ -5,11 +5,14 @@
 \alias{pshift}
 \title{psABBA}
 \usage{
-psABBA(consider_type = FALSE)
+psABBA(consider_type = FALSE, param = NULL)
 }
 \arguments{
 \item{consider_type}{logical, indicates whether to consider the event type 
 in determining which dyads create a pshift (TRUE) or not (FALSE, default).}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a pshift AB-BA effect in the \code{effects} 

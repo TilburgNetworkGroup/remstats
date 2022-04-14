@@ -4,11 +4,14 @@
 \alias{rrankReceive}
 \title{rrankReceive}
 \usage{
-rrankReceive(consider_type = FALSE)
+rrankReceive(consider_type = FALSE, param = NULL)
 }
 \arguments{
 \item{consider_type}{logical, indicates whether to discriminate between 
 event types in determining the event rank (TRUE) or not (FALSE, default).}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a recency rank receive effect in the 

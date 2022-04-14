@@ -56,7 +56,7 @@ NULL
 #' argument of \code{\link{remstats}}, \code{\link{tomstats}} or 
 #' \code{\link{aomstats}}. 
 #' 
-#' 
+#' @inheritParams effectsTie
 #' 
 #' @param variable string with the name of the column in the 
 #' \code{attributes} object for which the statistic has to be computed. 
@@ -77,7 +77,8 @@ NULL
 #' aomstats(sender_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
-send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+send <- function(variable, attributes = NULL, scaling = c("as.is", "std"),
+    param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -146,6 +147,7 @@ send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
+#' @inheritParams effectsTie
 #' 
 #' @examples 
 #' library(remify)
@@ -157,7 +159,8 @@ send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' aomstats(receiver_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
-receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+receive <- function(variable, attributes = NULL, scaling = c("as.is", "std"), 
+    param = NULL) {
     # Match scaling
     scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
@@ -219,6 +222,7 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @param scaling the method for scaling the statistic. Default is to not scale 
 #' the statistic but keep it "as.is". Alternatively, standardization of the 
 #' statistic per time point can be requested with "std". 
+#' @inheritParams effectsTie
 #' 
 #' @examples 
 #' library(remify)
@@ -237,7 +241,8 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export
-tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
+tie <- function(x, variableName = NULL, scaling = c("as.is", "std"), 
+    param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -283,6 +288,7 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 #' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
+#' @inheritParams effectsTie
 #' 
 #' @examples 
 #' library(remify)
@@ -294,7 +300,7 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 #' aomstats(receiver_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
-same <- function(variable, attributes = NULL) {
+same <- function(variable, attributes = NULL, param = NULL) {
    
     # Prepare effect 
     if(is.null(attributes)) {
@@ -362,6 +368,7 @@ same <- function(variable, attributes = NULL) {
 #' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
+#' @inheritParams effectsTie
 #' @param absolute logical value indicating whether the difference values 
 #' should be converted to the absolute difference
 #' 
@@ -376,7 +383,7 @@ same <- function(variable, attributes = NULL) {
 #' 
 #' @export 
 difference <- function(variable, attributes = NULL, 
-    scaling = c("as.is", "std"), absolute = FALSE) {
+    scaling = c("as.is", "std"), absolute = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -452,6 +459,7 @@ difference <- function(variable, attributes = NULL,
 #' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
+#' @inheritParams effectsTie
 #' 
 #' @examples 
 #' library(remify)
@@ -463,7 +471,8 @@ difference <- function(variable, attributes = NULL,
 #' aomstats(receiver_effects = effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
-average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+average <- function(variable, attributes = NULL, scaling = c("as.is", "std"), 
+    param = NULL) {
     # Match scaling
     scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
@@ -531,6 +540,7 @@ average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
+#' @inheritParams effectsTie
 #' 
 #' @examples 
 #' library(remify)
@@ -540,7 +550,8 @@ average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' tomstats(effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
-minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std"), 
+    param = NULL) {
     # Match scaling
     scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
@@ -607,6 +618,7 @@ minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' \code{\link{aomstats}}. 
 #' 
 #' @inheritParams send
+#' @inheritParams effectsTie
 #' 
 #' @examples 
 #' library(remify)
@@ -616,7 +628,8 @@ minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' tomstats(effects, edgelist = rehObject, attributes = info)
 #' 
 #' @export 
-maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
+maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std"), 
+    param = NULL) {
     # Match scaling
     scaling <- match.arg(scaling)
     scaling <- match(scaling, c("as.is", "std"))
@@ -673,6 +686,7 @@ maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @param x vector with the event attribute 
 #' @param variableName optionally, a string indicating the variable name, used 
 #' for the dimnames of the output statistics object 
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{FEtype}}
 #' 
@@ -685,7 +699,7 @@ maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export 
-event <- function(x, variableName = NULL) {
+event <- function(x, variableName = NULL, param = NULL) {
     # Output
     list(
         effect = "event",
@@ -761,6 +775,7 @@ FEtype <- function() {
 #' @param consider_type logical, indicates whether to count the number of past 
 #' events separately for each event type (TRUE) or sum across different event 
 #' types (FALSE, default).
+#' @inheritParams effectsTie
 #' 
 #' @examples
 #' library(remify)
@@ -773,7 +788,7 @@ FEtype <- function() {
 #'
 #' @export 
 inertia <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -821,6 +836,7 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
 #' @param consider_type logical, indicates whether to count the number of past 
 #' reciprocal events separately for each event type (TRUE) or sum across 
 #' different event types (FALSE, default).
+#' @inheritParams effectsTie
 #' 
 #' @examples 
 #' library(remify)
@@ -833,7 +849,7 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @export 
 reciprocity <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -881,6 +897,7 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 #' @param consider_type logical, indicates whether to count the degrees 
 #' separately for each event type (TRUE) or sum degrees across different event 
 #' types (FALSE, default).
+#' @inheritParams effectsTie
 #' 
 #' @aliases degree indegree
 #' @seealso \code{\link{indegreeReceiver}}, \code{\link{outdegreeSender}}, 
@@ -898,7 +915,7 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @export
 indegreeSender <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -939,6 +956,7 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' n, where n refers to the number of actors. 
 #' 
 #' @inheritParams indegreeSender
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{indegreeSender}}, \code{\link{outdegreeSender}}, 
 #' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
@@ -955,7 +973,7 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @export
 indegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -996,6 +1014,7 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' where n refers to the number of actors. 
 #' 
 #' @inheritParams indegreeSender
+#' @inheritParams effectsTie
 #' 
 #' @aliases outdegree
 #' @seealso \code{\link{indegreeSender}}, \code{\link{indegreeReceiver}}, 
@@ -1013,7 +1032,7 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @export
 outdegreeSender <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1054,6 +1073,7 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' 1/n, where n refers to the number of actors. 
 #' 
 #' @inheritParams indegreeSender
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{indegreeSender}}, \code{\link{indegreeReceiver}}, 
 #' \code{\link{outdegreeSender}}, \code{\link{totaldegreeSender}}, or
@@ -1070,7 +1090,7 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @export
 outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1119,6 +1139,7 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' @param consider_type logical, indicates whether to count the degrees 
 #' separately for each event type (TRUE) or sum degrees across different event 
 #' types (FALSE, default).
+#' @inheritParams effectsTie
 #' 
 #' @aliases totaldegree
 #' @seealso \code{\link{indegreeSender}}, \code{\link{indegreeReceiver}}, 
@@ -1135,7 +1156,7 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @export
 totaldegreeSender <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1177,6 +1198,7 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' set equal to 1/n, where n refers to the number of actors. 
 #' 
 #' @inheritParams totaldegreeSender
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{indegreeSender}}, \code{\link{indegreeReceiver}}, 
 #' \code{\link{outdegreeSender}}, \code{\link{outdegreeReceiver}}, or
@@ -1193,7 +1215,7 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @export
 totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1219,6 +1241,7 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' model. 
 #' 
 #' @inheritParams totaldegreeSender
+#' @inheritParams effectsTie
 #' 
 #' @details 
 #' A totaldegreeDyad effect refers to the tendency for dyads to increase their 
@@ -1235,7 +1258,7 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' every actor is equally likely to be involved in an event and the statistic 
 #' is set equal to 2/n, where n refers to the number of actors. 
 #' @export 
-totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
+totaldegreeDyad <- function(scaling = c("as.is", "prop", "std"), param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1270,6 +1293,7 @@ totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
 #' is set equal to 1/n, where n refers to the number of actors. 
 #' 
 #' @inheritParams totaldegreeSender
+#' @inheritParams effectsTie
 #' 
 #' @aliases degree 
 #' @seealso \code{\link{degreeMax}}, \code{\link{indegreeSender}}, 
@@ -1286,7 +1310,7 @@ totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
 #'
 #' @export
 degreeMin <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1328,6 +1352,7 @@ degreeMin <- function(scaling = c("as.is", "prop", "std"),
 #' is set equal to 1/n, where n refers to the number of actors. 
 #' 
 #' @inheritParams totaldegreeSender
+#' @inheritParams effectsTie
 #' 
 #' @aliases degree 
 #' @seealso \code{\link{degreeMin}}, \code{\link{indegreeSender}}, 
@@ -1344,7 +1369,7 @@ degreeMin <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @export
 degreeMax <- function(scaling = c("as.is", "prop", "std"), 
-    consider_type = FALSE) {
+    consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1384,6 +1409,7 @@ degreeMax <- function(scaling = c("as.is", "prop", "std"),
 #' @param consider_type logical, indicates whether to count the two-paths 
 #' separately for each event type (TRUE) or sum across different event 
 #' types (FALSE, default).
+#' @inheritParams effectsTie
 #'
 #' @aliases triad 
 #' @seealso \code{\link{itp}}, \code{\link{osp}}, or \code{\link{isp}} for 
@@ -1401,7 +1427,7 @@ degreeMax <- function(scaling = c("as.is", "prop", "std"),
 #' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export  
-otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
+otp <- function(scaling = c("as.is", "std"), consider_type = FALSE, param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1435,6 +1461,7 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' 'itp' effect is only defined for directed events. 
 #' 
 #' @inheritParams otp
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{otp}}, \code{\link{osp}}, or \code{\link{isp}} for 
 #' other types of triadic effects for directed relational events and 
@@ -1451,7 +1478,8 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export  
-itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
+itp <- function(scaling = c("as.is", "std"), consider_type = FALSE, 
+    param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1491,6 +1519,7 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' @param consider_type logical, indicates whether to count the shared partners 
 #' separately for each event type (TRUE) or sum across different event 
 #' types (FALSE, default).
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{otp}}, \code{\link{itp}}, or \code{\link{isp}} for 
 #' other types of triadic effects for directed relational events and 
@@ -1507,7 +1536,8 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export  
-osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
+osp <- function(scaling = c("as.is", "std"), consider_type = FALSE, 
+    param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1541,6 +1571,7 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' that an 'isp' effect is only defined for directed events. 
 #' 
 #' @inheritParams osp
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{otp}}, \code{\link{itp}}, or \code{\link{osp}} for 
 #' other types of triadic effects for directed relational events and 
@@ -1557,7 +1588,8 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' aomstats(receiver_effects = effects, edgelist = rehObject)
 #' 
 #' @export  
-isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
+isp <- function(scaling = c("as.is", "std"), consider_type = FALSE, 
+    param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1591,6 +1623,7 @@ isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' `shared partners' effect is only defined for undirected events. 
 #' 
 #' @inheritParams osp
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{spUnique}} for another type of triadic effect for 
 #' undirected relational events and \code{\link{otp}}, \code{\link{itp}}, 
@@ -1604,7 +1637,8 @@ isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export  
-sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
+sp <- function(scaling = c("as.is", "std"), consider_type = FALSE, 
+    param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1639,6 +1673,7 @@ sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' events. 
 #' 
 #' @inheritParams osp
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{sp}} for another type of triadic effect for 
 #' undirected relational events and \code{\link{otp}}, \code{\link{itp}}, 
@@ -1652,7 +1687,8 @@ sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export  
-spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
+spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE, 
+    param = NULL) {
 
     # Match scaling
     scaling <- match.arg(scaling)
@@ -1679,9 +1715,10 @@ spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' events.
 #' 
 #' @param duration vector with event durations. 
+#' @inheritParams effectsTie
 #' 
 #' @export 
-ccp <- function(duration) {
+ccp <- function(duration, param = NULL) {
     # Output
     list(
         effect = "ccp",
@@ -1712,6 +1749,7 @@ ccp <- function(duration) {
 #' the same time point, the order of these events determines whether the 
 #' p-shift is observed. Note that the AB-BA pshift is only defined for directed 
 #' events. 
+#' @inheritParams effectsTie
 #' 
 #' @aliases pshift 
 #' @seealso \code{\link{psABBY}}, \code{\link{psABXA}}, \code{\link{psABXB}}, 
@@ -1725,7 +1763,7 @@ ccp <- function(duration) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
-psABBA <- function(consider_type = FALSE) {
+psABBA <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -1747,6 +1785,7 @@ psABBA <- function(consider_type = FALSE) {
 #' argument of \code{\link{tomstats}}.
 #' 
 #' @inheritParams psABBA
+#' @inheritParams effectsTie
 #' 
 #' @details
 #' The AB-BY pshift effect refers to one of Gibson's (2003) dyadic 
@@ -1774,7 +1813,7 @@ psABBA <- function(consider_type = FALSE) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
-psABBY <- function(consider_type = FALSE) {
+psABBY <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -1796,6 +1835,7 @@ psABBY <- function(consider_type = FALSE) {
 #' argument of \code{\link{tomstats}}.
 #' 
 #' @inheritParams psABBA
+#' @inheritParams effectsTie
 #' 
 #' @details
 #' The AB-XA pshift effect refers to one of Gibson's (2003) dyadic 
@@ -1823,7 +1863,7 @@ psABBY <- function(consider_type = FALSE) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
-psABXA <- function(consider_type = FALSE) {
+psABXA <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -1845,6 +1885,7 @@ psABXA <- function(consider_type = FALSE) {
 #' argument of \code{\link{tomstats}}.
 #' 
 #' @inheritParams psABBA
+#' @inheritParams effectsTie
 #' 
 #' @details
 #' The AB-XB pshift effect refers to one of Gibson's (2003) dyadic 
@@ -1872,7 +1913,7 @@ psABXA <- function(consider_type = FALSE) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
-psABXB <- function(consider_type = FALSE) {
+psABXB <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -1894,6 +1935,7 @@ psABXB <- function(consider_type = FALSE) {
 #' argument of \code{\link{tomstats}}.
 #' 
 #' @inheritParams psABBA
+#' @inheritParams effectsTie
 #' 
 #' @details
 #' The AB-XY pshift effect refers to one of Gibson's (2003) dyadic 
@@ -1920,7 +1962,7 @@ psABXB <- function(consider_type = FALSE) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
-psABXY <- function(consider_type = FALSE) {
+psABXY <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -1942,6 +1984,7 @@ psABXY <- function(consider_type = FALSE) {
 #' argument of \code{\link{tomstats}}.
 #' 
 #' @inheritParams psABBA
+#' @inheritParams effectsTie
 #' 
 #' @details
 #' The AB-AY pshift effect refers to one of Gibson's (2003) dyadic 
@@ -1969,7 +2012,7 @@ psABXY <- function(consider_type = FALSE) {
 #' tomstats(effects, edgelist = rehObject)
 #' 
 #' @export
-psABAY <- function(consider_type = FALSE) {
+psABAY <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -1999,6 +2042,7 @@ psABAY <- function(consider_type = FALSE) {
 #' 
 #' @param consider_type logical, indicates whether to discriminate between 
 #' event types in determining the event rank (TRUE) or not (FALSE, default).
+#' @inheritParams effectsTie
 #' 
 #' @aliases recencyRank rrank
 #' @seealso \code{\link{rrankReceive}}, \code{\link{recencySendSender}}, 
@@ -2016,7 +2060,7 @@ psABAY <- function(consider_type = FALSE) {
 #' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export 
-rrankSend <- function(consider_type = FALSE) {
+rrankSend <- function(consider_type = FALSE, param = NULL) {
     
     # Output
     if(!consider_type) {
@@ -2045,6 +2089,7 @@ rrankSend <- function(consider_type = FALSE) {
 #' the 'rrankReceive' effect is only defined for directed events. 
 #' 
 #' @inheritParams rrankSend
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{rrankSend}}, \code{\link{recencySendSender}}, 
 #' \code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}}, 
@@ -2059,7 +2104,7 @@ rrankSend <- function(consider_type = FALSE) {
 #' aomstats(receiver_effects = effects, edgelist = rehObject)
 #'
 #' @export 
-rrankReceive <- function(consider_type = FALSE) {
+rrankReceive <- function(consider_type = FALSE, param = NULL) {
 
      # Output
     if(!consider_type) {
@@ -2091,6 +2136,7 @@ rrankReceive <- function(consider_type = FALSE) {
 #' @param consider_type logical, indicates whether to compute the recency  
 #' separately for each event type (TRUE) or regardless of event types (FALSE, 
 #' default).
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
 #' \code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}}, 
@@ -2103,7 +2149,7 @@ rrankReceive <- function(consider_type = FALSE) {
 #' aomstats(sender_effects = effects, edgelist = history)
 #' 
 #' @export 
-recencySendSender <- function(consider_type = FALSE) {
+recencySendSender <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -2133,6 +2179,7 @@ recencySendSender <- function(consider_type = FALSE) {
 #' 'recencySendReceiver' effect is only defined for directed events. 
 #' 
 #' @inheritParams recencySendSender
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
 #' \code{\link{recencySendSender}}, \code{\link{recencyReceiveSender}}, 
@@ -2145,7 +2192,7 @@ recencySendSender <- function(consider_type = FALSE) {
 #' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export 
-recencySendReceiver <- function(consider_type = FALSE) {
+recencySendReceiver <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -2175,6 +2222,7 @@ recencySendReceiver <- function(consider_type = FALSE) {
 #' that the 'recencyReceiveSender' effect is only defined for directed events. 
 #' 
 #' @inheritParams recencySendSender
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
 #' \code{\link{recencySendSender}}, \code{\link{recencySendReceiver}}, 
@@ -2187,7 +2235,7 @@ recencySendReceiver <- function(consider_type = FALSE) {
 #' aomstats(sender_effects = effects, edgelist = history)
 #' 
 #' @export 
-recencyReceiveSender <- function(consider_type = FALSE) {
+recencyReceiveSender <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -2218,6 +2266,7 @@ recencyReceiveSender <- function(consider_type = FALSE) {
 #' events. 
 #' 
 #' @inheritParams recencySendSender
+#' @inheritParams effectsTie
 #' 
 #' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
 #' \code{\link{recencySendSender}}, \code{\link{recencyReceiveSender}}, 
@@ -2230,7 +2279,7 @@ recencyReceiveSender <- function(consider_type = FALSE) {
 #' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export 
-recencyReceiveReceiver <- function(consider_type = FALSE) {
+recencyReceiveReceiver <- function(consider_type = FALSE, param = NULL) {
 
     # Output
     if(!consider_type) {
@@ -2259,6 +2308,7 @@ recencyReceiveReceiver <- function(consider_type = FALSE) {
 #' that has past since the dyad was last active + 1).
 #' 
 #' @inheritParams recencySendSender
+#' @inheritParams effectsTie
 #' 
 #' @aliases recency
 #' 
@@ -2273,7 +2323,7 @@ recencyReceiveReceiver <- function(consider_type = FALSE) {
 #' aomstats(receiver_effects = effects, edgelist = history)
 #' 
 #' @export 
-recencyContinue <- function(consider_type = FALSE) {
+recencyContinue <- function(consider_type = FALSE, param = NULL) {
 	
 	# Output
     if(!consider_type) {

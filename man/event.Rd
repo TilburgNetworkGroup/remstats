@@ -4,13 +4,16 @@
 \alias{event}
 \title{event}
 \usage{
-event(x, variableName = NULL)
+event(x, variableName = NULL, param = NULL)
 }
 \arguments{
 \item{x}{vector with the event attribute}
 
 \item{variableName}{optionally, a string indicating the variable name, used 
 for the dimnames of the output statistics object}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for an `event` effect in the tie-oriented model.

@@ -4,7 +4,7 @@
 \alias{tie}
 \title{tie}
 \usage{
-tie(x, variableName = NULL, scaling = c("as.is", "std"))
+tie(x, variableName = NULL, scaling = c("as.is", "std"), param = NULL)
 }
 \arguments{
 \item{x}{a matrix with attribute information, rows and columns should refer 
@@ -16,6 +16,9 @@ for the dimnames of the output statistics object}
 \item{scaling}{the method for scaling the statistic. Default is to not scale 
 the statistic but keep it "as.is". Alternatively, standardization of the 
 statistic per time point can be requested with "std".}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a `tie` effect in the tie-oriented model or the 

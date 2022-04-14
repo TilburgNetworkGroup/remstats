@@ -4,7 +4,7 @@
 \alias{same}
 \title{same}
 \usage{
-same(variable, attributes = NULL)
+same(variable, attributes = NULL, param = NULL)
 }
 \arguments{
 \item{variable}{string with the name of the column in the 
@@ -13,6 +13,9 @@ same(variable, attributes = NULL)
 \item{attributes}{optionally, an object of class 
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes, see 
 'Details.'}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a `same` effect in the tie-oriented model or the 

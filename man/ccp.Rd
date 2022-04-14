@@ -4,10 +4,13 @@
 \alias{ccp}
 \title{ccp}
 \usage{
-ccp(duration)
+ccp(duration, param = NULL)
 }
 \arguments{
 \item{duration}{vector with event durations.}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a 'common current partner' effect for the 

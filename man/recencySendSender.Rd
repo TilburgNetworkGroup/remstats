@@ -4,12 +4,15 @@
 \alias{recencySendSender}
 \title{recencySendSender}
 \usage{
-recencySendSender(consider_type = FALSE)
+recencySendSender(consider_type = FALSE, param = NULL)
 }
 \arguments{
 \item{consider_type}{logical, indicates whether to compute the recency
 separately for each event type (TRUE) or regardless of event types (FALSE, 
 default).}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a recency send of sender effect in the 

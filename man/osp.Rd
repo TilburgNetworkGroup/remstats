@@ -4,7 +4,7 @@
 \alias{osp}
 \title{osp}
 \usage{
-osp(scaling = c("as.is", "std"), consider_type = FALSE)
+osp(scaling = c("as.is", "std"), consider_type = FALSE, param = NULL)
 }
 \arguments{
 \item{scaling}{the method for scaling the triad statistic. Default is to not 
@@ -15,6 +15,9 @@ with 'std'.}
 \item{consider_type}{logical, indicates whether to count the shared partners 
 separately for each event type (TRUE) or sum across different event 
 types (FALSE, default).}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for an outgoing shared partners effect in the 

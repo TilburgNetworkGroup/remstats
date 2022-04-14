@@ -4,7 +4,7 @@
 \alias{receive}
 \title{receive}
 \usage{
-receive(variable, attributes = NULL, scaling = c("as.is", "std"))
+receive(variable, attributes = NULL, scaling = c("as.is", "std"), param = NULL)
 }
 \arguments{
 \item{variable}{string with the name of the column in the 
@@ -17,6 +17,9 @@ receive(variable, attributes = NULL, scaling = c("as.is", "std"))
 \item{scaling}{the method for scaling the statistic. Default is to not scale 
 the statistic but keep it "as.is". Alternatively, standardization of the 
 statistic per time point can be requested with "std".}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a `receive` effect in the tie-oriented model or 

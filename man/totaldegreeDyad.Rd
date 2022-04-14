@@ -4,7 +4,7 @@
 \alias{totaldegreeDyad}
 \title{totaldegreeDyad}
 \usage{
-totaldegreeDyad(scaling = c("as.is", "prop", "std"))
+totaldegreeDyad(scaling = c("as.is", "prop", "std"), param = NULL)
 }
 \arguments{
 \item{scaling}{the method for scaling the degree statistic. Default is 
@@ -12,6 +12,9 @@ to not scale the statistic but keep the raw counts 'as.is'. Alternatively,
 scaling of the raw degree counts by two times the number of past events at 
 time t can be requested with 'prop' or standardization of the raw degree 
 counts per time point can be requested with 'std'.}
+
+\item{param}{numeric value or function with time parameter to be used for 
+generation of relational event histories with \code{\link{remulate}}.}
 }
 \description{
 Specifies the statistic for a `totaldegreeDyad` effect in the tie-oriented 
