@@ -11,7 +11,7 @@ test_that("adjacency matrix", {
 	# Start and stop
 	history$weight <- 1
 	out <- tomstats(effects = ~ inertia(), edgelist = history, 
-		start = 5, stop = 10)
+		subset = 5:10)
 	adjmat <- out$adjmat
 	expect_equal(rowSums(adjmat), 4:9)
 	
@@ -38,7 +38,8 @@ test_that("adjacency matrix", {
 	
 	# Event weights
 	history$weight <- rnorm(nrow(history))
-	out <- tomstats(effects = ~ inertia(), edgelist = history, start = 2)
+	out <- tomstats(effects = ~ inertia(), edgelist = history, 
+		subset = 2:nrow(history))
 	adjmat <- out$adjmat
 	expect_equal(rowSums(adjmat), cumsum(history$weight[-nrow(history)]))
 })

@@ -11,13 +11,12 @@ aomstats(
   attributes = NULL,
   actors = NULL,
   types = NULL,
+  subset = NULL,
   ordinal = FALSE,
   origin = NULL,
   omit_dyad = NULL,
   memory = c("full", "window", "Brandes"),
   memory_value = Inf,
-  start = 1,
-  stop = Inf,
   adjmat = NULL
 )
 }
@@ -45,6 +44,9 @@ Details).}
 
 \item{types}{vector of event types that may occur in the network. If \code{NULL}, type names will be taken from the input edgelist.}
 
+\item{subset}{an optional vector specifying a subset of events for which the 
+statistics have to be computed.}
+
 \item{ordinal}{logical value indicating whether only the order of events matters in the model (\code{TRUE}) or also the waiting time must be considered in the model (\code{FALSE}).}
 
 \item{origin}{time point since when events could occur (default is \code{NULL}). If it is defined, it must have the same class of the time column in the input edgelist.}
@@ -56,14 +58,8 @@ Details).}
 \item{memory_value}{Numeric value indicating the memory parameter. See 
 `Details'.}
 
-\item{start}{integer value, refers to the index in the edgelist of the first 
-event for which statistics are requested (see Details)}
-
-\item{stop}{integer value, refers to the index in the edgelist of the last 
-event for which statistics are requested (see Details)}
-
-\item{adjmat}{optionally, an adjacency matrix with on the rows the 
-timepoints and on the columns the riskset entries}
+\item{adjmat}{optionally, a previously computed adjacency matrix with on the 
+rows the timepoints and on the columns the riskset entries}
 }
 \value{
 \code{edgelist } Dataframe with the edgelist

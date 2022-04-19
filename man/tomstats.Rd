@@ -11,13 +11,12 @@ tomstats(
   actors = NULL,
   types = NULL,
   directed = TRUE,
+  subset = NULL,
   ordinal = FALSE,
   origin = NULL,
   omit_dyad = NULL,
   memory = c("full", "window", "Brandes"),
   memory_value = Inf,
-  start = 1,
-  stop = Inf,
   adjmat = NULL,
   output = c("all", "stats_only")
 )
@@ -43,6 +42,9 @@ Details).}
 
 \item{directed}{logical value indicating whether dyadic events are directed (\code{TRUE}) or undirected (\code{FALSE}).}
 
+\item{subset}{an optional vector specifying a subset of events for which the 
+statistics have to be computed.}
+
 \item{ordinal}{logical value indicating whether only the order of events matters in the model (\code{TRUE}) or also the waiting time must be considered in the model (\code{FALSE}).}
 
 \item{origin}{time point since when events could occur (default is \code{NULL}). If it is defined, it must have the same class of the time column in the input edgelist.}
@@ -53,12 +55,6 @@ Details).}
 
 \item{memory_value}{Numeric value indicating the memory parameter. See 
 `Details'.}
-
-\item{start}{integer value, refers to the index in the edgelist of the first 
-event for which statistics are requested (see 'Details')}
-
-\item{stop}{integer value, refers to the index in the edgelist of the last 
-event for which statistics are requested (see 'Details')}
 
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the 
 rows the timepoints and on the columns the riskset entries}
@@ -92,25 +88,22 @@ supplied to the \code{effects} argument in the form \code{~ effects}. The
 terms are separated by + operators. For example: 
 \code{effects = ~ inertia() + otp()}. Interactions between two effects 
 can be included with * or : operators. For example: 
-\code{effects = ~ inertia():otp()}. A list of available effects and their 
-corresponding statistics follows at the bottom. 
+\code{effects = ~ inertia():otp()}. See ?effectsTie for an overview of 
+the available effects in the tie-oriented model. 
 
 For the computation of the \emph{exogenous} statistics an attributes object 
 with the exogenous covariate information has to be supplied to the 
 \code{attributes} argument in either \code{tomstats()} or in the separate 
 effect functions supplied to the \code{effects} argument (e.g., see 
 \code{\link{send}}). This \code{attributes} object should be constructed as 
-follows: A dataframe with rows refering to the attribute value of actor 
+follows: A data.frame with rows referring to the attribute value of actor 
 \emph{i} at timepoint \emph{t}. An `id` column is required that contains the 
 actor id (corresponding to the actor id's in the edgelist). A `time` column 
 is required that contains the time when attributes change (set to zero if 
 none of the attributes vary over time). Subsequent columns contain the 
 attributes that are called in the specifications of exogenous statistics 
 (column name corresponding to the string supplied to the \code{variable} 
-argument in the effect function). Note that the procedure for the exogenous 
-effects `tie' and `event' deviates from this, here the exogenous covariate 
-information has to be specified in a different way, see \code{\link{tie}} 
-and \code{\link{event}}. 
+argument in the effect function). 
 
 The majority of the statistics can be scaled in some way, see 
 the documentation of the \code{scaling} argument in the separate effect 
@@ -139,81 +132,27 @@ time between $t$ and the past event. This weight is determined based on an
 exponential decay function with half-life parameter `memory_value` (see 
 Brandes et al., 2009). 
 
-Note that if the  edgelist contains a column that is named ``weight'', it is 
-assumed that these affect the endogenous statistics. These settings are 
-defined globally in the \code{tomstats} function and affect the computation 
-of all endogenous statistics with the following exceptions (that follow 
-logically from their definition). Since spUnique is a count of the number of 
-unique interaction partners, and the recency statistics (recencyContinue, 
-recencySendSender, recencySendReceiver, recencyReceiveSender, 
-recencyReceiveReceiver) depend on the time past, the computation of these 
-statistics do not depend on event weights. Since the baseline statistic is 
-always one, the FEtype statistic is binary and does not depend on past 
-events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and 
-PSAB-AY) are binary and only dependent on the previous event, these 
-statistics are not affected by the memory settings or the supplied event 
-weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now) 
-only available with the "full" memory, and are, per definition, not affected 
-by supplied event weights.  
-
-Optionally, statistics can be computed for a slice of the edgelist - but 
-based on the entire history. This is achieved by setting the start and 
-stop values equal to the index of the first and last event for which 
-statistics are requested. For example, start = 5 and stop = 5 computes the 
-statistics for only the 5th event in the edgelist, based on the history that 
-consists of events 1-4. 
+Note that if the edgelist contains a column that is named ``weight'', it is 
+assumed that these affect the endogenous statistics. These weights affect 
+the computation  of all endogenous statistics with the following exceptions 
+(that follow  logically from their definition). Since spUnique is a count of 
+the number of unique interaction partners, and the recency statistics 
+(recencyContinue, recencySendSender, recencySendReceiver, 
+recencyReceiveSender, recencyReceiveReceiver) depend on the time past, the 
+computation of these statistics do not depend on event weights. Since the 
+baseline statistic is always one, the FEtype statistic is binary and does 
+not depend on past events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, 
+PSAB-XB, PSAB-XY and PSAB-AY) are binary and only dependent on the previous 
+event, these statistics are not affected by the memory settings or the 
+supplied event weights. The recency-rank statistics (rrankSend, 
+rrankReceive) are (for now) only available with the "full" memory, and are, 
+per definition, not affected by supplied event weights.   
 
 Optionally, a previously computed adjacency matrix can be supplied. Note 
 that the endogenous statistics will be computed based on this adjacency 
 matrix. Hence, supplying a previously computed adjacency matrix can reduce 
 computation time but the user should be absolutely sure the adjacency matrix 
-is accurate. 
-
-Exogenous statistics:
-\itemize{
- \item \code{\link{send}()}
- \item \code{\link{receive}()}
- \item \code{\link{tie}()}
- \item \code{\link{same}()}
- \item \code{\link{difference}()}
- \item \code{\link{average}()}
- \item \code{\link{minimum}()}
- \item \code{\link{maximum}()}
- \item \code{\link{event}()}
-}
-
-Endogenous statistics:
-\itemize{
- \item \code{\link{baseline}()}
- \item \code{\link{FEtype}()}
- \item \code{\link{indegreeSender}()}
- \item \code{\link{indegreeReceiver}()}
- \item \code{\link{outdegreeSender}()}
- \item \code{\link{outdegreeReceiver}()}
- \item \code{\link{totaldegreeSender}()}
- \item \code{\link{totaldegreeReceiver}()}
- \item \code{\link{inertia}()}
- \item \code{\link{reciprocity}()}
- \item \code{\link{otp}()}
- \item \code{\link{itp}()}
- \item \code{\link{osp}()}
- \item \code{\link{isp}()}
- \item \code{\link{sp}()}
- \item \code{\link{spUnique}()}
- \item \code{\link{psABBA}()}
- \item \code{\link{psABBY}()}
- \item \code{\link{psABXA}()}
- \item \code{\link{psABXB}()}
- \item \code{\link{psABXY}()}
- \item \code{\link{psABAY}()}
- \item \code{\link{rrankSend}()}
- \item \code{\link{rrankReceive}()}
- \item \code{\link{recencySendSender}()}
- \item \code{\link{recencySendReceiver}()}
- \item \code{\link{recencyReceiveSender}()}
- \item \code{\link{recencyReceiveReceiver}()}
- \item \code{\link{recencyContinue}()}
-}
+is accurate.
 }
 \examples{
 library(remstats)

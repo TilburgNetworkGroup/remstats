@@ -10,25 +10,22 @@
 #' model) argument in the form \code{~ effects}. The terms are separated by + 
 #' operators. For example: \code{effects = ~ inertia() + otp()}. Interactions 
 #' between two effects can be included with * or : operators. For example: 
-#' \code{effects = ~ inertia():otp()}. A list of available effects and their 
-#' corresponding statistics follows at the bottom. 
+#' \code{effects = ~ inertia():otp()}. See ?effectsTie for an overview of 
+#' the available effects in the tie-oriented model.
 #' 
 #' For the computation of the \emph{exogenous} statistics an attributes object 
 #' with the exogenous covariate information has to be supplied to the 
 #' \code{attributes} argument in either \code{remstats()} or in the separate 
 #' effect functions supplied to the \code{..._effects} arguments (e.g., see 
 #' \code{\link{send}}). This \code{attributes} object should be constructed as 
-#' follows: A dataframe with rows refering to the attribute value of actor 
+#' follows: A data.frame with rows referring to the attribute value of actor 
 #' \emph{i} at timepoint \emph{t}. An `id` column is required that contains the 
 #' actor id (corresponding to the actor id's in the edgelist). A `time` column 
 #' is required that contains the time when attributes change (set to zero if 
 #' none of the attributes vary over time). Subsequent columns contain the 
 #' attributes that are called in the specifications of exogenous statistics 
 #' (column name corresponding to the string supplied to the \code{variable} 
-#' argument in the effect function). Note that the procedure for the exogenous 
-#' effects `tie' and `event' deviates from this, here the exogenous covariate 
-#' information has to be specified in a different way, see \code{\link{tie}} 
-#' and \code{\link{event}}. 
+#' argument in the effect function). 
 #' 
 #' The majority of the statistics can be scaled in some way, see 
 #' the documentation of the \code{scaling} argument in the separate effect 
@@ -59,29 +56,21 @@
 #' exponential decay function with half-life parameter `memory_value` (see 
 #' Brandes et al., 2009). 
 #' 
-#' Note that if the  edgelist contains a column that is named ``weight'', it is 
-#' assumed that these affect the endogenous statistics. These settings are 
-#' defined globally in the \code{remstats} function and affect the computation 
-#' of all endogenous statistics with the following exceptions (that follow 
-#' logically from their definition). Since spUnique is a count of the number of 
-#' unique interaction partners, and the recency statistics (recencyContinue, 
-#' recencySendSender, recencySendReceiver, recencyReceiveSender, 
-#' recencyReceiveReceiver) depend on the time past, the computation of these 
-#' statistics do not depend on event weights. Since the baseline statistic is 
-#' always one, the FEtype statistic is binary and does not depend on past 
-#' events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and 
-#' PSAB-AY) are binary and only dependent on the previous event, these 
-#' statistics are not affected by the memory settings or the supplied event 
-#' weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now) 
-#' only available with the "full" memory, and are, per definition, not affected 
-#' by supplied event weights.  
-#' 
-#' Optionally, statistics can be computed for a slice of the edgelist - but 
-#' based on the entire history. This is achieved by setting the start and 
-#' stop values equal to the index of the first and last event for which 
-#' statistics are requested. For example, start = 5 and stop = 5 computes the 
-#' statistics for only the 5th event in the edgelist, based on the history that 
-#' consists of events 1-4. 
+#' Note that if the edgelist contains a column that is named ``weight'', it is 
+#' assumed that these affect the endogenous statistics. These weights affect 
+#' the computation of all endogenous statistics with the following exceptions 
+#' (that follow logically from their definition). Since spUnique is a count of 
+#' the number of unique interaction partners, and the recency statistics 
+#' (recencyContinue, recencySendSender, recencySendReceiver, 
+#' recencyReceiveSender, recencyReceiveReceiver) depend on the time past, the 
+#' computation of these statistics do not depend on event weights. Since the 
+#' baseline statistic is always one, the FEtype statistic is binary and does 
+#' not depend on past events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, 
+#' PSAB-XB, PSAB-XY and PSAB-AY) are binary and only dependent on the previous 
+#' event, these statistics are not affected by the memory settings or the 
+#' supplied event weights. The recency-rank statistics (rrankSend, 
+#' rrankReceive) are (for now) only available with the "full" memory, and are, 
+#' per definition, not affected by supplied event weights.  
 #' 
 #' Optionally, a previously computed adjacency matrix can be supplied. Note 
 #' that the endogenous statistics will be computed based on this adjacency 
@@ -89,58 +78,11 @@
 #' computation time but the user should be absolutely sure the adjacency matrix 
 #' is accurate. 
 #' 
-#' Exogenous statistics:
-#' \itemize{
-#'  \item \code{\link{send}()}
-#'  \item \code{\link{receive}()}
-#'  \item \code{\link{tie}()}
-#'  \item \code{\link{same}()}
-#'  \item \code{\link{difference}()}
-#'  \item \code{\link{average}()}
-#'  \item \code{\link{minimum}()}
-#'  \item \code{\link{maximum}()}
-#'  \item \code{\link{event}()}
-#' }
-#' 
-#' Endogenous statistics:
-#' \itemize{
-#'  \item \code{\link{baseline}()}
-#'  \item \code{\link{FEtype}()}
-#'  \item \code{\link{indegreeSender}()}
-#'  \item \code{\link{indegreeReceiver}()}
-#'  \item \code{\link{outdegreeSender}()}
-#'  \item \code{\link{outdegreeReceiver}()}
-#'  \item \code{\link{totaldegreeSender}()}
-#'  \item \code{\link{totaldegreeReceiver}()}
-#'  \item \code{\link{inertia}()}
-#'  \item \code{\link{reciprocity}()}
-#'  \item \code{\link{otp}()}
-#'  \item \code{\link{itp}()}
-#'  \item \code{\link{osp}()}
-#'  \item \code{\link{isp}()}
-#'  \item \code{\link{sp}()}
-#'  \item \code{\link{spUnique}()}
-#'  \item \code{\link{psABBA}()}
-#'  \item \code{\link{psABBY}()}
-#'  \item \code{\link{psABXA}()}
-#'  \item \code{\link{psABXB}()}
-#'  \item \code{\link{psABXY}()}
-#'  \item \code{\link{psABAY}()}
-#'  \item \code{\link{rrankSend}()}
-#'  \item \code{\link{rrankReceive}()}
-#'  \item \code{\link{recencySendSender}()}
-#'  \item \code{\link{recencySendReceiver}()}
-#'  \item \code{\link{recencyReceiveSender}()}
-#'  \item \code{\link{recencyReceiveReceiver}()}
-#'  \item \code{\link{recencyContinue}()}
-#' }
-#' 
 #' @inheritParams tomstats
 #' @inheritParams aomstats
 #' @param tie_effects an object of class \code{"\link[stats]{formula}"} (or one 
 #' that can be coerced to that class): a symbolic description of the effects in 
-#' the tie-oriented model for which statistics are computed, see 'Details' for 
-#' the available effects and their corresponding statistics
+#' the tie-oriented model for which statistics are computed, see 'Details'.
 #' 
 #' @return \code{statistics } In case of the tie-oriented model, an array with 
 #' the computed statistics, where rows refer to time points, columns refer to 
@@ -178,9 +120,9 @@
 #' @export
 remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,   
     receiver_effects = NULL, attributes = NULL, actors = NULL, types = NULL, 
-    directed = TRUE, ordinal = FALSE, origin = NULL, omit_dyad = NULL, 
-    memory = c("full", "window", "Brandes"), memory_value = Inf, start = 1, 
-    stop = Inf, adjmat = NULL, output = c("all", "stats_only")) {
+    directed = TRUE, subset = NULL, ordinal = FALSE, origin = NULL, 
+    omit_dyad = NULL, memory = c("full", "window", "Brandes"), 
+    memory_value = Inf, adjmat = NULL, output = c("all", "stats_only")) {
 
     if(!is.null(tie_effects) & 
         (!is.null(sender_effects) | !is.null(receiver_effects))) {
@@ -199,20 +141,18 @@ remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,
     if(!is.null(tie_effects)) {
         out <- tomstats(effects = tie_effects, edgelist = edgelist, 
             attributes = attributes, actors = actors, types = types, 
-            directed = directed, ordinal = ordinal, origin = origin, 
-            omit_dyad = omit_dyad, memory = memory, 
-            memory_value = memory_value, start = start, 
-            stop = stop, adjmat = adjmat, output = output)
+            directed = directed, subset = subset, ordinal = ordinal, 
+            origin = origin, omit_dyad = omit_dyad, memory = memory, 
+            memory_value = memory_value, adjmat = adjmat, output = output)
     } 
 
     if(!is.null(sender_effects) | !is.null(receiver_effects)) {
         out <- aomstats(edgelist = edgelist, sender_effects = sender_effects, 
             receiver_effects = receiver_effects,
             attributes = attributes, actors = actors, types = types, 
-            ordinal = ordinal, origin = origin, 
+            subset = subset, ordinal = ordinal, origin = origin, 
             omit_dyad = omit_dyad, memory = memory, 
-            memory_value = memory_value, start = start, 
-            stop = stop, adjmat = adjmat)
+            memory_value = memory_value, adjmat = adjmat)
     }
 
     out

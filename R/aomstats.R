@@ -127,19 +127,8 @@
 #' (or one that can be coerced to that class): a symbolic description of the 
 #' effects in the receiver choice step of model for which statistics are 
 #' computed, see `Details'
-#' @param attributes optionally, an object of class 
-#' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
-#' Details).
 #' @inheritParams remify::reh
-#' @param memory The memory to be used. See `Details'. 
-#' @param memory_value Numeric value indicating the memory parameter. See 
-#' `Details'.
-#' @param start integer value, refers to the index in the edgelist of the first 
-#' event for which statistics are requested (see Details)
-#' @param stop integer value, refers to the index in the edgelist of the last 
-#' event for which statistics are requested (see Details)
-#' @param adjmat optionally, an adjacency matrix with on the rows the 
-#' timepoints and on the columns the riskset entries
+#' @inheritParams tomstats
 #' 
 #' @return \code{edgelist } Dataframe with the edgelist
 #' @return \code{statistics  } List with in the first element the statistics 
@@ -162,9 +151,9 @@
 #' 
 #' @export 
 aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,  
-    attributes = NULL, actors = NULL, types = NULL, ordinal = FALSE, 
-    origin = NULL, omit_dyad = NULL, memory = c("full", "window", "Brandes"), 
-    memory_value = Inf, start = 1, stop = Inf, adjmat = NULL) {
+    attributes = NULL, actors = NULL, types = NULL, subset = NULL, 
+    ordinal = FALSE, origin = NULL, omit_dyad = NULL, 
+    memory = c("full", "window", "Brandes"), memory_value = Inf, adjmat = NULL) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
@@ -193,11 +182,23 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
     }
     
     # Convert R start and stop indices to C++ (indexing starts at 0)
-    if(start < 1) {stop("start should be set to 1 or larger.")}
-    if(stop < start) {stop("stop cannot be smaller than start.")}
+    if(is.null(subset)) {
+        start <- 1
+        stop <- nrow(edgelist.reh)
+    } else if(is.character(subset)) {
+        subset <- as.numeric(subset)
+    } else if(is.numeric(subset)) {
+        start <- min(subset)
+        stop <- max(subset)
+    } else if(is.logical(subset)) {
+        start <- min(which(subset))
+        stop <- max(which(subset))
+    }
+    if(start < 1) {stop("subset cannot start before the first event")}
+    if(stop < start) {stop("subset cannot end before its start")}
     start <- start - 1
     if(stop == Inf) {stop <- nrow(edgelist.reh)}
-    stop <- stop - 1  
+    stop <- stop - 1   
 
     # Riskset
     prepR <- getRisksetMatrix(actors$actorID, types$typeID, nrow(actors), 
