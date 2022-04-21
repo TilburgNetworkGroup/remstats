@@ -5,6 +5,7 @@ test_that("average", {
 	
 	effects <- ~ average("extraversion") 
 	
+	skip("average not yet implemented in new version")
 	tomres <- tomstats(effects, edgelist = history, attributes = info)
 	aomres <- aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 	
@@ -18,6 +19,7 @@ test_that("same", {
 	
 	effects <- ~ same("age") 
 	
+	skip("same not yet implemented in new version")
 	tomres <- tomstats(effects, edgelist = history, attributes = info)
 	aomres <- aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 	
@@ -36,6 +38,7 @@ test_that("difference", {
 	tomres <- tomstats(effects, edgelist = history, attributes = info)
 	aomres <- aomstats(receiver_effects = effects, edgelist = history, attributes = info)
 	
+	skip("difference not yet implemented in new version")
 	expect_true(all(tomres$statistics[,,2] %in% 
 			apply(expand.grid(info$extraversion, info$extraversion), 1, function(x) abs(diff(x)))))
 	expect_true(all(aomres$statistics$receiver_stats %in% 
@@ -44,6 +47,7 @@ test_that("difference", {
 
 test_that("maximum", {
 	
+	skip("maximum not yet implemented in new version")
 	effects <- ~ maximum("extraversion") 
 	tomres <- tomstats(effects, edgelist = history, attributes = info)
 	
@@ -53,6 +57,7 @@ test_that("maximum", {
 
 test_that("minimum", {
 	
+	skip("minimum not yet implemented in new version")
 	effects <- ~ minimum("extraversion") 
 	tomres <- tomstats(effects, edgelist = history, attributes = info)
 	

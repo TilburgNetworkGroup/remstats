@@ -16,7 +16,7 @@ tomstats(
   origin = NULL,
   omit_dyad = NULL,
   memory = c("full", "window", "Brandes"),
-  memory_value = Inf,
+  memory_param = Inf,
   adjmat = NULL,
   output = c("all", "stats_only")
 )
@@ -53,11 +53,8 @@ statistics have to be computed.}
 
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. See 
+\item{memory_param}{Numeric value indicating the memory parameter. See 
 `Details'.}
-
-\item{adjmat}{optionally, a previously computed adjacency matrix with on the 
-rows the timepoints and on the columns the riskset entries}
 
 \item{output}{indicates which output objects need to be provided, i.e., 
 either only the statistics matrix ("stats_only", faster!) or all the below 
@@ -72,11 +69,6 @@ potential edges) in the risk set and slices refer to statistics
 used to estimate a relational event model with \code{"\link[relevent]{rem}"}
 
 \code{edgelist } Dataframe with the edgelist
-
-\code{adjmat } Matrix with the adjacency matrix, rows refer to 
-timepoints and columns to riskset entries. At timepoint t, it gives the 
-cumulative weight until t-1 (i.e., the events that occurred before time 
-poin t).
 }
 \description{
 Computes statistics for modeling relational event history data with Butts' 
@@ -123,13 +115,13 @@ point $t$ the entire event history before $t$ is included in the computation
 of the statistics. Alternatively, when `memory` is set to `"window"`, only 
 the past event history within a given time interval is considered (see 
 Mulders & Leenders, 2019). This length of this time interval is set by the 
-`memory_value` parameter. For example, when `memory_value = 100` and `memory 
+`memory_param` parameter. For example, when `memory_param = 100` and `memory 
 = "window"`, at time point $t$ only the past events that happened at most 
 100 time units ago are included in the computation of the statistics. A 
 third option is to set `memory` to `Brandes`. In this case, the weight of 
 the past event in the computation of the statistics depend on the elapsed 
 time between $t$ and the past event. This weight is determined based on an 
-exponential decay function with half-life parameter `memory_value` (see 
+exponential decay function with half-life parameter `memory_param` (see 
 Brandes et al., 2009). 
 
 Note that if the edgelist contains a column that is named ``weight'', it is 

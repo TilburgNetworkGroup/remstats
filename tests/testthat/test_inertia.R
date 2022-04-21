@@ -14,6 +14,7 @@ test_that("inertia", {
 		aomres$statistics$receiver_stats[i,,] %in% tomres$statistics[i,,2]
 	})))
 	
+	skip("scaling and considerType not yet implemented in new version")
 	effects <- ~ inertia(scaling = "prop") + inertia() + outdegreeSender()
 	receiver_effects <- ~ inertia(scaling = "prop") + inertia() 
 	sender_effects <- ~ outdegreeSender()

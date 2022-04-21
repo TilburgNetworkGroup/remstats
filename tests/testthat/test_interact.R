@@ -2,6 +2,7 @@ library(remify)
 library(remstats)
 
 test_that("interaction effects", {
+	skip("interaction effects not yet implemented in new version")
 	form <- ~ inertia():reciprocity() + FEtype():inertia()
 	history$type <- history$setting
 	out <- tomstats(form, edgelist = history[,-5])

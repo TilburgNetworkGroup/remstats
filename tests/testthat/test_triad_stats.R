@@ -22,6 +22,7 @@ test_that("otp and itp", {
 		aomres$statistics$receiver_stats[i,,2] %in% c(tomres$statistics[i,,3], 0)
 	})))
 	
+	skip("scaling and consider type not yet implemented in new version")
 	effects <- ~ otp(scaling = "std") + itp(scaling = "std")
 	tomres <- tomstats(effects, edgelist = history)
 	aomres <- aomstats(receiver_effects = effects, edgelist = history)
@@ -66,6 +67,7 @@ test_that("osp and isp", {
 		aomres$statistics$receiver_stats[i,,2] %in% c(tomres$statistics[i,,3], 0)
 	})))
 	
+	skip("scaling and consider type not yet implemented in new version")
 	effects <- ~ osp(scaling = "std") + isp(scaling = "std")
 	tomres <- tomstats(effects, edgelist = history)
 	aomres <- aomstats(receiver_effects = effects, edgelist = history)
@@ -90,6 +92,7 @@ test_that("osp and isp", {
 })
 
 test_that("sp and spUnique", {
+	skip("statistics not yet implemented in new version")
 	data(history)
 	history$weight <- 1
 	

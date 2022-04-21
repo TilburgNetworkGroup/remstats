@@ -5,6 +5,7 @@ test_that("send", {
 	data(history)
 	data(info)
 	
+	skip("send not yet implemented in new version")
 	effects <- ~ send("extraversion")
 	tomres <- tomstats(effects, edgelist = history, attributes = info)
 	aomres <- aomstats(sender_effects = effects, edgelist = history, attributes = info)
@@ -31,6 +32,7 @@ test_that("receive", {
 	data(history)
 	data(info)
 	
+	skip("receive not yet implemented in new version")
 	effects <- ~ receive("extraversion")
 	tomres <- tomstats(effects, edgelist = history, attributes = info)
 	aomres <- aomstats(receiver_effects = effects, edgelist = history, attributes = info)
