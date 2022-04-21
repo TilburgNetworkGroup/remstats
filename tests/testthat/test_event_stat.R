@@ -3,7 +3,7 @@ library(remstats)
 
 # Test
 test_that("event", {
-	skip("skip")
+	skip("event not yet implemented in new version")
 	
 	data(history)
 	work <- ifelse(history$setting == "work", 1, 0)

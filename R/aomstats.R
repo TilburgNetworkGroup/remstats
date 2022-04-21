@@ -201,8 +201,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
     stop <- stop - 1   
 
     # Riskset
-    prepR <- getRisksetMatrix(actors$actorID, types$typeID, nrow(actors), 
-        nrow(types), TRUE)
+    prepR <- getRisksetMatrix(actors$actorID, types$typeID, TRUE)
 
     # Initialize stats
     rateStats <- NULL
@@ -258,7 +257,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the adjacency matrix 
         if(any(sender_effectsN %in% c(3,4,5))) {
             if(is.null(adjmat)) {
-                adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
+                adjmat <- compute_adjmatRC(edgelist.reh, nrow(actors), prep$D, 
                 TRUE, memory, memory_value, start, stop)
             }
         } else {
@@ -357,7 +356,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
         # Compute the adjacency matrix 
         if(any(receiver_effectsN %in% 6:14)) {
             if(is.null(adjmat)) {
-                adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
+                adjmat <- compute_adjmatRC(edgelist.reh, nrow(actors), prep$D, 
                     TRUE, memory, memory_value, start, stop)
             }
         } else {

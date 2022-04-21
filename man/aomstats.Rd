@@ -54,12 +54,6 @@ statistics have to be computed.}
 \item{omit_dyad}{list of lists. Each list must have two objects: a first object named `time`, that is a vector of two values defining the first and last time point of the time window where to apply the change to the risk set and a second object, named `dyad`, which is a \code{"\link[base]{data.frame}"} where dyads to be removed are supplied in the format \code{actor1,actor2,type} (by row).}
 
 \item{memory}{The memory to be used. See `Details'.}
-
-\item{memory_value}{Numeric value indicating the memory parameter. See 
-`Details'.}
-
-\item{adjmat}{optionally, a previously computed adjacency matrix with on the 
-rows the timepoints and on the columns the riskset entries}
 }
 \value{
 \code{edgelist } Dataframe with the edgelist

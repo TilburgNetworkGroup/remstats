@@ -3,6 +3,7 @@ library(remstats)
 
 test_that("FEtype effect in remstats", {
 	
+	skip("FEtype not yet implemented in new version")
 	colnames(history)[4] <- "type"
 	tomres <- tomstats(~ FEtype(), edgelist = history)
 	stats <- tomres$statistics

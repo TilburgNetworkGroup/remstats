@@ -2,6 +2,7 @@ library(remify)
 library(remstats)
 
 test_that("output tomstats", {
+	skip("interaction effects not yet implemented in new version")
 	out <- tomstats(~ send("extraversion"):inertia(),
 		edgelist = history[,c(1:3)], attributes = info)
 	
@@ -38,6 +39,7 @@ test_that("output aomstats", {
 
 test_that("output remstats", {
 	
+	skip("interaction effects not yet implemented in new version")
 	# Tie-oriented model
 	out <- remstats(tie_effects = ~ send("extraversion"):inertia(),
 		edgelist = history[,c(1:3)], attributes = info)

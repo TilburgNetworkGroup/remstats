@@ -44,13 +44,13 @@
 #' of the statistics. Alternatively, when `memory` is set to `"window"`, only 
 #' the past event history within a given time interval is considered (see 
 #' Mulders & Leenders, 2019). This length of this time interval is set by the 
-#' `memory_value` parameter. For example, when `memory_value = 100` and `memory 
+#' `memory_param` parameter. For example, when `memory_param = 100` and `memory 
 #' = "window"`, at time point $t$ only the past events that happened at most 
 #' 100 time units ago are included in the computation of the statistics. A 
 #' third option is to set `memory` to `Brandes`. In this case, the weight of 
 #' the past event in the computation of the statistics depend on the elapsed 
 #' time between $t$ and the past event. This weight is determined based on an 
-#' exponential decay function with half-life parameter `memory_value` (see 
+#' exponential decay function with half-life parameter `memory_param` (see 
 #' Brandes et al., 2009). 
 #' 
 #' Note that if the edgelist contains a column that is named ``weight'', it is 
@@ -88,12 +88,10 @@
 #' Details).
 #' @inheritParams remify::reh
 #' @param memory The memory to be used. See `Details'. 
-#' @param memory_value Numeric value indicating the memory parameter. See 
+#' @param memory_param Numeric value indicating the memory parameter. See 
 #' `Details'.
 #' @param subset an optional vector specifying a subset of events for which the 
 #' statistics have to be computed. 
-#' @param adjmat optionally, a previously computed adjacency matrix with on the 
-#' rows the timepoints and on the columns the riskset entries 
 #' @param output indicates which output objects need to be provided, i.e., 
 #' either only the statistics matrix ("stats_only", faster!) or all the below 
 #' defined information objects ("all", default). 
@@ -104,10 +102,6 @@
 #' @return \code{evls } Matrix with the edgelist, processed such that it can be 
 #' used to estimate a relational event model with \code{"\link[relevent]{rem}"} 
 #' @return \code{edgelist } Dataframe with the edgelist
-#' @return \code{adjmat } Matrix with the adjacency matrix, rows refer to 
-#' timepoints and columns to riskset entries. At timepoint t, it gives the 
-#' cumulative weight until t-1 (i.e., the events that occurred before time 
-#' poin t). 
 #' 
 #' @examples 
 #' library(remstats)
@@ -122,7 +116,7 @@
 tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL, 
     types = NULL, directed = TRUE, subset = NULL, ordinal = FALSE, 
     origin = NULL, omit_dyad = NULL, memory = c("full", "window", "Brandes"), 
-    memory_value = Inf, adjmat = NULL, output = c("all", "stats_only")) {
+    memory_param = Inf, adjmat = NULL, output = c("all", "stats_only")) {
 
     # Prepare the edgelist 
     if(!("reh" %in% class(edgelist))) {
@@ -144,8 +138,8 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     # Match memory
     memory <- match.arg(memory)
     memory <- match(memory, c("full", "window", "Brandes"))
-    if(memory %in% c(2,3) & memory_value == Inf) {
-        stop("A memory_value should be supplied when memory is `window' or `Brandes'.")
+    if(memory %in% c(2,3) & memory_param == Inf) {
+        stop("A memory_param should be supplied when memory is `window' or `Brandes'.")
     }
     
     # Convert R start and stop indices to C++ (indexing starts at 0)
@@ -180,15 +174,15 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         "outdegreeSender", "outdegreeReceiver", #14 #15
         "totaldegreeSender", "totaldegreeReceiver", #16, #17
         "otp", "itp", "osp", "isp", #18 #19 #20 #21
-        "sp", "spUnique", #22, #23
-        "psABBA", "psABBY", "psABXA",  #24 #25 #26 
-        "psABXB", "psABXY", "psABAY",  #27 #28 #29
-        "rrankSend", "rrankReceive",  #30 #31
-        "FEtype", "event", #32 #33 
-        "recencyContinue", #34
-        "recencySendSender","recencySendReceiver", #35 #36
-        "recencyReceiveSender","recencyReceiveReceiver", #37 #38
-        "tie",  #39
+        "psABBA", "psABBY", "psABXA",  #22 #23 #24 
+        "psABXB", "psABXY", "psABAY",  #25 #26 #27
+        "recencyContinue", #28
+        "recencySendSender","recencySendReceiver", #29 #30
+        "recencyReceiveSender","recencyReceiveReceiver", #31 #32
+        "rrankSend", "rrankReceive",  #33 #34
+        "tie",  #35
+        "sp", "spUnique", #36 #37
+        "FEtype", "event", #38 #39
         
         "indegreeSender.type", "indegreeReceiver.type", #40 #41
         "outdegreeSender.type", "outdegreeReceiver.type", #42 #43
@@ -214,14 +208,14 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     # Check correct specification effects
     if(!directed) {
         if(any(effectsN %in% 
-            c(2, 3, 11:21, 24:31, 35:38, 40:51, 53:57, 60:61, 63:66))) {
+            c(2, 3, 11:27, 29:34, 40:51, 53:57, 60:61, 63:66))) {
             
             stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
         }
     }
 
     if(directed) {
-        if(any(effectsN %in% c(22:23, 58:59, 67:71))) {
+        if(any(effectsN %in% c(36:37, 58:59, 67:71))) {
             stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
         }
     }
@@ -294,25 +288,21 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     # Prepare scaling info (vector length p)
     scaling <- as.numeric(sapply(effects, function(x) x$scaling))
 
-    # Compute the adjacency matrix 
-    if(any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72))) {
-        if(is.null(adjmat)) {
-            adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
-                directed, memory, memory_value, start, stop)
-        }
-    } else {
-        if(is.null(adjmat)) {
-            adjmat <- matrix()
-        }
-    }   
-    
-    # Riskset
-    prepR <- getRisksetMatrix(actors$actorID, types$typeID, nrow(actors), 
-        nrow(types), directed)
+    # Construct the riskset
+    riskset <- getRisksetMatrix(actors$actorID, types$typeID, directed)
 
-    # Compute statistics
-    statistics <- compute_stats_tie(effectsN, edgelist.reh, adjmat, actors[,2], 
-        types[,2], prepR, scaling, covar, interactions, start, stop, directed)
+    # Initialize the adjacency-matrix
+    adjmat <- matrix(0, nrow(actors), nrow(actors))
+    if(memory == 1 & start > 0 & 
+        any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72))) {
+        
+        past <- matrix(edgelist.reh[1:start,], ncol = 3)
+        adjmat <- compute_adjmat(adjmat, past, riskset, 1, Inf, 0, nrow(past)-1)
+    }     
+    
+    # Compute the statistics
+    statistics <- compute_stats_tie(effectsN, edgelist.reh, riskset, 
+        actors$actorID, adjmat, memory, memory_param, start, stop)
 
     # Dimnames statistics
     dimnames(statistics) <- 
@@ -353,7 +343,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         
 
         # Riskset output
-        riskset <- prepR
+        riskset <- riskset
         riskset <- as.data.frame(riskset)
         if(directed) {
             colnames(riskset) <- c("sender", "receiver", "type", "id")
@@ -388,8 +378,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             riskset = riskset, 
             actors = actors[,1],
             types = types[,1],
-            evls = evls,
-            adjmat = adjmat
+            evls = evls
         )
     } else {
         # Output

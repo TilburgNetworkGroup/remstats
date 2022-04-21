@@ -2,7 +2,7 @@ library(remify)
 library(remstats)
 
 test_that("tie effect", {
-	skip("skip")
+	skip("tie effect not yet implemented in new version")
 	
 	actors <- unique(info$id)
 	age <- info[match(actors, info$id), "age"]

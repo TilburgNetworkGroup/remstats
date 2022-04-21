@@ -143,7 +143,7 @@ remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,
             attributes = attributes, actors = actors, types = types, 
             directed = directed, subset = subset, ordinal = ordinal, 
             origin = origin, omit_dyad = omit_dyad, memory = memory, 
-            memory_value = memory_value, adjmat = adjmat, output = output)
+            memory_value = memory_value, output = output)
     } 
 
     if(!is.null(sender_effects) | !is.null(receiver_effects)) {

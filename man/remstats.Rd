@@ -64,12 +64,6 @@ statistics have to be computed.}
 
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. See 
-`Details'.}
-
-\item{adjmat}{optionally, a previously computed adjacency matrix with on the 
-rows the timepoints and on the columns the riskset entries}
-
 \item{output}{indicates which output objects need to be provided, i.e., 
 either only the statistics matrix ("stats_only", faster!) or all the below 
 defined information objects ("all", default).}

@@ -28,6 +28,7 @@ test_that("recencyContinue", {
 	expect_true(all(aomres$statistics$receiver_stats[events, receiver,] %in% 
 			tomres$statistics[,event,2]))
 	
+	skip("consider type not yet implemented in new version")
 	# Test for consider_type
 	colnames(history)[4] <- "type"
 	effects <- ~ recencyContinue(consider_type = TRUE)
@@ -68,6 +69,7 @@ test_that("recencySendSender", {
 	expect_true(all(aomres$statistics$sender_stats[,sender,2] %in% 
 			tomres$statistics[,event,2]))
 	
+	skip("consider type not yet implemented in new version")
 	colnames(history)[4] <- "type"
 	effects <- ~ recencySendSender(consider_type = TRUE)
 	tomres <- tomstats(effects, edgelist = history)
@@ -108,6 +110,7 @@ test_that("recencySendReceiver", {
 	expect_true(all(aomres$statistics$receiver_stats[,receiver,1] %in% 
 			tomres$statistics[,event,2]))
 	
+	skip("consider type not yet implemented in new version")
 	colnames(history)[4] <- "type"
 	effects <- ~ recencySendReceiver(consider_type = TRUE)
 	tomres <- tomstats(effects, edgelist = history)
@@ -148,6 +151,7 @@ test_that("recencyReceiveSender", {
 	expect_true(all(aomres$statistics$sender_stats[,sender,2] %in% 
 			tomres$statistics[,event,2]))
 	
+	skip("consider type not yet implemented in new version")
 	colnames(history)[4] <- "type"
 	effects <- ~ recencyReceiveSender(consider_type = TRUE)
 	tomres <- tomstats(effects, edgelist = history)
@@ -188,6 +192,7 @@ test_that("recencyReceiveReceiver", {
 	expect_true(all(aomres$statistics$receiver_stats[,receiver,1] %in% 
 			tomres$statistics[,event,2]))
 	
+	skip("consider type not yet implemented in new version")
 	colnames(history)[4] <- "type"
 	effects <- ~ recencyReceiveReceiver(consider_type = TRUE)
 	tomres <- tomstats(effects, edgelist = history)
