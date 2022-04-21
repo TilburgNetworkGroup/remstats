@@ -905,8 +905,8 @@ RcppExport SEXP _remstats_compute_rrank(SEXP typeSEXP, SEXP lastActiveSEXP, SEXP
     return rcpp_result_gen;
 }
 // compute_stats_tie
-arma::cube compute_stats_tie(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::vec& actors, arma::mat adjmat, int memory, double memory_param, arma::uword start, arma::uword stop);
-static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP actorsSEXP, SEXP adjmatSEXP, SEXP memorySEXP, SEXP memory_paramSEXP, SEXP startSEXP, SEXP stopSEXP) {
+arma::cube compute_stats_tie(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::vec& actors, arma::mat adjmat, int memory, double memory_param, const arma::vec& scaling, arma::uword start, arma::uword stop);
+static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP actorsSEXP, SEXP adjmatSEXP, SEXP memorySEXP, SEXP memory_paramSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type effects(effectsSEXP);
@@ -916,17 +916,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type adjmat(adjmatSEXP);
     Rcpp::traits::input_parameter< int >::type memory(memorySEXP);
     Rcpp::traits::input_parameter< double >::type memory_param(memory_paramSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type scaling(scalingSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type start(startSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type stop(stopSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_stats_tie(effects, edgelist, riskset, actors, adjmat, memory, memory_param, start, stop));
+    rcpp_result_gen = Rcpp::wrap(compute_stats_tie(effects, edgelist, riskset, actors, adjmat, memory, memory_param, scaling, start, stop));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP actorsSEXP, SEXP adjmatSEXP, SEXP memorySEXP, SEXP memory_paramSEXP, SEXP startSEXP, SEXP stopSEXP) {
+RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP actorsSEXP, SEXP adjmatSEXP, SEXP memorySEXP, SEXP memory_paramSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_stats_tie_try(effectsSEXP, edgelistSEXP, risksetSEXP, actorsSEXP, adjmatSEXP, memorySEXP, memory_paramSEXP, startSEXP, stopSEXP));
+        rcpp_result_gen = PROTECT(_remstats_compute_stats_tie_try(effectsSEXP, edgelistSEXP, risksetSEXP, actorsSEXP, adjmatSEXP, memorySEXP, memory_paramSEXP, scalingSEXP, startSEXP, stopSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -975,7 +976,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::rowvec(*compute_recency)(int,const arma::mat&,const arma::mat&,double)");
         signatures.insert("arma::rowvec(*ranks)(arma::rowvec,int)");
         signatures.insert("arma::rowvec(*compute_rrank)(int,const arma::mat&,const arma::mat&,const arma::vec&)");
-        signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,arma::mat,int,double,arma::uword,arma::uword)");
+        signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,arma::mat,int,double,const arma::vec&,arma::uword,arma::uword)");
     }
     return signatures.find(sig) != signatures.end();
 }
@@ -1036,7 +1037,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_recency", (DL_FUNC) &_remstats_compute_recency, 4},
     {"_remstats_ranks", (DL_FUNC) &_remstats_ranks, 2},
     {"_remstats_compute_rrank", (DL_FUNC) &_remstats_compute_rrank, 4},
-    {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 9},
+    {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 10},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };

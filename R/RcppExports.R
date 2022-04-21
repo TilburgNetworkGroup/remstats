@@ -97,8 +97,8 @@ compute_rrank <- function(type, lastActive, riskset, actors) {
     .Call(`_remstats_compute_rrank`, type, lastActive, riskset, actors)
 }
 
-compute_stats_tie <- function(effects, edgelist, riskset, actors, adjmat, memory, memory_param, start, stop) {
-    .Call(`_remstats_compute_stats_tie`, effects, edgelist, riskset, actors, adjmat, memory, memory_param, start, stop)
+compute_stats_tie <- function(effects, edgelist, riskset, actors, adjmat, memory, memory_param, scaling, start, stop) {
+    .Call(`_remstats_compute_stats_tie`, effects, edgelist, riskset, actors, adjmat, memory, memory_param, scaling, start, stop)
 }
 
 # Register entry points for exported C++ functions

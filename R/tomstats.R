@@ -302,7 +302,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     
     # Compute the statistics
     statistics <- compute_stats_tie(effectsN, edgelist.reh, riskset, 
-        actors$actorID, adjmat, memory, memory_param, start, stop)
+        actors$actorID, adjmat, memory, memory_param, scaling, start, stop)
 
     # Dimnames statistics
     dimnames(statistics) <- 

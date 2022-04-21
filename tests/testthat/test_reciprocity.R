@@ -14,7 +14,13 @@ test_that("reciprocity", {
 		aomres$statistics$receiver_stats[i,,] %in% c(tomres$statistics[i,,2], 0)
 	})))
 	
-	skip("scaling and considerType not yet implemented in new version")
+	effects <- ~ reciprocity(scaling = "std") 
+	tomres <- tomstats(effects, edgelist = history)
+	aomres <- aomstats(receiver_effects = effects, edgelist = history)
+	
+	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
+	expect_equal(rowMeans(aomres$statistics$receiver_stats), rep(0, nrow(history)))
+	
 	effects <- ~ reciprocity(scaling = "prop") + reciprocity() + indegreeSender()
 	receiver_effects <- ~ reciprocity(scaling = "prop") + reciprocity() 
 	sender_effects <- ~ outdegreeSender()
@@ -26,14 +32,8 @@ test_that("reciprocity", {
 	temp[is.na(temp)] <- 1/9
 	expect_equal(tomres$statistics[,,2], temp)
 	expect_equal(rowSums(aomres$statistics$receiver_stats[,,1]), rep(1, nrow(history)))
-
-	effects <- ~ reciprocity(scaling = "std") 
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(receiver_effects = effects, edgelist = history)
 	
-	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
-	expect_equal(rowMeans(aomres$statistics$receiver_stats), rep(0, nrow(history)))
-	
+	skip("considerType not yet implemented in new version")
 	colnames(history)[4] <- "type"
 	effects <- ~ reciprocity(consider_type = TRUE) 
 	tomres <- tomstats(effects, edgelist = history)

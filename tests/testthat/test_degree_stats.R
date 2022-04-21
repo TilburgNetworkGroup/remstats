@@ -79,8 +79,6 @@ test_that("degree std", {
 	aomres <- aomstats(sender_effects = effectsS, receiver_effects = effectsR,
 		edgelist = history)
 	
-	skip("scaling not yet implemented in new version")
-	
 	# indegreeSender
 	expect_equal(rowMeans(tomres$statistics[,,"indegreeSender"]), 
 		rep(0, nrow(history)))
@@ -131,8 +129,6 @@ test_that("degree prop", {
 	tomres <- tomstats(effects, edgelist = history)
 	aomres <- aomstats(sender_effects = effectsS, receiver_effects = effectsR,
 		edgelist = history)
-	
-	skip("scaling not yet implemented in new version")
 	
 	# indegreeSender
 	expect_equal(rowSums(tomres$statistics[-1,,"indegreeSender"]), 

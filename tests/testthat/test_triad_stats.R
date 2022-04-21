@@ -22,7 +22,6 @@ test_that("otp and itp", {
 		aomres$statistics$receiver_stats[i,,2] %in% c(tomres$statistics[i,,3], 0)
 	})))
 	
-	skip("scaling and consider type not yet implemented in new version")
 	effects <- ~ otp(scaling = "std") + itp(scaling = "std")
 	tomres <- tomstats(effects, edgelist = history)
 	aomres <- aomstats(receiver_effects = effects, edgelist = history)
@@ -32,6 +31,7 @@ test_that("otp and itp", {
 	expect_equal(rowMeans(tomres$statistics[,,3]), rep(0, nrow(history)))
 	expect_equal(rowMeans(aomres$statistics$receiver_stats[,,2]), rep(0, nrow(history)))
 	
+	skip("consider type not yet implemented in new version")
 	colnames(history)[4] <- "type"
 	effects <- ~ otp(consider_type = TRUE) + itp(consider_type = TRUE)
 	tomres <- tomstats(effects, edgelist = history)
@@ -67,7 +67,6 @@ test_that("osp and isp", {
 		aomres$statistics$receiver_stats[i,,2] %in% c(tomres$statistics[i,,3], 0)
 	})))
 	
-	skip("scaling and consider type not yet implemented in new version")
 	effects <- ~ osp(scaling = "std") + isp(scaling = "std")
 	tomres <- tomstats(effects, edgelist = history)
 	aomres <- aomstats(receiver_effects = effects, edgelist = history)
@@ -77,6 +76,7 @@ test_that("osp and isp", {
 	expect_equal(rowMeans(tomres$statistics[,,3]), rep(0, nrow(history)))
 	expect_equal(rowMeans(aomres$statistics$receiver_stats[,,2]), rep(0, nrow(history)))
 	
+	skip("consider type not yet implemented in new version")
 	colnames(history)[4] <- "type"
 	effects <- ~ osp(consider_type = TRUE) + isp(consider_type = TRUE)
 	tomres <- tomstats(effects, edgelist = history)

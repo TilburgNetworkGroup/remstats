@@ -4,6 +4,35 @@
 // [[Rcpp::plugins(cpp11)]] 
 // [[Rcpp::interfaces(r, cpp)]]
 
+// standardize
+//
+// Helper function that performs scales the statistic through standardization 
+// per time point. 
+//
+// Per time point, the mean Mt and standard deviation SDt of the statistic Xt 
+// is computed. The statistics is scaled by subtracting the mean of the values 
+// and divide by the standard deviation: Xt = (Xt - Mt)/SDt. 
+//
+// *param [stat] statistic matrix. The rows in this matrix always refer to the 
+// timepoints. In the case of the tie-oriented model, the columns refer to the 
+// possible relational events in the risk set. In the case of the 
+// actor-oriented model, the columns refer to all possible senders in the rate 
+// model and to all possible receivers in the choice model. 
+//
+// *return [stat] statistic matrix standardized per time point, i.e., per row. 
+arma::rowvec standardize(arma::rowvec statrow) {
+
+    // Subtract the row mean and divide by the row standard deviation
+    statrow = (statrow-arma::mean(statrow))/arma::stddev(statrow);
+
+    // If the standard deviation is 0, the resulting values are NaN, replace 
+    // these values with 0
+	statrow.replace(arma::datum::nan, 0);
+
+    // Return standardized statistic matrix
+    return statrow;
+}
+
 // title getDyadIndex
 //
 // param actor1 id of actor1 from 0 to N-1
@@ -900,7 +929,8 @@ arma::rowvec compute_rrank(int type, const arma::mat& lastActive,
 arma::cube compute_stats_tie(const arma::vec& effects, 
     const arma::mat& edgelist, const arma::mat& riskset, 
     const arma::vec& actors, arma::mat adjmat, int memory, 
-    double memory_param, arma::uword start, arma::uword stop) {
+    double memory_param, const arma::vec& scaling, 
+    arma::uword start, arma::uword stop) {
 
     // Slice the edgelist
     arma::mat slice = edgelist.rows(start, stop);
@@ -945,50 +975,178 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 // 10 inertia 
                 case 10:
                     statrow = compute_inertia(riskset, adjmat);
+                    // scale by outdegree of the sender
+                    if(scaling(p) == 2) {
+                        arma::rowvec deg = compute_odeg(1, riskset, adjmat);
+                        statrow = statrow/deg;
+                        double rep = 1.0/(actors.n_elem-1.0);
+                        statrow.replace(arma::datum::nan, rep);
+                    }
+                    // standardize
+                    if(scaling(p) == 3) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 11 reciprocity 
                 case 11:
                     statrow = compute_reciprocity(riskset, adjmat);
+                    // scale by indegree of the sender
+                    if(scaling(p) == 2) {
+                        arma::rowvec deg = compute_indeg(1, riskset, adjmat);
+                        statrow = statrow/deg;
+                        double rep = 1.0/(actors.n_elem-1.0);
+                        statrow.replace(arma::datum::nan, rep);
+                    }
+                    // standardize
+                    if(scaling(p) == 3) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 12 indegreeSender  
                 case 12:
                     statrow = compute_indeg(1, riskset, adjmat);
+                    // scale by the number/weight of past events
+                    if(scaling(p) == 2) {
+                        double deg = accu(adjmat);
+                        statrow = statrow/deg;
+                        statrow.replace(arma::datum::nan, 0);
+                        // First row
+                        if(start == 0) {
+                            statrow = arma::rowvec(statrow.n_elem, 
+                                arma::fill::value(1.0/actors.n_elem));
+                        }
+                    }
+                    // standardize
+                    if(scaling(p) == 3) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 13 indegreeReceiver 
                 case 13:
                     statrow = compute_indeg(2, riskset, adjmat);
+                    // scale by the number/weight of past events
+                    if(scaling(p) == 2) {
+                        double deg = accu(adjmat);
+                        statrow = statrow/deg;
+                        statrow.replace(arma::datum::nan, 0);
+                        // First row
+                        if(start == 0) {
+                            statrow = arma::rowvec(statrow.n_elem, 
+                                arma::fill::value(1.0/actors.n_elem));
+                        }
+                    }
+                    // standardize
+                    if(scaling(p) == 3) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 14 outdegreeSender  
                 case 14:
                     statrow = compute_odeg(1, riskset, adjmat);
+                    // scale by the number/weight of past events
+                    if(scaling(p) == 2) {
+                        double deg = accu(adjmat);
+                        statrow = statrow/deg;
+                        statrow.replace(arma::datum::nan, 0);
+                        // First row
+                        if(start == 0) {
+                            statrow = arma::rowvec(statrow.n_elem, 
+                                arma::fill::value(1.0/actors.n_elem));
+                        }
+                    }
+                    // standardize
+                    if(scaling(p) == 3) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 15 outdegreeReceiver 
                 case 15:
                     statrow = compute_odeg(2, riskset, adjmat);
+                    // scale by the number/weight of past events
+                    if(scaling(p) == 2) {
+                        double deg = accu(adjmat);
+                        statrow = statrow/deg;
+                        statrow.replace(arma::datum::nan, 0);
+                        // First row
+                        if(start == 0) {
+                            statrow = arma::rowvec(statrow.n_elem, 
+                                arma::fill::value(1.0/actors.n_elem));
+                        }
+                    }
+                    // standardize
+                    if(scaling(p) == 3) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 16 totaldegreeSender  
                 case 16:
                     statrow = compute_tdeg(1, riskset, adjmat);
+                    // scale by the number/weight of past events
+                    if(scaling(p) == 2) {
+                        double deg = 2*accu(adjmat);
+                        statrow = statrow/deg;
+                        statrow.replace(arma::datum::nan, 0);
+                        // First row
+                        if(start == 0) {
+                            statrow = arma::rowvec(statrow.n_elem, 
+                                arma::fill::value(1.0/actors.n_elem));
+                        }
+                    }
+                    // standardize
+                    if(scaling(p) == 3) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 17 totaldegreeReceiver 
                 case 17:
                     statrow = compute_tdeg(2, riskset, adjmat);
+                    // scale by the number/weight of past events
+                    if(scaling(p) == 2) {
+                        double deg = 2*accu(adjmat);
+                        statrow = statrow/deg;
+                        statrow.replace(arma::datum::nan, 0);
+                        // First row
+                        if(start == 0) {
+                            statrow = arma::rowvec(statrow.n_elem, 
+                                arma::fill::value(1.0/actors.n_elem));
+                        }
+                    }
+                    // standardize
+                    if(scaling(p) == 3) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 18 otp 
                 case 18:
                     statrow = compute_otp(riskset, actors, adjmat);
+                    // standardize
+                    if(scaling(p) == 2) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 19 itp 
                 case 19:
                     statrow = compute_itp(riskset, actors, adjmat);
+                    // standardize
+                    if(scaling(p) == 2) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 20 osp 
                 case 20:
                     statrow = compute_osp(riskset, actors, adjmat);
+                    // standardize
+                    if(scaling(p) == 2) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 21 isp 
                 case 21:
                     statrow = compute_isp(riskset, actors, adjmat);
+                    // standardize
+                    if(scaling(p) == 2) {
+                        statrow = standardize(statrow);
+                    }
                     break;
                 // 22 psABBA
                 case 22:
