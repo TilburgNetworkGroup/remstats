@@ -27,7 +27,8 @@ actor101stat <- t(sapply(1:nrow(evls), function(i) {
 }))
 effects <- ~ userStat(x = actor101stat, variableName = "actor101event")
 remstats(edgelist = history, tie_effects = effects)
-effects2 <- ~ inertia():userStat(x = randomStat, variableName = "random")
-remstats(edgelist = rehObject, tie_effects = effects2)
+effects2 <- ~ inertia():userStat(x = actor101stat, variableName = 
+ "actor101event")
+remstats(edgelist = history, tie_effects = effects2)
 
 }
