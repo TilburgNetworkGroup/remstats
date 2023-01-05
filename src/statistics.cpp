@@ -11,12 +11,13 @@
 // @param typeID vector of types' id's.
 // @param N number of actors in the dataset.
 // @param C number of event types
-// @param direcred boolean value: are events directed (1) or undirected (0)?
+// @param directed boolean value: are events directed (1) or undirected (0)?
 // source: remify
 //
 // @return matrix of possible dyadic events.
 // [[Rcpp::export]]
-arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed){
+arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, 
+    arma::uword N, arma::uword C, bool directed){
     switch(directed){
     case 0: { // for undirected network
         arma::uword i,j,c;
@@ -876,7 +877,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
     }
 
     // Correct totaldegreeDyad
-    if(type == 7 & !directed) {
+    if((type == 7) & (!directed)) {
         stat = stat/4.0;
     }
 
@@ -1065,9 +1066,9 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 		// For loop over dyads
 		for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
 			// Sender i, receiver j and event type c
-			int i = riskset(d,0);
-			int j = riskset(d,1);
-			int c = riskset(d,2);
+			arma::uword i = riskset(d,0);
+			arma::uword j = riskset(d,1);
+			arma::uword c = riskset(d,2);
 			
 			// For loop over actors h
 			for(arma::uword h = 0; h < actors.n_elem; ++h) {
@@ -1132,8 +1133,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 		// For loop over dyads
 		for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
 			// Sender i and receiver j 
-			int i = riskset(d,0);
-			int j = riskset(d,1);
+			arma::uword i = riskset(d,0);
+			arma::uword j = riskset(d,1);
 			
 			// For loop over actors h
 			for(arma::uword h = 0; h < actors.n_elem; ++h) {
@@ -1219,8 +1220,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 // *param [consider_type] boolean indicating whether to compute the pshift per 
 // event type (TRUE) or across types (FALSE)
 arma::mat pshift_tie(int type, const arma::mat& edgelist, 
-    const arma::mat& riskset, int N, 
-    int C, int start, int stop, bool consider_type) {
+    const arma::mat& riskset, arma::uword N, 
+    arma::uword C, int start, int stop, bool consider_type) {
 
     // Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
@@ -1241,11 +1242,11 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
         if(last < 0) {continue;}
 
         // Sender and receiver of the last event
-        int s = riskset(edgelist(last,1),0);
-        int r = riskset(edgelist(last,1),1);
+        arma::uword s = riskset(edgelist(last,1),0);
+        arma::uword r = riskset(edgelist(last,1),1);
 
         // Type of the last event
-        int c = 0;
+        arma::uword c = 0;
         if(consider_type) {c = riskset(edgelist(last,1),2);}
 
         // Find the dyads that would create the respective p-shift
@@ -1401,7 +1402,8 @@ arma::rowvec rankR(arma::rowvec x, int N) {
 // consider_type: boolean indicating whether to compute the inertia per 
 // event type (TRUE) or sum across types (FALSE)
 arma::mat rrank_tie(int type, const arma::mat& edgelist, 
-    const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type) {
+    const arma::mat& riskset, arma::uword N, arma::uword C, int start, 
+    int stop, bool consider_type) {
 
     // Slice the edgelist according to "start" and "stop"
 	arma::mat ESlice = edgelist.rows(start, stop);
@@ -1557,8 +1559,8 @@ arma::mat rrank_tie(int type, const arma::mat& edgelist,
 // event type (TRUE) or sum across types (FALSE)
 // directed: boolean, whether events are directed or undirected
 arma::mat recency_tie(int type, const arma::mat& edgelist,
-    const arma::mat& riskset, int N, int C, int start, int stop, 
-    bool consider_type, bool directed) {
+    const arma::mat& riskset, arma::uword N, arma::uword C, int start, 
+    int stop, bool consider_type, bool directed) {
 
 	// Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
@@ -1576,9 +1578,9 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
 	for(arma::uword m = 0; m < past.n_rows; ++m) {
         // Sender, receiver and event type
         int d = past(m,1);
-        int s = riskset(d,0);
-        int r = riskset(d,1);
-        int c = riskset(d,2);
+        arma::uword s = riskset(d,0);
+        arma::uword r = riskset(d,1);
+        arma::uword c = riskset(d,2);
 
         // Event time
         double time = past(m,0);
@@ -1699,9 +1701,9 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
 
         // Sender, receiver and event type
         int d = slice(m,1);
-        int s = riskset(d,0);
-        int r = riskset(d,1);
-        int c = riskset(d,2);
+        arma::uword s = riskset(d,0);
+        arma::uword r = riskset(d,1);
+        arma::uword c = riskset(d,2);
 
         // Event time
         double time = slice(m,0);
@@ -2939,7 +2941,7 @@ arma::mat actorStat_rc(const arma::mat& covariates, const arma::mat& edgelist,
         // Scaling in choice model
         if(scaling == 2) {
             int event = slice(0,1);
-            int sender = riskset(event,0);
+            arma::uword sender = riskset(event,0);
 
             arma::rowvec statrow = stat.row(0);
             arma::vec statrowMin = statrow(arma::find(actors != sender));
@@ -3000,7 +3002,7 @@ arma::mat actorStat_rc(const arma::mat& covariates, const arma::mat& edgelist,
         // Scaling in choice model
         if(scaling == 2) {
             int event = slice(m,1);
-            int sender = riskset(event,0);
+            arma::uword sender = riskset(event,0);
 
             arma::rowvec statrow = stat.row(m);
             arma::vec statrowMin = statrow(arma::find(actors != sender));
@@ -3045,7 +3047,7 @@ arma::mat degree_rc(int type, const arma::mat& riskset,
             // Skip self-to-self events
             if(i == j) {continue;}
             
-            if(type == 1 | type == 3) {
+            if((type == 1) | (type == 3)) {
                 // For the in-degree of actor i: get the (j,i) dyad
                 int dyad = remify::getDyadIndex(j, i, 0, actors.n_elem, TRUE);
                 // Extract this column from the adjmat and add it to actor i's 
@@ -3053,7 +3055,7 @@ arma::mat degree_rc(int type, const arma::mat& riskset,
                 ideg.col(i) += adjmat.col(dyad);
             }
 
-            if(type == 2 | type == 3) {
+            if((type == 2) | (type == 3)) {
                 // For the out-degree of actor i: get the (i,j) dyad
                 int dyad = remify::getDyadIndex(i, j, 0, actors.n_elem, TRUE);
                 // Extract this column from the adjmat and add it to actor i's 
@@ -3088,7 +3090,7 @@ arma::mat degree_rc(int type, const arma::mat& riskset,
 // event type (TRUE) or sum across types (FALSE)
 // directed: boolean, whether events are directed or undirected
 arma::mat recency_rc(int type, const arma::mat& edgelist,
-    const arma::mat& riskset, int N, int start, int stop) {
+    const arma::mat& riskset, arma::uword N, int start, int stop) {
 
 	// Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
@@ -3136,8 +3138,8 @@ arma::mat recency_rc(int type, const arma::mat& edgelist,
 
         // Sender and receiver of the event
         int d = slice(m,1);
-        int s = riskset(d,0);
-        int r = riskset(d,1);
+        arma::uword s = riskset(d,0);
+        arma::uword r = riskset(d,1);
 
         // Event time
         double time = slice(m,0);
@@ -3302,7 +3304,7 @@ arma::mat inertia_choice(const arma::mat& edgelist, const arma::mat& adjmat,
 
 		// Sender of the event
 		int event = slice(m,1);
-        int sender = riskset(event, 0);
+        arma::uword sender = riskset(event, 0);
 
 		// For loop over receivers
 		for(arma::uword r = 0; r < actors.n_elem; ++r) {
@@ -3382,7 +3384,7 @@ arma::mat reciprocity_choice(const arma::mat& edgelist,
 
 		// Sender of the event
 		int event = slice(m,1);
-        int sender = riskset(event, 0);
+        arma::uword sender = riskset(event, 0);
 
 		// For loop over receivers
 		for(arma::uword r = 0; r < actors.n_elem; ++r) {
@@ -3458,7 +3460,7 @@ arma::mat triad_choice(int type, const arma::mat& edgelist,
 
 		// Sender of the event
 		int event = slice(m,1);
-        int s = riskset(event, 0);
+        arma::uword s = riskset(event, 0);
 
 		// For loop over receivers
 		for(arma::uword r = 0; r < actors.n_elem; ++r) {
