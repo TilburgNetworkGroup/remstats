@@ -1821,34 +1821,40 @@ arma::mat recency_tie(int type, const arma::mat& edgelist,
 arma::mat tie_tie(const arma::mat& covariates, const arma::mat& edgelist, 
     const arma::mat& riskset, int start, int stop) {
 
-  // Slice the edgelist according to "start" and "stop"
-	arma::mat slice = edgelist.rows(start, stop);
+    // Slice the edgelist according to "start" and "stop"
+    arma::mat slice = edgelist.rows(start, stop);
 
 	// Initialize saving space 
 	arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
 
-  // Saving space
-  arma::rowvec thisrow(riskset.n_rows);
+    // Saving space
+    arma::rowvec thisrow(riskset.n_rows);
 
-  // For loop over dyads
-  for(arma::uword i = 0; i < riskset.n_rows; ++i) {
+    // For loop over dyads
+    for(arma::uword i = 0; i < riskset.n_rows; ++i) {
         
-      // Find the relevant actors
-      arma::uword actor1 = riskset(i, 0);
-      arma::uword actor2 = riskset(i, 1);
+        // Find the relevant actors
+        arma::uword actor1 = riskset(i, 0);
+        arma::uword actor2 = riskset(i, 1);
 
-      // Find the value
-      double tieval = covariates(actor1, actor2);
-      thisrow(i) = tieval;
-  }
+        // Find the value
+        double tieval = covariates(actor1, actor2);
+        thisrow(i) = tieval;
+    }
 
-  // Save in stat
-  for(arma::uword m = 0; m < slice.n_rows; ++m) {
-      stat.row(m) = thisrow;
-  }
+    // Save in stat
+    for(arma::uword m = 0; m < slice.n_rows; ++m) {
+        stat.row(m) = thisrow;
+    }
 
-  //Output
-  return(stat);
+    //Output
+    return(stat);
+}
+
+// userStat_tie
+arma::mat userStat_tie(const arma::mat&covariates, int start, int stop) {
+    arma::mat stat = covariates.rows(start, stop);
+    return(stat);
 }
 
 // event_tie
@@ -2869,6 +2875,11 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 if(scaling(i) == 3) {
                     stat = standardize(stat);
                 }
+                break;
+
+            // 73 userStat
+            case 73 : 
+                stat = userStat_tie(covariates[i], start, stop);
                 break;
              
             // 99 interact

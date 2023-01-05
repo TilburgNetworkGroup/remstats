@@ -1,3 +1,9 @@
+# remstats 3.0.1
+Date: 05-Jan-23
+
+## New features 
+* userStat() effect
+
 # remstats 3.0.0
 Date: 22-Dec-21
 

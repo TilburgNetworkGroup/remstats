@@ -255,6 +255,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         "degreeMin.type", "degreeMax.type", #69 #70
         "ccp", #71
         "totaldegreeDyad", #72
+        "userStat", #73
 
         "interact") #99
     effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
@@ -332,6 +333,9 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
             as.matrix(dat)
         } else if(x$effect == "ccp") {
             dat <- x$x
+            as.matrix(dat) 
+        } else if(x$effect == "userStat") {
+            dat <- x$x 
             as.matrix(dat)
         } else {
             matrix()
@@ -366,11 +370,11 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         list(NULL, NULL, unlist(c(all_effects[effectsN])))
 
     # Add variable name to exogenous statistics 
-    dimnames(statistics)[[3]][which(effectsN %in% c(2:8, 33, 39))] <- 
-        sapply(effects[which(effectsN %in% c(2:8, 33, 39))], 
+    dimnames(statistics)[[3]][which(effectsN %in% c(2:8, 33, 39, 73))] <- 
+        sapply(effects[which(effectsN %in% c(2:8, 33, 39, 73))], 
         function(x) {
            if(!is.null(x$variable)) {
-                paste0(x$effect, ".", x$variable)
+                x$variable
             } else {
                 x$effect
             }          

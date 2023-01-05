@@ -2288,3 +2288,39 @@ recencyContinue <- function(consider_type = FALSE) {
         )
     }  
 }
+
+#' userStat
+#' 
+#' Allows the user to add its own pre-computed statistic to the statistics 
+#' object and, optionally, interact this statistic with other statistics in the 
+#' formula. Currently only defined for the tie-oriented model. 
+#' 
+#' @param x matrix with number of rows equal to the number of events and number of columns equal to the number of dyads 
+#' @inheritParams tie
+#' 
+#' @examples 
+#' dummy <- remstats(edgelist = history, tie_effects = ~ 1)
+#' riskset <- dummy$riskset
+#' evls <- dummy$evls
+#' actor101Events <- which(riskset$sender == "101" | riskset$receiver == "101")
+#' actor101stat <- t(sapply(1:nrow(evls), function(i) {
+#'  rep(evls[i,1] %in% actor101Events, nrow(riskset))
+#' }))
+#' effects <- ~ userStat(x = actor101stat, variableName = "actor101event")
+#' remstats(edgelist = history, tie_effects = effects)
+#' effects2 <- ~ inertia():userStat(x = actor101stat, variableName = 
+#'  "actor101event")
+#' remstats(edgelist = history, tie_effects = effects2)
+#' 
+#' @export
+userStat <- function(x, variableName = NULL) {
+    # Stat 73
+
+    # Output
+    list(
+        effect = "userStat",
+        x = x, 
+        variable = variableName, 
+        scaling = 1
+    )
+}
