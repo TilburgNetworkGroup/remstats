@@ -1204,15 +1204,16 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 // pshift_tie
 //
 // Computes statistic for a p-shift effect (AB-BA, AB-BY, AB-XA, AB-XB, AB-XY, 
-// AB-AY) 
+// AB-AY, AB-AB) 
 //
 // *param [type] integer value that indicates the type of p-shift effect 
-// (1 = AB-BA, 2 = AB-BY, 3 = AB-XA, 4 = AB-XB, 5 = AB-XY, 6 = AB-AY)
+// (1 = AB-BA, 2 = AB-BY, 3 = AB-XA, 4 = AB-XB, 5 = AB-XY, 6 = AB-AY, 7 = AB-AB)
 // *param [edgelist] matrix with the observed relational event history. Rows 
 // refers to the observed relational events. The first column refers to the 
 // time, the second column to the events and the third column to the event 
 // weight. 
 // *param [D] integer value; the number of events in the risk set
+// *param [directed] boolean value: are events directed (1) or undirected (0)?
 // *param [start] integer number indicating the first row in the edgelist for 
 // which statistics have to be computed. 
 // *param [stop] integer number indicating the last row in the edgelist for 
@@ -1220,8 +1221,8 @@ arma::mat triad_tie(int type, const arma::mat& edgelist,
 // *param [consider_type] boolean indicating whether to compute the pshift per 
 // event type (TRUE) or across types (FALSE)
 arma::mat pshift_tie(int type, const arma::mat& edgelist, 
-    const arma::mat& riskset, arma::uword N, 
-    arma::uword C, int start, int stop, bool consider_type) {
+    const arma::mat& riskset, arma::uword N, arma::uword C, 
+    bool directed, int start, int stop, bool consider_type) {
 
     // Slice the edgelist according to "start" and "stop"
 	arma::mat slice = edgelist.rows(start, stop);
@@ -1370,6 +1371,20 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
                     }
                 }
                 break;
+
+            // AB-AB
+            case 7 :
+                // Find the same dyad
+                if(!consider_type) {                    
+                    for(arma::uword k = 0; k < C; ++k) {
+                        int dyad = remify::getDyadIndex(s,r,k,N,directed);
+                        stat(i, dyad) = 1.0;
+                    }
+                } else {
+                    int dyad = remify::getDyadIndex(s,r,c,N,directed);
+                    stat(i, dyad) = 1.0;
+                }
+            break;
                 
         }
     }
@@ -2325,42 +2340,42 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 24 :
                 // Compute statistic
                 stat = pshift_tie(1, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, FALSE);
+                    types.n_elem, directed, start, stop, FALSE);
                 break;
 
             // 25 psABBY
             case 25 :
                 // Compute statistic
                 stat = pshift_tie(2, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, FALSE);
+                    types.n_elem, directed, start, stop, FALSE);
                 break;
 
             // 26 psABXA
             case 26 :
                 // Compute statistic
                 stat = pshift_tie(3, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, FALSE);
+                    types.n_elem, directed, start, stop, FALSE);
                 break;
 
             // 27 psABXB
             case 27 :
                 // Compute statistic
                 stat = pshift_tie(4, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, FALSE);
+                    types.n_elem, directed, start, stop, FALSE);
                 break;
 
             // 28 psABXY
             case 28 :
                 // Compute statistic
                 stat = pshift_tie(5, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, FALSE);
+                    types.n_elem, directed, start, stop, FALSE);
                 break;
 
             // 29 psABAY
             case 29 :
                 // Compute statistic
                 stat = pshift_tie(6, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, FALSE);
+                    types.n_elem, directed, start, stop, FALSE);
                 break;
 
             // 30 rrankSend
@@ -2585,42 +2600,42 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             case 46 :
                 // Compute statistic
                 stat = pshift_tie(1, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, TRUE);
+                    types.n_elem, directed, start, stop, TRUE);
                 break;
 
             // 47 psABBY.type
             case 47 :
                 // Compute statistic
                 stat = pshift_tie(2, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, TRUE);
+                    types.n_elem, directed, start, stop, TRUE);
                 break;
 
             // 48 psABXA.type
             case 48 :
                 // Compute statistic
                 stat = pshift_tie(3, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, TRUE);
+                    types.n_elem, directed, start, stop, TRUE);
                 break;
 
             // 49 psABXB.type
             case 49 :
                 // Compute statistic
                 stat = pshift_tie(4, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, TRUE);
+                    types.n_elem, directed, start, stop, TRUE);
                 break;
 
             // 50 psABXY.type
             case 50 :
                 // Compute statistic
                 stat = pshift_tie(5, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, TRUE);
+                    types.n_elem, directed, start, stop, TRUE);
                 break;
 
             // 51 psABAY.type
             case 51 :
                 // Compute statistic
                 stat = pshift_tie(6, edgelist, riskset, actors.n_elem, 
-                    types.n_elem, start, stop, TRUE);
+                    types.n_elem, directed, start, stop, TRUE);
                 break;
 
             // 52 inertia.type
@@ -2882,6 +2897,20 @@ arma::cube compute_stats_tie(const arma::vec& effects,
             // 73 userStat
             case 73 : 
                 stat = userStat_tie(covariates[i], start, stop);
+                break;
+
+            // 74 psABAB
+            case 74 :
+                // Compute statistic
+                stat = pshift_tie(7, edgelist, riskset, actors.n_elem, 
+                    types.n_elem, directed, start, stop, FALSE);
+                break;
+
+            // 75 psABAB.type 
+            case 75 :
+                // Compute statistic
+                stat = pshift_tie(7, edgelist, riskset, actors.n_elem, 
+                    types.n_elem, directed, start, stop, TRUE);
                 break;
              
             // 99 interact

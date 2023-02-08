@@ -4,7 +4,8 @@ library(remstats)
 test_that("pshifts", {
 	
 	# Specify the statistics
-	form <- ~ psABBA() + psABBY() + psABXA() + psABXB() + psABXY() + psABAY()
+	form <- ~ psABBA() + psABBY() + psABXA() + psABXB() + psABXY() + psABAY() +
+		psABAB() 
 	
 	# Compute the statistics
 	out <- tomstats(form, edgelist = history[,c(1:3)])
@@ -13,6 +14,7 @@ test_that("pshifts", {
 	# Tests
 	expect_true(all(stats %in% c(0,1)))
 	expect_equal(rowSums(stats[,,"psABBA"]), c(0, rep(1, nrow(stats)-1)))
+	expect_equal(rowSums(stats[,,"psABAB"]), c(0, rep(1, nrow(stats)-1)))
 	n <- length(unique(info$id))
 	expect_equal(rowSums(stats[,,"psABBY"]), c(0, rep(n-2, nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABXA"]), c(0, rep(n-2, nrow(stats)-1)))
@@ -28,7 +30,8 @@ test_that("pshifts", {
 	# Specify the statistics
 	form <- ~ psABBA(consider_type = TRUE) + psABBY(consider_type = TRUE) + 
 		psABXA(consider_type = TRUE) + psABXB(consider_type = TRUE) + 
-		psABXY(consider_type = TRUE) + psABAY(consider_type = TRUE)
+		psABXY(consider_type = TRUE) + psABAY(consider_type = TRUE) + 
+		psABAB(consider_type = TRUE)
 	
 	# Compute the statistics
 	out <- tomstats(form, edgelist = history)
@@ -37,6 +40,7 @@ test_that("pshifts", {
 	# Tests
 	expect_true(all(stats %in% c(0,1)))
 	expect_equal(rowSums(stats[,,"psABBA.type"]), c(0, rep(1, nrow(stats)-1)))
+	expect_equal(rowSums(stats[,,"psABAB.type"]), c(0, rep(1, nrow(stats)-1)))
 	n <- length(unique(info$id))
 	expect_equal(rowSums(stats[,,"psABBY.type"]), c(0, rep(n-2, nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABXA.type"]), c(0, rep(n-2, nrow(stats)-1)))

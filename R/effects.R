@@ -1985,6 +1985,54 @@ psABAY <- function(consider_type = FALSE) {
     }
 }
 
+#' psABAB
+#' 
+#' Specifies the statistic for a pshift AB-AB effect in the \code{effects} 
+#' argument of \code{\link{tomstats}}.
+#' 
+#' @inheritParams psABBA
+#' 
+#' @details
+#' 
+#' Refers to the tendency for the same dyads to keep interacting. For directed 
+#' events, the next sender and receiver are equal to the current sender and 
+#' receiver. For undirected events, the next actor pair is equal to the current 
+#' actor pair. For each timepoint t, the psABAB statistic is equal to one for 
+#' the dyads that will create the participation shift if they would occur in 
+#' the edgelist at time t and equal to zero for the dyads that will not create 
+#' this participation shift. If consider_type is set to TRUE, the type of the 
+#' two subsequent AB events have to be equal. If it is set to FALSE, the 
+#' participation shift is set to one for every AB event, regardless of the 
+#' event type. If multiple events in the edgelist occur at the same time point, 
+#' the order of these events determines whether the p-shift is observed. 
+#' 
+#' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}}, 
+#' \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation shifts. 
+#' 
+#' @examples 
+#' library(remify)
+#' rehObject <- reh(history, directed = FALSE) 
+#' effects <- ~ psABAB()
+#' tomstats(effects, edgelist = rehObject, directed = FALSE)
+#' 
+#' @export
+psABAB <- function(consider_type = FALSE) {
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "psABAB",
+            scaling = 1
+        )   
+    } else {
+        list(
+            effect = "psABAB.type",
+            scaling = 1
+        )
+    }
+}
+
+
 #' rrankSend
 #' 
 #' Specifies the statistic for a recency rank send effect in the 

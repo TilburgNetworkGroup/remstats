@@ -206,6 +206,7 @@ Endogenous statistics:
  \item \code{\link{psABXB}()}
  \item \code{\link{psABXY}()}
  \item \code{\link{psABAY}()}
+ \item \code{\link{psABAB}()}
  \item \code{\link{rrankSend}()}
  \item \code{\link{rrankReceive}()}
  \item \code{\link{recencySendSender}()}

@@ -123,6 +123,7 @@
 #'  \item \code{\link{psABXB}()}
 #'  \item \code{\link{psABXY}()}
 #'  \item \code{\link{psABAY}()}
+#'  \item \code{\link{psABAB}()}
 #'  \item \code{\link{rrankSend}()}
 #'  \item \code{\link{rrankReceive}()}
 #'  \item \code{\link{recencySendSender}()}
@@ -256,6 +257,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         "ccp", #71
         "totaldegreeDyad", #72
         "userStat", #73
+        "psABAB", "psABAB.type", #74 #75 
 
         "interact") #99
     effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
