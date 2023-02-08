@@ -1355,21 +1355,52 @@ arma::mat pshift_tie(int type, const arma::mat& edgelist,
             // AB-AY
             case 6 :
                 // Find all AY dyads
-                if(!consider_type) {
-                    for(arma::uword j = 0; j < N; ++j) {
-                        if((j == r) | (j == s)) {continue;}
-                        for(arma::uword k = 0; k < C; ++k) {
-                            int dyad = remify::getDyadIndex(s,j,k,N,TRUE);
+                if(directed) {
+                    if(!consider_type) {
+                        for(arma::uword j = 0; j < N; ++j) {
+                            if((j == r) | (j == s)) {continue;}
+                            for(arma::uword k = 0; k < C; ++k) {
+                                int dyad = remify::getDyadIndex(s,j,k,N,TRUE);
+                                stat(i, dyad) = 1.0;
+                            }
+                        }
+                    } else {
+                        for(arma::uword j = 0; j < N; ++j) {
+                            if((j == r) | (j == s)) {continue;}
+                            int dyad = remify::getDyadIndex(s,j,c,N,TRUE);
                             stat(i, dyad) = 1.0;
                         }
                     }
                 } else {
-                    for(arma::uword j = 0; j < N; ++j) {
-                        if((j == r) | (j == s)) {continue;}
-                        int dyad = remify::getDyadIndex(s,j,c,N,TRUE);
-                        stat(i, dyad) = 1.0;
+                    if(!consider_type) {
+                        for(arma::uword j = 0; j < N; ++j) {
+                            if((j == r) | (j == s)) {continue;}
+                            for(arma::uword k = 0; k < C; ++k) {
+                                int dyad1 = remify::getDyadIndex(s,j,k,N,FALSE);
+                                stat(i, dyad1) = 1.0;
+                                int dyad2 = remify::getDyadIndex(r,j,k,N,FALSE);
+                                stat(i, dyad2) = 1.0;
+                                int dyad3 = remify::getDyadIndex(j,s,k,N,FALSE);
+                                stat(i, dyad3) = 1.0;
+                                int dyad4 = remify::getDyadIndex(j,r,k,N,FALSE);
+                                stat(i, dyad4) = 1.0;
+                            }
+                        }
+                    } else {
+                        for(arma::uword j = 0; j < N; ++j) {
+                            if((j == r) | (j == s)) {continue;}
+                            int dyad1 = remify::getDyadIndex(s,j,c,N,FALSE);
+                            stat(i, dyad1) = 1.0;
+                            int dyad2 = remify::getDyadIndex(r,j,c,N,FALSE);
+                            stat(i, dyad2) = 1.0;
+                            int dyad3 = remify::getDyadIndex(j,s,c,N,FALSE);
+                            stat(i, dyad3) = 1.0;
+                            int dyad4 = remify::getDyadIndex(j,r,c,N,FALSE);
+                            stat(i, dyad4) = 1.0;
+                        }
                     }
                 }
+                
                 break;
 
             // AB-AB

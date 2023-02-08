@@ -265,7 +265,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     # Check correct specification effects
     if(!directed) {
         if(any(effectsN %in% 
-            c(2, 3, 11:21, 24:31, 35:38, 40:51, 53:57, 60:61, 63:66))) {
+            c(2, 3, 11:21, 24:28, 30:31, 35:38, 40:50, 53:57, 60:61, 63:66))) {
             
             stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
         }
