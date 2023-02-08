@@ -1248,6 +1248,58 @@ totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
     )
 }
 
+#' degreeDiff
+#' 
+#' Specifies the statistic for a `degreeDiff` effect in the tie-oriented 
+#' model. 
+#' 
+#' @param scaling the method for scaling the degree statistic. Default is to 
+#' not scale the statistic but keep the raw degree difference `as.is`. 
+#' Alternatively, scaling of the raw degree difference per time point can be 
+#' requested with `std`. 
+#' @inheritParams totaldegreeSender
+#' 
+#' @details 
+#' A degreeDiff effect refers to the tendency for dyads to increase their 
+#' interaction rate if the absolute difference in degree for the two actors in 
+#' the pair increases. The statistic at timepoint \emph{t} for dyad 
+#' \emph{(i,j)} is equal to the difference between the following two values: 
+#' the number of events before timepoint \emph{t} that involved actor \emph{i} 
+#' and actor \emph{j}, respectively. The degreeDiff effect is only defined for 
+#' undirected events. 
+#' 
+#' @seealso \code{\link{degreeMin}}, \code{\link{degreeMax}} or 
+#' \code{\link{totaldegreeDyad}} for other types of degree effects for 
+#' undirected events.
+#' 
+#' @examples 
+#' library(remify)
+#' rehObject <- reh(history, directed = FALSE) 
+#' effects <- ~ degreeDiff()
+#' remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
+#' tomstats(effects, edgelist = rehObject, directed = FALSE)
+#'
+#' @export
+degreeDiff <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
+
+    # Match scaling
+    scaling <- match.arg(scaling)
+    scaling <- match(scaling, c("as.is", "std"))
+
+    # Output
+    if(!consider_type) {
+        list(
+            effect = "degreeDiff",
+            scaling = scaling
+        )
+    } else {
+        list(
+            effect = "degreeDiff.type",
+            scaling = scaling
+        )
+    }
+}
+
 #' degreeMin
 #' 
 #' Specifies the statistic for an `degreeMin` effect in the tie-oriented 
@@ -1272,14 +1324,13 @@ totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
 #' @inheritParams totaldegreeSender
 #' 
 #' @aliases degree 
-#' @seealso \code{\link{degreeMax}}, \code{\link{indegreeSender}}, 
-#' \code{\link{indegreeReceiver}}, \code{\link{outdegreeSender}}, 
-#' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
-#' \code{\link{totaldegreeReceiver}} for other types of degree effects.
+#' @seealso \code{\link{degreeDiff}}, \code{\link{degreeMax}} or 
+#' \code{\link{totaldegreeDyad}} for other types of degree effects for 
+#' undirected events.
 #' 
 #' @examples 
 #' library(remify)
-#' rehObject <- reh(history) 
+#' rehObject <- reh(history, directed = FALSE) 
 #' effects <- ~ degreeMin()
 #' remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
 #' tomstats(effects, edgelist = rehObject, directed = FALSE)
@@ -1330,14 +1381,13 @@ degreeMin <- function(scaling = c("as.is", "prop", "std"),
 #' @inheritParams totaldegreeSender
 #' 
 #' @aliases degree 
-#' @seealso \code{\link{degreeMin}}, \code{\link{indegreeSender}}, 
-#' \code{\link{indegreeReceiver}}, \code{\link{outdegreeSender}}, 
-#' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
-#' \code{\link{totaldegreeReceiver}} for other types of degree effects.
+#' @seealso \code{\link{degreeDiff}}, \code{\link{degreeMin}} or 
+#' \code{\link{totaldegreeDyad}} for other types of degree effects for 
+#' undirected events.
 #' 
 #' @examples 
 #' library(remify)
-#' rehObject <- reh(history) 
+#' rehObject <- reh(history, directed = FALSE)
 #' effects <- ~ degreeMax()
 #' remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
 #' tomstats(effects, edgelist = rehObject, directed = FALSE)

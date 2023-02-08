@@ -890,7 +890,7 @@ arma::mat degree_tie(int type, const arma::mat& edgelist,
 // Function to compute the degree statistics for the tie-oriented model with 
 // undirected events. 
 //
-// type: integer, 1 = degreeMin, 2 = degreeMax, 
+// type: integer, 1 = degreeMin, 2 = degreeMax, 3 = degreeDiff
 // edgelist: matrix (time, event, weight)
 // adjmat: matrix (events x dyads)
 // actors: vector, actor ids
@@ -960,6 +960,9 @@ arma::mat degree_undirected_tie(int type, const arma::mat& edgelist,
                     if(type == 2) {
                         stat.col(dyad) = max(degType.col(actor), degType.col(actors(h)));
                     }
+                    if(type == 3) {
+                        stat.col(dyad) = abs(degType.col(actor)-degType.col(actors(h)));
+                    }
                     
                 }
             }
@@ -1014,6 +1017,9 @@ arma::mat degree_undirected_tie(int type, const arma::mat& edgelist,
                     }
                     if(type == 2) {
                         stat.col(dyad) = max(deg.col(actor), deg.col(actors(h)));
+                    }
+                    if(type == 3) {
+                        stat.col(dyad) = abs(deg.col(actor)-deg.col(actors(h)));
                     }
                 }
             }
@@ -2942,6 +2948,27 @@ arma::cube compute_stats_tie(const arma::vec& effects,
                 // Compute statistic
                 stat = pshift_tie(7, edgelist, riskset, actors.n_elem, 
                     types.n_elem, directed, start, stop, TRUE);
+                break;
+            // 76 degreeDiff
+            case 76 : 
+                // Compute statistic
+                stat = degree_undirected_tie(3, edgelist, adjmat, actors, 
+                    types, start, stop, FALSE);
+                // Standardize 
+                if(scaling(i) == 2) {
+                    stat = standardize(stat);
+                }
+                break;
+
+            // 77 degreeDiff.type
+            case 77 : 
+                // Compute statistic
+                stat = degree_undirected_tie(3, edgelist, adjmat, actors, 
+                    types, start, stop, TRUE);
+                // Standardize 
+                if(scaling(i) == 2) {
+                    stat = standardize(stat);
+                }
                 break;
              
             // 99 interact

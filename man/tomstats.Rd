@@ -214,6 +214,10 @@ Endogenous statistics:
  \item \code{\link{recencyReceiveSender}()}
  \item \code{\link{recencyReceiveReceiver}()}
  \item \code{\link{recencyContinue}()}
+ \item \code{\link{degreeMin}()}
+ \item \code{\link{degreeMax}()}
+ \item \code{\link{degreeDiff}()}
+ \item \code{\link{totaldegreeDyad}()}
 }
 }
 \examples{

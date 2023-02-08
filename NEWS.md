@@ -1,3 +1,11 @@
+# remstats 3.0.2
+Date: 08-Feb-23
+
+## New features 
+* psABAB() effect
+* psABAY() effect adapted for undirected events
+* degreeDiff() effect
+
 # remstats 3.0.1
 Date: 05-Jan-23
 

@@ -40,15 +40,14 @@ is set equal to 1/n, where n refers to the number of actors.
 }
 \examples{
 library(remify)
-rehObject <- reh(history) 
+rehObject <- reh(history, directed = FALSE) 
 effects <- ~ degreeMin()
 remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
 tomstats(effects, edgelist = rehObject, directed = FALSE)
 
 }
 \seealso{
-\code{\link{degreeMax}}, \code{\link{indegreeSender}}, 
-\code{\link{indegreeReceiver}}, \code{\link{outdegreeSender}}, 
-\code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
-\code{\link{totaldegreeReceiver}} for other types of degree effects.
+\code{\link{degreeDiff}}, \code{\link{degreeMax}} or 
+\code{\link{totaldegreeDyad}} for other types of degree effects for 
+undirected events.
 }

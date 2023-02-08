@@ -131,6 +131,10 @@
 #'  \item \code{\link{recencyReceiveSender}()}
 #'  \item \code{\link{recencyReceiveReceiver}()}
 #'  \item \code{\link{recencyContinue}()}
+#'  \item \code{\link{degreeMin}()}
+#'  \item \code{\link{degreeMax}()}
+#'  \item \code{\link{degreeDiff}()}
+#'  \item \code{\link{totaldegreeDyad}()}
 #' }
 #' 
 #' @param effects an object of class \code{"\link[stats]{formula}"} (or one 
@@ -258,6 +262,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
         "totaldegreeDyad", #72
         "userStat", #73
         "psABAB", "psABAB.type", #74 #75 
+        "degreeDiff", "degreeDiff.type", #76 #77
 
         "interact") #99
     effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
@@ -272,7 +277,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     }
 
     if(directed) {
-        if(any(effectsN %in% c(22:23, 58:59, 67:71))) {
+        if(any(effectsN %in% c(22:23, 58:59, 67:71, 76:77))) {
             stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
         }
     }
@@ -348,7 +353,7 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     scaling <- as.numeric(sapply(effects, function(x) x$scaling))
 
     # Compute the adjacency matrix 
-    if(any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72))) {
+    if(any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72, 76:77))) {
         if(is.null(adjmat)) {
             adjmat <- compute_adjmat(edgelist.reh, nrow(actors), prep$D, 
                 directed, memory, memory_value, start, stop)
