@@ -16,8 +16,8 @@ remstats(
   ordinal = FALSE,
   origin = NULL,
   omit_dyad = NULL,
-  memory = c("full", "window", "Brandes"),
-  memory_value = Inf,
+  memory = c("full", "window", "decay", "interval"),
+  memory_value = NA,
   start = 1,
   stop = Inf,
   adjmat = NULL,
@@ -25,10 +25,12 @@ remstats(
 )
 }
 \arguments{
-\item{edgelist}{an object of class \code{"\link[base]{data.frame}"} or
-\code{"\link[base]{matrix}"} characterizing the relational event history
-sorted by time with columns `time`, `actor1`, `actor2` and optionally `type`
-and `weight`. Alternatively, an object of class \code{"\link[remify]{reh}"}}
+\item{edgelist}{an object of class \code{"\link[remify]{reh}"} 
+characterizing the relational event history sorted by time with columns 
+`time`, `dyad`, `weight`. Alternatively, an object of class 
+\code{"\link[base]{data.frame}"} or \code{"\link[base]{matrix}"} sorted by 
+time with columns `time`, `actor1`, `actor2` and optionally `type` and 
+`weight`.}
 
 \item{tie_effects}{an object of class \code{"\link[stats]{formula}"} (or one
 that can be coerced to that class): a symbolic description of the effects in
@@ -147,18 +149,22 @@ available for the tie-oriented model.
 The default `memory` setting is `"full"`, which implies that at each time
 point $t$ the entire event history before $t$ is included in the computation
 of the statistics. Alternatively, when `memory` is set to `"window"`, only
-the past event history within a given time interval is considered (see
-Mulders & Leenders, 2019). This length of this time interval is set by the
+the past event history within a given time window is considered (see
+Mulders & Leenders, 2019). This length of this time window is set by the
 `memory_value` parameter. For example, when `memory_value = 100` and `memory
 = "window"`, at time point $t$ only the past events that happened at most
-100 time units ago are included in the computation of the statistics. A
-third option is to set `memory` to `Brandes`. In this case, the weight of
-the past event in the computation of the statistics depend on the elapsed
-time between $t$ and the past event. This weight is determined based on an
-exponential decay function with half-life parameter `memory_value` (see
-Brandes et al., 2009).
+100 time units ago are included in the computation of the statistics.
+A third option is to set `memory` to `"interval"`. In this case, the past 
+event history within a given time interval is considered. For example, when 
+`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$ 
+only the past events tha happened between 50 and 100 time units ago are 
+included in the computation of the statistics. Finally, the fourth option is 
+to set `memory` to `"decay"`. In this case, the weight of the past event in 
+the computation of the statistics depend on the elapsed time between $t$ and 
+the past event. This weight is determined based on an exponential decay 
+function with half-life parameter `memory_value` (see Brandes et al., 2009).
 
-Note that if the  edgelist contains a column that is named ``weight'', it is
+Note that if the edgelist contains a column that is named ``weight'', it is
 assumed that these affect the endogenous statistics. These settings are
 defined globally in the \code{remstats} function and affect the computation
 of all endogenous statistics with the following exceptions (that follow

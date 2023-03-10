@@ -141,7 +141,8 @@ arma::mat standardize(arma::mat stat)
 //
 // [[Rcpp::export]]
 arma::mat compute_adjmat(const arma::mat &edgelist, int N, int D, bool directed,
-                         int memory, double memory_value, int start, int stop)
+                         std::string memory, arma::vec memory_value, int start,
+                         int stop)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -151,7 +152,7 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int N, int D, bool directed,
   arma::mat adjmat(slice.n_rows, D, arma::fill::zeros);
 
   // Full memory
-  if (memory == 1)
+  if (memory == "full")
   {
     // (1) Initialize adjacency matrix
     // Select the past
@@ -177,17 +178,40 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int N, int D, bool directed,
   }
 
   // Windowed memory
-  if (memory == 2)
+  if (memory == "window")
   {
     // For loop over timepoints
     for (arma::uword i = 1; i < slice.n_rows; ++i)
     {
       // Current time
-      double time = slice(i, 0);
+      double t = slice(i, 0);
 
       // Past events
-      arma::uvec pastkey = arma::find(edgelist.col(0) < time &&
-                                      edgelist.col(0) >= (time - memory_value));
+      arma::uvec pastkey = arma::find(edgelist.col(0) < t &&
+                                      edgelist.col(0) >= (t - memory_value(0)));
+      arma::mat past = edgelist.rows(pastkey);
+
+      // For loop over the past
+      for (arma::uword j = 0; j < past.n_rows; ++j)
+      {
+        // Add event weight to adjacency matrix
+        adjmat(i, past(j, 1)) += past(j, 2);
+      }
+    }
+  }
+  
+  // Interval memory
+  if (memory == "interval")
+  {
+    // For loop over timepoints
+    for (arma::uword i = 1; i < slice.n_rows; ++i)
+    {
+      // Current time
+      double t = slice(i, 0);
+
+      // Past events
+      arma::uvec pastkey = arma::find(edgelist.col(0) < (t - memory_value(0)) &&
+                                      edgelist.col(0) >= (t - memory_value(1)));
       arma::mat past = edgelist.rows(pastkey);
 
       // For loop over the past
@@ -199,18 +223,18 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int N, int D, bool directed,
     }
   }
 
-  // Brandes memory
-  if (memory == 3)
+  // Exponential decay memory
+  if (memory == "decay")
   {
     // For loop over timepoints
     for (arma::uword i = 0; i < slice.n_rows; ++i)
     {
 
       // Current time
-      double time = slice(i, 0);
+      double t = slice(i, 0);
 
       // Past events
-      arma::uvec pastkey = arma::find(edgelist.col(0) < time);
+      arma::uvec pastkey = arma::find(edgelist.col(0) < t);
       arma::mat past = edgelist.rows(pastkey);
 
       // For loop over the past
@@ -221,7 +245,8 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int N, int D, bool directed,
 
         // Brandes weight
         double te = past(j, 0);
-        we = we * exp(-(time - te) * (log(2) / memory_value)) * (log(2) / memory_value);
+        we = we * exp(-(t - te) * (log(2) / memory_value(0))) *
+             (log(2) / memory_value(0));
 
         // Add weight to adjacency matrix
         adjmat(i, past(j, 1)) += we;

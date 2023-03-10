@@ -53,7 +53,7 @@ RcppExport SEXP _remstats_getRisksetMatrix(SEXP actorIDSEXP, SEXP typeIDSEXP, SE
     return rcpp_result_gen;
 }
 // compute_adjmat
-arma::mat compute_adjmat(const arma::mat& edgelist, int N, int D, bool directed, int memory, double memory_value, int start, int stop);
+arma::mat compute_adjmat(const arma::mat& edgelist, int N, int D, bool directed, std::string memory, arma::vec memory_value, int start, int stop);
 static SEXP _remstats_compute_adjmat_try(SEXP edgelistSEXP, SEXP NSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -61,8 +61,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type N(NSEXP);
     Rcpp::traits::input_parameter< int >::type D(DSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
-    Rcpp::traits::input_parameter< int >::type memory(memorySEXP);
-    Rcpp::traits::input_parameter< double >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< std::string >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type memory_value(memory_valueSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
     rcpp_result_gen = Rcpp::wrap(compute_adjmat(edgelist, N, D, directed, memory, memory_value, start, stop));
@@ -230,7 +230,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
     static std::set<std::string> signatures;
     if (signatures.empty()) {
         signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
-        signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,int,bool,int,double,int,int)");
+        signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,int,bool,std::string,arma::vec,int,int)");
         signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int,bool)");
         signatures.insert("arma::cube(*compute_stats_rate)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int)");
         signatures.insert("arma::cube(*compute_stats_choice)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int)");

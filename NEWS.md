@@ -1,12 +1,16 @@
 # remstats 3.0.3
 Date: TBD
 
+## New features
+* Interval memory. 
+
 ## Minor changes 
 * Fixed bug in exogenous stats with time-varying attributes in the tie-oriented model.
 * Fixed bug in scaling the exogenous stats in the receiver step of the actor-oriented model. 
 * Added explanatory warnings and errors. 
 * Fixed partial match warning (issue #35). 
 * Fixed environment issue attributes object. 
+* Renamed "Brandes" memory to "decay".
 
 # remstats 3.0.2
 Date: 08-Feb-23
