@@ -8,19 +8,19 @@ recencyReceiveSender(consider_type = FALSE)
 }
 \arguments{
 \item{consider_type}{logical, indicates whether to compute the recency
-separately for each event type (TRUE) or regardless of event types (FALSE, 
+separately for each event type (TRUE) or regardless of event types (FALSE,
 default).}
 }
 \description{
-Specifies the statistic for a recency receive of sender effect in the 
-\code{effects} argument of \code{\link{tomstats}} or the 
+Specifies the statistic for a recency receive of sender effect in the
+\code{effects} argument of \code{\link{tomstats}} or the
 \code{sender_effects} argument of \code{\link{aomstats}}.
 }
 \details{
-The recencyReceiveSender effect refers to a recency statistic similar to 
-what is described in Vu et al. (2017) and Mulder and Leenders (2019). For 
-each timepoint t, for directed dyad (i,j) the statistic is equal to 1/(the 
-time that has past since sender i was last active as receiver + 1). Note 
+The recencyReceiveSender effect refers to a recency statistic similar to
+what is described in Vu et al. (2017) and Mulder and Leenders (2019). For
+each timepoint t, for directed dyad (i,j) the statistic is equal to 1/(the
+time that has past since sender i was last active as receiver + 1). Note
 that the 'recencyReceiveSender' effect is only defined for directed events.
 }
 \examples{
@@ -30,8 +30,8 @@ aomstats(sender_effects = effects, edgelist = history)
 
 }
 \seealso{
-\code{\link{rrankSend}}, \code{\link{rrankReceive}}, 
-\code{\link{recencySendSender}}, \code{\link{recencySendReceiver}}, 
-\code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for 
+\code{\link{rrankSend}}, \code{\link{rrankReceive}},
+\code{\link{recencySendSender}}, \code{\link{recencySendReceiver}},
+\code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for
 other type of recency effects
 }

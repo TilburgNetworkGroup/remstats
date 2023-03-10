@@ -9,24 +9,24 @@
 rrankSend(consider_type = FALSE)
 }
 \arguments{
-\item{consider_type}{logical, indicates whether to discriminate between 
+\item{consider_type}{logical, indicates whether to discriminate between
 event types in determining the event rank (TRUE) or not (FALSE, default).}
 }
 \description{
-Specifies the statistic for a recency rank send effect in the 
-\code{effects} argument of \code{\link{tomstats}} or the 
+Specifies the statistic for a recency rank send effect in the
+\code{effects} argument of \code{\link{tomstats}} or the
 \code{receiver_effects} argument of \code{\link{aomstats}}.
 }
 \details{
-The rrankSend effect refers to a rank-based recency effect, as described in 
-section 2.2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j) 
-the statistic is equal to the inverse of the rank of receiver j among the 
-actors to which sender i has most recently send past events. Note that the 
+The rrankSend effect refers to a rank-based recency effect, as described in
+section 2.2.5 of Butts (2008). For each timepoint t, for directed dyad (i,j)
+the statistic is equal to the inverse of the rank of receiver j among the
+actors to which sender i has most recently send past events. Note that the
 'rrankSend' effect is only defined for directed events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history) 
+rehObject <- reh(history)
 effects <- ~ rrankSend()
 remstats(tie_effects = effects, edgelist = rehObject)
 remstats(receiver_effects = effects, edgelist = rehObject)
@@ -35,8 +35,8 @@ aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }
 \seealso{
-\code{\link{rrankReceive}}, \code{\link{recencySendSender}}, 
-\code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}}, 
-\code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for 
+\code{\link{rrankReceive}}, \code{\link{recencySendSender}},
+\code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}},
+\code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for
 other type of recency effects
 }

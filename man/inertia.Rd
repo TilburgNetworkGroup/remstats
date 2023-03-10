@@ -7,40 +7,40 @@
 inertia(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the inertia statistic. Default is to 
-not scale the statistic but keep the raw counts 'as.is'. Alternatively, the 
-statistics can be scaled by specifying 'prop', in which raw counts are 
-divided by the outdegree of the sender at time t (see 'details') or 
+\item{scaling}{the method for scaling the inertia statistic. Default is to
+not scale the statistic but keep the raw counts 'as.is'. Alternatively, the
+statistics can be scaled by specifying 'prop', in which raw counts are
+divided by the outdegree of the sender at time t (see 'details') or
 standardization of the raw counts per time point can be requested with 'std'.}
 
-\item{consider_type}{logical, indicates whether to count the number of past 
-events separately for each event type (TRUE) or sum across different event 
+\item{consider_type}{logical, indicates whether to count the number of past
+events separately for each event type (TRUE) or sum across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an inertia effect in the tie-oriented model or 
+Specifies the statistic for an inertia effect in the tie-oriented model or
 the receiver choice step of the actor-oriented model.
 }
 \details{
-An inertia effect refers to the tendency for dyads to repeatedly interact 
-with each other (tie-oriented model) or for actors to repeatedly choose the 
-same actor as receiver of their events (actor-oriented model). The statistic 
-at timepoint \emph{t} for dyad \emph{(i,j)} resp. receiver \emph{j} is 
-equal to the number of \emph{(i,j)} events before timepoint \emph{t}. 
+An inertia effect refers to the tendency for dyads to repeatedly interact
+with each other (tie-oriented model) or for actors to repeatedly choose the
+same actor as receiver of their events (actor-oriented model). The statistic
+at timepoint \emph{t} for dyad \emph{(i,j)} resp. receiver \emph{j} is
+equal to the number of \emph{(i,j)} events before timepoint \emph{t}.
 
-Optionally, a scaling method can be set with \code{scaling}. By scaling the 
-inertia count by the outdegree of the sender ("prop"), the statistic refers 
-to the fraction of messages send by actor i that were send to actor j. If 
-actor i hasn't send any messages yet it can be assumed that every actor is 
-equally likely to receive a message from i and the statistic is set equal to 
-1/(n-1), where n refers to the number of actors. The resulting statistic is 
-similar to the "FrPSndSnd" statistic in the R package relevent, or the 
-persistence statistic in Section 2.2.2 of Butts (2008). Note that this 
+Optionally, a scaling method can be set with \code{scaling}. By scaling the
+inertia count by the outdegree of the sender ("prop"), the statistic refers
+to the fraction of messages send by actor i that were send to actor j. If
+actor i hasn't send any messages yet it can be assumed that every actor is
+equally likely to receive a message from i and the statistic is set equal to
+1/(n-1), where n refers to the number of actors. The resulting statistic is
+similar to the "FrPSndSnd" statistic in the R package relevent, or the
+persistence statistic in Section 2.2.2 of Butts (2008). Note that this
 scaling method is only defined for directed events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history) 
+rehObject <- reh(history)
 effects <- ~ inertia()
 remstats(edgelist = rehObject, tie_effects = effects)
 remstats(edgelist = rehObject, receiver_effects = effects)

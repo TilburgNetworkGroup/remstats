@@ -7,28 +7,35 @@
 userStat(x, variableName = NULL)
 }
 \arguments{
-\item{x}{matrix with number of rows equal to the number of events and number of columns equal to the number of dyads}
+\item{x}{matrix with number of rows equal to the number of events and number
+of columns equal to the number of dyads in the network (tie-oriented model) 
+or the number of actors in the network (actor-oriented model)}
 
-\item{variableName}{optionally, a string indicating the variable name, used 
+\item{variableName}{optionally, a string indicating the variable name, used
 for the dimnames of the output statistics object}
 }
 \description{
-Allows the user to add its own pre-computed statistic to the statistics 
-object and, optionally, interact this statistic with other statistics in the 
-formula. Currently only defined for the tie-oriented model.
+Allows the user to add its own pre-computed statistic to the statistics
+object and, optionally, interact this statistic with other statistics in the
+formula.
 }
 \examples{
-dummy <- remstats(edgelist = history, tie_effects = ~ 1)
+# Prepare data
+dummy <- remstats(edgelist = history, tie_effects = ~1)
 riskset <- dummy$riskset
 evls <- dummy$evls
 actor101Events <- which(riskset$sender == "101" | riskset$receiver == "101")
-actor101stat <- t(sapply(1:nrow(evls), function(i) {
- rep(evls[i,1] \%in\% actor101Events, nrow(riskset))
+actor101stat <- t(sapply(seq_len(nrow(evls)), function(i) {
+    rep(evls[i, 1] \%in\% actor101Events, nrow(riskset))
 }))
+
+# Main effects only
 effects <- ~ userStat(x = actor101stat, variableName = "actor101event")
 remstats(edgelist = history, tie_effects = effects)
-effects2 <- ~ inertia():userStat(x = actor101stat, variableName = 
- "actor101event")
-remstats(edgelist = history, tie_effects = effects2)
+
+# Model with interaction effects
+interaction_effects <- ~ inertia()*
+ userStat(x = actor101stat, variableName ="actor101event")
+remstats(edgelist = history, tie_effects = interaction_effects)
 
 }

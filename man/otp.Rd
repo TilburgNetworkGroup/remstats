@@ -8,30 +8,30 @@
 otp(scaling = c("as.is", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the triad statistic. Default is to not 
-scale the statistic but keep the raw counts 'as.is'. Alternatively, 
-standardization of the raw counts per time point can be requested 
+\item{scaling}{the method for scaling the triad statistic. Default is to not
+scale the statistic but keep the raw counts 'as.is'. Alternatively,
+standardization of the raw counts per time point can be requested
 with 'std'.}
 
-\item{consider_type}{logical, indicates whether to count the two-paths 
-separately for each event type (TRUE) or sum across different event 
+\item{consider_type}{logical, indicates whether to count the two-paths
+separately for each event type (TRUE) or sum across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an outgoing two-path effect in the tie-oriented 
+Specifies the statistic for an outgoing two-path effect in the tie-oriented
 model or the receiver choice step of the actor-oriented model.
 }
 \details{
-An outgoing two-path effect refers to the tendency of dyads to interact if 
-they have more past outgoing two-paths between them. The statistic at 
-timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past 
-\emph{(i,h)}, \emph{(h,j)} events, summed over all actors \emph{h}. 
-Optionally, a scaling method can be set with \code{scaling}. Note that an 
+An outgoing two-path effect refers to the tendency of dyads to interact if
+they have more past outgoing two-paths between them. The statistic at
+timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past
+\emph{(i,h)}, \emph{(h,j)} events, summed over all actors \emph{h}.
+Optionally, a scaling method can be set with \code{scaling}. Note that an
 'otp' effect is only defined for directed events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history) 
+rehObject <- reh(history)
 effects <- ~ otp()
 remstats(edgelist = rehObject, tie_effects = effects)
 remstats(edgelist = rehObject, receiver_effects = effects)
@@ -40,8 +40,8 @@ aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }
 \seealso{
-\code{\link{itp}}, \code{\link{osp}}, or \code{\link{isp}} for 
-other types of triadic effects for directed relational events and 
-\code{\link{sp}} or \code{\link{spUnique}} for triadic effects for 
+\code{\link{itp}}, \code{\link{osp}}, or \code{\link{isp}} for
+other types of triadic effects for directed relational events and
+\code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
 undirected relational events.
 }

@@ -7,39 +7,42 @@
 tie(x, variableName = NULL, scaling = c("as.is", "std"))
 }
 \arguments{
-\item{x}{a matrix with attribute information, rows and columns should refer 
+\item{x}{a matrix with attribute information, rows and columns should refer
 to actors in the edgelist}
 
-\item{variableName}{optionally, a string indicating the variable name, used 
+\item{variableName}{optionally, a string indicating the variable name, used
 for the dimnames of the output statistics object}
 
-\item{scaling}{the method for scaling the statistic. Default is to not scale 
-the statistic but keep it "as.is". Alternatively, standardization of the 
+\item{scaling}{the method for scaling the statistic. Default is to not scale
+the statistic but keep it "as.is". Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 }
 \description{
-Specifies the statistic for a `tie` effect in the tie-oriented model or the 
-receiver choice step of the actor-oriented model.
+Specifies the statistic for a "tie" (or, "dyad") effect in the tie-oriented
+model or the receiver choice step of the actor-oriented model. A "tie"
+effect refers to an exogenous dyad attribute that affects dyad
+\emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s
+probability of being chosen as a receiver for the event send by the active
+sender \emph{i} (actor-oriented model).
 }
 \details{
-A tie effect refers to an exogenous dyad attribute that affects dyad 
-\emph{(i,j)}'s rate of interacting. The statistic is equal to the value of 
-the exogenous attribute for dyad \emph{(i,j)}.
+The statistic is equal to the value of the exogenous attribute for
+dyad \emph{(i,j)} in matrix \code{x}.
 }
 \examples{
 library(remify)
 data(info)
 actors <- unique(info$id)
 age <- info[match(actors, info$id), "age"]
-bothOld <- sapply(1:length(actors), function(i) {
- sapply(1:length(actors), function(j) {
-     ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)
- })})
+both_old <- sapply(seq_along(actors), function(i) {
+    sapply(seq_along(actors), function(j) {
+        ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)
+    })
+})
+rownames(both_old) <- colnames(both_old) <- actors
 rehObject <- reh(history)
-effects <- ~ tie(bothOld, variableName = "both.old")
+effects <- ~ tie(both_old, variableName = "both.old")
 remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
 remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
-tomstats(effects, edgelist = rehObject)
-aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }

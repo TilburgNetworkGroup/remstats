@@ -9,25 +9,24 @@ event(x, variableName = NULL)
 \arguments{
 \item{x}{vector with the event attribute}
 
-\item{variableName}{optionally, a string indicating the variable name, used 
+\item{variableName}{optionally, a string indicating the variable name, used
 for the dimnames of the output statistics object}
 }
 \description{
-Specifies the statistic for an `event` effect in the tie-oriented model.
+Specifies the statistic for an "event" effect in the tie-oriented model. An
+"event" effect refers to an exogenous event attribute that affects the
+waiting time between events.
 }
 \details{
-An `event` effect refers to an exogenous event attribute that affects the 
-waiting time between events. The statistic at timepoint \emph{t} is for all 
-dyads in the riskset equal to the attribute of the event at timepoint 
-\emph{t}.
+The statistic at timepoint \emph{t} is for all dyads in the risk set equal
+to the attribute of the event at timepoint \emph{t}.
 }
 \examples{
 library(remify)
 rehObject <- reh(history)
 work <- ifelse(history$setting == "work", 1, 0)
-effects <- ~ event(work, "setting.is.work")
-remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
-tomstats(effects, edgelist = rehObject)
+effects <- ~ event(x = work, variableName = "setting_is_work")
+remstats(edgelist = rehObject, tie_effects = effects)
 
 }
 \seealso{

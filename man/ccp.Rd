@@ -10,7 +10,7 @@ ccp(duration)
 \item{duration}{vector with event durations.}
 }
 \description{
-Specifies the statistic for a 'common current partner' effect for the 
-tie-oriented model. NOTE: currently only defined for undirected, dyadic 
+Specifies the statistic for a 'common current partner' effect for the
+tie-oriented model. NOTE: currently only defined for undirected, dyadic
 events.
 }

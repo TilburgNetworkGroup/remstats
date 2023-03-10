@@ -7,38 +7,38 @@
 degreeDiff(scaling = c("as.is", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the degree statistic. Default is to 
-not scale the statistic but keep the raw degree difference `as.is`. 
-Alternatively, scaling of the raw degree difference per time point can be 
+\item{scaling}{the method for scaling the degree statistic. Default is to
+not scale the statistic but keep the raw degree difference `as.is`.
+Alternatively, scaling of the raw degree difference per time point can be
 requested with `std`.}
 
-\item{consider_type}{logical, indicates whether to count the degrees 
-separately for each event type (TRUE) or sum degrees across different event 
+\item{consider_type}{logical, indicates whether to count the degrees
+separately for each event type (TRUE) or sum degrees across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for a `degreeDiff` effect in the tie-oriented 
+Specifies the statistic for a `degreeDiff` effect in the tie-oriented
 model.
 }
 \details{
-A degreeDiff effect refers to the tendency for dyads to increase their 
-interaction rate if the absolute difference in degree for the two actors in 
-the pair increases. The statistic at timepoint \emph{t} for dyad 
-\emph{(i,j)} is equal to the difference between the following two values: 
-the number of events before timepoint \emph{t} that involved actor \emph{i} 
-and actor \emph{j}, respectively. The degreeDiff effect is only defined for 
+A degreeDiff effect refers to the tendency for dyads to increase their
+interaction rate if the absolute difference in degree for the two actors in
+the pair increases. The statistic at timepoint \emph{t} for dyad
+\emph{(i,j)} is equal to the difference between the following two values:
+the number of events before timepoint \emph{t} that involved actor \emph{i}
+and actor \emph{j}, respectively. The degreeDiff effect is only defined for
 undirected events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history, directed = FALSE) 
+rehObject <- reh(history, directed = FALSE)
 effects <- ~ degreeDiff()
 remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
 tomstats(effects, edgelist = rehObject, directed = FALSE)
 
 }
 \seealso{
-\code{\link{degreeMin}}, \code{\link{degreeMax}} or 
-\code{\link{totaldegreeDyad}} for other types of degree effects for 
+\code{\link{degreeMin}}, \code{\link{degreeMax}} or
+\code{\link{totaldegreeDyad}} for other types of degree effects for
 undirected events.
 }

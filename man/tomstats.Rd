@@ -23,23 +23,23 @@ tomstats(
 )
 }
 \arguments{
-\item{effects}{an object of class \code{"\link[stats]{formula}"} (or one 
-that can be coerced to that class): a symbolic description of the effects in 
-the model for which statistics are computed, see 'Details' for the available 
+\item{effects}{an object of class \code{"\link[stats]{formula}"} (or one
+that can be coerced to that class): a symbolic description of the effects in
+the model for which statistics are computed, see 'Details' for the available
 effects and their corresponding statistics}
 
-\item{edgelist}{an object of class \code{"\link[base]{data.frame}"} or 
-\code{"\link[base]{matrix}"} characterizing the relational event history 
-sorted by time with columns `time`, `actor1`, `actor2` and optionally `type` 
+\item{edgelist}{an object of class \code{"\link[base]{data.frame}"} or
+\code{"\link[base]{matrix}"} characterizing the relational event history
+sorted by time with columns `time`, `actor1`, `actor2` and optionally `type`
 and `weight`. Alternatively, an object of class \code{"\link[remify]{reh}"}}
 
-\item{attributes}{optionally, an object of class 
-\code{"\link[base]{data.frame}"} that contains the exogenous attributes (see 
+\item{attributes}{optionally, an object of class
+\code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
 Details).}
 
-\item{actors}{vector of actors that may be observed interacting in the network. If \code{NULL}, actor names will be taken from the input edgelist.}
+\item{actors}{character vector of actors' names that may be observed interacting in the network. If \code{NULL}, actor names will be taken from the input edgelist.}
 
-\item{types}{vector of event types that may occur in the network. If \code{NULL}, type names will be taken from the input edgelist.}
+\item{types}{character vector of event types that may occur in the network. If \code{NULL}, type names will be taken from the input edgelist.}
 
 \item{directed}{logical value indicating whether dyadic events are directed (\code{TRUE}) or undirected (\code{FALSE}).}
 
@@ -51,123 +51,123 @@ Details).}
 
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. See 
+\item{memory_value}{Numeric value indicating the memory parameter. See
 `Details'.}
 
-\item{start}{integer value, refers to the index in the edgelist of the first 
+\item{start}{integer value, refers to the index in the edgelist of the first
 event for which statistics are requested (see 'Details')}
 
-\item{stop}{integer value, refers to the index in the edgelist of the last 
+\item{stop}{integer value, refers to the index in the edgelist of the last
 event for which statistics are requested (see 'Details')}
 
-\item{adjmat}{optionally, a previously computed adjacency matrix with on the 
-rows the timepoints and on the columns the riskset entries}
+\item{adjmat}{optionally, a previously computed adjacency matrix with on the
+rows the time points and on the columns the risk set entries}
 
-\item{output}{indicates which output objects need to be provided, i.e., 
-either only the statistics matrix ("stats_only", faster!) or all the below 
+\item{output}{indicates which output objects need to be provided, i.e.,
+either only the statistics matrix ("stats_only", faster!) or all the below
 defined information objects ("all", default).}
 }
 \value{
-\code{statistics } Array with the computed statistics, where rows 
-refer to time points, columns refer to potential relational event (i.e., 
+\code{statistics } array with the computed statistics, where rows
+refer to time points, columns refer to potential relational event (i.e.,
 potential edges) in the risk set and slices refer to statistics
 
-\code{evls } Matrix with the edgelist, processed such that it can be 
+\code{evls } matrix with the edgelist, processed such that it can be
 used to estimate a relational event model with \code{"\link[relevent]{rem}"}
 
-\code{edgelist } Dataframe with the edgelist
+\code{edgelist } data.frame with the edgelist
 
-\code{adjmat } Matrix with the adjacency matrix, rows refer to 
-timepoints and columns to riskset entries. At timepoint t, it gives the 
-cumulative weight until t-1 (i.e., the events that occurred before time 
-poin t).
+\code{adjmat } matrix with the adjacency matrix, rows refer to
+time points and columns to risk set entries. At timepoint t, it gives the
+cumulative weight until t-1 (i.e., the events that occurred before time
+point t).
 }
 \description{
-Computes statistics for modeling relational event history data with Butts' 
+Computes statistics for modeling relational event history data with Butts'
 (2008) relational event model.
 }
 \details{
-The statistics to be computed are defined symbolically and should be 
-supplied to the \code{effects} argument in the form \code{~ effects}. The 
-terms are separated by + operators. For example: 
-\code{effects = ~ inertia() + otp()}. Interactions between two effects 
-can be included with * or : operators. For example: 
-\code{effects = ~ inertia():otp()}. A list of available effects and their 
-corresponding statistics follows at the bottom. 
+The statistics to be computed are defined symbolically and should be
+supplied to the \code{effects} argument in the form \code{~ effects}. The
+terms are separated by + operators. For example:
+\code{effects = ~ inertia() + otp()}. Interactions between two effects
+can be included with * or : operators. For example:
+\code{effects = ~ inertia():otp()}. A list of available effects and their
+corresponding statistics follows at the bottom.
 
-For the computation of the \emph{exogenous} statistics an attributes object 
-with the exogenous covariate information has to be supplied to the 
-\code{attributes} argument in either \code{tomstats()} or in the separate 
-effect functions supplied to the \code{effects} argument (e.g., see 
-\code{\link{send}}). This \code{attributes} object should be constructed as 
-follows: A dataframe with rows refering to the attribute value of actor 
-\emph{i} at timepoint \emph{t}. An `id` column is required that contains the 
-actor id (corresponding to the actor id's in the edgelist). A `time` column 
-is required that contains the time when attributes change (set to zero if 
-none of the attributes vary over time). Subsequent columns contain the 
-attributes that are called in the specifications of exogenous statistics 
-(column name corresponding to the string supplied to the \code{variable} 
-argument in the effect function). Note that the procedure for the exogenous 
-effects `tie' and `event' deviates from this, here the exogenous covariate 
-information has to be specified in a different way, see \code{\link{tie}} 
-and \code{\link{event}}. 
+For the computation of the \emph{exogenous} statistics an attributes object
+with the exogenous covariate information has to be supplied to the
+\code{attributes} argument in either \code{tomstats()} or in the separate
+effect functions supplied to the \code{effects} argument (e.g., see
+\code{\link{send}}). This \code{attributes} object should be constructed as
+follows: A data.frame with rows referring to the attribute value of actor
+\emph{i} at timepoint \emph{t}. An `id` column is required that contains the
+actor id (corresponding to the actor id's in the edgelist). A `time` column
+is required that contains the time when attributes change (set to zero if
+none of the attributes vary over time). Subsequent columns contain the
+attributes that are called in the specifications of exogenous statistics
+(column name corresponding to the string supplied to the \code{variable}
+argument in the effect function). Note that the procedure for the exogenous
+effects `tie' and `event' deviates from this, here the exogenous covariate
+information has to be specified in a different way, see \code{\link{tie}}
+and \code{\link{event}}.
 
-The majority of the statistics can be scaled in some way, see 
-the documentation of the \code{scaling} argument in the separate effect 
-functions for more information on this. 
+The majority of the statistics can be scaled in some way, see
+the documentation of the \code{scaling} argument in the separate effect
+functions for more information on this.
 
-The majority of the statistics can account for the event type 
-included as a dependent variable, see the documentation of the 
-\code{consider_type} argument in the separate effect functions for more 
-information on this. 
+The majority of the statistics can account for the event type
+included as a dependent variable, see the documentation of the
+\code{consider_type} argument in the separate effect functions for more
+information on this.
 
-Note that events in the edgelist can be directed or undirected. Some 
-statistics are only defined for either directed or undirected events (see 
-the documentation of the statistics). 
+Note that events in the edgelist can be directed or undirected. Some
+statistics are only defined for either directed or undirected events (see
+the documentation of the statistics).
 
-The default `memory` setting is `"full"`, which implies that at each time 
-point $t$ the entire event history before $t$ is included in the computation 
-of the statistics. Alternatively, when `memory` is set to `"window"`, only 
-the past event history within a given time interval is considered (see 
-Mulders & Leenders, 2019). This length of this time interval is set by the 
-`memory_value` parameter. For example, when `memory_value = 100` and `memory 
-= "window"`, at time point $t$ only the past events that happened at most 
-100 time units ago are included in the computation of the statistics. A 
-third option is to set `memory` to `Brandes`. In this case, the weight of 
-the past event in the computation of the statistics depend on the elapsed 
-time between $t$ and the past event. This weight is determined based on an 
-exponential decay function with half-life parameter `memory_value` (see 
-Brandes et al., 2009). 
+The default `memory` setting is `"full"`, which implies that at each time
+point $t$ the entire event history before $t$ is included in the computation
+of the statistics. Alternatively, when `memory` is set to `"window"`, only
+the past event history within a given time interval is considered (see
+Mulders & Leenders, 2019). This length of this time interval is set by the
+`memory_value` parameter. For example, when `memory_value = 100` and `memory
+= "window"`, at time point $t$ only the past events that happened at most
+100 time units ago are included in the computation of the statistics. A
+third option is to set `memory` to `Brandes`. In this case, the weight of
+the past event in the computation of the statistics depend on the elapsed
+time between $t$ and the past event. This weight is determined based on an
+exponential decay function with half-life parameter `memory_value` (see
+Brandes et al., 2009).
 
-Note that if the  edgelist contains a column that is named ``weight'', it is 
-assumed that these affect the endogenous statistics. These settings are 
-defined globally in the \code{tomstats} function and affect the computation 
-of all endogenous statistics with the following exceptions (that follow 
-logically from their definition). Since spUnique is a count of the number of 
-unique interaction partners, and the recency statistics (recencyContinue, 
-recencySendSender, recencySendReceiver, recencyReceiveSender, 
-recencyReceiveReceiver) depend on the time past, the computation of these 
-statistics do not depend on event weights. Since the baseline statistic is 
-always one, the FEtype statistic is binary and does not depend on past 
-events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and 
-PSAB-AY) are binary and only dependent on the previous event, these 
-statistics are not affected by the memory settings or the supplied event 
-weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now) 
-only available with the "full" memory, and are, per definition, not affected 
-by supplied event weights.  
+Note that if the  edgelist contains a column that is named ``weight'', it is
+assumed that these affect the endogenous statistics. These settings are
+defined globally in the \code{tomstats} function and affect the computation
+of all endogenous statistics with the following exceptions (that follow
+logically from their definition). Since spUnique is a count of the number of
+unique interaction partners, and the recency statistics (recencyContinue,
+recencySendSender, recencySendReceiver, recencyReceiveSender,
+recencyReceiveReceiver) depend on the time past, the computation of these
+statistics do not depend on event weights. Since the baseline statistic is
+always one, the FEtype statistic is binary and does not depend on past
+events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and
+PSAB-AY) are binary and only dependent on the previous event, these
+statistics are not affected by the memory settings or the supplied event
+weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now)
+only available with the "full" memory, and are, per definition, not affected
+by supplied event weights.
 
-Optionally, statistics can be computed for a slice of the edgelist - but 
-based on the entire history. This is achieved by setting the start and 
-stop values equal to the index of the first and last event for which 
-statistics are requested. For example, start = 5 and stop = 5 computes the 
-statistics for only the 5th event in the edgelist, based on the history that 
-consists of events 1-4. 
+Optionally, statistics can be computed for a slice of the edgelist - but
+based on the entire history. This is achieved by setting the start and
+stop values equal to the index of the first and last event for which
+statistics are requested. For example, start = 5 and stop = 5 computes the
+statistics for only the 5th event in the edgelist, based on the history that
+consists of events 1-4.
 
-Optionally, a previously computed adjacency matrix can be supplied. Note 
-that the endogenous statistics will be computed based on this adjacency 
-matrix. Hence, supplying a previously computed adjacency matrix can reduce 
-computation time but the user should be absolutely sure the adjacency matrix 
-is accurate. 
+Optionally, a previously computed adjacency matrix can be supplied. Note
+that the endogenous statistics will be computed based on this adjacency
+matrix. Hence, supplying a previously computed adjacency matrix can reduce
+computation time but the user should be absolutely sure the adjacency matrix
+is accurate.
 
 Exogenous statistics:
 \itemize{
@@ -180,6 +180,7 @@ Exogenous statistics:
  \item \code{\link{minimum}()}
  \item \code{\link{maximum}()}
  \item \code{\link{event}()}
+ \item \code{\link{userStat}()}
 }
 
 Endogenous statistics:
@@ -227,7 +228,7 @@ tomstats(effects, edgelist = history, attributes = info)
 
 }
 \references{
-Butts, C. T. (2008). A relational event framework for social 
-action. Sociological Methodology, 38(1), 155–200. 
+Butts, C. T. (2008). A relational event framework for social
+action. Sociological Methodology, 38(1), 155–200.
 \url{https://doi.org/10.1111/j.1467-9531.2008.00203.x}
 }

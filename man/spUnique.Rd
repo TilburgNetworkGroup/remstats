@@ -7,38 +7,38 @@
 spUnique(scaling = c("as.is", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the triad statistic. Default is to not 
-scale the statistic but keep the raw 'counts'. Alternatively, 
-standardization of the raw counts per time point can be requested 
+\item{scaling}{the method for scaling the triad statistic. Default is to not
+scale the statistic but keep the raw 'counts'. Alternatively,
+standardization of the raw counts per time point can be requested
 with 'std'.}
 
-\item{consider_type}{logical, indicates whether to count the shared partners 
-separately for each event type (TRUE) or sum across different event 
+\item{consider_type}{logical, indicates whether to count the shared partners
+separately for each event type (TRUE) or sum across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for a unique shared partners effect in the 
+Specifies the statistic for a unique shared partners effect in the
 \code{effects} argument of \code{\link{tomstats}}.
 }
 \details{
-A unique shared partners effect refers to the tendency of dyads to interact 
-if they have more past unique shared partners between them. The statistic at 
-timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of unique 
-actors \emph{h} that both actors \emph{i} and \emph{j} interacted with in 
-the past. Optionally, a scaling method can be set with \code{scaling}. Note 
-that the `unique shared partners' effect is only defined for undirected 
+A unique shared partners effect refers to the tendency of dyads to interact
+if they have more past unique shared partners between them. The statistic at
+timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of unique
+actors \emph{h} that both actors \emph{i} and \emph{j} interacted with in
+the past. Optionally, a scaling method can be set with \code{scaling}. Note
+that the `unique shared partners' effect is only defined for undirected
 events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history, directed = FALSE) 
+rehObject <- reh(history, directed = FALSE)
 effects <- ~ spUnique()
 tomstats(effects, edgelist = rehObject)
 
 }
 \seealso{
-\code{\link{sp}} for another type of triadic effect for 
-undirected relational events and \code{\link{otp}}, \code{\link{itp}}, 
-\code{\link{osp}}, or \code{\link{isp}} for triadic effects for directed 
+\code{\link{sp}} for another type of triadic effect for
+undirected relational events and \code{\link{otp}}, \code{\link{itp}},
+\code{\link{osp}}, or \code{\link{isp}} for triadic effects for directed
 relational events.
 }

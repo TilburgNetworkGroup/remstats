@@ -7,37 +7,37 @@
 psABAY(consider_type = FALSE)
 }
 \arguments{
-\item{consider_type}{logical, indicates whether to consider the event type 
+\item{consider_type}{logical, indicates whether to consider the event type
 in determining which dyads create a pshift (TRUE) or not (FALSE, default).}
 }
 \description{
-Specifies the statistic for a pshift AB-AY effect in the \code{effects} 
+Specifies the statistic for a pshift AB-AY effect in the \code{effects}
 argument of \code{\link{tomstats}}.
 }
 \details{
-The AB-AY pshift effect refers to one of Gibson's (2003) dyadic 
-participation shifts. The AB-AY pshift refers to a tendency for turn 
-continuing. For directed events, the next sender (A) is the current sender 
-(A) and the next receiver (Y) is not in the current event. For undirected 
-events, one of the next actors (A or B) is one of the current actors (A) and 
-the other current actor (Y) is not in the event. For each timepoint t, the 
-psABAY statistic is equal to one for the dyads that will create the 
-participation shift if they would occur in the edgelist at time t and equal 
-to zero for the dyads that will not create this participation shift. If 
-consider_type is set to TRUE, the type of the AB event and the type of the 
-AY events have to be equal. If it is set to FALSE, the participation shift 
-is set to one for every AY event, regardless of the event type. If multiple 
-events in the edgelist occur at the same time point, the order of these 
+The AB-AY pshift effect refers to one of Gibson's (2003) dyadic
+participation shifts. The AB-AY pshift refers to a tendency for turn
+continuing. For directed events, the next sender (A) is the current sender
+(A) and the next receiver (Y) is not in the current event. For undirected
+events, one of the next actors (A or B) is one of the current actors (A) and
+the other current actor (Y) is not in the event. For each timepoint t, the
+psABAY statistic is equal to one for the dyads that will create the
+participation shift if they would occur in the edgelist at time t and equal
+to zero for the dyads that will not create this participation shift. If
+consider_type is set to TRUE, the type of the AB event and the type of the
+AY events have to be equal. If it is set to FALSE, the participation shift
+is set to one for every AY event, regardless of the event type. If multiple
+events in the edgelist occur at the same time point, the order of these
 events determines whether the p-shift is observed.
 }
 \examples{
 library(remify)
-rehObject <- reh(history) 
+rehObject <- reh(history)
 effects <- ~ psABAY()
 tomstats(effects, edgelist = rehObject)
 
 }
 \seealso{
-\code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}}, 
+\code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}},
 \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAB}} for other dyadic participation shifts.
 }

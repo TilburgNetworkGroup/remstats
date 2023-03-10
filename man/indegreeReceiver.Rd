@@ -7,38 +7,38 @@
 indegreeReceiver(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the degree statistic. Default is 
-to not scale the statistic but keep the raw counts 'as.is'. Alternatively, 
-scaling of the raw degree counts by the number of past events at time t can 
-be requested with 'prop' or standardization of the raw degree counts per 
+\item{scaling}{the method for scaling the degree statistic. Default is
+to not scale the statistic but keep the raw counts 'as.is'. Alternatively,
+scaling of the raw degree counts by the number of past events at time t can
+be requested with 'prop' or standardization of the raw degree counts per
 time point can be requested with 'std'.}
 
-\item{consider_type}{logical, indicates whether to count the degrees 
-separately for each event type (TRUE) or sum degrees across different event 
+\item{consider_type}{logical, indicates whether to count the degrees
+separately for each event type (TRUE) or sum degrees across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an `indegreeReceiver` effect in the tie-oriented 
+Specifies the statistic for an `indegreeReceiver` effect in the tie-oriented
 model or the receiver choice step of the actor-oriented model.
 }
 \details{
-An indegree of the receiver effect refers to the tendency for actors to 
-receive events if they have received more past events. The statistic at 
-timepoint \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or 
-receiver \emph{j} (actor-oriented model) is equal to the number of events 
-received by actor \emph{j} before timepoint \emph{t}. Note that the 
-'indegreeReceiver' effect is only defined for directed events. 
+An indegree of the receiver effect refers to the tendency for actors to
+receive events if they have received more past events. The statistic at
+timepoint \emph{t} for dyad \emph{(i,j)} (tie-oriented model) or
+receiver \emph{j} (actor-oriented model) is equal to the number of events
+received by actor \emph{j} before timepoint \emph{t}. Note that the
+'indegreeReceiver' effect is only defined for directed events.
 
-Optionally, a scaling method can be set with \code{scaling}. By scaling the 
-degree count by the total number of past events, the statistic refers to the 
-fraction of past events that were received by actor j. At the first time 
-point, when no events did previously occur, it is assumed that every actor 
+Optionally, a scaling method can be set with \code{scaling}. By scaling the
+degree count by the total number of past events, the statistic refers to the
+fraction of past events that were received by actor j. At the first time
+point, when no events did previously occur, it is assumed that every actor
 is equally likely to receive a message and the statistic is set equal to 1/
 n, where n refers to the number of actors.
 }
 \examples{
 library(remify)
-rehObject <- reh(history) 
+rehObject <- reh(history)
 effects <- ~ indegreeReceiver()
 remstats(edgelist = rehObject, tie_effects = effects)
 remstats(edgelist = rehObject, receiver_effects = effects)
@@ -47,7 +47,7 @@ aomstats(receiver_effects = effects, edgelist = rehObject)
 
 }
 \seealso{
-\code{\link{indegreeSender}}, \code{\link{outdegreeSender}}, 
+\code{\link{indegreeSender}}, \code{\link{outdegreeSender}},
 \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
 \code{\link{totaldegreeReceiver}} for other types of degree effects.
 }

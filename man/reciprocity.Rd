@@ -7,38 +7,38 @@
 reciprocity(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the reciprocity statistic. Default is 
-to not scale the statistic but keep the raw 'counts'. Alternatively, the 
-statistics can be scaled by 'prop', in which raw counts are 
-divided by the indegree of the sender at time t (see 'details') or 
+\item{scaling}{the method for scaling the reciprocity statistic. Default is
+to not scale the statistic but keep the raw 'counts'. Alternatively, the
+statistics can be scaled by 'prop', in which raw counts are
+divided by the indegree of the sender at time t (see 'details') or
 standardization of the raw counts per time point can be requested with 'std'.}
 
-\item{consider_type}{logical, indicates whether to count the number of past 
-reciprocal events separately for each event type (TRUE) or sum across 
+\item{consider_type}{logical, indicates whether to count the number of past
+reciprocal events separately for each event type (TRUE) or sum across
 different event types (FALSE, default).}
 }
 \description{
-Specifies the statistic for a reciprocity effect in the tie-oriented model 
+Specifies the statistic for a reciprocity effect in the tie-oriented model
 or the receiver choice step of the actor-oriented model.
 }
 \details{
-A reciprocity effect refers to the tendency for actors to reciprocate past 
-interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} 
-(tie-oriented model) or receiver \emph{j} (actor-oriented model) is equal to 
-the number of \emph{(j,i)} events before timepoint \emph{t}. Note that a 
-reciprocity effect is only defined for directed events. 
+A reciprocity effect refers to the tendency for actors to reciprocate past
+interactions. The statistic at timepoint \emph{t} for dyad \emph{(i,j)}
+(tie-oriented model) or receiver \emph{j} (actor-oriented model) is equal to
+the number of \emph{(j,i)} events before timepoint \emph{t}. Note that a
+reciprocity effect is only defined for directed events.
 
-Optionally, a scaling method can be set with \code{scaling}.  By scaling the 
-reciprocity count by the indegree of the sender, the statistic refers to the 
-fraction of messages received by actor i that were received from actor j. If 
-actor i hasn't received any messages yet it can be assumed that actor i is 
-equally likely to receive a message from every actor and the statistic is 
-set equal to 1/(n-1), where n refers to the number of actors. The resulting 
+Optionally, a scaling method can be set with \code{scaling}.  By scaling the
+reciprocity count by the indegree of the sender, the statistic refers to the
+fraction of messages received by actor i that were received from actor j. If
+actor i hasn't received any messages yet it can be assumed that actor i is
+equally likely to receive a message from every actor and the statistic is
+set equal to 1/(n-1), where n refers to the number of actors. The resulting
 statistic is similar to the "FrRecSnd" statistic in the R package relevent.
 }
 \examples{
 library(remify)
-rehObject <- reh(history) 
+rehObject <- reh(history)
 effects <- ~ reciprocity()
 remstats(edgelist = rehObject, tie_effects = effects)
 remstats(edgelist = rehObject, receiver_effects = effects)

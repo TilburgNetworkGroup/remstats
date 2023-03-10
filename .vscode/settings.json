@@ -10,6 +10,14 @@
         "random": "cpp",
         "algorithm": "cpp",
         "*.tcc": "cpp",
-        "string": "cpp"
-    }
+        "string": "cpp",
+        "optional": "cpp",
+        "system_error": "cpp"
+    },
+    "cSpell.words": [
+        "Brandes",
+        "covariate",
+        "edgelist",
+        "nolint"
+    ]
 }

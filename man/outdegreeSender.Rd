@@ -8,38 +8,38 @@
 outdegreeSender(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the degree statistic. Default is 
-to not scale the statistic but keep the raw counts 'as.is'. Alternatively, 
-scaling of the raw degree counts by the number of past events at time t can 
-be requested with 'prop' or standardization of the raw degree counts per 
+\item{scaling}{the method for scaling the degree statistic. Default is
+to not scale the statistic but keep the raw counts 'as.is'. Alternatively,
+scaling of the raw degree counts by the number of past events at time t can
+be requested with 'prop' or standardization of the raw degree counts per
 time point can be requested with 'std'.}
 
-\item{consider_type}{logical, indicates whether to count the degrees 
-separately for each event type (TRUE) or sum degrees across different event 
+\item{consider_type}{logical, indicates whether to count the degrees
+separately for each event type (TRUE) or sum degrees across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an `outdegreeSender` effect in the tie-oriented 
+Specifies the statistic for an `outdegreeSender` effect in the tie-oriented
 model or the sender activity rate step of the actor-oriented model.
 }
 \details{
-An outdegree of the sender effect refers to the tendency for actors to send 
-events if they have send more past events. The statistic at timepoint 
-\emph{t} for dyad \emph{(i,j)} (tie-oriented model) or sender \emph{i} 
-(actor-oriented model) is equal to the number of events send by 
-actor \emph{i} before timepoint \emph{t}. Note that the 'outdegreeSender' 
-effect is only defined for directed events. 
+An outdegree of the sender effect refers to the tendency for actors to send
+events if they have send more past events. The statistic at timepoint
+\emph{t} for dyad \emph{(i,j)} (tie-oriented model) or sender \emph{i}
+(actor-oriented model) is equal to the number of events send by
+actor \emph{i} before timepoint \emph{t}. Note that the 'outdegreeSender'
+effect is only defined for directed events.
 
-Optionally, a scaling method can be set with \code{scaling}. By scaling the 
-degree count by the total number of past events, the statistic refers to the 
-fraction of past events that were send by actor i. At the first time 
-point, when no events did previously occur, it is assumed that every actor 
-is equally likely to send a message and the statistic is set equal to 1/n, 
+Optionally, a scaling method can be set with \code{scaling}. By scaling the
+degree count by the total number of past events, the statistic refers to the
+fraction of past events that were send by actor i. At the first time
+point, when no events did previously occur, it is assumed that every actor
+is equally likely to send a message and the statistic is set equal to 1/n,
 where n refers to the number of actors.
 }
 \examples{
 library(remify)
-rehObject <- reh(history) 
+rehObject <- reh(history)
 effects <- ~ outdegreeSender()
 remstats(edgelist = rehObject, tie_effects = effects)
 remstats(edgelist = rehObject, sender_effects = effects)
@@ -48,7 +48,7 @@ aomstats(sender_effects = effects, edgelist = rehObject)
 
 }
 \seealso{
-\code{\link{indegreeSender}}, \code{\link{indegreeReceiver}}, 
+\code{\link{indegreeSender}}, \code{\link{indegreeReceiver}},
 \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
 \code{\link{totaldegreeReceiver}} for other types of degree effects.
 }

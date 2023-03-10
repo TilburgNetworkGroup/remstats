@@ -8,46 +8,46 @@
 degreeMin(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the degree statistic. Default is 
-to not scale the statistic but keep the raw counts 'as.is'. Alternatively, 
-scaling of the raw degree counts by two times the number of past events at 
-time t can be requested with 'prop' or standardization of the raw degree 
+\item{scaling}{the method for scaling the degree statistic. Default is
+to not scale the statistic but keep the raw counts 'as.is'. Alternatively,
+scaling of the raw degree counts by two times the number of past events at
+time t can be requested with 'prop' or standardization of the raw degree
 counts per time point can be requested with 'std'.}
 
-\item{consider_type}{logical, indicates whether to count the degrees 
-separately for each event type (TRUE) or sum degrees across different event 
+\item{consider_type}{logical, indicates whether to count the degrees
+separately for each event type (TRUE) or sum degrees across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an `degreeMin` effect in the tie-oriented 
+Specifies the statistic for an `degreeMin` effect in the tie-oriented
 model with undirected events.
 }
 \details{
-An degreeMin effect refers to the tendency for dyads to increase their 
-interaction rate if the total degree of the least active actor in the pair 
-increases. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is 
-equal to the minimum of the following two values: the number of events 
-before timepoint \emph{t} that involved actor \emph{i} and actor \emph{j}, 
-respectively. Note that the degreeMin effect is only defined for undirected 
-events. 
+An degreeMin effect refers to the tendency for dyads to increase their
+interaction rate if the total degree of the least active actor in the pair
+increases. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is
+equal to the minimum of the following two values: the number of events
+before timepoint \emph{t} that involved actor \emph{i} and actor \emph{j},
+respectively. Note that the degreeMin effect is only defined for undirected
+events.
 
-Optionally, a scaling method can be set with \code{scaling}. By scaling the 
-degree count by the total number of past events, the statistic refers to the 
-fraction of past events that the least active actor was involved in. At the 
-first time point, when no events did previously occur, it is assumed that 
-every actor is equally likely to be involved in an event and the statistic 
+Optionally, a scaling method can be set with \code{scaling}. By scaling the
+degree count by the total number of past events, the statistic refers to the
+fraction of past events that the least active actor was involved in. At the
+first time point, when no events did previously occur, it is assumed that
+every actor is equally likely to be involved in an event and the statistic
 is set equal to 1/n, where n refers to the number of actors.
 }
 \examples{
 library(remify)
-rehObject <- reh(history, directed = FALSE) 
+rehObject <- reh(history, directed = FALSE)
 effects <- ~ degreeMin()
 remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
 tomstats(effects, edgelist = rehObject, directed = FALSE)
 
 }
 \seealso{
-\code{\link{degreeDiff}}, \code{\link{degreeMax}} or 
-\code{\link{totaldegreeDyad}} for other types of degree effects for 
+\code{\link{degreeDiff}}, \code{\link{degreeMax}} or
+\code{\link{totaldegreeDyad}} for other types of degree effects for
 undirected events.
 }
