@@ -104,15 +104,35 @@ timepoints and columns to riskset entries
 Computes statistics for the tie-oriented model (see Butts, 2008) or
 actor-oriented model (see Stadtfeld & Block, 2017).
 }
-\details{
+\section{Effects}{
+
 The statistics to be computed are defined symbolically and should be
 supplied to the \code{tie_effects} (for the tie-oriented model), or
 \code{sender_effects} and/or \code{receiver_effects} (for the actor-oriented
 model) argument in the form \code{~ effects}. The terms are separated by +
 operators. For example: \code{effects = ~ inertia() + otp()}. Interactions
 between two effects can be included with * or : operators. For example:
-\code{effects = ~ inertia():otp()}. A list of available effects and their
-corresponding statistics follows at the bottom.
+\code{effects = ~ inertia():otp()}. A list of available effects 
+can be obtained with \code{\link{tie_effects}()} and 
+\code{\link{actor_effects}()}.
+
+The majority of the statistics can be scaled in some way, see
+the documentation of the \code{scaling} argument in the separate effect
+functions for more information on this.
+
+The majority of the statistics can account for the event type
+included as a dependent variable, see the documentation of the
+\code{consider_type} argument in the separate effect functions for more
+information on this. Note that this option is only available for the
+tie-oriented model.
+
+Note that events in the edgelist can be directed or undirected. Some
+statistics are only defined for either directed or undirected events (see
+the documentation of the statistics). Note that undirected events are only
+available for the tie-oriented model.
+}
+
+\section{Attributes}{
 
 For the computation of the \emph{exogenous} statistics an attributes object
 with the exogenous covariate information has to be supplied to the
@@ -130,21 +150,9 @@ argument in the effect function). Note that the procedure for the exogenous
 effects `tie' and `event' deviates from this, here the exogenous covariate
 information has to be specified in a different way, see \code{\link{tie}}
 and \code{\link{event}}.
+}
 
-The majority of the statistics can be scaled in some way, see
-the documentation of the \code{scaling} argument in the separate effect
-functions for more information on this.
-
-The majority of the statistics can account for the event type
-included as a dependent variable, see the documentation of the
-\code{consider_type} argument in the separate effect functions for more
-information on this. Note that this option is only available for the
-tie-oriented model.
-
-Note that events in the edgelist can be directed or undirected. Some
-statistics are only defined for either directed or undirected events (see
-the documentation of the statistics). Note that undirected events are only
-available for the tie-oriented model.
+\section{Memory}{
 
 The default `memory` setting is `"full"`, which implies that at each time
 point $t$ the entire event history before $t$ is included in the computation
@@ -163,6 +171,9 @@ to set `memory` to `"decay"`. In this case, the weight of the past event in
 the computation of the statistics depend on the elapsed time between $t$ and 
 the past event. This weight is determined based on an exponential decay 
 function with half-life parameter `memory_value` (see Brandes et al., 2009).
+}
+
+\section{Event weights}{
 
 Note that if the edgelist contains a column that is named ``weight'', it is
 assumed that these affect the endogenous statistics. These settings are
@@ -180,6 +191,9 @@ statistics are not affected by the memory settings or the supplied event
 weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now)
 only available with the "full" memory, and are, per definition, not affected
 by supplied event weights.
+}
+
+\section{Subset of the edgelist}{
 
 Optionally, statistics can be computed for a slice of the edgelist - but
 based on the entire history. This is achieved by setting the start and
@@ -187,59 +201,17 @@ stop values equal to the index of the first and last event for which
 statistics are requested. For example, start = 5 and stop = 5 computes the
 statistics for only the 5th event in the edgelist, based on the history that
 consists of events 1-4.
+}
+
+\section{Adjacency matrix}{
 
 Optionally, a previously computed adjacency matrix can be supplied. Note
 that the endogenous statistics will be computed based on this adjacency
 matrix. Hence, supplying a previously computed adjacency matrix can reduce
 computation time but the user should be absolutely sure the adjacency matrix
 is accurate.
-
-Exogenous statistics:
-\itemize{
- \item \code{\link{send}()}
- \item \code{\link{receive}()}
- \item \code{\link{tie}()}
- \item \code{\link{same}()}
- \item \code{\link{difference}()}
- \item \code{\link{average}()}
- \item \code{\link{minimum}()}
- \item \code{\link{maximum}()}
- \item \code{\link{event}()}
 }
 
-Endogenous statistics:
-\itemize{
- \item \code{\link{baseline}()}
- \item \code{\link{FEtype}()}
- \item \code{\link{indegreeSender}()}
- \item \code{\link{indegreeReceiver}()}
- \item \code{\link{outdegreeSender}()}
- \item \code{\link{outdegreeReceiver}()}
- \item \code{\link{totaldegreeSender}()}
- \item \code{\link{totaldegreeReceiver}()}
- \item \code{\link{inertia}()}
- \item \code{\link{reciprocity}()}
- \item \code{\link{otp}()}
- \item \code{\link{itp}()}
- \item \code{\link{osp}()}
- \item \code{\link{isp}()}
- \item \code{\link{sp}()}
- \item \code{\link{spUnique}()}
- \item \code{\link{psABBA}()}
- \item \code{\link{psABBY}()}
- \item \code{\link{psABXA}()}
- \item \code{\link{psABXB}()}
- \item \code{\link{psABXY}()}
- \item \code{\link{psABAY}()}
- \item \code{\link{rrankSend}()}
- \item \code{\link{rrankReceive}()}
- \item \code{\link{recencySendSender}()}
- \item \code{\link{recencySendReceiver}()}
- \item \code{\link{recencyReceiveSender}()}
- \item \code{\link{recencyReceiveReceiver}()}
- \item \code{\link{recencyContinue}()}
-}
-}
 \examples{
 library(remstats)
 

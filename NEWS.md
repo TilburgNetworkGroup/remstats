@@ -3,6 +3,7 @@ Date: TBD
 
 ## New features
 * Interval memory. 
+* Obtain a list with available effects with the functions `tie_effects()` and `actor_effects()`.
 
 ## Minor changes 
 * Fixed bug in exogenous stats with time-varying attributes in the tie-oriented model.
