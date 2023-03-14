@@ -70,7 +70,7 @@ Imports:
     stats,
     utils,
     remify (>= 2.0.0)
-LinkingTo: Rcpp, RcppArmadillo, remify
+LinkingTo: Rcpp, RcppArmadillo, remify, RcppProgress
 Suggests: 
     graphics,
     testthat, tinytest

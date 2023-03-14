@@ -13,12 +13,16 @@ compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset,
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed)
 }
 
-compute_stats_rate <- function(effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, start, stop) {
-    .Call(`_remstats_compute_stats_rate`, effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, start, stop)
+degree_rc_update <- function(type, edgelist, riskset, actors, memory, memory_value, scaling, start, stop, display_progress) {
+    .Call(`_remstats_degree_rc_update`, type, edgelist, riskset, actors, memory, memory_value, scaling, start, stop, display_progress)
 }
 
-compute_stats_choice <- function(effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, start, stop) {
-    .Call(`_remstats_compute_stats_choice`, effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, start, stop)
+compute_stats_rate <- function(effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, memory, memory_value, start, stop, display_progress) {
+    .Call(`_remstats_compute_stats_rate`, effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, memory, memory_value, start, stop, display_progress)
+}
+
+compute_stats_choice <- function(effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, memory, memory_value, start, stop, display_progress) {
+    .Call(`_remstats_compute_stats_choice`, effects, edgelist, adjmat, actors, riskset, scaling, covariates, interactions, memory, memory_value, start, stop, display_progress)
 }
 
 # Register entry points for exported C++ functions

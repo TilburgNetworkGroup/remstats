@@ -1,8 +1,8 @@
 #' tomstats
 #'
-#' Computes statistics for modeling relational event history data 
+#' Computes statistics for modeling relational event history data
 #' with Butts' (2008) relational event model.
-#' 
+#'
 #' @param effects an object of class \code{"\link[stats]{formula}"} (or one
 #' that can be coerced to that class): a symbolic description of the effects in
 #' the model for which statistics are computed, see 'Details' for the available
@@ -14,14 +14,14 @@
 #' supplied to the \code{effects} argument in the form \code{~ effects}. The
 #' terms are separated by + operators. For example:
 #' \code{effects = ~ inertia() + otp()}. Interactions between two effects
-#' can be included with * operators. For example: 
-#' \code{effects = ~ inertia()*otp()}. A list of available effects can be 
+#' can be included with * operators. For example:
+#' \code{effects = ~ inertia()*otp()}. A list of available effects can be
 #' obtained with \code{\link{tie_effects}()}.
-#' 
+#'
 #' The majority of the statistics can be scaled in some way, see
 #' the documentation of the \code{scaling} argument in the separate effect
 #' functions for more information on this.
-#' 
+#'
 #' The majority of the statistics can account for the event type
 #' included as a dependent variable, see the documentation of the
 #' \code{consider_type} argument in the separate effect functions for more
@@ -48,7 +48,7 @@
 #' effects `tie' and `event' deviates from this, here the exogenous covariate
 #' information has to be specified in a different way, see \code{\link{tie}}
 #' and \code{\link{event}}.
-#' 
+#'
 #' @section Memory:
 #' The default `memory` setting is `"full"`, which implies that at each time
 #' point $t$ the entire event history before $t$ is included in the computation
@@ -58,14 +58,14 @@
 #' `memory_value` parameter. For example, when `memory_value = 100` and `memory
 #' = "window"`, at time point $t$ only the past events that happened at most
 #' 100 time units ago are included in the computation of the statistics.
-#' A third option is to set `memory` to `"interval"`. In this case, the past 
-#' event history within a given time interval is considered. For example, when 
-#' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$ 
-#' only the past events tha happened between 50 and 100 time units ago are 
-#' included in the computation of the statistics. Finally, the fourth option is 
-#' to set `memory` to `"decay"`. In this case, the weight of the past event in 
-#' the computation of the statistics depend on the elapsed time between $t$ and 
-#' the past event. This weight is determined based on an exponential decay 
+#' A third option is to set `memory` to `"interval"`. In this case, the past
+#' event history within a given time interval is considered. For example, when
+#' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+#' only the past events tha happened between 50 and 100 time units ago are
+#' included in the computation of the statistics. Finally, the fourth option is
+#' to set `memory` to `"decay"`. In this case, the weight of the past event in
+#' the computation of the statistics depend on the elapsed time between $t$ and
+#' the past event. This weight is determined based on an exponential decay
 #' function with half-life parameter `memory_value` (see Brandes et al., 2009).
 #'
 #' @section Event weights:
@@ -100,7 +100,7 @@
 #' matrix. Hence, supplying a previously computed adjacency matrix can reduce
 #' computation time but the user should be absolutely sure the adjacency matrix
 #' is accurate.
-#' 
+#'
 #' @return \code{statistics } array with the computed statistics, where rows
 #' refer to time points, columns refer to potential relational event (i.e.,
 #' potential edges) in the risk set and slices refer to statistics
@@ -453,24 +453,23 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     riskset <- as.data.frame(riskset)
     if (directed) {
       colnames(riskset) <- c("sender", "receiver", "type", "id")
+      riskset$sender <- actors$actorName[match(riskset$sender, actors$actorID)]
+      riskset$receiver <- actors$actorName[match(
+        riskset$receiver,
+        actors$actorID
+      )]
+      riskset$type <- types$typeName[match(riskset$type, types$typeID)]
     } else {
       colnames(riskset) <- c("actor1", "actor2", "type", "id")
+      riskset$actor1 <- actors$actorName[match(riskset$actor1, actors$actorID)]
+      riskset$actor2 <- actors$actorName[match(riskset$actor2, actors$actorID)]
+      riskset$type <- types$typeName[match(riskset$type, types$typeID)]
     }
-    riskset[, 1] <- sapply(riskset[, 1], function(a) {
-      remify::actorName(prep, a)
-    })
-    riskset[, 2] <- sapply(riskset[, 2], function(a) {
-      remify::actorName(prep, a)
-    })
-    riskset[, 3] <- sapply(riskset[, 3], function(a) {
-      remify::typeName(prep, a)
-    })
     if (!("reh" %in% class(edgelist))) {
       riskset$id <- riskset$id + 1
     } else {
       riskset$stat_column <- riskset$id + 1
     }
-    riskset <- as.data.frame(riskset)
 
     # Edgelist output
     if ("reh" %in% class(edgelist)) {

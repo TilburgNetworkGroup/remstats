@@ -4,6 +4,9 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::interfaces(r, cpp)]]
+// [[Rcpp::depends(RcppProgress)]]
+#include <progress.hpp>
+#include <progress_bar.hpp>
 
 // @title getRisksetMatrix (obtain permutations of actors' ids and event types).
 //
@@ -199,7 +202,7 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int N, int D, bool directed,
       }
     }
   }
-  
+
   // Interval memory
   if (memory == "interval")
   {
@@ -294,8 +297,6 @@ arma::mat actorStat_tie(int type, const arma::mat &covariates,
 
   // Initialize saving space
   arma::mat stat(slice.n_rows, D, arma::fill::zeros);
-
-  // Initialize statistic:
 
   // First time point
   double time = slice(0, 0);
@@ -3604,8 +3605,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
 // stop: integer, last event in the edgelist for which the statistic is
 // computed
 arma::mat actorStat_rc(const arma::mat &covariates, const arma::mat &edgelist,
-                       const arma::mat &riskset, const arma::vec &actors, int start, int stop,
-                       int scaling)
+                       const arma::mat &riskset, const arma::vec &actors, int start, int stop, int scaling)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -3766,6 +3766,261 @@ arma::mat degree_rc(int type, const arma::mat &riskset,
   {
     stat = ideg + odeg;
   }
+  return stat;
+}
+
+// degree_rc
+//
+// Function to compute the degree statistics for the actor-oriented model.
+// type: integer, 1 = indegree, 2 = outdegree, 3 = total degree
+// riskset: matrix, (actor1, actor2, type, event)
+// actors: vector, actor ids
+// [[Rcpp::export]]
+arma::mat degree_rc_update(std::string type,
+                           const arma::mat &edgelist,
+                           const arma::mat &riskset,
+                           const arma::vec &actors,
+                           std::string memory,
+                           arma::vec memory_value,
+                           int scaling,
+                           int start,
+                           int stop,
+                           bool display_progress)
+{
+  // Slice the edgelist according to "start" and "stop"
+  arma::mat slice = edgelist.rows(start, stop);
+
+  // Initialize saving space and fill with zeros
+  arma::mat stat(slice.n_rows, actors.n_elem, arma::fill::zeros);
+  arma::mat ideg(slice.n_rows, actors.n_elem, arma::fill::zeros);
+  arma::mat odeg(slice.n_rows, actors.n_elem, arma::fill::zeros);
+
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Computing " << type << "degree statistic" << std::endl;
+  }
+
+  // Full memory
+  if (memory == "full")
+  {
+    // Progress bar
+    Progress p(stop, display_progress);
+
+    // (1) Initialize
+    // Select the past
+    double time = slice(0, 0);
+    arma::uvec pastkey = arma::find(edgelist.col(0) < time);
+    arma::mat past = edgelist.rows(pastkey);
+
+    // For loop over the past
+    for (arma::uword j = 0; j < past.n_rows; ++j)
+    {
+      // Dyad of the event
+      int dyad = past(j, 1);
+      // Add event weight to in-degree count
+      if ((type == "in") | (type == "total"))
+      {
+        int receiver = riskset(dyad, 1);
+        ideg(0, receiver) += past(j, 2);
+      }
+      // Add event weight to out-degree count
+      if ((type == "out") | (type == "total"))
+      {
+        int sender = riskset(dyad, 0);
+        odeg(0, sender) += past(j, 2);
+      }
+      p.increment();
+    }
+
+    // (2) For loop over timepoints
+    for (arma::uword i = 1; i < slice.n_rows; ++i)
+    {
+      // Dyad of the *previous(!)* event
+      int dyad = slice(i - 1, 1);
+      if ((type == "in") | (type == "total"))
+      {
+        // Copy previous row
+        ideg.row(i) = ideg.row(i - 1);
+        // Add event weight previous event
+        int receiver = riskset(dyad, 1);
+        ideg(i, receiver) += slice(i - 1, 2);
+      }
+      if ((type == "out") | (type == "total"))
+      {
+        // Copy previous row
+        odeg.row(i) = odeg.row(i - 1);
+        // Add event weight previous event
+        int sender = riskset(dyad, 0);
+        odeg(i, sender) += slice(i - 1, 2);
+      }
+      p.increment();
+    }
+  }
+
+  // Window memory
+  if (memory == "window")
+  {
+    // For loop over timepoints
+    for (arma::uword i = 1; i < slice.n_rows; ++i)
+    {
+      // Select the past
+      double time_max = slice(i, 0);
+      double time_min = time_max - memory_value(0);
+      arma::uvec pastkey = arma::find(edgelist.col(0) < time_max &&
+                                      edgelist.col(0) >= time_min);
+      arma::mat past = edgelist.rows(pastkey);
+
+      // For loop over the past
+      for (arma::uword j = 0; j < past.n_rows; ++j)
+      {
+        // Dyad of the event
+        int dyad = past(j, 1);
+        // Add event weight to in-degree count
+        if ((type == "in") | (type == "total"))
+        {
+          int receiver = riskset(dyad, 1);
+          ideg(i, receiver) += past(j, 2);
+        }
+        // Add event weight to out-degree count
+        if ((type == "out") | (type == "total"))
+        {
+          int sender = riskset(dyad, 0);
+          odeg(i, sender) += past(j, 2);
+        }
+      }
+    }
+  }
+
+  // Interval memory
+  if (memory == "interval")
+  {
+    // For loop over timepoints
+    for (arma::uword i = 1; i < slice.n_rows; ++i)
+    {
+      // Select the past
+      double time_max = slice(i, 0) - memory_value(0);
+      double time_min = slice(i, 0) - memory_value(1);
+      arma::uvec pastkey = arma::find(edgelist.col(0) < time_max &&
+                                      edgelist.col(0) >= time_min);
+      arma::mat past = edgelist.rows(pastkey);
+
+      // For loop over the past
+      for (arma::uword j = 0; j < past.n_rows; ++j)
+      {
+        // Dyad of the event
+        int dyad = past(j, 1);
+        // Add event weight to in-degree count
+        if ((type == "in") | (type == "total"))
+        {
+          int receiver = riskset(dyad, 1);
+          ideg(i, receiver) += past(j, 2);
+        }
+        // Add event weight to out-degree count
+        if ((type == "out") | (type == "total"))
+        {
+          int sender = riskset(dyad, 0);
+          odeg(i, sender) += past(j, 2);
+        }
+      }
+    }
+  }
+
+  // Exponential decay memory
+  if (memory == "decay")
+  {
+    // For loop over timepoints
+    for (arma::uword i = 1; i < slice.n_rows; ++i)
+    {
+      // Current time
+      double time = slice(i, 0);
+
+      // Past events
+      arma::uvec pastkey = arma::find(edgelist.col(0) < time);
+      arma::mat past = edgelist.rows(pastkey);
+
+      // For loop over the past
+      for (arma::uword j = 0; j < past.n_rows; ++j)
+      {
+        // Dyad of the event
+        int dyad = past(j, 1);
+        // Weight of the event
+        double we = past(j, 2);
+        // Time of the event
+        double te = past(j, 0);
+        // Brandes weight
+        double bw = we *
+                    exp(-(time - te) * (log(2) / memory_value(0))) *
+                    (log(2) / memory_value(0));
+
+        // Add event weight to in-degree count
+        if ((type == "in") | (type == "total"))
+        {
+          int receiver = riskset(dyad, 1);
+          ideg(i, receiver) += bw;
+        }
+        // Add event weight to out-degree count
+        if ((type == "out") | (type == "total"))
+        {
+          int sender = riskset(dyad, 0);
+          odeg(i, sender) += bw;
+        }
+      }
+    }
+  }
+
+  if (type == "in")
+  {
+    stat = ideg;
+  }
+  if (type == "out")
+  {
+    stat = odeg;
+  }
+  if (type == "total")
+  {
+    stat = ideg + odeg;
+  }
+
+  // Scaling in *choice(!)* model
+  // Divide by the number of past events
+  if (scaling == 2)
+  {
+    for (arma::uword t = 0; t < stat.n_rows; ++t)
+    {
+      stat.row(t) = stat.row(t) / sum(stat.row(t));
+    }
+    stat.replace(arma::datum::nan, 0);
+  }
+  // Standardize
+  if (scaling == 3)
+  {
+    // For loop over the sequence
+    for (arma::uword m = 0; m < slice.n_rows; ++m)
+    {
+      int event = slice(m, 1);
+      arma::uword sender = riskset(event, 0);
+
+      arma::rowvec statrow = stat.row(m);
+      arma::vec statrowMin = statrow(arma::find(actors != sender));
+
+      // For loop over receivers
+      for (arma::uword r = 0; r < actors.n_elem; ++r)
+      {
+        if (sender == r)
+        {
+          stat(m, r) = 0;
+        }
+        else
+        {
+          stat(m, r) = (stat(m, r) - mean(statrowMin)) /
+                       stddev(statrowMin);
+        }
+      }
+
+      stat.replace(arma::datum::nan, 0);
+    }
+  }
+
   return stat;
 }
 
@@ -4622,10 +4877,17 @@ arma::mat rrank_choice(int type, const arma::mat &edgelist,
 
 //[[Rcpp::export]]
 arma::cube compute_stats_rate(const arma::vec &effects,
-                              const arma::mat &edgelist, const arma::mat &riskset,
-                              const arma::mat &adjmat, const arma::vec &actors,
-                              const arma::vec &scaling, const Rcpp::List &covariates,
-                              const Rcpp::List &interactions, int start, int stop)
+                              const arma::mat &edgelist,
+                              const arma::mat &riskset,
+                              const arma::mat &adjmat,
+                              const arma::vec &actors,
+                              const arma::vec &scaling,
+                              const Rcpp::List &covariates,
+                              const Rcpp::List &interactions,
+                              std::string memory,
+                              const arma::vec memory_value,
+                              int start, int stop,
+                              bool display_progress)
 {
 
   // Initialize saving space
@@ -4661,13 +4923,14 @@ arma::cube compute_stats_rate(const arma::vec &effects,
       break;
     // 3 in-degree
     case 3:
-      stat = degree_rc(1, riskset, actors, adjmat);
+      stat = degree_rc_update("in", edgelist, riskset, actors, memory, memory_value,
+                              1, start, stop, display_progress);
       // Divide by the number of past events
       if (scaling(i) == 2)
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
-          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
+          stat.row(t) = stat.row(t) / sum(stat.row(t));
         }
         stat.replace(arma::datum::nan, 0);
       }
@@ -4679,13 +4942,14 @@ arma::cube compute_stats_rate(const arma::vec &effects,
       break;
     // 4 out-degree
     case 4:
-      stat = degree_rc(2, riskset, actors, adjmat);
+      stat = degree_rc_update("out", edgelist, riskset, actors, memory, memory_value,
+                              1, start, stop, display_progress);
       // Divide by the number of past events
       if (scaling(i) == 2)
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
-          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
+          stat.row(t) = stat.row(t) / sum(stat.row(t));
         }
         stat.replace(arma::datum::nan, 0);
       }
@@ -4697,13 +4961,14 @@ arma::cube compute_stats_rate(const arma::vec &effects,
       break;
     // 5 total-degree
     case 5:
-      stat = degree_rc(3, riskset, actors, adjmat);
+      stat = degree_rc_update("total", edgelist, riskset, actors, memory,
+                              memory_value, 1, start, stop, display_progress);
       // Divide by two times the number of past events
       if (scaling(i) == 2)
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
-          stat.row(t) = stat.row(t) / (2 * sum(adjmat.row(t)));
+          stat.row(t) = stat.row(t) / (sum(stat.row(t)));
         }
         stat.replace(arma::datum::nan, 0);
       }
@@ -4753,7 +5018,10 @@ arma::cube compute_stats_choice(const arma::vec &effects,
                                 const arma::vec &scaling,
                                 const Rcpp::List &covariates,
                                 const Rcpp::List &interactions,
-                                int start, int stop)
+                                std::string memory,
+                                const arma::vec memory_value,
+                                int start, int stop,
+                                bool display_progress)
 {
 
   // Initialize saving space
@@ -4817,57 +5085,18 @@ arma::cube compute_stats_choice(const arma::vec &effects,
       break;
     // 8 in-degree
     case 8:
-      stat = degree_rc(1, riskset, actors, adjmat);
-      // Divide by the number of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
-        }
-        stat.replace(arma::datum::nan, 0);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
+      stat = degree_rc_update("in", edgelist, riskset, actors, memory, memory_value,
+                              scaling(i), start, stop, display_progress);
       break;
     // 9 out-degree
     case 9:
-      stat = degree_rc(2, riskset, actors, adjmat);
-      // Divide by the number of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
-        }
-        stat.replace(arma::datum::nan, 0);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
+      stat = degree_rc_update("out", edgelist, riskset, actors, memory, memory_value,
+                              scaling(i), start, stop, display_progress);
       break;
     // 10 total-degree
     case 10:
-      stat = degree_rc(3, riskset, actors, adjmat);
-      // Divide by two times the number of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / (2 * sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
+      stat = degree_rc_update("total", edgelist, riskset, actors, memory, memory_value,
+                              scaling(i), start, stop, display_progress);
       break;
     // 11 otp
     case 11:
