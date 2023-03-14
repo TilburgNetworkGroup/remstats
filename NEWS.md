@@ -12,6 +12,7 @@ Date: TBD
 * Fixed partial match warning (issue #35). 
 * Fixed environment issue attributes object. 
 * Renamed "Brandes" memory to "decay".
+* Updated computation degree statistics in actor-oriented model: without adjacency matrix. 
 
 # remstats 3.0.2
 Date: 08-Feb-23
