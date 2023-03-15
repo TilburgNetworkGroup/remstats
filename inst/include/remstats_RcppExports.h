@@ -88,17 +88,17 @@ namespace remstats {
         return Rcpp::as<arma::cube >(rcpp_result_gen);
     }
 
-    inline arma::mat degree_rc_update(std::string type, const arma::mat& edgelist, const arma::mat& riskset, const arma::vec& actors, std::string memory, arma::vec memory_value, int scaling, int start, int stop, bool display_progress) {
-        typedef SEXP(*Ptr_degree_rc_update)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_degree_rc_update p_degree_rc_update = NULL;
-        if (p_degree_rc_update == NULL) {
-            validateSignature("arma::mat(*degree_rc_update)(std::string,const arma::mat&,const arma::mat&,const arma::vec&,std::string,arma::vec,int,int,int,bool)");
-            p_degree_rc_update = (Ptr_degree_rc_update)R_GetCCallable("remstats", "_remstats_degree_rc_update");
+    inline arma::mat reciprocity_choice(const arma::mat& edgelist, const arma::mat& riskset, const arma::vec& actors, std::string memory, arma::vec memory_value, int scaling, int start, int stop, bool self_events, bool display_progress) {
+        typedef SEXP(*Ptr_reciprocity_choice)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_reciprocity_choice p_reciprocity_choice = NULL;
+        if (p_reciprocity_choice == NULL) {
+            validateSignature("arma::mat(*reciprocity_choice)(const arma::mat&,const arma::mat&,const arma::vec&,std::string,arma::vec,int,int,int,bool,bool)");
+            p_reciprocity_choice = (Ptr_reciprocity_choice)R_GetCCallable("remstats", "_remstats_reciprocity_choice");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_degree_rc_update(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(actors)), Shield<SEXP>(Rcpp::wrap(memory)), Shield<SEXP>(Rcpp::wrap(memory_value)), Shield<SEXP>(Rcpp::wrap(scaling)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+            rcpp_result_gen = p_reciprocity_choice(Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(actors)), Shield<SEXP>(Rcpp::wrap(memory)), Shield<SEXP>(Rcpp::wrap(memory_value)), Shield<SEXP>(Rcpp::wrap(scaling)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(self_events)), Shield<SEXP>(Rcpp::wrap(display_progress)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

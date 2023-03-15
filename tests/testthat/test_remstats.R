@@ -27,13 +27,11 @@ test_that("output aomstats", {
 	cstats <- out$statistics$receiver_stats
 	edgelist <- out$edgelist
 	riskset <- out$riskset
-	adjmat <- out$adjmat
 	#actors <- out$actors
 	
 	expect_output(str(out), "List of 5")
 	expect_equal(dim(rstats), c(nrow(edgelist), length(unique(info$id)), 2))
 	expect_equal(dim(cstats), c(nrow(edgelist), length(unique(info$id)), 1))
-	expect_equal(dim(adjmat), c(nrow(edgelist), nrow(riskset)))
 })
 
 test_that("output remstats", {
@@ -63,11 +61,9 @@ test_that("output remstats", {
 	cstats <- out$statistics$receiver_stats
 	edgelist <- out$edgelist
 	riskset <- out$riskset
-	adjmat <- out$adjmat
 	#actors <- out$actors
 	
 	expect_output(str(out), "List of 5")
 	expect_equal(dim(rstats), c(nrow(edgelist), length(unique(info$id)), 2))
 	expect_equal(dim(cstats), c(nrow(edgelist), length(unique(info$id)), 1))
-	expect_equal(dim(adjmat), c(nrow(edgelist), nrow(riskset)))
 })

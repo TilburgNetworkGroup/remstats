@@ -85,7 +85,7 @@ cumulative weight until t-1 (i.e., the events that occurred before time
 point t).
 }
 \description{
-Computes statistics for modeling relational event history data 
+Computes statistics for modeling relational event history data
 with Butts' (2008) relational event model.
 }
 \section{Effects}{
@@ -94,8 +94,8 @@ The statistics to be computed are defined symbolically and should be
 supplied to the \code{effects} argument in the form \code{~ effects}. The
 terms are separated by + operators. For example:
 \code{effects = ~ inertia() + otp()}. Interactions between two effects
-can be included with * operators. For example: 
-\code{effects = ~ inertia()*otp()}. A list of available effects can be 
+can be included with * operators. For example:
+\code{effects = ~ inertia()*otp()}. A list of available effects can be
 obtained with \code{\link{tie_effects}()}.
 
 The majority of the statistics can be scaled in some way, see
@@ -142,14 +142,14 @@ Mulders & Leenders, 2019). This length of this time window is set by the
 `memory_value` parameter. For example, when `memory_value = 100` and `memory
 = "window"`, at time point $t$ only the past events that happened at most
 100 time units ago are included in the computation of the statistics.
-A third option is to set `memory` to `"interval"`. In this case, the past 
-event history within a given time interval is considered. For example, when 
-`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$ 
-only the past events tha happened between 50 and 100 time units ago are 
-included in the computation of the statistics. Finally, the fourth option is 
-to set `memory` to `"decay"`. In this case, the weight of the past event in 
-the computation of the statistics depend on the elapsed time between $t$ and 
-the past event. This weight is determined based on an exponential decay 
+A third option is to set `memory` to `"interval"`. In this case, the past
+event history within a given time interval is considered. For example, when
+`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+only the past events tha happened between 50 and 100 time units ago are
+included in the computation of the statistics. Finally, the fourth option is
+to set `memory` to `"decay"`. In this case, the weight of the past event in
+the computation of the statistics depend on the elapsed time between $t$ and
+the past event. This weight is determined based on an exponential decay
 function with half-life parameter `memory_value` (see Brandes et al., 2009).
 }
 

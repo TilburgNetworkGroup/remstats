@@ -5,6 +5,8 @@
 #' 2017).
 #' 
 #' @inheritParams remstats
+#' @param display_progress should a progress bar for the computation of the 
+#' endogenous statistics be shown (TRUE) or not (FALSE)?
 #'
 #' @section Effects:
 #' The statistics to be computed are defined symbolically and should be
@@ -419,7 +421,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
     )
 
     # Compute the adjacency matrix
-    if (any(receiver_effectsN %in% c(6:7, 11:14))) {
+    if (any(receiver_effectsN %in% 11:14)) {
       if (is.null(adjmat)) {
         adjmat <- compute_adjmat(
           edgelist.reh, nrow(actors), prep$D,

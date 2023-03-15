@@ -632,137 +632,6 @@ arma::mat dyadStat_tie(int type, const arma::mat &covariates,
   return stat;
 }
 
-// inertia_tie
-//
-// Computes the statistic for an inertia effect in the tie-oriented model.
-//
-// edgelist: matrix (time, event, weight)
-// adjmat: matrix (events x dyads)
-// riskset: matrix, (actor1, actor2, type, event)
-// N: integer, number of actors
-// directed: boolean, whether events are directed or undirected
-// types: vector, type ids
-// start: integer, first event in the edgelist for which the statistic is
-// computed
-// stop: integer, last event in the edgelist for which the statistic is
-// computed
-// consider_type: boolean indicating whether to compute the inertia per
-// event type (TRUE) or sum across types (FALSE)
-arma::mat inertia_tie(const arma::mat &edgelist, const arma::mat &adjmat,
-                      const arma::mat &riskset, int N, bool directed, const arma::vec &types,
-                      int start, int stop, bool consider_type)
-{
-
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
-
-  // Initialize saving space
-  arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
-
-  if (!consider_type)
-  {
-    // If there is only one event type, the adjmat is equal to the inertia
-    // statistic
-    if (types.n_elem == 1)
-    {
-      stat = adjmat;
-    }
-    else
-    {
-      // For loop over dyads
-      for (arma::uword d = 0; d < riskset.n_rows; ++d)
-      {
-        // Actors
-        int ac1 = riskset(d, 0);
-        int ac2 = riskset(d, 1);
-
-        // For loop over event types
-        for (arma::uword c = 0; c < types.n_elem; ++c)
-        {
-          // Find the position of the dyad
-          int dyad = remify::getDyadIndex(ac1, ac2, types(c), N, directed);
-          // Set the values
-          stat.col(d) += adjmat.col(dyad);
-        }
-      }
-    }
-  }
-  else
-  {
-    stat = adjmat;
-  }
-
-  // Output the computed stat
-  return stat;
-}
-
-// reciprocity_tie
-//
-// Computes the statistic for a reciprocity effect in the tie-oriented model.
-//
-// edgelist: matrix (time, event, weight)
-// adjmat: matrix (events x dyads)
-// riskset: matrix, (actor1, actor2, type, event)
-// N: integer, number of actors
-// types: vector, type ids
-// start: integer, first event in the edgelist for which the statistic is
-// computed
-// stop: integer, last event in the edgelist for which the statistic is
-// computed
-// consider_type: boolean indicating whether to compute the degree per
-// event type (TRUE) or sum across types (FALSE)
-arma::mat reciprocity_tie(const arma::mat &edgelist,
-                          const arma::mat &adjmat, const arma::mat &riskset, int N,
-                          const arma::vec &types, int start, int stop, bool consider_type)
-{
-
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
-
-  // Initialize saving space
-  arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
-
-  if (!consider_type)
-  {
-    // For loop over dyads
-    for (arma::uword j = 0; j < riskset.n_rows; j++)
-    {
-      // Actors
-      int ac1 = riskset(j, 0);
-      int ac2 = riskset(j, 1);
-
-      // For loop over event types
-      for (arma::uword c = 0; c < types.n_elem; ++c)
-      {
-        // Find the position of the reverse dyad
-        int rev = remify::getDyadIndex(ac2, ac1, types(c), N, TRUE);
-        // Set the values
-        stat.col(j) += adjmat.col(rev);
-      }
-    }
-  }
-  else
-  {
-    // For loop over dyads
-    for (arma::uword j = 0; j < riskset.n_rows; j++)
-    {
-      // Actors and event type
-      int ac1 = riskset(j, 0);
-      int ac2 = riskset(j, 1);
-      int c = riskset(j, 2);
-
-      // Find the position of the reverse dyad
-      int rev = remify::getDyadIndex(ac2, ac1, c, N, TRUE);
-
-      // Set the values
-      stat.col(j) = adjmat.col(rev);
-    }
-  }
-
-  // Output the computed stat
-  return stat;
-}
-
 // degree_tie
 //
 // Function to compute the degree statistics for the tie-oriented model.
@@ -1235,6 +1104,192 @@ arma::mat degree_undirected_tie(int type, const arma::mat &edgelist,
         }
       }
     }
+  }
+
+  // Output the computed stat
+  return stat;
+}
+
+// inertia_tie
+//
+// Computes the statistic for an inertia effect in the tie-oriented model.
+//
+// edgelist: matrix (time, event, weight)
+// adjmat: matrix (events x dyads)
+// riskset: matrix, (actor1, actor2, type, event)
+// N: integer, number of actors
+// directed: boolean, whether events are directed or undirected
+// types: vector, type ids
+// start: integer, first event in the edgelist for which the statistic is
+// computed
+// stop: integer, last event in the edgelist for which the statistic is
+// computed
+// consider_type: boolean indicating whether to compute the inertia per
+// event type (TRUE) or sum across types (FALSE)
+arma::mat inertia_tie(const arma::mat &edgelist,
+                      const arma::mat &adjmat,
+                      const arma::mat &riskset,
+                      const arma::vec &actors,
+                      const arma::vec &types,
+                      bool directed,
+                      int start,
+                      int stop,
+                      bool consider_type,
+                      int scaling)
+{
+
+  // Slice the edgelist according to "start" and "stop"
+  arma::mat slice = edgelist.rows(start, stop);
+
+  // Initialize saving space
+  arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+
+  // Number of actors
+  int N = actors.n_elem;
+
+  if (!consider_type)
+  {
+    // If there is only one event type, the adjmat is equal to the inertia
+    // statistic
+    if (types.n_elem == 1)
+    {
+      stat = adjmat;
+    }
+    else
+    {
+      // For loop over dyads
+      for (arma::uword d = 0; d < riskset.n_rows; ++d)
+      {
+        // Actors
+        int ac1 = riskset(d, 0);
+        int ac2 = riskset(d, 1);
+
+        // For loop over event types
+        for (arma::uword c = 0; c < types.n_elem; ++c)
+        {
+          // Find the position of the dyad
+          int dyad = remify::getDyadIndex(ac1, ac2, types(c), N, directed);
+          // Set the values
+          stat.col(d) += adjmat.col(dyad);
+        }
+      }
+    }
+  }
+  else
+  {
+    stat = adjmat;
+  }
+
+  // Scale by the outdegree of the sender >> the fraction of messages i sent to
+  // j >> if i hasn't sent any messages yet, than all n-1 actors are equally
+  // likely to get a message
+  if ((scaling == 2) & (directed))
+  {
+    arma::mat deg = degree_tie(3, edgelist, adjmat, actors, types, start, stop,
+                               consider_type, true);
+    stat = stat / deg;
+    double rep = 1.0 / (actors.n_elem - 1.0);
+    stat.replace(arma::datum::nan, rep);
+  }
+
+  // Scale through standardiation
+  if (scaling == 3)
+  {
+    stat = standardize(stat);
+  }
+
+  // Output the computed stat
+  return stat;
+}
+
+// reciprocity_tie
+//
+// Computes the statistic for a reciprocity effect in the tie-oriented model.
+//
+// edgelist: matrix (time, event, weight)
+// adjmat: matrix (events x dyads)
+// riskset: matrix, (actor1, actor2, type, event)
+// N: integer, number of actors
+// types: vector, type ids
+// start: integer, first event in the edgelist for which the statistic is
+// computed
+// stop: integer, last event in the edgelist for which the statistic is
+// computed
+// consider_type: boolean indicating whether to compute the degree per
+// event type (TRUE) or sum across types (FALSE)
+arma::mat reciprocity_tie(const arma::mat &edgelist,
+                          const arma::mat &adjmat,
+                          const arma::mat &riskset,
+                          const arma::vec &actors,
+                          const arma::vec &types,
+                          int start,
+                          int stop,
+                          bool consider_type,
+                          int scaling)
+{
+
+  // Slice the edgelist according to "start" and "stop"
+  arma::mat slice = edgelist.rows(start, stop);
+
+  // Initialize saving space
+  arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+
+  // Number of actors
+  int N = actors.n_elem;
+
+  if (!consider_type)
+  {
+    // For loop over dyads
+    for (arma::uword j = 0; j < riskset.n_rows; j++)
+    {
+      // Actors
+      int ac1 = riskset(j, 0);
+      int ac2 = riskset(j, 1);
+
+      // For loop over event types
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        // Find the position of the reverse dyad
+        int rev = remify::getDyadIndex(ac2, ac1, types(c), N, TRUE);
+        // Set the values
+        stat.col(j) += adjmat.col(rev);
+      }
+    }
+  }
+  else
+  {
+    // For loop over dyads
+    for (arma::uword j = 0; j < riskset.n_rows; j++)
+    {
+      // Actors and event type
+      int ac1 = riskset(j, 0);
+      int ac2 = riskset(j, 1);
+      int c = riskset(j, 2);
+
+      // Find the position of the reverse dyad
+      int rev = remify::getDyadIndex(ac2, ac1, c, N, TRUE);
+
+      // Set the values
+      stat.col(j) = adjmat.col(rev);
+    }
+  }
+
+  // Scale by the indegree of the sender >> the fraction of messages i received
+  // from j >> if i hasn't received any messages yet, than all n-1 actors are
+  // equally likely to get a message
+  if (scaling == 2)
+  {
+    arma::mat deg = degree_tie(1, edgelist, adjmat, actors, types, start, stop,
+                               consider_type, true);
+    stat = stat / deg;
+    double rep = 1.0 / (actors.n_elem - 1.0);
+    stat.replace(arma::datum::nan, rep);
+  }
+
+  // Scale through standardiation
+  if (scaling == 3)
+  {
+    stat = standardize(stat);
   }
 
   // Output the computed stat
@@ -2639,51 +2694,25 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 10 inertia
     case 10:
       // Compute statistic
-      stat = inertia_tie(edgelist, adjmat, riskset,
-                         actors.n_elem, directed, types, start, stop, FALSE);
-      // Scale by outdegree of the sender
-      if (scaling(i) == 2)
-      {
-        arma::mat deg = degree_tie(3, edgelist, adjmat,
-                                   actors, types, start, stop, FALSE, TRUE);
-        stat = stat / deg;
-        double rep = 1.0 / (actors.n_elem - 1.0);
-        stat.replace(arma::datum::nan, rep);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
+      stat = inertia_tie(edgelist, adjmat, riskset, actors, types, directed,
+                         start, stop, false, scaling(i));
       break;
 
     // 11 reciprocity
     case 11:
       // Compute statistic
-      stat = reciprocity_tie(edgelist, adjmat, riskset,
-                             actors.n_elem, types, start, stop, FALSE);
-      // Scale by indegree of the sender
-      if (scaling(i) == 2)
-      {
-        arma::mat deg = degree_tie(1, edgelist, adjmat,
-                                   actors, types, start, stop, FALSE, TRUE);
-        stat = stat / deg;
-        double rep = 1.0 / (actors.n_elem - 1.0);
-        stat.replace(arma::datum::nan, rep);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
+      stat = reciprocity_tie(edgelist, adjmat, riskset, actors, types, start,
+                             stop, false, scaling(i));
       break;
 
     // 12 indegreeSender
     case 12:
       // Compute statistic
-      stat = degree_tie(1, edgelist, adjmat, actors,
-                        types, start, stop, FALSE, TRUE);
-      // Divide by the number/weight of past events
+      stat = degree_tie(1, edgelist, adjmat, actors, types, start, stop, FALSE,
+                        TRUE);
+      // Divide by the number/weight of past events >> the fraction of messages
+      // received by the sender. If no messages have been exchanged yet, then
+      // all actors are equally likely to send a message.
       if (scaling(i) == 2)
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
@@ -2694,8 +2723,8 @@ arma::cube compute_stats_tie(const arma::vec &effects,
         // First row
         if (start == 0)
         {
-          arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                          arma::fill::value(1.0 / actors.n_elem));
+          arma::rowvec rep = arma::rowvec(stat.n_cols);
+          rep.fill(1.0 / actors.n_elem);
           stat.row(0) = rep;
         }
       }
@@ -3248,43 +3277,15 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 52 inertia.type
     case 52:
       // Compute statistic
-      stat = inertia_tie(edgelist, adjmat, riskset,
-                         actors.n_elem, directed, types, start, stop, TRUE);
-      // Scale by outdegree of the sender, considering event type
-      if (scaling(i) == 2)
-      {
-        arma::mat deg = degree_tie(3, edgelist, adjmat,
-                                   actors, types, start, stop, TRUE, TRUE);
-        stat = stat / deg;
-        double rep = 1.0 / (actors.n_elem - 1.0);
-        stat.replace(arma::datum::nan, rep);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
+      stat = inertia_tie(edgelist, adjmat, riskset, actors, types, directed,
+                         start, stop, true, scaling(i));
       break;
 
     // 53 reciprocity.type
     case 53:
       // Compute statistic
-      stat = reciprocity_tie(edgelist, adjmat, riskset,
-                             actors.n_elem, types, start, stop, TRUE);
-      // Scale by indegree of the sender, considering event type
-      if (scaling(i) == 2)
-      {
-        arma::mat deg = degree_tie(1, edgelist, adjmat,
-                                   actors, types, start, stop, TRUE, TRUE);
-        stat = stat / deg;
-        double rep = 1.0 / (actors.n_elem - 1.0);
-        stat.replace(arma::datum::nan, rep);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
+      stat = reciprocity_tie(edgelist, adjmat, riskset, actors, types, start,
+                             stop, true, scaling(i));
       break;
 
     // 54 otp.type
@@ -3711,81 +3712,16 @@ arma::mat actorStat_rc(const arma::mat &covariates, const arma::mat &edgelist,
 // type: integer, 1 = indegree, 2 = outdegree, 3 = total degree
 // riskset: matrix, (actor1, actor2, type, event)
 // actors: vector, actor ids
-// adjmat: matrix (events x dyads)
-arma::mat degree_rc(int type, const arma::mat &riskset,
-                    const arma::vec &actors, const arma::mat &adjmat)
-{
-
-  // Initialize saving space
-  arma::mat stat(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
-  arma::mat ideg(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
-  arma::mat odeg(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
-
-  // For loop over actors i
-  for (arma::uword i = 0; i < actors.n_elem; i++)
-  {
-    // For loop over actors j
-    for (arma::uword j = 0; j < actors.n_elem; j++)
-    {
-      // Skip self-to-self events
-      if (i == j)
-      {
-        continue;
-      }
-
-      if ((type == 1) | (type == 3))
-      {
-        // For the in-degree of actor i: get the (j,i) dyad
-        int dyad = remify::getDyadIndex(j, i, 0, actors.n_elem, TRUE);
-        // Extract this column from the adjmat and add it to actor i's
-        // in-degree
-        ideg.col(i) += adjmat.col(dyad);
-      }
-
-      if ((type == 2) | (type == 3))
-      {
-        // For the out-degree of actor i: get the (i,j) dyad
-        int dyad = remify::getDyadIndex(i, j, 0, actors.n_elem, TRUE);
-        // Extract this column from the adjmat and add it to actor i's
-        // in-degree
-        odeg.col(i) += adjmat.col(dyad);
-      }
-    }
-  }
-
-  // Results
-  if (type == 1)
-  {
-    stat = ideg;
-  }
-  if (type == 2)
-  {
-    stat = odeg;
-  }
-  if (type == 3)
-  {
-    stat = ideg + odeg;
-  }
-  return stat;
-}
-
-// degree_rc
-//
-// Function to compute the degree statistics for the actor-oriented model.
-// type: integer, 1 = indegree, 2 = outdegree, 3 = total degree
-// riskset: matrix, (actor1, actor2, type, event)
-// actors: vector, actor ids
-// [[Rcpp::export]]
-arma::mat degree_rc_update(std::string type,
-                           const arma::mat &edgelist,
-                           const arma::mat &riskset,
-                           const arma::vec &actors,
-                           std::string memory,
-                           arma::vec memory_value,
-                           int scaling,
-                           int start,
-                           int stop,
-                           bool display_progress)
+arma::mat degree_rc(std::string type,
+                    const arma::mat &edgelist,
+                    const arma::mat &riskset,
+                    const arma::vec &actors,
+                    std::string memory,
+                    arma::vec memory_value,
+                    int scaling,
+                    int start,
+                    int stop,
+                    bool display_progress)
 {
   // Slice the edgelist according to "start" and "stop"
   arma::mat slice = edgelist.rows(start, stop);
@@ -3860,6 +3796,8 @@ arma::mat degree_rc_update(std::string type,
   // Window memory
   if (memory == "window")
   {
+    // Progress bar
+    Progress p(slice.n_rows, display_progress);
     // For loop over timepoints
     for (arma::uword i = 1; i < slice.n_rows; ++i)
     {
@@ -3888,12 +3826,14 @@ arma::mat degree_rc_update(std::string type,
           odeg(i, sender) += past(j, 2);
         }
       }
+      p.increment();
     }
   }
 
   // Interval memory
   if (memory == "interval")
   {
+    Progress p(slice.n_rows, display_progress);
     // For loop over timepoints
     for (arma::uword i = 1; i < slice.n_rows; ++i)
     {
@@ -3922,12 +3862,14 @@ arma::mat degree_rc_update(std::string type,
           odeg(i, sender) += past(j, 2);
         }
       }
+      p.increment();
     }
   }
 
   // Exponential decay memory
   if (memory == "decay")
   {
+    Progress p(slice.n_rows, display_progress);
     // For loop over timepoints
     for (arma::uword i = 1; i < slice.n_rows; ++i)
     {
@@ -3965,6 +3907,7 @@ arma::mat degree_rc_update(std::string type,
           odeg(i, sender) += bw;
         }
       }
+      p.increment();
     }
   }
 
@@ -4041,11 +3984,19 @@ arma::mat degree_rc_update(std::string type,
 // event type (TRUE) or sum across types (FALSE)
 // directed: boolean, whether events are directed or undirected
 arma::mat recency_rc(int type, const arma::mat &edgelist,
-                     const arma::mat &riskset, arma::uword N, int start, int stop)
+                     const arma::mat &riskset, arma::uword N, int start, int stop, bool display_progress, std::string effect)
 {
 
   // Slice the edgelist according to "start" and "stop"
   arma::mat slice = edgelist.rows(start, stop);
+
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Computing " << effect << " statistic" << std::endl;
+  }
+
+  // Progress bar
+  Progress p(stop, display_progress);
 
   // Initialize vector with times the actors/dyads were last active
   arma::vec lastActive(N);
@@ -4087,6 +4038,8 @@ arma::mat recency_rc(int type, const arma::mat &edgelist,
       // Last time the actor was active as sender
       lastActive(r) = time;
     }
+
+    p.increment();
   }
 
   // Initialize statistic
@@ -4143,6 +4096,8 @@ arma::mat recency_rc(int type, const arma::mat &edgelist,
       // Last time the actor was active as sender
       lastActive(r) = time;
     }
+
+    p.increment();
   }
 
   return stat;
@@ -4372,9 +4327,16 @@ arma::mat tie_choice(const arma::mat &covariates, const arma::mat &edgelist,
 // stop: integer, last event in the edgelist for which the statistic is
 // computed
 // scaling: integer, 1 = as.is, 2 = prop, 3 = std
-arma::mat inertia_choice(const arma::mat &edgelist, const arma::mat &adjmat,
-                         const arma::mat &riskset, const arma::vec &actors, int start, int stop,
-                         int scaling)
+arma::mat inertia_choice(const arma::mat &edgelist,
+                         const arma::mat &riskset,
+                         const arma::vec &actors,
+                         std::string memory,
+                         arma::vec memory_value,
+                         int scaling,
+                         int start,
+                         int stop,
+                         bool self_events,
+                         bool display_progress)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -4383,70 +4345,123 @@ arma::mat inertia_choice(const arma::mat &edgelist, const arma::mat &adjmat,
   // Initialize saving space
   arma::mat stat(slice.n_rows, actors.n_elem, arma::fill::zeros);
 
-  // Degree matrix
-  arma::mat deg(slice.n_rows, actors.n_elem, arma::fill::zeros);
-  if (scaling == 2)
+  if (display_progress)
   {
-    deg = degree_rc(2, riskset, actors, adjmat);
+    Rcpp::Rcout << "Computing inertia statistic" << std::endl;
   }
 
-  // For loop over the sequence
-  for (arma::uword m = 0; m < slice.n_rows; ++m)
-  {
+  // Progress bar
+  Progress p(slice.n_rows, display_progress);
 
+  // Iterate over time points
+  for (arma::uword i = 1; i < slice.n_rows; ++i)
+  {
     // Sender of the event
-    int event = slice(m, 1);
+    arma::uword event = slice(i, 1);
     arma::uword sender = riskset(event, 0);
 
-    // For loop over receivers
-    for (arma::uword r = 0; r < actors.n_elem; ++r)
+    // Select the past
+    arma::mat past;
+    if ((memory == "full") | (memory == "decay"))
     {
-
-      // Skip if the sender is the receiver (no self-self edges)
-      if (sender == r)
-      {
-        continue;
-      }
-
-      // Get the index for the column in the riskset that refer to the
-      // (i,j) event
-      int dyad = remify::getDyadIndex(sender, r, 0, actors.n_elem, TRUE);
-
-      // Extract the value from the adjmat
-      stat(m, r) = adjmat(m, dyad);
+      double time = slice(i, 0);
+      arma::uvec past_idx = arma::find(edgelist.col(0) < time);
+      past = edgelist.rows(past_idx);
+    }
+    else if (memory == "window")
+    {
+      double time_max = slice(i, 0);
+      double time_min = slice(i, 0) - memory_value(0);
+      arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                       edgelist.col(0) >= time_min);
+      past = edgelist.rows(past_idx);
+    }
+    else if (memory == "interval")
+    {
+      double time_max = slice(i, 0) - memory_value(0);
+      double time_min = slice(i, 0) - memory_value(1);
+      arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                       edgelist.col(0) >= time_min);
+      past = edgelist.rows(past_idx);
     }
 
-    // Scaling
-    if (scaling == 2)
+    // For loop over receivers
+    for (arma::uword r = 0; r < actors.n_elem; r++)
     {
+      // Get the index for the column in the riskset that refers to the
+      // (i,j) event
+      int dyad = remify::getDyadIndex(sender, r, 0, actors.n_elem, TRUE);
+      // Find the number of (i,j) events in the past
+      arma::uvec dyad_past = arma::find(past.col(1) == dyad);
+      arma::vec event_wght = past.col(2);
+      arma::vec dyad_wght = event_wght(dyad_past);
+      if (memory == "decay")
+      {
+        arma::vec event_time = past.col(0);
+        event_time = event_time(dyad_past);
+        double time = slice(i, 0);
+        dyad_wght = dyad_wght %
+                    exp(-(time - event_time) * (log(2) / memory_value(0))) *
+                    (log(2) / memory_value(0));
+      }
+      stat(i, r) = sum(dyad_wght);
+    }
+    p.increment();
+  }
+
+  // Scale by the outdegree of the sender >> the fraction of messages i sent to
+  // j >> if i hasn't sent any messages yet, than all n-1 actors are equally
+  // likely to get a message
+  if (scaling == 2)
+  {
+    arma::mat deg = degree_rc("out", edgelist, riskset, actors, memory, memory_value, scaling = 1, start, stop, false);
+
+    // Iterate over the sequence
+    for (arma::uword m = 0; m < slice.n_rows; ++m)
+    {
+      arma::uword event = slice(m, 1);
+      arma::uword sender = riskset(event, 0);
       stat.row(m) = stat.row(m) / deg(m, sender);
       double rep = 1.0 / (actors.n_elem - 1.0);
       stat.replace(arma::datum::nan, rep);
-      stat(m, sender) = 0;
-    }
-
-    // Scaling
-    if (scaling == 3)
-    {
-      arma::rowvec statrow = stat.row(m);
-      arma::vec statrowMin = statrow(arma::find(actors != sender));
-
-      // For loop over receivers
-      for (arma::uword r = 0; r < actors.n_elem; ++r)
+      if (!self_events)
       {
-        if (sender == r)
+        stat(m, sender) = 0;
+      }
+    }
+  }
+  // Standardize
+  if (scaling == 3)
+  {
+    // For loop over the sequence
+    for (arma::uword m = 0; m < slice.n_rows; ++m)
+    {
+      if (self_events)
+      {
+        stat.row(m) = stat.row(m) - mean(stat.row(m)) / stddev(stat.row(m));
+      }
+      else if (!self_events)
+      {
+        int event = slice(m, 1);
+        arma::uword sender = riskset(event, 0);
+        arma::rowvec statrow = stat.row(m);
+        arma::vec statrow_exsender = statrow(arma::find(actors != sender));
+        // For loop over receivers
+        for (arma::uword r = 0; r < actors.n_elem; r++)
         {
-          stat(m, r) = 0;
-        }
-        else
-        {
-          stat(m, r) = (stat(m, r) - mean(statrowMin)) /
-                       stddev(statrowMin);
+          if (sender == r)
+          {
+            stat(m, r) = 0;
+          }
+          else
+          {
+            stat(m, r) = (stat(m, r) - mean(statrow_exsender)) /
+                         stddev(statrow_exsender);
+          }
         }
       }
-
-      stat.replace(arma::datum::nan, 0);
     }
+    stat.replace(arma::datum::nan, 0);
   }
 
   return stat;
@@ -4454,20 +4469,26 @@ arma::mat inertia_choice(const arma::mat &edgelist, const arma::mat &adjmat,
 
 // reciprocity_choice
 //
-// Computes the statistic for a reciprocity effect in the actor-oriented model.
+// Computes the statistic for an reciprocity effect in the actor-oriented model.
 //
 // edgelist: matrix (time, event, weight)
 // adjmat: matrix (events x dyads)
 // riskset: matrix, (actor1, actor2, type, event)
 // actors: vector, actor ids
-// start: integer, first event in the edgelist for which the statistic is
-// computed
-// stop: integer, last event in the edgelist for which the statistic is
-// computed
+// start: integer, first event in the edgelist for which the stat is computed
+// stop: integer, last event in the edgelist for which the stat is computed
 // scaling: integer, 1 = as.is, 2 = prop, 3 = std
+// [[Rcpp::export]]
 arma::mat reciprocity_choice(const arma::mat &edgelist,
-                             const arma::mat &adjmat, const arma::mat &riskset,
-                             const arma::vec &actors, int start, int stop, int scaling)
+                             const arma::mat &riskset,
+                             const arma::vec &actors,
+                             std::string memory,
+                             arma::vec memory_value,
+                             int scaling,
+                             int start,
+                             int stop,
+                             bool self_events,
+                             bool display_progress)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -4476,70 +4497,123 @@ arma::mat reciprocity_choice(const arma::mat &edgelist,
   // Initialize saving space
   arma::mat stat(slice.n_rows, actors.n_elem, arma::fill::zeros);
 
-  // Degree matrix
-  arma::mat deg(slice.n_rows, actors.n_elem, arma::fill::zeros);
-  if (scaling == 2)
+  if (display_progress)
   {
-    deg = degree_rc(1, riskset, actors, adjmat);
+    Rcpp::Rcout << "Computing reciprocity statistic" << std::endl;
   }
 
-  // For loop over the sequence
-  for (arma::uword m = 0; m < slice.n_rows; ++m)
-  {
+  // Progress bar
+  Progress p(slice.n_rows, display_progress);
 
+  // Iterate over time points
+  for (arma::uword i = 1; i < slice.n_rows; ++i)
+  {
     // Sender of the event
-    int event = slice(m, 1);
+    arma::uword event = slice(i, 1);
     arma::uword sender = riskset(event, 0);
 
-    // For loop over receivers
-    for (arma::uword r = 0; r < actors.n_elem; ++r)
+    // Select the past
+    arma::mat past;
+    if ((memory == "full") | (memory == "decay"))
     {
+      double time = slice(i, 0);
+      arma::uvec past_idx = arma::find(edgelist.col(0) < time);
+      past = edgelist.rows(past_idx);
+    }
+    else if (memory == "window")
+    {
+      double time_max = slice(i, 0);
+      double time_min = slice(i, 0) - memory_value(0);
+      arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                       edgelist.col(0) >= time_min);
+      past = edgelist.rows(past_idx);
+    }
+    else if (memory == "interval")
+    {
+      double time_max = slice(i, 0) - memory_value(0);
+      double time_min = slice(i, 0) - memory_value(1);
+      arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                       edgelist.col(0) >= time_min);
+      past = edgelist.rows(past_idx);
+    }
 
-      // Skip if the sender is the receiver (no self-self edges)
-      if (sender == r)
-      {
-        continue;
-      }
-
+    // For loop over receivers
+    for (arma::uword r = 0; r < actors.n_elem; r++)
+    {
       // Get the index for the column in the riskset that refers to the
       // (j,i) event
       int dyad = remify::getDyadIndex(r, sender, 0, actors.n_elem, TRUE);
-
-      // Extract the value from the adjmat
-      stat(m, r) = adjmat(m, dyad);
+      // Find the number of (j,i) events in the past
+      arma::uvec dyad_past = arma::find(past.col(1) == dyad);
+      arma::vec event_wght = past.col(2);
+      arma::vec dyad_wght = event_wght(dyad_past);
+      if (memory == "decay")
+      {
+        arma::vec event_time = past.col(0);
+        event_time = event_time(dyad_past);
+        double time = slice(i, 0);
+        dyad_wght = dyad_wght %
+                    exp(-(time - event_time) * (log(2) / memory_value(0))) *
+                    (log(2) / memory_value(0));
+      }
+      stat(i, r) = sum(dyad_wght);
     }
+    p.increment();
+  }
 
-    // Scaling
-    if (scaling == 2)
+  // Scale by the indegree of the sender >> the fraction of messages j sent to
+  // i >> if i hasn't received any messages yet, than all n-1 actors are
+  // equally likely to get a message
+  if (scaling == 2)
+  {
+    arma::mat deg = degree_rc("in", edgelist, riskset, actors, memory, memory_value, scaling = 1, start, stop, false);
+
+    // Iterate over the sequence
+    for (arma::uword m = 0; m < slice.n_rows; ++m)
     {
+      arma::uword event = slice(m, 1);
+      arma::uword sender = riskset(event, 0);
       stat.row(m) = stat.row(m) / deg(m, sender);
       double rep = 1.0 / (actors.n_elem - 1.0);
       stat.replace(arma::datum::nan, rep);
-      stat(m, sender) = 0;
-    }
-
-    // Scaling
-    if (scaling == 3)
-    {
-      arma::rowvec statrow = stat.row(m);
-      arma::vec statrowMin = statrow(arma::find(actors != sender));
-
-      // For loop over receivers
-      for (arma::uword r = 0; r < actors.n_elem; ++r)
+      if (!self_events)
       {
-        if (sender == r)
+        stat(m, sender) = 0;
+      }
+    }
+  }
+  // Standardize
+  if (scaling == 3)
+  {
+    // For loop over the sequence
+    for (arma::uword m = 0; m < slice.n_rows; ++m)
+    {
+      if (self_events)
+      {
+        stat.row(m) = stat.row(m) - mean(stat.row(m)) / stddev(stat.row(m));
+      }
+      else if (!self_events)
+      {
+        int event = slice(m, 1);
+        arma::uword sender = riskset(event, 0);
+        arma::rowvec statrow = stat.row(m);
+        arma::vec statrow_exsender = statrow(arma::find(actors != sender));
+        // For loop over receivers
+        for (arma::uword r = 0; r < actors.n_elem; r++)
         {
-          stat(m, r) = 0;
-        }
-        else
-        {
-          stat(m, r) = (stat(m, r) - mean(statrowMin)) /
-                       stddev(statrowMin);
+          if (sender == r)
+          {
+            stat(m, r) = 0;
+          }
+          else
+          {
+            stat(m, r) = (stat(m, r) - mean(statrow_exsender)) /
+                         stddev(statrow_exsender);
+          }
         }
       }
-
-      stat.replace(arma::datum::nan, 0);
     }
+    stat.replace(arma::datum::nan, 0);
   }
 
   return stat;
@@ -4687,11 +4761,26 @@ arma::mat triad_choice(int type, const arma::mat &edgelist,
 // stop: integer, last event in the edgelist for which the statistic is
 // computed
 arma::mat rrank_choice(int type, const arma::mat &edgelist,
-                       const arma::mat &riskset, const arma::vec &actors, int start, int stop)
+                       const arma::mat &riskset, const arma::vec &actors, int start, int stop, bool display_progress)
 {
 
   // Slice the edgelist according to "start" and "stop"
   arma::mat slice = edgelist.rows(start, stop);
+
+  if (display_progress)
+  {
+    if (type == 1)
+    {
+      Rcpp::Rcout << "Computing rrankSend statistic" << std::endl;
+    }
+    if (type == 2)
+    {
+      Rcpp::Rcout << "Computing rrankReceive statistic" << std::endl;
+    }
+  }
+
+  // Progress bar
+  Progress p(stop, display_progress);
 
   // Initialize saving space
   arma::mat stat(slice.n_rows, actors.n_elem, arma::fill::zeros);
@@ -4781,6 +4870,8 @@ arma::mat rrank_choice(int type, const arma::mat &edgelist,
         ranks.row(receiver) = rowranks;
       }
     }
+
+    p.increment();
   }
 
   // For loop over the sequence
@@ -4872,6 +4963,8 @@ arma::mat rrank_choice(int type, const arma::mat &edgelist,
     }
   }
 
+  p.increment();
+
   return stat;
 }
 
@@ -4923,8 +5016,8 @@ arma::cube compute_stats_rate(const arma::vec &effects,
       break;
     // 3 in-degree
     case 3:
-      stat = degree_rc_update("in", edgelist, riskset, actors, memory, memory_value,
-                              1, start, stop, display_progress);
+      stat = degree_rc("in", edgelist, riskset, actors, memory, memory_value,
+                       1, start, stop, display_progress);
       // Divide by the number of past events
       if (scaling(i) == 2)
       {
@@ -4942,8 +5035,8 @@ arma::cube compute_stats_rate(const arma::vec &effects,
       break;
     // 4 out-degree
     case 4:
-      stat = degree_rc_update("out", edgelist, riskset, actors, memory, memory_value,
-                              1, start, stop, display_progress);
+      stat = degree_rc("out", edgelist, riskset, actors, memory, memory_value,
+                       1, start, stop, display_progress);
       // Divide by the number of past events
       if (scaling(i) == 2)
       {
@@ -4961,8 +5054,8 @@ arma::cube compute_stats_rate(const arma::vec &effects,
       break;
     // 5 total-degree
     case 5:
-      stat = degree_rc_update("total", edgelist, riskset, actors, memory,
-                              memory_value, 1, start, stop, display_progress);
+      stat = degree_rc("total", edgelist, riskset, actors, memory,
+                       memory_value, 1, start, stop, display_progress);
       // Divide by two times the number of past events
       if (scaling(i) == 2)
       {
@@ -4982,13 +5075,13 @@ arma::cube compute_stats_rate(const arma::vec &effects,
     case 6:
       // Compute statistic
       stat = recency_rc(2, edgelist, riskset, actors.n_elem,
-                        start, stop);
+                        start, stop, display_progress, "recencySendSender");
       break;
     // 7 recencyReceiveSender
     case 7:
       // Compute statistic
       stat = recency_rc(3, edgelist, riskset, actors.n_elem,
-                        start, stop);
+                        start, stop, display_progress, "recencyReceiveSender");
       break;
     // 99 interact
     case 99:
@@ -5074,29 +5167,29 @@ arma::cube compute_stats_choice(const arma::vec &effects,
     // 6 inertia
     case 6:
       // Compute statistic
-      stat = inertia_choice(edgelist, adjmat, riskset, actors,
-                            start, stop, scaling(i));
+      stat = inertia_choice(edgelist, riskset, actors,
+                            memory, memory_value, scaling(i), start, stop, false, display_progress);
       break;
     // 7 reciprocity
     case 7:
       // Compute statistic
-      stat = reciprocity_choice(edgelist, adjmat, riskset, actors,
-                                start, stop, scaling(i));
+      stat = reciprocity_choice(edgelist, riskset, actors,
+                                memory, memory_value, scaling(i), start, stop, false, display_progress);
       break;
     // 8 in-degree
     case 8:
-      stat = degree_rc_update("in", edgelist, riskset, actors, memory, memory_value,
-                              scaling(i), start, stop, display_progress);
+      stat = degree_rc("in", edgelist, riskset, actors, memory, memory_value,
+                       scaling(i), start, stop, display_progress);
       break;
     // 9 out-degree
     case 9:
-      stat = degree_rc_update("out", edgelist, riskset, actors, memory, memory_value,
-                              scaling(i), start, stop, display_progress);
+      stat = degree_rc("out", edgelist, riskset, actors, memory, memory_value,
+                       scaling(i), start, stop, display_progress);
       break;
     // 10 total-degree
     case 10:
-      stat = degree_rc_update("total", edgelist, riskset, actors, memory, memory_value,
-                              scaling(i), start, stop, display_progress);
+      stat = degree_rc("total", edgelist, riskset, actors, memory, memory_value,
+                       scaling(i), start, stop, display_progress);
       break;
     // 11 otp
     case 11:
@@ -5120,26 +5213,29 @@ arma::cube compute_stats_choice(const arma::vec &effects,
       break;
     // 15 rrankSend
     case 15:
-      stat = rrank_choice(1, edgelist, riskset, actors, start, stop);
+      stat = rrank_choice(1, edgelist, riskset, actors, start, stop,
+                          display_progress);
       break;
     // 16 rrankReceive
     case 16:
-      stat = rrank_choice(2, edgelist, riskset, actors, start, stop);
+      stat = rrank_choice(2, edgelist, riskset, actors, start, stop,
+                          display_progress);
       break;
     // 17 recencySendReceiver
     case 17:
       stat = recency_rc(2, edgelist, riskset, actors.n_elem,
-                        start, stop);
+                        start, stop, display_progress, "recencySendReceiver");
       break;
     // 18 recencyReceiveReceiver
     case 18:
       stat = recency_rc(3, edgelist, riskset, actors.n_elem,
-                        start, stop);
+                        start, stop, display_progress,
+                        "recencyReceiveReceiver");
       break;
     // 19 recencyContinue
     case 19:
       stat = recency_rc(1, edgelist, riskset, actors.n_elem,
-                        start, stop);
+                        start, stop, display_progress, "recencyContinue");
       break;
     // 99 interact
     case 99:

@@ -358,6 +358,17 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
   # Prepare scaling info (vector length p)
   scaling <- as.numeric(sapply(effects, function(x) x$scaling))
 
+  # Check correct scaling inertia statistic
+  if (!directed) {
+    if (any(sapply(effects, function(x) x$effect == "inertia"))) {
+      idx <- which(sapply(effects, function(x) x$effect == "inertia"))
+      if (any(scaling[idx] == 2)) {
+        stop("Proportional scaling of the inertia effect is not defined for undirected events")
+      }
+    }
+  }
+
+
   # Compute the adjacency matrix
   if (any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72, 76:77))) {
     if (is.null(adjmat)) {
