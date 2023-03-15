@@ -138,49 +138,6 @@ RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP,
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// reciprocity_choice
-arma::mat reciprocity_choice(const arma::mat& edgelist, const arma::mat& riskset, const arma::vec& actors, std::string memory, arma::vec memory_value, int scaling, int start, int stop, bool self_events, bool display_progress);
-static SEXP _remstats_reciprocity_choice_try(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP actorsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP self_eventsSEXP, SEXP display_progressSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type actors(actorsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type memory(memorySEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type memory_value(memory_valueSEXP);
-    Rcpp::traits::input_parameter< int >::type scaling(scalingSEXP);
-    Rcpp::traits::input_parameter< int >::type start(startSEXP);
-    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
-    Rcpp::traits::input_parameter< bool >::type self_events(self_eventsSEXP);
-    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(reciprocity_choice(edgelist, riskset, actors, memory, memory_value, scaling, start, stop, self_events, display_progress));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remstats_reciprocity_choice(SEXP edgelistSEXP, SEXP risksetSEXP, SEXP actorsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP self_eventsSEXP, SEXP display_progressSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_reciprocity_choice_try(edgelistSEXP, risksetSEXP, actorsSEXP, memorySEXP, memory_valueSEXP, scalingSEXP, startSEXP, stopSEXP, self_eventsSEXP, display_progressSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
 // compute_stats_rate
 arma::cube compute_stats_rate(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& scaling, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, int start, int stop, bool display_progress);
 static SEXP _remstats_compute_stats_rate_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP scalingSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
@@ -281,7 +238,6 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
         signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,int,bool,std::string,arma::vec,int,int)");
         signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int,bool)");
-        signatures.insert("arma::mat(*reciprocity_choice)(const arma::mat&,const arma::mat&,const arma::vec&,std::string,arma::vec,int,int,int,bool,bool)");
         signatures.insert("arma::cube(*compute_stats_rate)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,int,int,bool)");
         signatures.insert("arma::cube(*compute_stats_choice)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,int,int,bool)");
     }
@@ -293,7 +249,6 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
     R_RegisterCCallable("remstats", "_remstats_getRisksetMatrix", (DL_FUNC)_remstats_getRisksetMatrix_try);
     R_RegisterCCallable("remstats", "_remstats_compute_adjmat", (DL_FUNC)_remstats_compute_adjmat_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_tie", (DL_FUNC)_remstats_compute_stats_tie_try);
-    R_RegisterCCallable("remstats", "_remstats_reciprocity_choice", (DL_FUNC)_remstats_reciprocity_choice_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_rate", (DL_FUNC)_remstats_compute_stats_rate_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_choice", (DL_FUNC)_remstats_compute_stats_choice_try);
     R_RegisterCCallable("remstats", "_remstats_RcppExport_validate", (DL_FUNC)_remstats_RcppExport_validate);
@@ -304,7 +259,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
     {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 8},
     {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 12},
-    {"_remstats_reciprocity_choice", (DL_FUNC) &_remstats_reciprocity_choice, 10},
     {"_remstats_compute_stats_rate", (DL_FUNC) &_remstats_compute_stats_rate, 13},
     {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 13},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},

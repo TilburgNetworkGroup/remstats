@@ -88,27 +88,6 @@ namespace remstats {
         return Rcpp::as<arma::cube >(rcpp_result_gen);
     }
 
-    inline arma::mat reciprocity_choice(const arma::mat& edgelist, const arma::mat& riskset, const arma::vec& actors, std::string memory, arma::vec memory_value, int scaling, int start, int stop, bool self_events, bool display_progress) {
-        typedef SEXP(*Ptr_reciprocity_choice)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_reciprocity_choice p_reciprocity_choice = NULL;
-        if (p_reciprocity_choice == NULL) {
-            validateSignature("arma::mat(*reciprocity_choice)(const arma::mat&,const arma::mat&,const arma::vec&,std::string,arma::vec,int,int,int,bool,bool)");
-            p_reciprocity_choice = (Ptr_reciprocity_choice)R_GetCCallable("remstats", "_remstats_reciprocity_choice");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_reciprocity_choice(Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(actors)), Shield<SEXP>(Rcpp::wrap(memory)), Shield<SEXP>(Rcpp::wrap(memory_value)), Shield<SEXP>(Rcpp::wrap(scaling)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(self_events)), Shield<SEXP>(Rcpp::wrap(display_progress)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<arma::mat >(rcpp_result_gen);
-    }
-
     inline arma::cube compute_stats_rate(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& scaling, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, int start, int stop, bool display_progress) {
         typedef SEXP(*Ptr_compute_stats_rate)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_rate p_compute_stats_rate = NULL;

@@ -13,10 +13,6 @@ compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset,
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed)
 }
 
-reciprocity_choice <- function(edgelist, riskset, actors, memory, memory_value, scaling, start, stop, self_events, display_progress) {
-    .Call(`_remstats_reciprocity_choice`, edgelist, riskset, actors, memory, memory_value, scaling, start, stop, self_events, display_progress)
-}
-
 compute_stats_rate <- function(effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, memory, memory_value, start, stop, display_progress) {
     .Call(`_remstats_compute_stats_rate`, effects, edgelist, riskset, adjmat, actors, scaling, covariates, interactions, memory, memory_value, start, stop, display_progress)
 }

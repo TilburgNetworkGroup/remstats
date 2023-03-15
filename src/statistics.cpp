@@ -4350,63 +4350,105 @@ arma::mat inertia_choice(const arma::mat &edgelist,
     Rcpp::Rcout << "Computing inertia statistic" << std::endl;
   }
 
-  // Progress bar
-  Progress p(slice.n_rows, display_progress);
-
-  // Iterate over time points
-  for (arma::uword i = 1; i < slice.n_rows; ++i)
+  if (memory == "full")
   {
-    // Sender of the event
-    arma::uword event = slice(i, 1);
-    arma::uword sender = riskset(event, 0);
+    // Initialize saving space
+    arma::mat inertia(actors.n_elem, actors.n_elem, arma::fill::zeros);
+
+    // Progress bar
+    Progress p(stop, display_progress);
 
     // Select the past
-    arma::mat past;
-    if ((memory == "full") | (memory == "decay"))
+    double time = slice(0, 0);
+    arma::uvec past_idx = arma::find(edgelist.col(0) < time);
+    arma::mat past = edgelist.rows(past_idx);
+
+    // Iterate over the past
+    for (arma::uword i = 0; i < past.n_rows; i++)
     {
-      double time = slice(i, 0);
-      arma::uvec past_idx = arma::find(edgelist.col(0) < time);
-      past = edgelist.rows(past_idx);
-    }
-    else if (memory == "window")
-    {
-      double time_max = slice(i, 0);
-      double time_min = slice(i, 0) - memory_value(0);
-      arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
-                                       edgelist.col(0) >= time_min);
-      past = edgelist.rows(past_idx);
-    }
-    else if (memory == "interval")
-    {
-      double time_max = slice(i, 0) - memory_value(0);
-      double time_min = slice(i, 0) - memory_value(1);
-      arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
-                                       edgelist.col(0) >= time_min);
-      past = edgelist.rows(past_idx);
+      int dyad = past(i, 1);
+      int sender = riskset(dyad, 0);
+      int receiver = riskset(dyad, 1);
+      inertia(sender, receiver) += past(i, 2); // Add event weight
+
+      p.increment();
     }
 
-    // For loop over receivers
-    for (arma::uword r = 0; r < actors.n_elem; r++)
+    // Iterate over time points
+    for (arma::uword i = 0; i < slice.n_rows; i++)
     {
-      // Get the index for the column in the riskset that refers to the
-      // (i,j) event
-      int dyad = remify::getDyadIndex(sender, r, 0, actors.n_elem, TRUE);
-      // Find the number of (i,j) events in the past
-      arma::uvec dyad_past = arma::find(past.col(1) == dyad);
-      arma::vec event_wght = past.col(2);
-      arma::vec dyad_wght = event_wght(dyad_past);
+      // Statistic at this time
+      int dyad = slice(i, 1);
+      int sender = riskset(dyad, 0);
+      stat.row(i) = inertia.row(sender);
+
+      // Update inertia with event
+      int receiver = riskset(dyad, 1);
+      inertia(sender, receiver) += slice(i, 2);
+
+      p.increment();
+    }
+  }
+  else
+  {
+    // Progress bar
+    Progress p(slice.n_rows, display_progress);
+
+    // Iterate over time points
+    for (arma::uword i = 1; i < slice.n_rows; ++i)
+    {
+      // Sender of the event
+      arma::uword event = slice(i, 1);
+      arma::uword sender = riskset(event, 0);
+
+      // Select the past
+      arma::mat past;
       if (memory == "decay")
       {
-        arma::vec event_time = past.col(0);
-        event_time = event_time(dyad_past);
         double time = slice(i, 0);
-        dyad_wght = dyad_wght %
-                    exp(-(time - event_time) * (log(2) / memory_value(0))) *
-                    (log(2) / memory_value(0));
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time);
+        past = edgelist.rows(past_idx);
       }
-      stat(i, r) = sum(dyad_wght);
+      else if (memory == "window")
+      {
+        double time_max = slice(i, 0);
+        double time_min = slice(i, 0) - memory_value(0);
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                         edgelist.col(0) >= time_min);
+        past = edgelist.rows(past_idx);
+      }
+      else if (memory == "interval")
+      {
+        double time_max = slice(i, 0) - memory_value(0);
+        double time_min = slice(i, 0) - memory_value(1);
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                         edgelist.col(0) >= time_min);
+        past = edgelist.rows(past_idx);
+      }
+
+      // For loop over receivers
+      for (arma::uword r = 0; r < actors.n_elem; r++)
+      {
+        // Get the index for the column in the riskset that refers to the
+        // (i,j) event
+        int dyad = remify::getDyadIndex(sender, r, 0, actors.n_elem, TRUE);
+        // Find the number of (i,j) events in the past
+        arma::uvec dyad_past = arma::find(past.col(1) == dyad);
+        arma::vec event_wght = past.col(2);
+        arma::vec dyad_wght = event_wght(dyad_past);
+        if (memory == "decay")
+        {
+          arma::vec event_time = past.col(0);
+          event_time = event_time(dyad_past);
+          double time = slice(i, 0);
+          dyad_wght = dyad_wght %
+                      exp(-(time - event_time) * (log(2) / memory_value(0))) *
+                      (log(2) / memory_value(0));
+        }
+        stat(i, r) = sum(dyad_wght);
+      }
+      p.increment();
     }
-    p.increment();
   }
 
   // Scale by the outdegree of the sender >> the fraction of messages i sent to
@@ -4478,7 +4520,6 @@ arma::mat inertia_choice(const arma::mat &edgelist,
 // start: integer, first event in the edgelist for which the stat is computed
 // stop: integer, last event in the edgelist for which the stat is computed
 // scaling: integer, 1 = as.is, 2 = prop, 3 = std
-// [[Rcpp::export]]
 arma::mat reciprocity_choice(const arma::mat &edgelist,
                              const arma::mat &riskset,
                              const arma::vec &actors,
@@ -4502,63 +4543,105 @@ arma::mat reciprocity_choice(const arma::mat &edgelist,
     Rcpp::Rcout << "Computing reciprocity statistic" << std::endl;
   }
 
-  // Progress bar
-  Progress p(slice.n_rows, display_progress);
-
-  // Iterate over time points
-  for (arma::uword i = 1; i < slice.n_rows; ++i)
+  if (memory == "full")
   {
-    // Sender of the event
-    arma::uword event = slice(i, 1);
-    arma::uword sender = riskset(event, 0);
+    // Initialize saving space
+    arma::mat recip(actors.n_elem, actors.n_elem, arma::fill::zeros);
+
+    // Progress bar
+    Progress p(stop, display_progress);
 
     // Select the past
-    arma::mat past;
-    if ((memory == "full") | (memory == "decay"))
+    double time = slice(0, 0);
+    arma::uvec past_idx = arma::find(edgelist.col(0) < time);
+    arma::mat past = edgelist.rows(past_idx);
+
+    // Iterate over the past
+    for (arma::uword i = 0; i < past.n_rows; i++)
     {
-      double time = slice(i, 0);
-      arma::uvec past_idx = arma::find(edgelist.col(0) < time);
-      past = edgelist.rows(past_idx);
-    }
-    else if (memory == "window")
-    {
-      double time_max = slice(i, 0);
-      double time_min = slice(i, 0) - memory_value(0);
-      arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
-                                       edgelist.col(0) >= time_min);
-      past = edgelist.rows(past_idx);
-    }
-    else if (memory == "interval")
-    {
-      double time_max = slice(i, 0) - memory_value(0);
-      double time_min = slice(i, 0) - memory_value(1);
-      arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
-                                       edgelist.col(0) >= time_min);
-      past = edgelist.rows(past_idx);
+      int dyad = past(i, 1);
+      int sender = riskset(dyad, 0);
+      int receiver = riskset(dyad, 1);
+      recip(receiver, sender) += past(i, 2); // Add event weight
+
+      p.increment();
     }
 
-    // For loop over receivers
-    for (arma::uword r = 0; r < actors.n_elem; r++)
+    // Iterate over time points
+    for (arma::uword i = 0; i < slice.n_rows; i++)
     {
-      // Get the index for the column in the riskset that refers to the
-      // (j,i) event
-      int dyad = remify::getDyadIndex(r, sender, 0, actors.n_elem, TRUE);
-      // Find the number of (j,i) events in the past
-      arma::uvec dyad_past = arma::find(past.col(1) == dyad);
-      arma::vec event_wght = past.col(2);
-      arma::vec dyad_wght = event_wght(dyad_past);
+      // Statistic at this time
+      int dyad = slice(i, 1);
+      int sender = riskset(dyad, 0);
+      stat.row(i) = recip.row(sender);
+
+      // Update reciprocity with event
+      int receiver = riskset(dyad, 1);
+      recip(receiver, sender) += slice(i, 2);
+
+      p.increment();
+    }
+  }
+  else
+  {
+    // Progress bar
+    Progress p(slice.n_rows, display_progress);
+
+    // Iterate over time points
+    for (arma::uword i = 1; i < slice.n_rows; ++i)
+    {
+      // Sender of the event
+      arma::uword event = slice(i, 1);
+      arma::uword sender = riskset(event, 0);
+
+      // Select the past
+      arma::mat past;
       if (memory == "decay")
       {
-        arma::vec event_time = past.col(0);
-        event_time = event_time(dyad_past);
         double time = slice(i, 0);
-        dyad_wght = dyad_wght %
-                    exp(-(time - event_time) * (log(2) / memory_value(0))) *
-                    (log(2) / memory_value(0));
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time);
+        past = edgelist.rows(past_idx);
       }
-      stat(i, r) = sum(dyad_wght);
+      else if (memory == "window")
+      {
+        double time_max = slice(i, 0);
+        double time_min = slice(i, 0) - memory_value(0);
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                         edgelist.col(0) >= time_min);
+        past = edgelist.rows(past_idx);
+      }
+      else if (memory == "interval")
+      {
+        double time_max = slice(i, 0) - memory_value(0);
+        double time_min = slice(i, 0) - memory_value(1);
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                         edgelist.col(0) >= time_min);
+        past = edgelist.rows(past_idx);
+      }
+
+      // For loop over receivers
+      for (arma::uword r = 0; r < actors.n_elem; r++)
+      {
+        // Get the index for the column in the riskset that refers to the
+        // (j,i) event
+        int dyad = remify::getDyadIndex(r, sender, 0, actors.n_elem, TRUE);
+        // Find the number of (j,i) events in the past
+        arma::uvec dyad_past = arma::find(past.col(1) == dyad);
+        arma::vec event_wght = past.col(2);
+        arma::vec dyad_wght = event_wght(dyad_past);
+        if (memory == "decay")
+        {
+          arma::vec event_time = past.col(0);
+          event_time = event_time(dyad_past);
+          double time = slice(i, 0);
+          dyad_wght = dyad_wght %
+                      exp(-(time - event_time) * (log(2) / memory_value(0))) *
+                      (log(2) / memory_value(0));
+        }
+        stat(i, r) = sum(dyad_wght);
+      }
+      p.increment();
     }
-    p.increment();
   }
 
   // Scale by the indegree of the sender >> the fraction of messages j sent to
