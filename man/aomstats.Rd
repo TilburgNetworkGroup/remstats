@@ -67,6 +67,9 @@ event for which statistics are requested (see 'Details')}
 
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the
 rows the time points and on the columns the risk set entries}
+
+\item{display_progress}{should a progress bar for the computation of the 
+endogenous statistics be shown (TRUE) or not (FALSE)?}
 }
 \value{
 \code{edgelist } Dataframe with the edgelist

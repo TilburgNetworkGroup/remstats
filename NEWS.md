@@ -4,6 +4,7 @@ Date: TBD
 ## New features
 * Interval memory. 
 * Obtain a list with available effects with the functions `tie_effects()` and `actor_effects()`.
+* Show progress with `display_progress` argument in `aomstats()` (will be added to `remstats()` and `tomstats()` later.)
 
 ## Minor changes 
 * Fixed bug in exogenous stats with time-varying attributes in the tie-oriented model.
@@ -12,7 +13,7 @@ Date: TBD
 * Fixed partial match warning (issue #35). 
 * Fixed environment issue attributes object. 
 * Renamed "Brandes" memory to "decay".
-* Updated computation degree statistics in actor-oriented model: without adjacency matrix. 
+* Updated computation degree, inertia and reciprocity statistics in actor-oriented model: without adjacency matrix. 
 
 # remstats 3.0.2
 Date: 08-Feb-23
