@@ -283,7 +283,7 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
         }
         # Collect the information in a dataframe
         dat <- data.frame(
-          id = attributes$id,
+          name = attributes$name,
           time = attributes$time,
           x = attributes[, x$variable]
         )
@@ -292,27 +292,29 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
           warning(paste0("Missing values in the attributes object for the '", x$effect, "' effect can cause unexpected behavior."))
         }
         # Check if all actors are in the attributes
-        if (!all(actors[, 1] %in% dat$id)) {
+        dat$name <- as.character(dat$name)
+        if (!all(actors[, 1] %in% dat$name)) {
           stop("Missing actors in the attributes object.")
         }
-        dat$id <- actors[match(dat$id, actors[, 1]), 2]
+        dat$name <- actors[match(dat$name, actors[, 1]), 2]
         colnames(dat)[3] <- x$variable
-        dat <- dat[order(as.numeric(dat$id)), ]
+        dat <- dat[order(as.numeric(dat$name)), ]
         as.matrix(dat)
       } else {
         dat <- x$x
         # Check if all actors are in the attributes
-        if (!all(actors[, 1] %in% dat$id)) {
+        dat$name <- as.character(dat$name)
+        if (!all(actors[, 1] %in% dat$name)) {
           stop("Missing actors in the attributes object.")
         }
-        dat$id <- actors[match(dat$id, actors[, 1]), 2]
-        dat <- dat[order(as.numeric(dat$id)), ]
+        dat$name <- actors[match(dat$name, actors[, 1]), 2]
+        dat <- dat[order(as.numeric(dat$name)), ]
       }
       # Check for actors in the attributes object that are not in the
       # risk set
-      if (any(is.na(dat$id))) {
+      if (any(is.na(dat$name))) {
         warning(paste0("Attributes contain actors that are not in the risk set. These are not included in the computation of the statistics."))
-        dat <- dat[!is.na(dat$id), ]
+        dat <- dat[!is.na(dat$name), ]
       }
       as.matrix(dat)
     } else if (x$effect == "tie") {

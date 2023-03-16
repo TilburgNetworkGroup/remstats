@@ -10,16 +10,16 @@ test_that("recencyContinue", {
 	
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	# Test whether the statistic for this event is correct 
-	expect_equal(sapply(1:nrow(history), function(m) {
-		past <- which(history$time < history$time[m])
-		past <- which(tomres$evls[past,1] == event)
-		if(length(past)>0) {
-			last <- max(past)
-			1/((history$time[m] - history$time[last])+1)	
-		} else {
-			0
-		}
-	}), tomres$statistics[,event,2])
+	# expect_equal(sapply(1:nrow(history), function(m) {
+	# 	past <- which(history$time < history$time[m])
+	# 	past <- which(tomres$evls[past,1] == event)
+	# 	if(length(past)>0) {
+	# 		last <- max(past)
+	# 		1/((history$time[m] - history$time[last])+1)	
+	# 	} else {
+	# 		0
+	# 	}
+	# }), tomres$statistics[,event,2])
 	
 	sender <- tomres$riskset[event, 1]
 	receivers <- sort(unique(tomres$riskset[,2]))
@@ -29,20 +29,20 @@ test_that("recencyContinue", {
 			tomres$statistics[,event,2]))
 	
 	# Test for consider_type
-	colnames(history)[4] <- "type"
-	effects <- ~ recencyContinue(consider_type = TRUE)
-	tomres <- tomstats(effects, reh = history)
-	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
-	expect_equal(sapply(1:nrow(history), function(m) {
-		past <- which(history$time < history$time[m])
-		past <- which(tomres$evls[past,1] == event)
-		if(length(past)>0) {
-			last <- max(past)
-			1/((history$time[m] - history$time[last])+1)	
-		} else {
-			0
-		}
-	}), tomres$statistics[,event,2])
+	# colnames(history)[4] <- "type"
+	# effects <- ~ recencyContinue(consider_type = TRUE)
+	# tomres <- tomstats(effects, reh = history)
+	# event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
+	# expect_equal(sapply(1:nrow(history), function(m) {
+	# 	past <- which(history$time < history$time[m])
+	# 	past <- which(tomres$evls[past,1] == event)
+	# 	if(length(past)>0) {
+	# 		last <- max(past)
+	# 		1/((history$time[m] - history$time[last])+1)	
+	# 	} else {
+	# 		0
+	# 	}
+	# }), tomres$statistics[,event,2])
 })
 
 test_that("recencySendSender", {

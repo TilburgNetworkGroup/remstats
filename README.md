@@ -82,7 +82,7 @@ Here, we read that the `info` object stores for the 10 actors in the network inf
 head(info)
 ```
 
-id  | time  | age   | sex   | extraversion  | agreeableness 
+name  | time  | age   | sex   | extraversion  | agreeableness 
 --- |---    | ---   | ---   | ---           | ---
 101 | 0     | 0     | 0     | -0.40         | -0.14
 101 | 9432  | 0     | 0     | -0.32         | -0.26

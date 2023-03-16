@@ -154,8 +154,8 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @examples
 #' library(remify)
 #' data(info)
-#' actors <- unique(info$id)
-#' age <- info[match(actors, info$id), "age"]
+#' actors <- unique(info$name)
+#' age <- info[match(actors, info$name), "age"]
 #' both_old <- sapply(seq_along(actors), function(i) {
 #'     sapply(seq_along(actors), function(j) {
 #'         ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)
@@ -2144,17 +2144,14 @@ recencyContinue <- function(consider_type = FALSE) {
 #' @inheritParams tie
 #'
 #' @examples
-#' # Prepare data
-#' dummy <- remstats(reh = history, tie_effects = ~1)
-#' riskset <- dummy$riskset
-#' evls <- dummy$evls
-#' actor101Events <- which(riskset$sender == "101" | riskset$receiver == "101")
-#' actor101stat <- t(sapply(seq_len(nrow(evls)), function(i) {
-#'     rep(evls[i, 1] %in% actor101Events, nrow(riskset))
+#' reh <- remify::reh(history, model = "tie")
+#' actor101Events <- which(history$actor1 == "101" | history$actor2 == "101")
+#' actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {
+#' 	rep(i %in% actor101Events, reh$D)
 #' }))
 #' 
 #' # Main effects only
-#' effects <- ~ userStat(x = actor101stat, variableName = "actor101event")
+#' effects <- ~ userStat(x = actor101_stat, variableName = "actor101event")
 #' remstats(reh = history, tie_effects = effects)
 #' 
 #' # Model with interaction effects

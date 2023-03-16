@@ -113,7 +113,7 @@ test_that("expected errors and warnings", {
   )
   
   # Missing actor
-  attr <- subset(info, id != 101)
+  attr <- subset(info, name != 101)
   mod <- ~ receive(variable = "extraversion")
   expect_error(
     remstats(reh = history, tie_effects = mod, attributes = attr),
@@ -149,7 +149,7 @@ test_that("expected output from receive()", {
   
   # Expected output with object supplied to "attributes" argument
   out$scaling <- 1
-  out$x <- info[, c("id", "time", "extraversion")]
+  out$x <- info[, c("name", "time", "extraversion")]
   expect_equal(receive(variable = "extraversion", attributes = info), out)
 })
 
@@ -162,21 +162,21 @@ test_that("expected statistic tie-oriented model", {
   
   # The first 40 rows are expected to be equal to the following row
   first_info <- subset(info, time == 0)
-  stat1 <- first_info$extraversion[match(tomres$riskset$receiver, first_info$id)]
+  stat1 <- first_info$extraversion[match(tomres$riskset$receiver, first_info$name)]
   expect_true(all(sapply(1:40, function(x) {
     all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 41 to 71 are expected to be equal to the following row
   second_info <- subset(info, time == 9432)
-  stat2 <- second_info$extraversion[match(tomres$riskset$receiver, second_info$id)]
+  stat2 <- second_info$extraversion[match(tomres$riskset$receiver, second_info$name)]
   expect_true(all(sapply(41:71, function(x) {
     all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 72 to 115 are expected to be equal to the following row
   third_info <- subset(info, time == 18864)
-  stat3 <- third_info$extraversion[match(tomres$riskset$receiver, third_info$id)]
+  stat3 <- third_info$extraversion[match(tomres$riskset$receiver, third_info$name)]
   expect_true(all(sapply(72:115, function(x) {
     all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
   })))
@@ -215,19 +215,19 @@ test_that("expected statistic tie-oriented model", {
   expect_equal(dimnames(tomres$statistics)[[3]][2], "receive_extraversion")
   
   # The first 40 rows are expected to be equal to the following row
-  stat1 <- first_info$extraversion[match(tomres$riskset$receiver, first_info$id)]
+  stat1 <- first_info$extraversion[match(tomres$riskset$receiver, first_info$name)]
   expect_true(all(sapply(1:40, function(x) {
     all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 41 to 71 are expected to be equal to the following row
-  stat2 <- second_info$extraversion[match(tomres$riskset$receiver, second_info$id)]
+  stat2 <- second_info$extraversion[match(tomres$riskset$receiver, second_info$name)]
   expect_true(all(sapply(41:71, function(x) {
     all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 72 to 115 are expected to be equal to the following row
-  stat3 <- third_info$extraversion[match(tomres$riskset$receiver, third_info$id)]
+  stat3 <- third_info$extraversion[match(tomres$riskset$receiver, third_info$name)]
   expect_true(all(sapply(72:115, function(x) {
     all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
   })))
@@ -247,7 +247,7 @@ test_that("expected statistic actor-oriented model", {
   
   # The first 40 rows are expected to be equal to the following row
   first_info <- subset(info, time == 0)
-  stat1 <- first_info$extraversion[match(aomres$actors, first_info$id)]
+  stat1 <- first_info$extraversion[match(aomres$actors, first_info$name)]
   expect_true(all(sapply(1:40, function(x) {
     all.equal(stat1, aomres$statistics$receiver_stats[x, , 1],
       check.attributes = FALSE
@@ -256,7 +256,7 @@ test_that("expected statistic actor-oriented model", {
   
   # Rows 41 to 71 are expected to be equal to the following row
   second_info <- subset(info, time == 9432)
-  stat2 <- second_info$extraversion[match(aomres$actors, second_info$id)]
+  stat2 <- second_info$extraversion[match(aomres$actors, second_info$name)]
   expect_true(all(sapply(41:71, function(x) {
     all.equal(stat2, aomres$statistics$receiver_stats[x, , 1],
       check.attributes = FALSE
@@ -265,7 +265,7 @@ test_that("expected statistic actor-oriented model", {
   
   # Rows 72 to 115 are expected to be equal to the following row
   third_info <- subset(info, time == 18864)
-  stat3 <- third_info$extraversion[match(aomres$actors, third_info$id)]
+  stat3 <- third_info$extraversion[match(aomres$actors, third_info$name)]
   expect_true(all(sapply(72:115, function(x) {
     all.equal(stat3, aomres$statistics$receiver_stats[x, , 1],
       check.attributes = FALSE

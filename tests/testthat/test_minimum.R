@@ -76,7 +76,7 @@ test_that("expected errors and warnings", {
     )
 
     # Missing actor
-    attr <- subset(info, id != 101)
+    attr <- subset(info, name != 101)
     mod <- ~ minimum(variable = "extraversion")
     expect_error(
         remstats(reh = history, tie_effects = mod, attributes = attr),
@@ -104,7 +104,7 @@ test_that("expected output from minimum()", {
 
     # Expected output with object supplied to "attributes" argument
     out$scaling <- 1
-    out$x <- info[, c("id", "time", "extraversion")]
+    out$x <- info[, c("name", "time", "extraversion")]
     expect_equal(minimum(variable = "extraversion", attributes = info), out)
 })
 
@@ -122,8 +122,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            first_info$extraversion[first_info$id == sender],
-            first_info$extraversion[first_info$id == receiver]
+            first_info$extraversion[first_info$name == sender],
+            first_info$extraversion[first_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(1:40, function(x) {
@@ -136,8 +136,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            second_info$extraversion[second_info$id == sender],
-            second_info$extraversion[second_info$id == receiver]
+            second_info$extraversion[second_info$name == sender],
+            second_info$extraversion[second_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(41:71, function(x) {
@@ -150,8 +150,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            third_info$extraversion[third_info$id == sender],
-            third_info$extraversion[third_info$id == receiver]
+            third_info$extraversion[third_info$name == sender],
+            third_info$extraversion[third_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(72:115, function(x) {
@@ -174,8 +174,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            first_info$extraversion[first_info$id == sender],
-            first_info$extraversion[first_info$id == receiver]
+            first_info$extraversion[first_info$name == sender],
+            first_info$extraversion[first_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(1:40, function(x) {
@@ -187,8 +187,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            second_info$extraversion[second_info$id == sender],
-            second_info$extraversion[second_info$id == receiver]
+            second_info$extraversion[second_info$name == sender],
+            second_info$extraversion[second_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(41:71, function(x) {
@@ -200,8 +200,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            third_info$extraversion[third_info$id == sender],
-            third_info$extraversion[third_info$id == receiver]
+            third_info$extraversion[third_info$name == sender],
+            third_info$extraversion[third_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(72:115, function(x) {
@@ -259,8 +259,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            first_info$extraversion[first_info$id == sender],
-            first_info$extraversion[first_info$id == receiver]
+            first_info$extraversion[first_info$name == sender],
+            first_info$extraversion[first_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(1:40, function(x) {
@@ -272,8 +272,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            second_info$extraversion[second_info$id == sender],
-            second_info$extraversion[second_info$id == receiver]
+            second_info$extraversion[second_info$name == sender],
+            second_info$extraversion[second_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(41:71, function(x) {
@@ -285,8 +285,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         min(c(
-            third_info$extraversion[third_info$id == sender],
-            third_info$extraversion[third_info$id == receiver]
+            third_info$extraversion[third_info$name == sender],
+            third_info$extraversion[third_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(72:115, function(x) {

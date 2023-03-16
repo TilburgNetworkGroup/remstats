@@ -4,11 +4,11 @@ dummy <- remstats(reh = history, tie_effects = ~1)
 riskset <- dummy$riskset
 same_age <- as.numeric(
     apply(riskset, 1, function(x) {
-        info$age[info$id == as.numeric(x[1]) & info$time == 0] ==
-            info$age[info$id == as.numeric(x[2]) & info$time == 0]
+        info$age[info$name == as.numeric(x[1]) & info$time == 0] ==
+            info$age[info$name == as.numeric(x[2]) & info$time == 0]
     })
 )
-same_age <- t(replicate(n = nrow(dummy$evls), same_age))
+same_age <- t(replicate(n = nrow(history), same_age))
 
 test_that("expected errors and warnings", {
     # Expected error for unequal number of rows

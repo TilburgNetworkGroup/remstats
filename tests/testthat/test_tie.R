@@ -1,7 +1,7 @@
 library(remstats)
 
-actors <- unique(info$id)
-age <- info[match(actors, info$id), "age"]
+actors <- unique(info$name)
+age <- info[match(actors, info$name), "age"]
 both_old <- sapply(seq_along(actors), function(i) {
     sapply(seq_along(actors), function(j) {
         ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)

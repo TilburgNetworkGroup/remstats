@@ -13,7 +13,7 @@ test_that("rrankSend", {
 	expect_true(all(aomres$statistics$receiver_stats >= 0) & all(aomres$statistics$receiver_stats <= 1))
 	
 	# Ranks are smaller than the maximum number of actors
-	n <- length(unique(info$id))
+	n <- length(unique(info$name))
 	ranks <- 1/tomres$statistics[,,2]
 	expect_true(max(tomres$statistics[,,2]) < n)
 	ranks <- 1/aomres$statistics$receiver_stats
@@ -40,7 +40,7 @@ test_that("rrankReceive", {
 	expect_true(all(aomres$statistics$receiver_stats >= 0) & all(aomres$statistics$receiver_stats <= 1))
 	
 	# Ranks are smaller than the maximum number of actors
-	n <- length(unique(info$id))
+	n <- length(unique(info$name))
 	ranks <- 1/tomres$statistics[,,2]
 	expect_true(max(tomres$statistics[,,2]) < n)
 	ranks <- 1/aomres$statistics$receiver_stats

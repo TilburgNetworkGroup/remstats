@@ -28,8 +28,8 @@ test_that("output aomstats", {
 	#actors <- out$actors
 	
 	expect_output(str(out), "List of 4")
-	expect_equal(dim(rstats), c(nrow(reh), length(unique(info$id)), 2))
-	expect_equal(dim(cstats), c(nrow(reh), length(unique(info$id)), 1))
+	expect_equal(dim(rstats), c(nrow(reh), length(unique(info$name)), 2))
+	expect_equal(dim(cstats), c(nrow(reh), length(unique(info$name)), 1))
 })
 
 test_that("output remstats", {
@@ -60,6 +60,6 @@ test_that("output remstats", {
 	#actors <- out$actors
 	
 	expect_output(str(out), "List of 4")
-	expect_equal(dim(rstats), c(nrow(reh), length(unique(info$id)), 2))
-	expect_equal(dim(cstats), c(nrow(reh), length(unique(info$id)), 1))
+	expect_equal(dim(rstats), c(nrow(reh), length(unique(info$name)), 2))
+	expect_equal(dim(cstats), c(nrow(reh), length(unique(info$name)), 1))
 })

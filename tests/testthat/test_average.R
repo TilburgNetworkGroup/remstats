@@ -106,7 +106,7 @@ test_that("expected errors and warnings", {
     )
 
     # Missing actor
-    attr <- subset(info, id != 101)
+    attr <- subset(info, name != 101)
     mod <- ~ average(variable = "extraversion")
     expect_error(
         remstats(reh = history, tie_effects = mod, attributes = attr),
@@ -144,7 +144,7 @@ test_that("expected output from average()", {
 
     # Expected output with object supplied to "attributes" argument
     out$scaling <- 1
-    out$x <- info[, c("id", "time", "extraversion")]
+    out$x <- info[, c("name", "time", "extraversion")]
     expect_equal(average(variable = "extraversion", attributes = info), out)
 })
 
@@ -162,8 +162,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            first_info$extraversion[first_info$id == sender],
-            first_info$extraversion[first_info$id == receiver]
+            first_info$extraversion[first_info$name == sender],
+            first_info$extraversion[first_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(1:40, function(x) {
@@ -176,8 +176,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            second_info$extraversion[second_info$id == sender],
-            second_info$extraversion[second_info$id == receiver]
+            second_info$extraversion[second_info$name == sender],
+            second_info$extraversion[second_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(41:71, function(x) {
@@ -190,8 +190,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            third_info$extraversion[third_info$id == sender],
-            third_info$extraversion[third_info$id == receiver]
+            third_info$extraversion[third_info$name == sender],
+            third_info$extraversion[third_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(72:115, function(x) {
@@ -248,8 +248,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            first_info$extraversion[first_info$id == sender],
-            first_info$extraversion[first_info$id == receiver]
+            first_info$extraversion[first_info$name == sender],
+            first_info$extraversion[first_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(1:40, function(x) {
@@ -261,8 +261,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            second_info$extraversion[second_info$id == sender],
-            second_info$extraversion[second_info$id == receiver]
+            second_info$extraversion[second_info$name == sender],
+            second_info$extraversion[second_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(41:71, function(x) {
@@ -274,8 +274,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            third_info$extraversion[third_info$id == sender],
-            third_info$extraversion[third_info$id == receiver]
+            third_info$extraversion[third_info$name == sender],
+            third_info$extraversion[third_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(72:115, function(x) {
@@ -295,8 +295,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            first_info$extraversion[first_info$id == sender],
-            first_info$extraversion[first_info$id == receiver]
+            first_info$extraversion[first_info$name == sender],
+            first_info$extraversion[first_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(1:40, function(x) {
@@ -308,8 +308,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            second_info$extraversion[second_info$id == sender],
-            second_info$extraversion[second_info$id == receiver]
+            second_info$extraversion[second_info$name == sender],
+            second_info$extraversion[second_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(41:71, function(x) {
@@ -321,8 +321,8 @@ test_that("expected statistic tie-oriented model", {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
         mean(c(
-            third_info$extraversion[third_info$id == sender],
-            third_info$extraversion[third_info$id == receiver]
+            third_info$extraversion[third_info$name == sender],
+            third_info$extraversion[third_info$name == receiver]
         ))
     }))
     expect_true(all(sapply(72:115, function(x) {
@@ -351,8 +351,8 @@ test_that("expected statistic actor-oriented model", {
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
             mean(c(
-                first_info$extraversion[first_info$id == sender],
-                first_info$extraversion[first_info$id == as.numeric(y)]
+                first_info$extraversion[first_info$name == sender],
+                first_info$extraversion[first_info$name == as.numeric(y)]
             ))
         }))
     })
@@ -366,8 +366,8 @@ test_that("expected statistic actor-oriented model", {
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
             mean(c(
-                second_info$extraversion[first_info$id == sender],
-                second_info$extraversion[first_info$id == as.numeric(y)]
+                second_info$extraversion[first_info$name == sender],
+                second_info$extraversion[first_info$name == as.numeric(y)]
             ))
         }))
     })
@@ -381,8 +381,8 @@ test_that("expected statistic actor-oriented model", {
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
             mean(c(
-                third_info$extraversion[first_info$id == sender],
-                third_info$extraversion[first_info$id == as.numeric(y)]
+                third_info$extraversion[first_info$name == sender],
+                third_info$extraversion[first_info$name == as.numeric(y)]
             ))
         }))
     })

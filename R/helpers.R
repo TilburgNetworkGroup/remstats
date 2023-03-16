@@ -26,7 +26,7 @@ prep_exo <- function(effect, variable, attributes, scaling) {
 
         # Collect the information in a data.frame
         dat <- data.frame(
-            id = attributes$id,
+            name = attributes$name,
             time = attributes$time,
             x = attributes[, variable]
         )

@@ -106,7 +106,7 @@ test_that("expected errors and warnings", {
     )
 
     # Missing actor
-    attr <- subset(info, id != 101)
+    attr <- subset(info, name != 101)
     mod <- ~ difference(variable = "extraversion")
     expect_error(
         remstats(reh = history, tie_effects = mod, attributes = attr),
@@ -157,7 +157,7 @@ test_that("expected output from difference()", {
 
     # Expected output with object supplied to "attributes" argument
     out$scaling <- 2
-    out$x <- info[, c("id", "time", "extraversion")]
+    out$x <- info[, c("name", "time", "extraversion")]
     expect_equal(difference(variable = "extraversion", attributes = info), out)
 })
 
@@ -176,8 +176,8 @@ test_that("expected statistic tie-oriented model", {
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(first_info$x[first_info$id == sender] -
-            first_info$x[first_info$id == receiver])
+        abs(first_info$x[first_info$name == sender] -
+            first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
         all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -188,8 +188,8 @@ test_that("expected statistic tie-oriented model", {
     stat2 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(second_info$x[second_info$id == sender] -
-            second_info$x[second_info$id == receiver])
+        abs(second_info$x[second_info$name == sender] -
+            second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
         all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -200,8 +200,8 @@ test_that("expected statistic tie-oriented model", {
     stat3 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(third_info$x[third_info$id == sender] -
-            third_info$x[third_info$id == receiver])
+        abs(third_info$x[third_info$name == sender] -
+            third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
         all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -252,8 +252,8 @@ test_that("expected statistic tie-oriented model", {
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        first_info$x[first_info$id == sender] -
-            first_info$x[first_info$id == receiver]
+        first_info$x[first_info$name == sender] -
+            first_info$x[first_info$name == receiver]
     }))
     expect_true(all(sapply(1:40, function(x) {
         all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -263,8 +263,8 @@ test_that("expected statistic tie-oriented model", {
     stat2 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        second_info$x[second_info$id == sender] -
-            second_info$x[second_info$id == receiver]
+        second_info$x[second_info$name == sender] -
+            second_info$x[second_info$name == receiver]
     }))
     expect_true(all(sapply(41:71, function(x) {
         all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -274,8 +274,8 @@ test_that("expected statistic tie-oriented model", {
     stat3 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        third_info$x[third_info$id == sender] -
-            third_info$x[third_info$id == receiver]
+        third_info$x[third_info$name == sender] -
+            third_info$x[third_info$name == receiver]
     }))
     expect_true(all(sapply(72:115, function(x) {
         all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -330,8 +330,8 @@ test_that("expected statistic tie-oriented model", {
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(first_info$x[first_info$id == sender] -
-            first_info$x[first_info$id == receiver])
+        abs(first_info$x[first_info$name == sender] -
+            first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
         all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -341,8 +341,8 @@ test_that("expected statistic tie-oriented model", {
     stat2 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(second_info$x[second_info$id == sender] -
-            second_info$x[second_info$id == receiver])
+        abs(second_info$x[second_info$name == sender] -
+            second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
         all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -352,8 +352,8 @@ test_that("expected statistic tie-oriented model", {
     stat3 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(third_info$x[third_info$id == sender] -
-            third_info$x[third_info$id == receiver])
+        abs(third_info$x[third_info$name == sender] -
+            third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
         all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -371,8 +371,8 @@ test_that("expected statistic tie-oriented model", {
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(first_info$x[first_info$id == sender] -
-            first_info$x[first_info$id == receiver])
+        abs(first_info$x[first_info$name == sender] -
+            first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
         all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -382,8 +382,8 @@ test_that("expected statistic tie-oriented model", {
     stat2 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(second_info$x[second_info$id == sender] -
-            second_info$x[second_info$id == receiver])
+        abs(second_info$x[second_info$name == sender] -
+            second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
         all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -393,8 +393,8 @@ test_that("expected statistic tie-oriented model", {
     stat3 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
-        abs(third_info$x[third_info$id == sender] -
-            third_info$x[third_info$id == receiver])
+        abs(third_info$x[third_info$name == sender] -
+            third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
         all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
@@ -421,8 +421,8 @@ test_that("expected statistic actor-oriented model", {
         x <- history[i, ]
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
-            abs(first_info$x[first_info$id == sender] -
-                first_info$x[first_info$id == as.numeric(y)])
+            abs(first_info$x[first_info$name == sender] -
+                first_info$x[first_info$name == as.numeric(y)])
         }))
     })
     stat1 <- do.call(rbind, stat1)
@@ -434,8 +434,8 @@ test_that("expected statistic actor-oriented model", {
         x <- history[i, ]
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
-            abs(second_info$x[first_info$id == sender] -
-                second_info$x[first_info$id == as.numeric(y)])
+            abs(second_info$x[first_info$name == sender] -
+                second_info$x[first_info$name == as.numeric(y)])
         }))
     })
     stat2 <- do.call(rbind, stat2)
@@ -447,8 +447,8 @@ test_that("expected statistic actor-oriented model", {
         x <- history[i, ]
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
-            abs(third_info$x[first_info$id == sender] -
-                third_info$x[first_info$id == as.numeric(y)])
+            abs(third_info$x[first_info$name == sender] -
+                third_info$x[first_info$name == as.numeric(y)])
         }))
     })
     stat3 <- do.call(rbind, stat3)
@@ -517,8 +517,8 @@ test_that("expected statistic actor-oriented model", {
         x <- history[i, ]
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
-            (first_info$x[first_info$id == sender] -
-                first_info$x[first_info$id == as.numeric(y)])
+            (first_info$x[first_info$name == sender] -
+                first_info$x[first_info$name == as.numeric(y)])
         }))
     })
     stat1 <- do.call(rbind, stat1)
@@ -530,8 +530,8 @@ test_that("expected statistic actor-oriented model", {
         x <- history[i, ]
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
-            (second_info$x[first_info$id == sender] -
-                second_info$x[first_info$id == as.numeric(y)])
+            (second_info$x[first_info$name == sender] -
+                second_info$x[first_info$name == as.numeric(y)])
         }))
     })
     stat2 <- do.call(rbind, stat2)
@@ -543,8 +543,8 @@ test_that("expected statistic actor-oriented model", {
         x <- history[i, ]
         sender <- as.numeric(x[2])
         as.numeric(sapply(aomres$actors, function(y) {
-            (third_info$x[first_info$id == sender] -
-                third_info$x[first_info$id == as.numeric(y)])
+            (third_info$x[first_info$name == sender] -
+                third_info$x[first_info$name == as.numeric(y)])
         }))
     })
     stat3 <- do.call(rbind, stat3)
