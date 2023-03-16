@@ -13,7 +13,7 @@ test_that("expected errors and warnings", {
     # Expected errors for sender effects
     mod <- ~ tie(x = both_old)
     expect_error(
-        remstats(edgelist = history, sender_effects = mod, attributes = info),
+        remstats(reh = history, sender_effects = mod, attributes = info),
         "not defined for the sender activity model"
     )
 
@@ -22,11 +22,11 @@ test_that("expected errors and warnings", {
     rownames(temp) <- NULL
     mod <- ~ tie(x = temp)
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "Name rows and columns"
     )
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod),
+        remstats(reh = history, receiver_effects = mod),
         "Name rows and columns"
     )
 
@@ -34,32 +34,32 @@ test_that("expected errors and warnings", {
     temp <- both_old
     colnames(temp) <- NULL
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "Name rows and columns"
     )
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod),
+        remstats(reh = history, receiver_effects = mod),
         "Name rows and columns"
     )
 
     # Expected error for missing actors
     temp <- both_old[-1, ]
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "include values for all actors in the network"
     )
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod),
+        remstats(reh = history, receiver_effects = mod),
         "include values for all actors in the network"
     )
 
     temp <- both_old[, -1]
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "include values for all actors in the network"
     )
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod),
+        remstats(reh = history, receiver_effects = mod),
         "include values for all actors in the network"
     )
 
@@ -67,25 +67,25 @@ test_that("expected errors and warnings", {
     temp <- both_old
     temp[3, 1] <- NA
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "missing values"
     )
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod),
+        remstats(reh = history, receiver_effects = mod),
         "missing values"
     )
 
     # No error expected for missing values on the diagonal
     temp <- both_old
     temp[1, 1] <- NA
-    expect_no_error(remstats(edgelist = history, tie_effects = mod))
-    expect_no_error(remstats(edgelist = history, receiver_effects = mod))
+    expect_no_error(remstats(reh = history, tie_effects = mod))
+    expect_no_error(remstats(reh = history, receiver_effects = mod))
 
     # Expected error for non-symmetrical matrix and undirected events
     temp <- both_old
     temp[3, 1] <- 5
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, directed = FALSE),
+        remstats(reh = history, tie_effects = mod, directed = FALSE),
         "expected to be symmetric"
     )
 
@@ -93,13 +93,13 @@ test_that("expected errors and warnings", {
     temp <- both_old
     temp[upper.tri(temp)] <- NA
     expect_no_error(
-        remstats(edgelist = history, tie_effects = mod, directed = FALSE)
+        remstats(reh = history, tie_effects = mod, directed = FALSE)
     )
 
     # No error expected for symmetrical matrix and undirected events
     mod <- ~ tie(x = both_old)
     expect_no_error(
-        remstats(edgelist = history, tie_effects = mod, directed = FALSE)
+        remstats(reh = history, tie_effects = mod, directed = FALSE)
     )
 })
 
@@ -123,27 +123,27 @@ test_that("expected output from tie()", {
 test_that("expected statistic tie-oriented model", {
     # Expected name of the statistic
     mod <- ~ tie(x = both_old)
-    tomres <- remstats(edgelist = history, tie_effects = mod)
+    tomres <- remstats(reh = history, tie_effects = mod)
     expect_equal(dimnames(tomres$statistics)[[3]][2], "tie")
 
     mod <- ~ tie(x = both_old) + tie(x = t(both_old))
-    tomres <- remstats(edgelist = history, tie_effects = mod)
+    tomres <- remstats(reh = history, tie_effects = mod)
     expect_equal(dimnames(tomres$statistics)[[3]][2], "tie1")
     expect_equal(dimnames(tomres$statistics)[[3]][3], "tie2")
 
     mod <- ~ tie(x = both_old, variableName = "both_old")
-    tomres <- remstats(edgelist = history, tie_effects = mod)
+    tomres <- remstats(reh = history, tie_effects = mod)
     expect_equal(dimnames(tomres$statistics)[[3]][2], "both_old")
 
     mod <- ~ tie(x = both_old, variableName = "test") +
         tie(x = both_old, variableName = "check")
-    tomres <- remstats(edgelist = history, tie_effects = mod)
+    tomres <- remstats(reh = history, tie_effects = mod)
     expect_equal(dimnames(tomres$statistics)[[3]][2], "test")
     expect_equal(dimnames(tomres$statistics)[[3]][3], "check")
 
     # Expected statistic
     mod <- ~ tie(x = both_old)
-    tomres <- remstats(edgelist = history, tie_effects = mod)
+    tomres <- remstats(reh = history, tie_effects = mod)
 
     dyads <- which(tomres$riskset[, 1] %in% actors[age == 1] &
         tomres$riskset[, 2] %in% actors[age == 1])
@@ -154,7 +154,7 @@ test_that("expected statistic tie-oriented model", {
 
     # Expected "std" statistic
     mod <- ~ tie(x = both_old, scaling = "std")
-    tomres <- remstats(edgelist = history, tie_effects = mod)
+    tomres <- remstats(reh = history, tie_effects = mod)
     stat <- matrix(0, nrow = 1, ncol = nrow(tomres$riskset))
     stat[dyads] <- 1
     stat <- as.numeric(scale(as.numeric(stat)))
@@ -164,7 +164,7 @@ test_that("expected statistic tie-oriented model", {
 
     # Repeat for undirected events
     mod <- ~ tie(x = both_old)
-    tomres <- remstats(edgelist = history, tie_effects = mod, directed = FALSE)
+    tomres <- remstats(reh = history, tie_effects = mod, directed = FALSE)
 
     dyads <- which(tomres$riskset[, 1] %in% actors[age == 1] &
         tomres$riskset[, 2] %in% actors[age == 1])
@@ -174,7 +174,7 @@ test_that("expected statistic tie-oriented model", {
     expect_true(all(tomres$statistics[, nondyads, 2] == 0))
 
     mod <- ~ tie(x = both_old, scaling = "std")
-    tomres <- remstats(edgelist = history, tie_effects = mod, directed = FALSE)
+    tomres <- remstats(reh = history, tie_effects = mod, directed = FALSE)
     stat <- matrix(0, nrow = 1, ncol = nrow(tomres$riskset))
     stat[dyads] <- 1
     stat <- as.numeric(scale(as.numeric(stat)))
@@ -185,7 +185,7 @@ test_that("expected statistic tie-oriented model", {
     # Repeat for typed events
     mod <- ~ tie(x = both_old)
     history$type <- history$setting
-    tomres <- remstats(edgelist = history, tie_effects = mod)
+    tomres <- remstats(reh = history, tie_effects = mod)
 
     dyads <- which(tomres$riskset[, 1] %in% actors[age == 1] &
         tomres$riskset[, 2] %in% actors[age == 1])
@@ -195,7 +195,7 @@ test_that("expected statistic tie-oriented model", {
     expect_true(all(tomres$statistics[, nondyads, 2] == 0))
 
     mod <- ~ tie(x = both_old, scaling = "std")
-    tomres <- remstats(edgelist = history, tie_effects = mod)
+    tomres <- remstats(reh = history, tie_effects = mod)
     stat <- matrix(0, nrow = 1, ncol = nrow(tomres$riskset))
     stat[dyads] <- 1
     stat <- as.numeric(scale(as.numeric(stat)))
@@ -207,27 +207,27 @@ test_that("expected statistic tie-oriented model", {
 test_that("expected statistic actor-oriented model", {
     # Expected name of the statistic
     mod <- ~ tie(x = both_old)
-    aomres <- remstats(edgelist = history, receiver_effects = mod)
+    aomres <- remstats(reh = history, receiver_effects = mod)
     expect_equal(dimnames(aomres$statistics$receiver_stats)[[3]][1], "tie")
 
     mod <- ~ tie(x = both_old) + tie(x = t(both_old))
-    aomres <- remstats(edgelist = history, receiver_effects = mod)
+    aomres <- remstats(reh = history, receiver_effects = mod)
     expect_equal(dimnames(aomres$statistics$receiver_stats)[[3]][1], "tie1")
     expect_equal(dimnames(aomres$statistics$receiver_stats)[[3]][2], "tie2")
 
     mod <- ~ tie(x = both_old, variableName = "both_old")
-    aomres <- remstats(edgelist = history, receiver_effects = mod)
+    aomres <- remstats(reh = history, receiver_effects = mod)
     expect_equal(dimnames(aomres$statistics$receiver_stats)[[3]][1], "both_old")
 
     mod <- ~ tie(x = both_old, variableName = "test") +
         tie(x = both_old, variableName = "check")
-    aomres <- remstats(edgelist = history, receiver_effects = mod)
+    aomres <- remstats(reh = history, receiver_effects = mod)
     expect_equal(dimnames(aomres$statistics$receiver_stats)[[3]][1], "test")
     expect_equal(dimnames(aomres$statistics$receiver_stats)[[3]][2], "check")
 
     # Expected statistic
     mod <- ~ tie(x = both_old)
-    aomres <- remstats(edgelist = history, receiver_effects = mod)
+    aomres <- remstats(reh = history, receiver_effects = mod)
     stat <- lapply(1:nrow(history), function(i) {
         sender <- as.numeric(history[i, 2])
         both_old[which(aomres$actors == sender), ]
@@ -241,7 +241,7 @@ test_that("expected statistic actor-oriented model", {
 
     # Expected "std" statistic
     mod <- ~ tie(x = both_old, scaling = "std")
-    aomres <- remstats(edgelist = history, receiver_effects = mod)
+    aomres <- remstats(reh = history, receiver_effects = mod)
     std_stat <- t(sapply(1:nrow(history), function(x) {
         # Scale stat without receiver
         sender <- which(aomres$actors == history$actor1[x])

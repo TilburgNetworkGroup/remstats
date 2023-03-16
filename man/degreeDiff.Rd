@@ -33,8 +33,8 @@ undirected events.
 library(remify)
 rehObject <- reh(history, directed = FALSE)
 effects <- ~ degreeDiff()
-remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
-tomstats(effects, edgelist = rehObject, directed = FALSE)
+remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
+tomstats(effects, reh = rehObject, directed = FALSE)
 
 }
 \seealso{

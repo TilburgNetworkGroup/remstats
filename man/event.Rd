@@ -26,7 +26,7 @@ library(remify)
 rehObject <- reh(history)
 work <- ifelse(history$setting == "work", 1, 0)
 effects <- ~ event(x = work, variableName = "setting_is_work")
-remstats(edgelist = rehObject, tie_effects = effects)
+remstats(reh = rehObject, tie_effects = effects)
 
 }
 \seealso{

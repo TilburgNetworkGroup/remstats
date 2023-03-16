@@ -21,7 +21,7 @@ formula.
 }
 \examples{
 # Prepare data
-dummy <- remstats(edgelist = history, tie_effects = ~1)
+dummy <- remstats(reh = history, tie_effects = ~1)
 riskset <- dummy$riskset
 evls <- dummy$evls
 actor101Events <- which(riskset$sender == "101" | riskset$receiver == "101")
@@ -31,11 +31,11 @@ actor101stat <- t(sapply(seq_len(nrow(evls)), function(i) {
 
 # Main effects only
 effects <- ~ userStat(x = actor101stat, variableName = "actor101event")
-remstats(edgelist = history, tie_effects = effects)
+remstats(reh = history, tie_effects = effects)
 
 # Model with interaction effects
 interaction_effects <- ~ inertia()*
  userStat(x = actor101stat, variableName ="actor101event")
-remstats(edgelist = history, tie_effects = interaction_effects)
+remstats(reh = history, tie_effects = interaction_effects)
 
 }

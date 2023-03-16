@@ -6,8 +6,8 @@ test_that("otp and itp", {
 	history$weight <- rep(1, nrow(history))
 	
 	effects <- ~ otp() + itp()
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(receiver_effects = effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(receiver_effects = effects, reh = history)
 	
 	riskset <- tomres$riskset
 	rd <- apply(riskset, 1, function(x) {
@@ -23,8 +23,8 @@ test_that("otp and itp", {
 	})))
 	
 	effects <- ~ otp(scaling = "std") + itp(scaling = "std")
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(receiver_effects = effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(receiver_effects = effects, reh = history)
 	
 	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
 	expect_equal(rowMeans(aomres$statistics$receiver_stats[,,1]), rep(0, nrow(history)))
@@ -33,7 +33,7 @@ test_that("otp and itp", {
 	
 	colnames(history)[4] <- "type"
 	effects <- ~ otp(consider_type = TRUE) + itp(consider_type = TRUE)
-	tomres <- tomstats(effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
 	
 	riskset <- tomres$riskset
 	rd <- apply(riskset, 1, function(x) {
@@ -49,8 +49,8 @@ test_that("osp and isp", {
 	history$weight <- rep(1, nrow(history))
 	
 	effects <- ~ osp() + isp()
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(receiver_effects = effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(receiver_effects = effects, reh = history)
 	
 	riskset <- tomres$riskset
 	rd <- apply(riskset, 1, function(x) {
@@ -67,8 +67,8 @@ test_that("osp and isp", {
 	})))
 	
 	effects <- ~ osp(scaling = "std") + isp(scaling = "std")
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(receiver_effects = effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(receiver_effects = effects, reh = history)
 	
 	expect_equal(rowMeans(tomres$statistics[,,2]), rep(0, nrow(history)))
 	expect_equal(rowMeans(aomres$statistics$receiver_stats[,,1]), rep(0, nrow(history)))
@@ -77,7 +77,7 @@ test_that("osp and isp", {
 	
 	colnames(history)[4] <- "type"
 	effects <- ~ osp(consider_type = TRUE) + isp(consider_type = TRUE)
-	tomres <- tomstats(effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
 	
 	riskset <- tomres$riskset
 	rd <- apply(riskset, 1, function(x) {

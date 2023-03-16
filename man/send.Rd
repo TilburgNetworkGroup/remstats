@@ -49,7 +49,7 @@ multiple exogenous effects.
 library(remify)
 rehObject <- reh(history)
 effects <- ~ send("extraversion")
-remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
-remstats(edgelist = rehObject, sender_effects = effects, attributes = info)
+remstats(reh = rehObject, tie_effects = effects, attributes = info)
+remstats(reh = rehObject, sender_effects = effects, attributes = info)
 
 }

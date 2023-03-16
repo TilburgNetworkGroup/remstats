@@ -34,7 +34,7 @@ events determines whether the p-shift is observed.
 library(remify)
 rehObject <- reh(history)
 effects <- ~ psABAY()
-tomstats(effects, edgelist = rehObject)
+tomstats(effects, reh = rehObject)
 
 }
 \seealso{

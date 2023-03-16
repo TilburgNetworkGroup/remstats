@@ -32,10 +32,10 @@ that an 'isp' effect is only defined for directed events.
 library(remify)
 rehObject <- reh(history)
 effects <- ~ isp()
-remstats(edgelist = rehObject, tie_effects = effects)
-remstats(edgelist = rehObject, receiver_effects = effects)
-tomstats(effects, edgelist = rehObject)
-aomstats(receiver_effects = effects, edgelist = rehObject)
+remstats(reh = rehObject, tie_effects = effects)
+remstats(reh = rehObject, receiver_effects = effects)
+tomstats(effects, reh = rehObject)
+aomstats(receiver_effects = effects, reh = rehObject)
 
 }
 \seealso{

@@ -5,8 +5,8 @@ test_that("recencyContinue", {
 	
 	# Compute the statistics
 	effects <- ~ recencyContinue()
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history[,c(1:3)], receiver_effects = effects)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(reh = history[,c(1:3)], receiver_effects = effects)
 	
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	# Test whether the statistic for this event is correct 
@@ -31,7 +31,7 @@ test_that("recencyContinue", {
 	# Test for consider_type
 	colnames(history)[4] <- "type"
 	effects <- ~ recencyContinue(consider_type = TRUE)
-	tomres <- tomstats(effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
@@ -48,13 +48,13 @@ test_that("recencyContinue", {
 test_that("recencySendSender", {
 	
 	effects <- ~ recencySendSender()
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history[,c(1:3)], sender_effects = effects)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(reh = history[,c(1:3)], sender_effects = effects)
 	
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
-		past <- which(tomres$edgelist[past,2] == tomres$riskset[event,1])
+		past <- which(tomres$reh[past,2] == tomres$riskset[event,1])
 		if(length(past)>0) {
 			last <- max(past)
 			1/((history$time[m] - history$time[last])+1)	
@@ -70,12 +70,12 @@ test_that("recencySendSender", {
 	
 	colnames(history)[4] <- "type"
 	effects <- ~ recencySendSender(consider_type = TRUE)
-	tomres <- tomstats(effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
-		past <- which(tomres$edgelist[past,2] == tomres$riskset[event,1] & 
-				tomres$edgelist[past,4] == tomres$riskset[event,3])
+		past <- which(tomres$reh[past,2] == tomres$riskset[event,1] & 
+				tomres$reh[past,4] == tomres$riskset[event,3])
 		if(length(past)>0) {
 			last <- max(past)
 			1/((history$time[m] - history$time[last])+1)	
@@ -88,13 +88,13 @@ test_that("recencySendSender", {
 test_that("recencySendReceiver", {
 	
 	effects <- ~ recencySendReceiver()
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history[,c(1:3)], receiver_effects = effects)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(reh = history[,c(1:3)], receiver_effects = effects)
 	
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
-		past <- which(tomres$edgelist[past,2] == tomres$riskset[event,2])
+		past <- which(tomres$reh[past,2] == tomres$riskset[event,2])
 		if(length(past)>0) {
 			last <- max(past)
 			1/((history$time[m] - history$time[last])+1)	
@@ -110,12 +110,12 @@ test_that("recencySendReceiver", {
 	
 	colnames(history)[4] <- "type"
 	effects <- ~ recencySendReceiver(consider_type = TRUE)
-	tomres <- tomstats(effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
-		past <- which(tomres$edgelist[past,2] == tomres$riskset[event,2] & 
-				tomres$edgelist[past,4] == tomres$riskset[event,3])
+		past <- which(tomres$reh[past,2] == tomres$riskset[event,2] & 
+				tomres$reh[past,4] == tomres$riskset[event,3])
 		if(length(past)>0) {
 			last <- max(past)
 			1/((history$time[m] - history$time[last])+1)	
@@ -128,13 +128,13 @@ test_that("recencySendReceiver", {
 test_that("recencyReceiveSender", {
 	
 	effects <- ~ recencyReceiveSender()
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history[,c(1:3)], sender_effects = effects)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(reh = history[,c(1:3)], sender_effects = effects)
 	
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
-		past <- which(tomres$edgelist[past,3] == tomres$riskset[event,1])
+		past <- which(tomres$reh[past,3] == tomres$riskset[event,1])
 		if(length(past)>0) {
 			last <- max(past)
 			1/((history$time[m] - history$time[last])+1)	
@@ -150,12 +150,12 @@ test_that("recencyReceiveSender", {
 	
 	colnames(history)[4] <- "type"
 	effects <- ~ recencyReceiveSender(consider_type = TRUE)
-	tomres <- tomstats(effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
-		past <- which(tomres$edgelist[past,3] == tomres$riskset[event,1] & 
-				tomres$edgelist[past,4] == tomres$riskset[event,3])
+		past <- which(tomres$reh[past,3] == tomres$riskset[event,1] & 
+				tomres$reh[past,4] == tomres$riskset[event,3])
 		if(length(past)>0) {
 			last <- max(past)
 			1/((history$time[m] - history$time[last])+1)	
@@ -168,13 +168,13 @@ test_that("recencyReceiveSender", {
 test_that("recencyReceiveReceiver", {
 	
 	effects <- ~ recencyReceiveReceiver()
-	tomres <- tomstats(effects, edgelist = history)
-	aomres <- aomstats(edgelist = history[,c(1:3)], receiver_effects = effects)
+	tomres <- tomstats(effects, reh = history)
+	aomres <- aomstats(reh = history[,c(1:3)], receiver_effects = effects)
 	
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
-		past <- which(tomres$edgelist[past,3] == tomres$riskset[event, 2])
+		past <- which(tomres$reh[past,3] == tomres$riskset[event, 2])
 		if(length(past)>0) {
 			last <- max(past)
 			1/((history$time[m] - history$time[last])+1)	
@@ -190,12 +190,12 @@ test_that("recencyReceiveReceiver", {
 	
 	colnames(history)[4] <- "type"
 	effects <- ~ recencyReceiveReceiver(consider_type = TRUE)
-	tomres <- tomstats(effects, edgelist = history)
+	tomres <- tomstats(effects, reh = history)
 	event <- sample(1:nrow(tomres$riskset), 1) # randomly sample an event
 	expect_equal(sapply(1:nrow(history), function(m) {
 		past <- which(history$time < history$time[m])
-		past <- which(tomres$edgelist[past,3] == tomres$riskset[event, 2] & 
-				tomres$edgelist[past,4] == tomres$riskset[event ,3])
+		past <- which(tomres$reh[past,3] == tomres$riskset[event, 2] & 
+				tomres$reh[past,4] == tomres$riskset[event ,3])
 		if(length(past)>0) {
 			last <- max(past)
 			1/((history$time[m] - history$time[last])+1)	

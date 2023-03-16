@@ -49,9 +49,9 @@ library(remify)
 rehObject <- reh(history)
 effects <- ~ maximum("extraversion")
 remstats(
-    edgelist = rehObject, tie_effects = effects, attributes = info,
+    reh = rehObject, tie_effects = effects, attributes = info,
     directed = FALSE
 )
-tomstats(effects, edgelist = rehObject, attributes = info)
+tomstats(effects, reh = rehObject, attributes = info)
 
 }

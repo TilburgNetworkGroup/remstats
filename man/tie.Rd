@@ -42,7 +42,7 @@ both_old <- sapply(seq_along(actors), function(i) {
 rownames(both_old) <- colnames(both_old) <- actors
 rehObject <- reh(history)
 effects <- ~ tie(both_old, variableName = "both.old")
-remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
-remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
+remstats(reh = rehObject, tie_effects = effects, attributes = info)
+remstats(reh = rehObject, receiver_effects = effects, attributes = info)
 
 }

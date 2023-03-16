@@ -14,11 +14,11 @@ Print a \code{\link{remstats}} object in a user-friendly format.
 }
 \examples{
 rehObject <- remify::reh(edgelist = history, model = "tie")
-remstatsObject <- remstats::remstats(edgelist = rehObject, tie_effects = ~ remstats::inertia())
+remstatsObject <- remstats::remstats(reh = rehObject, tie_effects = ~ remstats::inertia())
 print(remstatsObject)
 
 rehObject <- remify::reh(edgelist = history, model = "actor")
-remstatsObject <- remstats::remstats(edgelist = rehObject, receiver_effects = ~ inertia())
+remstatsObject <- remstats::remstats(reh = rehObject, receiver_effects = ~ inertia())
 print(remstatsObject)
 
 }

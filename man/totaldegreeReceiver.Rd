@@ -41,10 +41,10 @@ set equal to 1/n, where n refers to the number of actors.
 library(remify)
 rehObject <- reh(history)
 effects <- ~ totaldegreeReceiver()
-remstats(edgelist = rehObject, tie_effects = effects)
-remstats(edgelist = rehObject, receiver_effects = effects)
-tomstats(effects, edgelist = rehObject)
-aomstats(receiver_effects = effects, edgelist = rehObject)
+remstats(reh = rehObject, tie_effects = effects)
+remstats(reh = rehObject, receiver_effects = effects)
+tomstats(effects, reh = rehObject)
+aomstats(receiver_effects = effects, reh = rehObject)
 
 }
 \seealso{

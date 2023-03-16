@@ -4,7 +4,7 @@ library(remstats)
 test_that("FEtype effect in remstats", {
 	
 	colnames(history)[4] <- "type"
-	tomres <- tomstats(~ FEtype(), edgelist = history)
+	tomres <- tomstats(~ FEtype(), reh = history)
 	stats <- tomres$statistics
 	riskset <- tomres$riskset
 	riskset[,3] <- ifelse(riskset[,3] == "work", 1, 0)

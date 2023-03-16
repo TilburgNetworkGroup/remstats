@@ -195,7 +195,7 @@ is accurate.
 \examples{
 library(remstats)
 effects <- ~ inertia():send("extraversion") + otp()
-tomstats(effects, edgelist = history, attributes = info)
+tomstats(effects, reh = history, attributes = info)
 
 }
 \references{

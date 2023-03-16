@@ -25,8 +25,8 @@ that the 'recencyReceiveSender' effect is only defined for directed events.
 }
 \examples{
 effects <- ~ recencyReceiveSender()
-tomstats(effects, edgelist = history)
-aomstats(sender_effects = effects, edgelist = history)
+tomstats(effects, reh = history)
+aomstats(sender_effects = effects, reh = history)
 
 }
 \seealso{

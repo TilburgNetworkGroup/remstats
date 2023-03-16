@@ -12,7 +12,7 @@ test_that("expected errors and warnings", {
 
     mod <- ~ maximum(variable = "test")
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, attributes = info),
+        remstats(reh = history, tie_effects = mod, attributes = info),
         "not in attributes"
     )
 
@@ -25,13 +25,13 @@ test_that("expected errors and warnings", {
     mod <- ~ maximum(variable = "extraversion")
     attr <- info[, -2]
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "time variable is missing"
     )
 
     # Expected errors for actor-oriented model
     expect_error(
-        remstats(edgelist = history, sender_effects = mod, attributes = info),
+        remstats(reh = history, sender_effects = mod, attributes = info),
         "not defined for the sender activity model"
     )
 
@@ -44,7 +44,7 @@ test_that("expected errors and warnings", {
     )
 
     expect_warning(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "unexpected behavior"
     )
 
@@ -57,7 +57,7 @@ test_that("expected errors and warnings", {
     )
 
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "cannot have missing values"
     )
 
@@ -65,13 +65,13 @@ test_that("expected errors and warnings", {
     attr <- rbind(info, info[1, ])
     attr[nrow(attr), 1] <- 999
     expect_warning(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "actors that are not in the risk set"
     )
 
     mod <- ~ maximum(variable = "extraversion", attributes = attr)
     expect_warning(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "actors that are not in the risk set"
     )
 
@@ -79,13 +79,13 @@ test_that("expected errors and warnings", {
     attr <- subset(info, id != 101)
     mod <- ~ maximum(variable = "extraversion")
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "Missing actors"
     )
 
     mod <- ~ maximum(variable = "extraversion", attributes = attr)
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "Missing actors"
     )
 })
@@ -110,7 +110,7 @@ test_that("expected output from maximum()", {
 
 test_that("expected statistic tie-oriented model", {
     mod <- ~ maximum("extraversion")
-    tomres <- remstats(edgelist = history, tie_effects = mod, attributes = info)
+    tomres <- remstats(reh = history, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tomres$statistics)[[3]][2], "maximum_extraversion")
@@ -161,7 +161,7 @@ test_that("expected statistic tie-oriented model", {
     # Repeat for undirected events ---------------------------------------------
     mod <- ~ maximum("extraversion")
     tomres <- remstats(
-        edgelist = history, tie_effects = mod, attributes = info,
+        reh = history, tie_effects = mod, attributes = info,
         directed = FALSE
     )
 
@@ -211,7 +211,7 @@ test_that("expected statistic tie-oriented model", {
     # Repeat for "std" scaling -------------------------------------------------
     mod <- ~ maximum("extraversion", scaling = "std")
     tomres <- remstats(
-        edgelist = history, tie_effects = mod, attributes = info, 
+        reh = history, tie_effects = mod, attributes = info, 
         directed = FALSE
     )
 
@@ -248,7 +248,7 @@ test_that("expected statistic tie-oriented model", {
     # Repeat for typed events --------------------------------------------------
     history$type <- history$setting
     mod <- ~ maximum("extraversion")
-    tomres <- remstats(edgelist = history, tie_effects = mod, attributes = info)
+    tomres <- remstats(reh = history, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tomres$statistics)[[3]][2], "maximum_extraversion")

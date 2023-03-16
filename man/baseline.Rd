@@ -29,6 +29,6 @@ timepoints.
 \examples{
 library(remify)
 rehObject <- reh(history)
-remstats(edgelist = rehObject, tie_effects = ~1)
-remstats(edgelist = rehObject, sender_effects = ~1)
+remstats(reh = rehObject, tie_effects = ~1)
+remstats(reh = rehObject, sender_effects = ~1)
 }

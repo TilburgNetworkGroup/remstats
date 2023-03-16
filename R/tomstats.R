@@ -27,27 +27,28 @@
 #' \code{consider_type} argument in the separate effect functions for more
 #' information on this.
 #'
-#' Note that events in the edgelist can be directed or undirected. Some
-#' statistics are only defined for either directed or undirected events (see
-#' the documentation of the statistics).
+#' Note that events in the relational event history can be directed or
+#' undirected. Some statistics are only defined for either directed or
+#' undirected events (see the documentation of the statistics). Note that
+#' undirected events are only available for the tie-oriented model.
 #'
 #' @section Attributes:
 #' For the computation of the \emph{exogenous} statistics an attributes object
 #' with the exogenous covariate information has to be supplied to the
-#' \code{attributes} argument in either \code{tomstats()} or in the separate
-#' effect functions supplied to the \code{effects} argument (e.g., see
+#' \code{attributes} argument in either \code{remstats()} or in the separate
+#' effect functions supplied to the \code{..._effects} arguments (e.g., see
 #' \code{\link{send}}). This \code{attributes} object should be constructed as
-#' follows: A data.frame with rows referring to the attribute value of actor
-#' \emph{i} at timepoint \emph{t}. An `id` column is required that contains the
-#' actor id (corresponding to the actor id's in the edgelist). A `time` column
-#' is required that contains the time when attributes change (set to zero if
-#' none of the attributes vary over time). Subsequent columns contain the
-#' attributes that are called in the specifications of exogenous statistics
-#' (column name corresponding to the string supplied to the \code{variable}
-#' argument in the effect function). Note that the procedure for the exogenous
-#' effects `tie' and `event' deviates from this, here the exogenous covariate
-#' information has to be specified in a different way, see \code{\link{tie}}
-#' and \code{\link{event}}.
+#' follows: A dataframe with rows refering to the attribute value of actor
+#' \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
+#' actor name (corresponding to the actor names in the relational event
+#' history). A `time` column is required that contains the time when attributes
+#' change (set to zero if none of the attributes vary over time). Subsequent
+#' columns contain the attributes that are called in the specifications of
+#' exogenous statistics (column name corresponding to the string supplied to
+#' the \code{variable} argument in the effect function). Note that the
+#' procedure for the exogenous effects `tie' and `event' deviates from this,
+#' here the exogenous covariate information has to be specified in a different
+#' way, see \code{\link{tie}} and \code{\link{event}}.
 #'
 #' @section Memory:
 #' The default `memory` setting is `"full"`, which implies that at each time
@@ -69,30 +70,19 @@
 #' function with half-life parameter `memory_value` (see Brandes et al., 2009).
 #'
 #' @section Event weights:
-#' Note that if the  edgelist contains a column that is named ``weight'', it is
-#' assumed that these affect the endogenous statistics. These settings are
-#' defined globally in the \code{tomstats} function and affect the computation
-#' of all endogenous statistics with the following exceptions (that follow
-#' logically from their definition). Since spUnique is a count of the number of
-#' unique interaction partners, and the recency statistics (recencyContinue,
-#' recencySendSender, recencySendReceiver, recencyReceiveSender,
-#' recencyReceiveReceiver) depend on the time past, the computation of these
-#' statistics do not depend on event weights. Since the baseline statistic is
-#' always one, the FEtype statistic is binary and does not depend on past
-#' events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and
-#' PSAB-AY) are binary and only dependent on the previous event, these
-#' statistics are not affected by the memory settings or the supplied event
-#' weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now)
-#' only available with the "full" memory, and are, per definition, not affected
-#' by supplied event weights.
+#' Note that if the relational event history contains a column that is named
+#' ``weight'', it is assumed that these affect the endogenous statistics. These
+#' affect the computation of all endogenous statistics with a few exceptions
+#' that follow logically from their definition (e.g., the recenyContinue
+#' statistic does depend on time since the event and not on event weights).
 #'
-#' @section Subset of the edgelist:
-#' Optionally, statistics can be computed for a slice of the edgelist - but
-#' based on the entire history. This is achieved by setting the start and
-#' stop values equal to the index of the first and last event for which
-#' statistics are requested. For example, start = 5 and stop = 5 computes the
-#' statistics for only the 5th event in the edgelist, based on the history that
-#' consists of events 1-4.
+#' @section Subset of the relational event history:
+#' Optionally, statistics can be computed for a slice of the relational event 
+#' sequence - but based on the entire history. This is achieved by setting the 
+#' start and stop values equal to the index of the first and last event for 
+#' which statistics are requested. For example, start = 5 and stop = 5 computes 
+#' the statistics for only the 5th event in the relational event sequence, 
+#' based on the history that consists of events 1-4.
 #'
 #' @section Adjacency matrix:
 #' Optionally, a previously computed adjacency matrix can be supplied. Note
@@ -104,9 +94,7 @@
 #' @return \code{statistics } array with the computed statistics, where rows
 #' refer to time points, columns refer to potential relational event (i.e.,
 #' potential edges) in the risk set and slices refer to statistics
-#' @return \code{evls } matrix with the edgelist, processed such that it can be
-#' used to estimate a relational event model with \code{"\link[relevent]{rem}"}
-#' @return \code{edgelist } data.frame with the edgelist
+#' @return \code{reh } data.frame with the relational event history
 #' @return \code{adjmat } matrix with the adjacency matrix, rows refer to
 #' time points and columns to risk set entries. At timepoint t, it gives the
 #' cumulative weight until t-1 (i.e., the events that occurred before time
@@ -115,28 +103,28 @@
 #' @examples
 #' library(remstats)
 #' effects <- ~ inertia():send("extraversion") + otp()
-#' tomstats(effects, edgelist = history, attributes = info)
+#' tomstats(effects, reh = history, attributes = info)
 #'
 #' @references Butts, C. T. (2008). A relational event framework for social
 #' action. Sociological Methodology, 38(1), 155–200.
 #' \url{https://doi.org/10.1111/j.1467-9531.2008.00203.x}
 #'
 #' @export
-tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
+tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
                      types = NULL, directed = TRUE, ordinal = FALSE,
                      origin = NULL, omit_dyad = NULL,
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf, adjmat = NULL,
                      output = c("all", "stats_only")) {
-  # Prepare the edgelist
-  if (!("reh" %in% class(edgelist))) {
+  # Prepare the reh
+  if (!("reh" %in% class(reh))) {
     prep <- remify::reh(
-      edgelist = edgelist, actors = actors,
+      edgelist = reh, actors = actors,
       types = types, directed = directed, ordinal = ordinal,
       origin = origin, omit_dyad = omit_dyad, model = "tie"
     )
   } else {
-    prep <- edgelist
+    prep <- reh
   }
 
   # Extract relevant elements from the prepared remify::reh object
@@ -447,18 +435,6 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
     )
 
   if (output == "all") {
-    # Transform edgelist to evls (for estimation with relevent::rem)
-    evls <- edgelist.reh[, c(2, 1)]
-    if (is.null(nrow(evls))) {
-      evls[1] <- evls[1] + 1
-      names(evls) <- c("event", "time")
-    } else {
-      evls[, 1] <- evls[, 1] + 1
-      colnames(evls) <- c("event", "time")
-      evls[(start + 1):(stop + 1), ]
-    }
-
-
     # Riskset output
     riskset <- prepR
     riskset <- as.data.frame(riskset)
@@ -476,25 +452,24 @@ tomstats <- function(effects, edgelist, attributes = NULL, actors = NULL,
       riskset$actor2 <- actors$actorName[match(riskset$actor2, actors$actorID)]
       riskset$type <- types$typeName[match(riskset$type, types$typeID)]
     }
-    if (!("reh" %in% class(edgelist))) {
+    if (!("reh" %in% class(reh))) {
       riskset$id <- riskset$id + 1
     } else {
       riskset$stat_column <- riskset$id + 1
     }
 
     # Edgelist output
-    if ("reh" %in% class(edgelist)) {
-      edgelist <- prep$edgelist
+    if ("reh" %in% class(reh)) {
+      reh <- prep$edgelist
     }
 
     # Output
     out <- list(
       statistics = statistics,
-      edgelist = edgelist,
+      reh = reh,
       riskset = riskset,
       actors = actors[, 1],
       types = types[, 1],
-      evls = evls,
       adjmat = adjmat
     )
   } else {

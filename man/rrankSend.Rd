@@ -28,10 +28,10 @@ actors to which sender i has most recently send past events. Note that the
 library(remify)
 rehObject <- reh(history)
 effects <- ~ rrankSend()
-remstats(tie_effects = effects, edgelist = rehObject)
-remstats(receiver_effects = effects, edgelist = rehObject)
-tomstats(effects, edgelist = rehObject)
-aomstats(receiver_effects = effects, edgelist = rehObject)
+remstats(tie_effects = effects, reh = rehObject)
+remstats(receiver_effects = effects, reh = rehObject)
+tomstats(effects, reh = rehObject)
+aomstats(receiver_effects = effects, reh = rehObject)
 
 }
 \seealso{

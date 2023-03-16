@@ -216,12 +216,12 @@ is accurate.
 library(remstats)
 
 eff <- ~ inertia():send("extraversion") + otp()
-remstats(edgelist = history, tie_effects = eff, attributes = info)
+remstats(reh = history, tie_effects = eff, attributes = info)
 
 seff <- ~ send("extraversion")
 reff <- ~ receive("agreeableness") + inertia() + otp()
 remstats(
-    edgelist = history, sender_effects = seff, receiver_effects = reff,
+    reh = history, sender_effects = seff, receiver_effects = reff,
     attributes = info
 )
 

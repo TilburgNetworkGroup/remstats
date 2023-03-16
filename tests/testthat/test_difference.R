@@ -12,12 +12,12 @@ test_that("expected errors and warnings", {
 
     mod <- ~ difference(variable = "test")
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, attributes = info),
+        remstats(reh = history, tie_effects = mod, attributes = info),
         "not in attributes"
     )
 
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod, attributes = info),
+        remstats(reh = history, receiver_effects = mod, attributes = info),
         "not in attributes"
     )
 
@@ -30,18 +30,18 @@ test_that("expected errors and warnings", {
     mod <- ~ difference(variable = "extraversion")
     attr <- info[, -2]
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "time variable is missing"
     )
 
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod, attributes = attr),
+        remstats(reh = history, receiver_effects = mod, attributes = attr),
         "time variable is missing"
     )
 
     # Expected errors for sender effects
     expect_error(
-        remstats(edgelist = history, sender_effects = mod, attributes = info),
+        remstats(reh = history, sender_effects = mod, attributes = info),
         "not defined for the sender activity model"
     )
 
@@ -54,12 +54,12 @@ test_that("expected errors and warnings", {
     )
 
     expect_warning(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "unexpected behavior"
     )
 
     expect_warning(
-        remstats(edgelist = history, receiver_effects = mod, attributes = attr),
+        remstats(reh = history, receiver_effects = mod, attributes = attr),
         "unexpected behavior"
     )
 
@@ -72,12 +72,12 @@ test_that("expected errors and warnings", {
     )
 
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "cannot have missing values"
     )
 
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod, attributes = attr),
+        remstats(reh = history, receiver_effects = mod, attributes = attr),
         "cannot have missing values"
     )
 
@@ -85,23 +85,23 @@ test_that("expected errors and warnings", {
     attr <- rbind(info, info[1, ])
     attr[nrow(attr), 1] <- 999
     expect_warning(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "actors that are not in the risk set"
     )
 
     expect_warning(
-        remstats(edgelist = history, receiver_effects = mod, attributes = attr),
+        remstats(reh = history, receiver_effects = mod, attributes = attr),
         "actors that are not in the risk set"
     )
 
     mod <- ~ difference(variable = "extraversion", attributes = attr)
     expect_warning(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "actors that are not in the risk set"
     )
 
     expect_warning(
-        remstats(edgelist = history, receiver_effects = mod),
+        remstats(reh = history, receiver_effects = mod),
         "actors that are not in the risk set"
     )
 
@@ -109,23 +109,23 @@ test_that("expected errors and warnings", {
     attr <- subset(info, id != 101)
     mod <- ~ difference(variable = "extraversion")
     expect_error(
-        remstats(edgelist = history, tie_effects = mod, attributes = attr),
+        remstats(reh = history, tie_effects = mod, attributes = attr),
         "Missing actors"
     )
 
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod, attributes = attr),
+        remstats(reh = history, receiver_effects = mod, attributes = attr),
         "Missing actors"
     )
 
     mod <- ~ difference(variable = "extraversion", attributes = attr)
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = history, tie_effects = mod),
         "Missing actors"
     )
 
     expect_error(
-        remstats(edgelist = history, receiver_effects = mod),
+        remstats(reh = history, receiver_effects = mod),
         "Missing actors"
     )
 })
@@ -165,7 +165,7 @@ test_that("expected statistic tie-oriented model", {
     set.seed(191)
     info$x <- sample(1:5, size = nrow(info), replace = TRUE)
     mod <- ~ difference("x")
-    tomres <- remstats(edgelist = history, tie_effects = mod, attributes = info)
+    tomres <- remstats(reh = history, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
@@ -209,7 +209,7 @@ test_that("expected statistic tie-oriented model", {
 
     # Repeat for "std" scaling
     mod <- ~ difference("x", scaling = "std")
-    tomres <- remstats(edgelist = history, tie_effects = mod, attributes = info)
+    tomres <- remstats(reh = history, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
@@ -243,7 +243,7 @@ test_that("expected statistic tie-oriented model", {
 
     # Repeat for absolute = FALSE
     mod <- ~ difference("x", absolute = FALSE)
-    tomres <- remstats(edgelist = history, tie_effects = mod, attributes = info)
+    tomres <- remstats(reh = history, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
@@ -283,7 +283,7 @@ test_that("expected statistic tie-oriented model", {
 
     # Repeat for absolute = FALSE and "std" scaling
     mod <- ~ difference("x", scaling = "std", absolute = FALSE)
-    tomres <- remstats(edgelist = history, tie_effects = mod, attributes = info)
+    tomres <- remstats(reh = history, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
@@ -318,7 +318,7 @@ test_that("expected statistic tie-oriented model", {
     # Repeat for undirected events
     mod <- ~ difference("x")
     tomres <- remstats(
-        edgelist = history, tie_effects = mod, attributes = info,
+        reh = history, tie_effects = mod, attributes = info,
         directed = FALSE
     )
 
@@ -361,7 +361,7 @@ test_that("expected statistic tie-oriented model", {
 
     # Repeat for typed events
     history$type <- history$setting
-    tomres <- remstats(edgelist = history, tie_effects = mod, attributes = info)
+    tomres <- remstats(reh = history, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
@@ -406,7 +406,7 @@ test_that("expected statistic actor-oriented model", {
     info$x <- sample(1:5, size = nrow(info), replace = T)
     mod <- ~ difference("x")
     aomres <- remstats(
-        edgelist = history, receiver_effects = mod, attributes = info
+        reh = history, receiver_effects = mod, attributes = info
     )
 
     # Expected name of the statistic
@@ -457,7 +457,7 @@ test_that("expected statistic actor-oriented model", {
     # Repeat for scaling = "std" -----------------------------------------------
     mod <- ~ difference("x", scaling = "std")
     aomres <- remstats(
-        edgelist = history, receiver_effects = mod, attributes = info
+        reh = history, receiver_effects = mod, attributes = info
     )
 
     # Expected name of the statistic
@@ -502,7 +502,7 @@ test_that("expected statistic actor-oriented model", {
     # Repeat for absolute = FALSE ----------------------------------------------
     mod <- ~ difference("x", absolute = FALSE)
     aomres <- remstats(
-        edgelist = history, receiver_effects = mod, attributes = info
+        reh = history, receiver_effects = mod, attributes = info
     )
 
     # Expected name of the statistic
@@ -553,7 +553,7 @@ test_that("expected statistic actor-oriented model", {
     # Repeat for absolute = FALSE and scaling = "std" --------------------------
     mod <- ~ difference("x", absolute = FALSE, scaling = "std")
     aomres <- remstats(
-        edgelist = history, receiver_effects = mod, attributes = info
+        reh = history, receiver_effects = mod, attributes = info
     )
 
     # Expected name of the statistic

@@ -31,7 +31,7 @@ the order of these events determines whether the p-shift is observed.
 library(remify)
 rehObject <- reh(history, directed = FALSE)
 effects <- ~ psABAB()
-tomstats(effects, edgelist = rehObject, directed = FALSE)
+tomstats(effects, reh = rehObject, directed = FALSE)
 
 }
 \seealso{

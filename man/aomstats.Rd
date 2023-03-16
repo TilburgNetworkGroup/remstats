@@ -170,7 +170,7 @@ library(remstats)
 seff <- ~ send("extraversion")
 reff <- ~ receive("agreeableness") + inertia() + otp()
 aomstats(
-  edgelist = history, sender_effects = seff, receiver_effects = reff,
+  reh = history, sender_effects = seff, receiver_effects = reff,
   attributes = info
 )
 

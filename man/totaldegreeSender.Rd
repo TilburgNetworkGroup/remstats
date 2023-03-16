@@ -41,10 +41,10 @@ set equal to 1/n, where n refers to the number of actors.
 \examples{
 library(remify)
 rehObject <- reh(history)
-remstats(edgelist = rehObject, tie_effects = effects)
-remstats(edgelist = rehObject, sender_effects = effects)
-tomstats(effects, edgelist = rehObject)
-aomstats(sender_effects = effects, edgelist = rehObject)
+remstats(reh = rehObject, tie_effects = effects)
+remstats(reh = rehObject, sender_effects = effects)
+tomstats(effects, reh = rehObject)
+aomstats(sender_effects = effects, reh = rehObject)
 
 }
 \seealso{

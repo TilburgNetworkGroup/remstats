@@ -1,15 +1,20 @@
 # remstats 3.1.0
 Date: TBD (mid-april)
 
-**IMPORTANT**: remstats 3.1.0 works with remify >= 2.1.0. **Make sure remify is updated.** If earlier versions of remify are in use, remstats 3.1.0 will break down.
+**IMPORTANT**: remstats 3.1.0 works with remify >= 3.0.0. **Make sure remify is updated.** If earlier versions of remify are in use, remstats 3.1.0 will break down.
 
 ## New features
 * `print()`, `summary()`, and `plot()` methods.
 
+## Major changes
+* `edgelist` argument is renamed to `reh`. 
+* `id` column in `attributes` object is renamed to `name`.
+* Integrated with remify v3.0.0
+
 ## Minor changes
 * Integrated with remulate. 
-* Integrated with remify v2.1.0.
 * Updated tests.
+* `evls` output object is removed.
 
 # remstats 3.0.3
 Date: 16-Mar-23

@@ -26,8 +26,8 @@ events.
 }
 \examples{
 effects <- ~ recencyReceiveReceiver()
-tomstats(effects, edgelist = history)
-aomstats(receiver_effects = effects, edgelist = history)
+tomstats(effects, reh = history)
+aomstats(receiver_effects = effects, reh = history)
 
 }
 \seealso{

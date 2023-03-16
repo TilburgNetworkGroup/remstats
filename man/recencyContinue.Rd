@@ -25,8 +25,8 @@ that has past since the dyad was last active + 1).
 }
 \examples{
 effects <- ~ recencyContinue()
-tomstats(effects, edgelist = history)
-aomstats(receiver_effects = effects, edgelist = history)
+tomstats(effects, reh = history)
+aomstats(receiver_effects = effects, reh = history)
 
 }
 \seealso{

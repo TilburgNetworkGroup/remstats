@@ -32,7 +32,7 @@ Optionally, a scaling method can be set with \code{scaling}. Note that the
 library(remify)
 rehObject <- reh(history, directed = FALSE)
 effects <- ~ sp()
-tomstats(effects, edgelist = rehObject)
+tomstats(effects, reh = rehObject)
 
 }
 \seealso{

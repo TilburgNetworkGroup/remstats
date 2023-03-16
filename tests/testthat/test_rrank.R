@@ -5,8 +5,8 @@ test_that("rrankSend", {
 	data(history)
 	
 	rehObject <- reh(edgelist = history, model = "tie")
-	tomres <- tomstats(edgelist = rehObject, effects = ~ rrankSend())
-	aomres <- aomstats(edgelist = rehObject, receiver_effects = ~ rrankSend())
+	tomres <- tomstats(reh = rehObject, effects = ~ rrankSend())
+	aomres <- aomstats(reh = rehObject, receiver_effects = ~ rrankSend())
 	
 	# The value of the recency statistic is between 0 and 1
 	expect_true(all(tomres$statistics[,,2] >= 0) & all(tomres$statistics[,,2] <= 1))
@@ -20,7 +20,7 @@ test_that("rrankSend", {
 	expect_true(max(aomres$statistics$receiver_stats) < n)
 
 	# Randomly select timepoint and check for most recent event
-	edgelist <- tomres$edgelist
+	edgelist <- tomres$reh
 	riskset <- tomres$riskset
 	rt <- sample(1:nrow(edgelist), 1)
 	event <- edgelist[rt-1,]
@@ -32,8 +32,8 @@ test_that("rrankReceive", {
 	data(history)
 	
 	rehObject <- reh(edgelist = history, model = "tie")
-	tomres <- tomstats(edgelist = rehObject, effects = ~ rrankReceive())
-	aomres <- aomstats(edgelist = rehObject, receiver_effects = ~ rrankReceive())
+	tomres <- tomstats(reh = rehObject, effects = ~ rrankReceive())
+	aomres <- aomstats(reh = rehObject, receiver_effects = ~ rrankReceive())
 	
 	# The value of the recency statistic is between 0 and 1
 	expect_true(all(tomres$statistics[,,2] >= 0) & all(tomres$statistics[,,2] <= 1))
@@ -47,7 +47,7 @@ test_that("rrankReceive", {
 	expect_true(max(aomres$statistics$receiver_stats) < n)
 	
 	# Randomly select timepoint and check for most recent event
-	edgelist <- tomres$edgelist
+	edgelist <- tomres$reh
 	riskset <- tomres$riskset
 	rt <- sample(1:nrow(edgelist), 1)
 	event <- edgelist[rt-1,]

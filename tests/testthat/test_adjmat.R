@@ -4,20 +4,20 @@ library(remstats)
 test_that("adjacency matrix", {
 	# Full memory
 	history$weight <- 1
-	out <- tomstats(effects = ~ inertia(), edgelist = history)
+	out <- tomstats(effects = ~ inertia(), reh = history)
 	adjmat <- out$adjmat
 	expect_equal(rowSums(adjmat), 0:(nrow(history)-1))
 	
 	# Start and stop
 	history$weight <- 1
-	out <- tomstats(effects = ~ inertia(), edgelist = history, 
+	out <- tomstats(effects = ~ inertia(), reh = history, 
 		start = 5, stop = 10)
 	adjmat <- out$adjmat
 	expect_equal(rowSums(adjmat), 4:9)
 	
 	# Windowed memory
 	history$weight <- 1
-	out <- tomstats(effects = ~ inertia(), edgelist = history, 
+	out <- tomstats(effects = ~ inertia(), reh = history, 
 		memory = "window", memory_value = 400)
 	adjmat <- out$adjmat
 	expect_equal(rowSums(adjmat),
@@ -27,7 +27,7 @@ test_that("adjacency matrix", {
 	
 	# Exponential decay memory
 	history$weight <- 1
-	out <- tomstats(effects = ~ inertia(), edgelist = history, 
+	out <- tomstats(effects = ~ inertia(), reh = history, 
 		memory = "decay", memory_value = 400)
 	adjmat <- out$adjmat
 	expect_equal(rowSums(adjmat),
@@ -38,7 +38,7 @@ test_that("adjacency matrix", {
 	
 	# Event weights
 	history$weight <- rnorm(nrow(history))
-	out <- tomstats(effects = ~ inertia(), edgelist = history, start = 2)
+	out <- tomstats(effects = ~ inertia(), reh = history, start = 2)
 	adjmat <- out$adjmat
 	expect_equal(rowSums(adjmat), cumsum(history$weight[-nrow(history)]))
 })

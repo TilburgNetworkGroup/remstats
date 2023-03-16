@@ -27,8 +27,8 @@ library(remify)
 history$type <- history$setting
 rehObject <- reh(history)
 effects <- ~ FEtype()
-remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
-tomstats(effects, edgelist = rehObject)
+remstats(reh = rehObject, tie_effects = effects, attributes = info)
+tomstats(effects, reh = rehObject)
 
 }
 \seealso{

@@ -34,7 +34,7 @@ events.
 library(remify)
 rehObject <- reh(history)
 effects <- ~ psABBA()
-tomstats(effects, edgelist = rehObject)
+tomstats(effects, reh = rehObject)
 
 }
 \seealso{

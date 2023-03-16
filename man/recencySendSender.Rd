@@ -25,8 +25,8 @@ that has past since sender i was last active as sender + 1). Note that the
 }
 \examples{
 effects <- ~ recencySendSender()
-tomstats(effects, edgelist = history)
-aomstats(sender_effects = effects, edgelist = history)
+tomstats(effects, reh = history)
+aomstats(sender_effects = effects, reh = history)
 
 }
 \seealso{

@@ -32,7 +32,7 @@ that the AB-XY pshift is only defined for directed events.
 library(remify)
 rehObject <- reh(history)
 effects <- ~ psABXY()
-tomstats(effects, edgelist = rehObject)
+tomstats(effects, reh = rehObject)
 
 }
 \seealso{

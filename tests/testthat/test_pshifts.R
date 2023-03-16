@@ -8,7 +8,7 @@ test_that("pshifts", {
 		psABAB() 
 	
 	# Compute the statistics
-	out <- tomstats(form, edgelist = history[,c(1:3)])
+	out <- tomstats(form, reh = history[,c(1:3)])
 	stats <- out$statistics
 	
 	# Tests
@@ -34,7 +34,7 @@ test_that("pshifts", {
 		psABAB(consider_type = TRUE)
 	
 	# Compute the statistics
-	out <- tomstats(form, edgelist = history)
+	out <- tomstats(form, reh = history)
 	stats <- out$statistics
 	
 	# Tests

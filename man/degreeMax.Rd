@@ -42,8 +42,8 @@ is set equal to 1/n, where n refers to the number of actors.
 library(remify)
 rehObject <- reh(history, directed = FALSE)
 effects <- ~ degreeMax()
-remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
-tomstats(effects, edgelist = rehObject, directed = FALSE)
+remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
+tomstats(effects, reh = rehObject, directed = FALSE)
 
 }
 \seealso{

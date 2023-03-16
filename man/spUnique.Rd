@@ -33,7 +33,7 @@ events.
 library(remify)
 rehObject <- reh(history, directed = FALSE)
 effects <- ~ spUnique()
-tomstats(effects, edgelist = rehObject)
+tomstats(effects, reh = rehObject)
 
 }
 \seealso{
