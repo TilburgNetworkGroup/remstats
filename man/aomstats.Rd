@@ -18,16 +18,15 @@ aomstats(
   memory_value = Inf,
   start = 1,
   stop = Inf,
-  adjmat = NULL,
   display_progress = FALSE
 )
 }
 \arguments{
-\item{edgelist}{an object of class \code{"\link[remify]{reh}"} 
-characterizing the relational event history sorted by time with columns 
-`time`, `dyad`, `weight`. Alternatively, an object of class 
-\code{"\link[base]{data.frame}"} or \code{"\link[base]{matrix}"} sorted by 
-time with columns `time`, `actor1`, `actor2` and optionally `type` and 
+\item{edgelist}{an object of class \code{"\link[remify]{reh}"}
+characterizing the relational event history sorted by time with columns
+`time`, `dyad`, `weight`. Alternatively, an object of class
+\code{"\link[base]{data.frame}"} or \code{"\link[base]{matrix}"} sorted by
+time with columns `time`, `actor1`, `actor2` and optionally `type` and
 `weight`.}
 
 \item{sender_effects}{an object of class \code{"\link[stats]{formula}"} (or
@@ -65,9 +64,6 @@ event for which statistics are requested (see 'Details')}
 \item{stop}{integer value, refers to the index in the edgelist of the last
 event for which statistics are requested (see 'Details')}
 
-\item{adjmat}{optionally, a previously computed adjacency matrix with on the
-rows the time points and on the columns the risk set entries}
-
 \item{display_progress}{should a progress bar for the computation of the 
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 }
@@ -77,9 +73,6 @@ endogenous statistics be shown (TRUE) or not (FALSE)?}
 \code{statistics  } List with in the first element the statistics
 for the sender activity rate step and in the second element the statistics
 for the receiver choice step
-
-\code{adjmat } Matrix with the adjacency matrix, rows refer to
-timepoints and columns to riskset entries
 }
 \description{
 Computes statistics for the sender activity rate step and receiver choice
@@ -170,15 +163,6 @@ stop values equal to the index of the first and last event for which
 statistics are requested. For example, start = 5 and stop = 5 computes the
 statistics for only the 5th event in the edgelist, based on the history that
 consists of events 1-4.
-}
-
-\section{Adjacency matrix}{
-
-Optionally, a previously computed adjacency matrix can be supplied. Note
-that the endogenous statistics will be computed based on this adjacency
-matrix. Hence, supplying a previously computed adjacency matrix can reduce
-computation time but the user should be absolutely sure the adjacency matrix
-is accurate.
 }
 
 \examples{

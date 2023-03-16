@@ -84,19 +84,10 @@
 #' statistics for only the 5th event in the edgelist, based on the history that
 #' consists of events 1-4.
 #'
-#' @section Adjacency matrix:
-#' Optionally, a previously computed adjacency matrix can be supplied. Note
-#' that the endogenous statistics will be computed based on this adjacency
-#' matrix. Hence, supplying a previously computed adjacency matrix can reduce
-#' computation time but the user should be absolutely sure the adjacency matrix
-#' is accurate.
-#'
 #' @return \code{edgelist } Dataframe with the edgelist
 #' @return \code{statistics  } List with in the first element the statistics
 #' for the sender activity rate step and in the second element the statistics
 #' for the receiver choice step
-#' @return \code{adjmat } Matrix with the adjacency matrix, rows refer to
-#' timepoints and columns to riskset entries
 #'
 #' @examples
 #' library(remstats)
@@ -117,7 +108,8 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
                      attributes = NULL, actors = NULL, types = NULL,
                      ordinal = FALSE, origin = NULL, omit_dyad = NULL,
                      memory = c("full", "window", "decay", "interval"),
-                     memory_value = Inf, start = 1, stop = Inf, adjmat = NULL, display_progress = FALSE) {
+                     memory_value = Inf, start = 1, stop = Inf, 
+                     display_progress = FALSE) {
   # Prepare the edgelist
   if (!("reh" %in% class(edgelist))) {
     prep <- remify::reh(
@@ -276,21 +268,13 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
       sapply(sender_effects, function(x) x$scaling)
     )
 
-    # Compute the adjacency matrix
-    adjmat <- matrix()
-
     # Compute the rate statistics
     rateStats <- compute_stats_rate(
-      sender_effectsN, edgelist.reh, prepR, adjmat, actors[, 2], rateScaling, 
+      sender_effectsN, edgelist.reh, prepR, actors[, 2], rateScaling, 
       rateCovar, rate_interactions, memory, memory_value, start, stop, display_progress
     )
 
-    # Reset the adjacency matrix to null
-    if (all(dim(adjmat) == c(1, 1))) {
-      adjmat <- NULL
-    }
-
-    # Dimnames statistics
+     # Dimnames statistics
     dimnames(rateStats) <-
       list(NULL, NULL, unlist(c(all_sender_effects[sender_effectsN])))
 
@@ -420,23 +404,9 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
       sapply(receiver_effects, function(x) x$scaling)
     )
 
-    # Compute the adjacency matrix
-    if (any(receiver_effectsN %in% 11:14)) {
-      if (is.null(adjmat)) {
-        adjmat <- compute_adjmat(
-          edgelist.reh, nrow(actors), prep$D,
-          TRUE, memory, memory_value, start, stop
-        )
-      }
-    } else {
-      if (is.null(adjmat)) {
-        adjmat <- matrix()
-      }
-    }
-
     # Compute the choice statistics
     choiceStats <- compute_stats_choice(
-      receiver_effectsN, edgelist.reh, adjmat, actors[, 2], prepR, 
+      receiver_effectsN, edgelist.reh, actors[, 2], prepR, 
       choiceScaling, choiceCovar, choice_interactions, memory, memory_value, 
       start, stop, display_progress
     )
@@ -519,8 +489,7 @@ aomstats <- function(edgelist, sender_effects = NULL, receiver_effects = NULL,
     ),
     edgelist = edgelist,
     riskset = riskset,
-    actors = actors[, 1],
-    adjmat = adjmat
+    actors = actors[, 1]
   )
   class(out) <- c("aomstats", "remstats")
   attr(out, "model") <- "actor"

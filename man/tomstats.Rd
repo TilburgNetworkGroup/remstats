@@ -28,11 +28,11 @@ that can be coerced to that class): a symbolic description of the effects in
 the model for which statistics are computed, see 'Details' for the available
 effects and their corresponding statistics}
 
-\item{edgelist}{an object of class \code{"\link[remify]{reh}"} 
-characterizing the relational event history sorted by time with columns 
-`time`, `dyad`, `weight`. Alternatively, an object of class 
-\code{"\link[base]{data.frame}"} or \code{"\link[base]{matrix}"} sorted by 
-time with columns `time`, `actor1`, `actor2` and optionally `type` and 
+\item{edgelist}{an object of class \code{"\link[remify]{reh}"}
+characterizing the relational event history sorted by time with columns
+`time`, `dyad`, `weight`. Alternatively, an object of class
+\code{"\link[base]{data.frame}"} or \code{"\link[base]{matrix}"} sorted by
+time with columns `time`, `actor1`, `actor2` and optionally `type` and
 `weight`.}
 
 \item{attributes}{optionally, an object of class

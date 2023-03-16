@@ -1,5 +1,5 @@
 # remstats 3.0.3
-Date: TBD
+Date: 16-Mar-23
 
 ## New features
 * Interval memory. 
@@ -13,7 +13,7 @@ Date: TBD
 * Fixed partial match warning (issue #35). 
 * Fixed environment issue attributes object. 
 * Renamed "Brandes" memory to "decay".
-* Updated computation degree, inertia and reciprocity statistics in actor-oriented model: without adjacency matrix (issue #39). 
+* Updated computation degree, inertia, reciprocity and triadic statistics in actor-oriented model: without adjacency matrix (issue #39). 
 
 # remstats 3.0.2
 Date: 08-Feb-23

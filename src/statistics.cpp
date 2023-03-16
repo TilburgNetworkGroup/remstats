@@ -4319,7 +4319,6 @@ arma::mat tie_choice(const arma::mat &covariates, const arma::mat &edgelist,
 // Computes the statistic for an inertia effect in the actor-oriented model.
 //
 // edgelist: matrix (time, event, weight)
-// adjmat: matrix (events x dyads)
 // riskset: matrix, (actor1, actor2, type, event)
 // actors: vector, actor ids
 // start: integer, first event in the edgelist for which the statistic is
@@ -4514,7 +4513,6 @@ arma::mat inertia_choice(const arma::mat &edgelist,
 // Computes the statistic for an reciprocity effect in the actor-oriented model.
 //
 // edgelist: matrix (time, event, weight)
-// adjmat: matrix (events x dyads)
 // riskset: matrix, (actor1, actor2, type, event)
 // actors: vector, actor ids
 // start: integer, first event in the edgelist for which the stat is computed
@@ -4709,7 +4707,6 @@ arma::mat reciprocity_choice(const arma::mat &edgelist,
 //
 // type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp
 // edgelist: matrix (time, event, weight)
-// adjmat: matrix (events x dyads)
 // riskset: matrix, (actor1, actor2, type, event)
 // actors: vector, actor ids
 // start: integer, first event in the edgelist for which the statistic is
@@ -4717,113 +4714,254 @@ arma::mat reciprocity_choice(const arma::mat &edgelist,
 // stop: integer, last event in the edgelist for which the statistic is
 // computed
 // scaling: integer, 1 = as.is, 2 = std
-arma::mat triad_choice(int type, const arma::mat &edgelist,
-                       const arma::mat &adjmat, const arma::mat &riskset,
-                       const arma::vec &actors, int start, int stop, int scaling)
+// [[Rcpp::export]]
+arma::mat triad_choice(std::string type,
+                       const arma::mat &edgelist,
+                       const arma::mat &riskset,
+                       const arma::vec &actors,
+                       std::string memory,
+                       arma::vec memory_value,
+                       int scaling,
+                       int start,
+                       int stop,
+                       bool self_events,
+                       bool display_progress)
 {
 
   // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
+  arma::mat slice = edgelist.rows(start, stop); 
 
   // Initialize saving space
   arma::mat stat(slice.n_rows, actors.n_elem, arma::fill::zeros);
 
-  // For loop over the sequence
-  for (arma::uword m = 0; m < slice.n_rows; ++m)
+  if (display_progress)
   {
+    Rcpp::Rcout << "Computing " << type << " statistic" << std::endl;
+  }
 
-    // Sender of the event
-    int event = slice(m, 1);
-    arma::uword s = riskset(event, 0);
+  if (memory == "full")
+  {
+    // Initialize saving space
+    arma::mat adjmat(actors.n_elem, actors.n_elem, arma::fill::zeros);
 
-    // For loop over receivers
-    for (arma::uword r = 0; r < actors.n_elem; ++r)
+    // Progress bar
+    Progress p(stop, display_progress);
+
+    // Select the past
+    double time = slice(0, 0);
+    arma::uvec past_idx = arma::find(edgelist.col(0) < time);
+    arma::mat past = edgelist.rows(past_idx);
+
+    // Iterate over the past
+    for (arma::uword i = 0; i < past.n_rows; i++)
     {
+      int dyad = past(i, 1);
+      int sender = riskset(dyad, 0);
+      int receiver = riskset(dyad, 1);
+      adjmat(sender, receiver) += past(i, 2); // Add event weight
 
-      // Skip if the sender is the receiver (no self-self edges)
-      if (s == r)
+      p.increment();
+    }
+
+    // Iterate over time points
+    for (arma::uword i = 0; i < slice.n_rows; i++)
+    {
+      int dyad = slice(i, 1);
+      int sender = riskset(dyad, 0);
+
+      // Initialize objects
+      arma::vec count1, count2;
+      arma::mat counts;
+      arma::vec min_counts;
+
+      // For loop over receivers
+      for (arma::uword r = 0; r < actors.n_elem; r++)
       {
-        continue;
-      }
-
-      // For loop over actors h
-      for (arma::uword h = 0; h < actors.n_elem; ++h)
-      {
-        // Skip self-to-self edges
-        if ((h == s) || (h == r))
-        {
-          continue;
-        }
-
-        // Saving space
-        int a1;
-        int a2;
-
         // otp
-        if (type == 1)
-        {
-          // arrow1 = sender i sends to actor h
-          a1 = remify::getDyadIndex(s, actors(h), 0, actors.n_elem, TRUE);
-          // arrow2 = actor h sends to receiver j
-          a2 = remify::getDyadIndex(actors(h), r, 0, actors.n_elem, TRUE);
+        if(type == "otp") {
+          count1 = adjmat.row(sender).t();
+          count2 = adjmat.col(r);
         }
 
         // itp
-        if (type == 2)
-        {
-          // arrow1 = actor h sends to sender i
-          a1 = remify::getDyadIndex(actors(h), s, 0, actors.n_elem, TRUE);
-          // arrow2 = receiver j sends to actor h
-          a2 = remify::getDyadIndex(r, actors(h), 0, actors.n_elem, TRUE);
+        if(type == "itp") {
+          count1 = adjmat.col(sender);
+          count2 = adjmat.row(r).t();
         }
 
         // osp
-        if (type == 3)
-        {
-          // arrow1 = sender i sends to actor h
-          a1 = remify::getDyadIndex(s, actors(h), 0, actors.n_elem, TRUE);
-          // arrow2 = receiver j sends to actor h
-          a2 = remify::getDyadIndex(r, actors(h), 0, actors.n_elem, TRUE);
+        if(type == "osp") {
+          count1 = adjmat.row(sender).t();
+          count2 = adjmat.row(r).t();
         }
 
         // isp
-        if (type == 4)
-        {
-          // arrow1 = actor h sends to sender i
-          a1 = remify::getDyadIndex(actors(h), s, 0, actors.n_elem, TRUE);
-          // arrow2 = actor h sends to receiver j
-          a2 = remify::getDyadIndex(actors(h), r, 0, actors.n_elem, TRUE);
+        if(type == "isp") {
+          count1 = adjmat.col(sender);
+          count2 = adjmat.col(r);
         }
 
-        // Sum past events
-        double count1 = adjmat(m, a1);
-        double count2 = adjmat(m, a2);
-        arma::vec count = {count1, count2};
-        stat(m, r) += min(count);
+        counts = arma::join_rows(count1, count2);
+        min_counts = min(counts, 1);
+        stat(i, r) = sum(min_counts);
       }
-    }
 
-    // Scaling
-    if (scaling == 2)
+      // Correct for the absence of self-events
+      if (!self_events)
+      {
+        stat(i, sender) = 0;
+      }
+
+      // Update adjmat with event
+      int receiver = riskset(dyad, 1);
+      adjmat(sender, receiver) += slice(i, 2);
+
+      p.increment();
+    }
+  }
+  else
+  {
+    // Progress bar
+    Progress p(slice.n_rows, display_progress);
+
+    // Iterate over time points
+    for (arma::uword i = 0; i < slice.n_rows; ++i)
     {
-      arma::rowvec statrow = stat.row(m);
-      arma::vec statrowMin = statrow(arma::find(actors != s));
+      // Initialize saving space
+      arma::mat adjmat(actors.n_elem, actors.n_elem, arma::fill::zeros);
+
+      // Event info
+      int dyad = slice(i, 1);
+      int sender = riskset(dyad, 0);
+      int receiver = riskset(dyad, 1);
+
+      // Select the past with the current actors
+      arma::mat past;
+      if (memory == "decay")
+      {
+        double time = slice(i, 0);
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time);
+        past = edgelist.rows(past_idx);
+      }
+      else if (memory == "window")
+      {
+        double time_max = slice(i, 0);
+        double time_min = slice(i, 0) - memory_value(0);
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                         edgelist.col(0) >= time_min);
+        past = edgelist.rows(past_idx);
+      }
+      else if (memory == "interval")
+      {
+        double time_max = slice(i, 0) - memory_value(0);
+        double time_min = slice(i, 0) - memory_value(1);
+        arma::uvec past_idx = arma::find(edgelist.col(0) < time_max &&
+                                         edgelist.col(0) >= time_min);
+        past = edgelist.rows(past_idx);
+      }
+
+      // Iterate over the past
+      for (arma::uword j = 0; j < past.n_rows; j++)
+      {
+        int dyad = past(j, 1);
+        int sender = riskset(dyad, 0);
+        int receiver = riskset(dyad, 1);
+        double event_weight = past(j, 2);
+        if (memory == "decay")
+        {
+          double time_event = past(j, 0);
+          double time = slice(i, 0);
+          event_weight = event_weight *
+                         exp(-(time - time_event) * (log(2) / memory_value(0))) *
+                         (log(2) / memory_value(0));
+        }
+        adjmat(sender, receiver) += event_weight;
+      }
+
+      // Initialize objects
+      arma::vec count1, count2;
+      arma::mat counts;
+      arma::vec min_counts;
 
       // For loop over receivers
-      for (arma::uword r = 0; r < actors.n_elem; ++r)
+      for (arma::uword r = 0; r < actors.n_elem; r++)
       {
-        if (s == r)
+        // For loop over third actors
+        for (arma::uword h = 0; h < actors.n_elem; h++)
         {
-          stat(m, r) = 0;
+          // otp
+        if(type == "otp") {
+          count1 = adjmat.row(sender).t();
+          count2 = adjmat.col(r);
         }
-        else
-        {
-          stat(m, r) = (stat(m, r) - mean(statrowMin)) /
-                       stddev(statrowMin);
+
+        // itp
+        if(type == "itp") {
+          count1 = adjmat.col(sender);
+          count2 = adjmat.row(r).t();
+        }
+
+        // osp
+        if(type == "osp") {
+          count1 = adjmat.row(sender).t();
+          count2 = adjmat.row(r).t();
+        }
+
+        // isp
+        if(type == "isp") {
+          count1 = adjmat.col(sender);
+          count2 = adjmat.col(r);
+        }
+
+        counts = arma::join_rows(count1, count2);
+        min_counts = min(counts, 1);
+        stat(i, r) = sum(min_counts);
         }
       }
 
-      stat.replace(arma::datum::nan, 0);
+      // Correct for the absence of self-events
+      if (!self_events)
+      {
+        stat(i, sender) = 0;
+      }
+
+      p.increment();
+    }
+  }
+
+  // Scaling
+  if (scaling == 2)
+  {
+    // Iterate over time points
+    for (arma::uword i = 0; i < stat.n_rows; i++)
+    {
+      if (self_events)
+      {
+        stat.row(i) = stat.row(i) - mean(stat.row(i)) / stddev(stat.row(i));
+      }
+      else if (!self_events)
+      {
+        int dyad = slice(i, 1);
+        arma::uword sender = riskset(dyad, 0);
+        arma::rowvec statrow = stat.row(i);
+        arma::vec statrow_exsender = statrow(arma::find(actors != sender));
+
+        // For loop over receivers
+        for (arma::uword r = 0; r < actors.n_elem; ++r)
+        {
+          if (sender == r)
+          {
+            stat(i, r) = 0;
+          }
+          else
+          {
+            stat(i, r) = (stat(i, r) - mean(statrow_exsender)) /
+                         stddev(statrow_exsender);
+          }
+        }
+
+        stat.replace(arma::datum::nan, 0);
+      }
     }
   }
 
@@ -5055,7 +5193,6 @@ arma::mat rrank_choice(int type, const arma::mat &edgelist,
 arma::cube compute_stats_rate(const arma::vec &effects,
                               const arma::mat &edgelist,
                               const arma::mat &riskset,
-                              const arma::mat &adjmat,
                               const arma::vec &actors,
                               const arma::vec &scaling,
                               const Rcpp::List &covariates,
@@ -5188,7 +5325,6 @@ arma::cube compute_stats_rate(const arma::vec &effects,
 //[[Rcpp::export]]
 arma::cube compute_stats_choice(const arma::vec &effects,
                                 const arma::mat &edgelist,
-                                const arma::mat &adjmat,
                                 const arma::vec &actors,
                                 const arma::mat &riskset,
                                 const arma::vec &scaling,
@@ -5276,23 +5412,27 @@ arma::cube compute_stats_choice(const arma::vec &effects,
       break;
     // 11 otp
     case 11:
-      stat = triad_choice(1, edgelist, adjmat, riskset, actors,
-                          start, stop, scaling(i));
+      stat = triad_choice("otp", edgelist, riskset, actors, memory,
+                          memory_value, scaling(i), start, stop, false, 
+                          display_progress);
       break;
     // 12 itp
     case 12:
-      stat = triad_choice(2, edgelist, adjmat, riskset, actors,
-                          start, stop, scaling(i));
+      stat = triad_choice("itp", edgelist, riskset, actors, memory,
+                          memory_value, scaling(i), start, stop, false, 
+                          display_progress);
       break;
     // 13 osp
     case 13:
-      stat = triad_choice(3, edgelist, adjmat, riskset, actors,
-                          start, stop, scaling(i));
+      stat = triad_choice("osp", edgelist, riskset, actors, memory,
+                          memory_value, scaling(i), start, stop, false, 
+                          display_progress);
       break;
     // 14 isp
     case 14:
-      stat = triad_choice(4, edgelist, adjmat, riskset, actors,
-                          start, stop, scaling(i));
+      stat = triad_choice("isp", edgelist, riskset, actors, memory,
+                          memory_value, scaling(i), start, stop, false, 
+                          display_progress);
       break;
     // 15 rrankSend
     case 15:

@@ -10,20 +10,20 @@
 #' model) argument in the form \code{~ effects}. The terms are separated by +
 #' operators. For example: \code{effects = ~ inertia() + otp()}. Interactions
 #' between two effects can be included with * or : operators. For example:
-#' \code{effects = ~ inertia():otp()}. A list of available effects 
-#' can be obtained with \code{\link{tie_effects}()} and 
+#' \code{effects = ~ inertia():otp()}. A list of available effects
+#' can be obtained with \code{\link{tie_effects}()} and
 #' \code{\link{actor_effects}()}.
-#' 
+#'
 #' The majority of the statistics can be scaled in some way, see
 #' the documentation of the \code{scaling} argument in the separate effect
 #' functions for more information on this.
-#' 
+#'
 #' The majority of the statistics can account for the event type
 #' included as a dependent variable, see the documentation of the
 #' \code{consider_type} argument in the separate effect functions for more
 #' information on this. Note that this option is only available for the
 #' tie-oriented model.
-#' 
+#'
 #' Note that events in the edgelist can be directed or undirected. Some
 #' statistics are only defined for either directed or undirected events (see
 #' the documentation of the statistics). Note that undirected events are only
@@ -56,14 +56,14 @@
 #' `memory_value` parameter. For example, when `memory_value = 100` and `memory
 #' = "window"`, at time point $t$ only the past events that happened at most
 #' 100 time units ago are included in the computation of the statistics.
-#' A third option is to set `memory` to `"interval"`. In this case, the past 
-#' event history within a given time interval is considered. For example, when 
-#' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$ 
-#' only the past events tha happened between 50 and 100 time units ago are 
-#' included in the computation of the statistics. Finally, the fourth option is 
-#' to set `memory` to `"decay"`. In this case, the weight of the past event in 
-#' the computation of the statistics depend on the elapsed time between $t$ and 
-#' the past event. This weight is determined based on an exponential decay 
+#' A third option is to set `memory` to `"interval"`. In this case, the past
+#' event history within a given time interval is considered. For example, when
+#' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+#' only the past events tha happened between 50 and 100 time units ago are
+#' included in the computation of the statistics. Finally, the fourth option is
+#' to set `memory` to `"decay"`. In this case, the weight of the past event in
+#' the computation of the statistics depend on the elapsed time between $t$ and
+#' the past event. This weight is determined based on an exponential decay
 #' function with half-life parameter `memory_value` (see Brandes et al., 2009).
 #'
 #' @section Event weights:
@@ -111,12 +111,12 @@
 #' (or one that can be coerced to that class): a symbolic description of the
 #' effects in the receiver choice step of model for which statistics are
 #' computed, see `Details'
-#' @param edgelist an object of class \code{"\link[remify]{reh}"} 
-#' characterizing the relational event history sorted by time with columns 
-#' `time`, `dyad`, `weight`. Alternatively, an object of class 
-#' \code{"\link[base]{data.frame}"} or \code{"\link[base]{matrix}"} sorted by 
-#' time with columns `time`, `actor1`, `actor2` and optionally `type` and 
-#' `weight`. 
+#' @param edgelist an object of class \code{"\link[remify]{reh}"}
+#' characterizing the relational event history sorted by time with columns
+#' `time`, `dyad`, `weight`. Alternatively, an object of class
+#' \code{"\link[base]{data.frame}"} or \code{"\link[base]{matrix}"} sorted by
+#' time with columns `time`, `actor1`, `actor2` and optionally `type` and
+#' `weight`.
 #' @param attributes optionally, an object of class
 #' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
 #' Details).
@@ -177,7 +177,6 @@ remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf,
                      adjmat = NULL, output = c("all", "stats_only")) {
-                        
     if (!is.null(tie_effects) &
         (!is.null(sender_effects) | !is.null(receiver_effects))) {
         stop("Supply effects for the tie-oriented model to tie_effects OR
@@ -214,7 +213,7 @@ remstats <- function(edgelist, tie_effects = NULL, sender_effects = NULL,
             ordinal = ordinal, origin = origin,
             omit_dyad = omit_dyad, memory = memory,
             memory_value = memory_value, start = start,
-            stop = stop, adjmat = adjmat
+            stop = stop
         )
     }
 
