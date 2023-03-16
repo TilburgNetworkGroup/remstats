@@ -1,3 +1,16 @@
+# remstats 3.1.0
+Date: TBD (mid-april)
+
+**IMPORTANT**: remstats 3.1.0 works with remify >= 2.1.0. **Make sure remify is updated.** If earlier versions of remify are in use, remstats 3.1.0 will break down.
+
+## New features
+* `print()`, `summary()`, and `plot()` methods.
+
+## Minor changes
+* Integrated with remulate. 
+* Integrated with remify v2.1.0.
+* Updated tests.
+
 # remstats 3.0.3
 Date: 16-Mar-23
 
