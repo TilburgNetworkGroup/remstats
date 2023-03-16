@@ -103,3 +103,48 @@ print.remstats <- function(x, ...) {
     }
   }
 }
+
+#' Relational Event Network Statistics Summaries
+#'
+#' Produce summaries of each statistic from a \code{\link{remstats}} object.
+#'
+#' @param x object of class \code{\link{remstats}}.
+#'
+#' @examples
+#' rehObject <- remify::reh(edgelist = history, model = "tie")
+#' remstatsObject <- remstats::remstats(edgelist = rehObject, tie_effects = ~ remstats::inertia())
+#' summary(remstatsObject)
+#'
+#' rehObject <- remify::reh(edgelist = history, model = "actor")
+#' remstatsObject <- remstats::remstats(edgelist = rehObject, receiver_effects = ~ inertia())
+#' summary(remstatsObject)
+#'
+#' @export
+
+summary.remstats <- function(x, ...) {
+  if (!any(class(x) == "remstats")) {
+    stop("Expected object of class 'remstats'")
+  }
+
+  model <- ifelse(any(class(x) == "tomstats"), "tie-oriented", "actor-oriented")
+
+  if (model == "tie-oriented") {
+    out <- apply(x$statistics, 3, function(y) {
+      summary(as.vector(y))
+    })
+  }
+
+  if (model == "actor-oriented") {
+    out <- lapply(x$statistics, function(y) {
+      if (!is.null(y)) {
+        apply(y, 3, function(z) {
+          summary(as.vector(z))
+        })
+      } else {
+        NULL
+      }
+    })
+  }
+
+  out
+}
