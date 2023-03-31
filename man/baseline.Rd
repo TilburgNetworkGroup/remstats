@@ -28,7 +28,7 @@ timepoints.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 remstats(reh = rehObject, tie_effects = ~1)
 remstats(reh = rehObject, sender_effects = ~1)
 }

@@ -38,7 +38,7 @@ n, where n refers to the number of actors.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ indegreeReceiver()
 remstats(reh = rehObject, tie_effects = effects)
 remstats(reh = rehObject, receiver_effects = effects)

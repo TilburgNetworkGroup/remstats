@@ -20,7 +20,7 @@ object and, optionally, interact this statistic with other statistics in the
 formula.
 }
 \examples{
-reh <- remify::reh(history, model = "tie")
+reh <- remify::remify(history, model = "tie")
 actor101Events <- which(history$actor1 == "101" | history$actor2 == "101")
 actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {
 	rep(i \%in\% actor101Events, reh$D)
@@ -28,11 +28,11 @@ actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {
 
 # Main effects only
 effects <- ~ userStat(x = actor101_stat, variableName = "actor101event")
-remstats(reh = history, tie_effects = effects)
+remstats(reh = reh, tie_effects = effects)
 
 # Model with interaction effects
 interaction_effects <- ~ inertia()*
  userStat(x = actor101stat, variableName ="actor101event")
-remstats(reh = history, tie_effects = interaction_effects)
+remstats(reh = reh, tie_effects = interaction_effects)
 
 }

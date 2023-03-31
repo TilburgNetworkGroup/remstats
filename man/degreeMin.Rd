@@ -40,7 +40,7 @@ is set equal to 1/n, where n refers to the number of actors.
 }
 \examples{
 library(remify)
-rehObject <- reh(history, directed = FALSE)
+rehObject <- remify(history, directed = FALSE)
 effects <- ~ degreeMin()
 remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
 tomstats(effects, reh = rehObject, directed = FALSE)

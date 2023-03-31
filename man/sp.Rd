@@ -30,7 +30,7 @@ Optionally, a scaling method can be set with \code{scaling}. Note that the
 }
 \examples{
 library(remify)
-rehObject <- reh(history, directed = FALSE)
+rehObject <- remify(history, directed = FALSE)
 effects <- ~ sp()
 tomstats(effects, reh = rehObject)
 

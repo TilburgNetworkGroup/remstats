@@ -8,13 +8,15 @@ Date: TBD (mid-april)
 
 ## Major changes
 * `edgelist` argument is renamed to `reh`. 
+* `edgelist` must be an object of class `remify`.
 * `id` column in `attributes` object is renamed to `name`.
-* Integrated with remify v3.0.0
+* `aomstats` output is reduced to the list of statistics (sender_stats and receiver_stats)
 
 ## Minor changes
 * Integrated with remulate. 
+* Integrated with remify v3.0.0
 * Updated tests.
-* `evls` output object is removed.
+* `evls`, `edgelist`, `actors`, and `types` output objects are removed from `tomstats`.
 
 # remstats 3.0.3
 Date: 16-Mar-23

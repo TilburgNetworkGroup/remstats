@@ -114,9 +114,9 @@ parse_int <- function(formula, type, effects, ordinal = FALSE) {
     interactions
 }
 
-parse_tie <- function(List, prep) {
+parse_tie <- function(List, reh) {
     x <- List$x
-    dictionary <- attr(prep, "dictionary")$actors
+    dictionary <- attr(reh, "dictionary")$actors
     # First column: actorName
     # Second column: actorID
 
@@ -140,7 +140,7 @@ parse_tie <- function(List, prep) {
     x <- x[, order(as.numeric(colnames(x)))]
 
     # Undirected events
-    if (!attr(prep, "directed")) {
+    if (!attr(reh, "directed")) {
         if (!isSymmetric(x)) {
             if (all(is.na(x[upper.tri(x)]))) {
                 x[upper.tri(x)] <- t(x)[upper.tri(x)]

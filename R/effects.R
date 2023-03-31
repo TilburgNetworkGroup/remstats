@@ -26,7 +26,7 @@
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' remstats(reh = rehObject, tie_effects = ~1)
 #' remstats(reh = rehObject, sender_effects = ~1)
 NULL
@@ -70,7 +70,7 @@ NULL
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ send("extraversion")
 #' remstats(reh = rehObject, tie_effects = effects, attributes = info)
 #' remstats(reh = rehObject, sender_effects = effects, attributes = info)
@@ -115,7 +115,7 @@ send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ receive("extraversion")
 #' remstats(reh = rehObject, tie_effects = effects, attributes = info)
 #' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
@@ -162,7 +162,7 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #'     })
 #' })
 #' rownames(both_old) <- colnames(both_old) <- actors
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ tie(both_old, variableName = "both.old")
 #' remstats(reh = rehObject, tie_effects = effects, attributes = info)
 #' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
@@ -219,7 +219,7 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ same("age")
 #' remstats(reh = rehObject, tie_effects = effects, attributes = info)
 #' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
@@ -266,7 +266,7 @@ same <- function(variable, attributes = NULL) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ difference("extraversion", absolute = TRUE)
 #' remstats(reh = rehObject, tie_effects = effects, attributes = info)
 #' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
@@ -330,7 +330,7 @@ difference <- function(variable, attributes = NULL,
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ average("extraversion")
 #' remstats(reh = rehObject, tie_effects = effects, attributes = info)
 #' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
@@ -374,7 +374,7 @@ average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ minimum("extraversion")
 #' remstats(
 #'     reh = rehObject, tie_effects = effects, attributes = info,
@@ -421,7 +421,7 @@ minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ maximum("extraversion")
 #' remstats(
 #'     reh = rehObject, tie_effects = effects, attributes = info,
@@ -455,7 +455,7 @@ maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' work <- ifelse(history$setting == "work", 1, 0)
 #' effects <- ~ event(x = work, variableName = "setting_is_work")
 #' remstats(reh = rehObject, tie_effects = effects)
@@ -498,7 +498,7 @@ event <- function(x, variableName = NULL) {
 #' @examples
 #' library(remify)
 #' history$type <- history$setting
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ FEtype()
 #' remstats(reh = rehObject, tie_effects = effects, attributes = info)
 #' tomstats(effects, reh = rehObject)
@@ -545,7 +545,7 @@ FEtype <- function() {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ inertia()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -604,7 +604,7 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ reciprocity()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -668,7 +668,7 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ indegreeSender()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, sender_effects = effects)
@@ -724,7 +724,7 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ indegreeReceiver()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -781,7 +781,7 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ outdegreeSender()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, sender_effects = effects)
@@ -837,7 +837,7 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ outdegreeReceiver()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -902,7 +902,7 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, sender_effects = effects)
 #' tomstats(effects, reh = rehObject)
@@ -958,7 +958,7 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ totaldegreeReceiver()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -1046,7 +1046,7 @@ totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history, directed = FALSE)
+#' rehObject <- remify(history, directed = FALSE)
 #' effects <- ~ degreeDiff()
 #' remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
 #' tomstats(effects, reh = rehObject, directed = FALSE)
@@ -1101,7 +1101,7 @@ degreeDiff <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history, directed = FALSE)
+#' rehObject <- remify(history, directed = FALSE)
 #' effects <- ~ degreeMin()
 #' remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
 #' tomstats(effects, reh = rehObject, directed = FALSE)
@@ -1157,7 +1157,7 @@ degreeMin <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history, directed = FALSE)
+#' rehObject <- remify(history, directed = FALSE)
 #' effects <- ~ degreeMax()
 #' remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
 #' tomstats(effects, reh = rehObject, directed = FALSE)
@@ -1212,7 +1212,7 @@ degreeMax <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ otp()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -1261,7 +1261,7 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ itp()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -1316,7 +1316,7 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ osp()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -1365,7 +1365,7 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ isp()
 #' remstats(reh = rehObject, tie_effects = effects)
 #' remstats(reh = rehObject, receiver_effects = effects)
@@ -1414,7 +1414,7 @@ isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history, directed = FALSE)
+#' rehObject <- remify(history, directed = FALSE)
 #' effects <- ~ sp()
 #' tomstats(effects, reh = rehObject)
 #'
@@ -1461,7 +1461,7 @@ sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history, directed = FALSE)
+#' rehObject <- remify(history, directed = FALSE)
 #' effects <- ~ spUnique()
 #' tomstats(effects, reh = rehObject)
 #'
@@ -1533,7 +1533,7 @@ ccp <- function(duration) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ psABBA()
 #' tomstats(effects, reh = rehObject)
 #'
@@ -1581,7 +1581,7 @@ psABBA <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ psABBY()
 #' tomstats(effects, reh = rehObject)
 #'
@@ -1629,7 +1629,7 @@ psABBY <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ psABXA()
 #' tomstats(effects, reh = rehObject)
 #'
@@ -1677,7 +1677,7 @@ psABXA <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ psABXB()
 #' tomstats(effects, reh = rehObject)
 #'
@@ -1724,7 +1724,7 @@ psABXB <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ psABXY()
 #' tomstats(effects, reh = rehObject)
 #'
@@ -1772,7 +1772,7 @@ psABXY <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ psABAY()
 #' tomstats(effects, reh = rehObject)
 #'
@@ -1818,7 +1818,7 @@ psABAY <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history, directed = FALSE)
+#' rehObject <- remify(history, directed = FALSE)
 #' effects <- ~ psABAB()
 #' tomstats(effects, reh = rehObject, directed = FALSE)
 #'
@@ -1862,7 +1862,7 @@ psABAB <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ rrankSend()
 #' remstats(tie_effects = effects, reh = rehObject)
 #' remstats(receiver_effects = effects, reh = rehObject)
@@ -1906,7 +1906,7 @@ rrankSend <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' library(remify)
-#' rehObject <- reh(history)
+#' rehObject <- remify(history)
 #' effects <- ~ rrankReceive()
 #' tomstats(effects, reh = rehObject)
 #' aomstats(receiver_effects = effects, reh = rehObject)
@@ -2144,7 +2144,7 @@ recencyContinue <- function(consider_type = FALSE) {
 #' @inheritParams tie
 #'
 #' @examples
-#' reh <- remify::reh(history, model = "tie")
+#' reh <- remify::remify(history, model = "tie")
 #' actor101Events <- which(history$actor1 == "101" | history$actor2 == "101")
 #' actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {
 #' 	rep(i %in% actor101Events, reh$D)
@@ -2152,12 +2152,12 @@ recencyContinue <- function(consider_type = FALSE) {
 #' 
 #' # Main effects only
 #' effects <- ~ userStat(x = actor101_stat, variableName = "actor101event")
-#' remstats(reh = history, tie_effects = effects)
+#' remstats(reh = reh, tie_effects = effects)
 #' 
 #' # Model with interaction effects
 #' interaction_effects <- ~ inertia()*
 #'  userStat(x = actor101stat, variableName ="actor101event")
-#' remstats(reh = history, tie_effects = interaction_effects)
+#' remstats(reh = reh, tie_effects = interaction_effects)
 #'
 #' @export
 userStat <- function(x, variableName = NULL) {

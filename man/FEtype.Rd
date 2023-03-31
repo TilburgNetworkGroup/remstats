@@ -25,7 +25,7 @@ event types are modeled in the dependent variable.
 \examples{
 library(remify)
 history$type <- history$setting
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ FEtype()
 remstats(reh = rehObject, tie_effects = effects, attributes = info)
 tomstats(effects, reh = rehObject)

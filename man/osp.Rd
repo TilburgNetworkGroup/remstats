@@ -30,7 +30,7 @@ that an 'osp' effect is only defined for directed events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ osp()
 remstats(reh = rehObject, tie_effects = effects)
 remstats(reh = rehObject, receiver_effects = effects)

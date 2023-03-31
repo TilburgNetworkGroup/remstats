@@ -32,7 +32,7 @@ events determines whether the p-shift is observed.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ psABAY()
 tomstats(effects, reh = rehObject)
 

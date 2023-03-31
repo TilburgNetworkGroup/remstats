@@ -23,7 +23,7 @@ to the attribute of the event at timepoint \emph{t}.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 work <- ifelse(history$setting == "work", 1, 0)
 effects <- ~ event(x = work, variableName = "setting_is_work")
 remstats(reh = rehObject, tie_effects = effects)

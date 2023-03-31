@@ -31,7 +31,7 @@ for directed events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ psABXA()
 tomstats(effects, reh = rehObject)
 

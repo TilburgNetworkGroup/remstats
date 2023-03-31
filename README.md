@@ -34,7 +34,7 @@ data(info)
 effects <- ~ 1 + send("extraversion", info) + inertia()
 
 # Prepare event history
-rehObject <- remify::reh(edgelist = history, model = "tie")
+rehObject <- remify::remify(edgelist = history, model = "tie")
 
 # Compute statistics
 statsObject <- remstats(reh = rehObject, tie_effects = effects)
@@ -100,7 +100,7 @@ If nothing is specified by the user, `remstats()` assumes that all actors that c
 * If the relational events in the relational event history and in the riskset are undirected (i.e., no distinction is made between i --> j and j --> i), the user should set `directed = FALSE` in `remstats()`.  
 * If the user wants to distinguish between events of different types in the riskset, the user should include a column named `type` with the event types to the relational event history. For example, we could view the settings of the events in `history` as different event types. If we want to distinguish between interaction in a work-related or leisure setting, we rename the fourth column: `names(history)[4] <- "type"`.
 * If the user wants to distinguish between events of different types in the riskset but not every type that can potentially occur is observed in the relational event history, the user should supply every type that can potentially occur to the `types` argument of `remstats()`. 
-* For other non-standard riskset situations, the user can use the `omit_dyad` argument (see `vignette("remify::reh")`). 
+* For other non-standard riskset situations, the user can use the `omit_dyad` argument (see `vignette("remify::remify")`). 
 
 ### Compute statistics for the tie-oriented model
 First, we will compute statistics for modeling relational event history data with a tie-oriented model. The statistics that are requested need to be supplied to the `tie_effects` argument of `remstats()`, specified in an object of class `formula`. This specification should be in the form `~ terms`.
@@ -208,10 +208,10 @@ names(out)
 
 A difference between the two output objects is that the statistics object is now a list with two elements: `sender_stats` and `receiver_stats`. Since we did not request any statistics for the receiver choice step here, this object is empty. The `sender_stats` object contains the statistic array with the `baseline` statistic (again, automatically computed unless `ordinal = TRUE`), and the requested `outdegreeSender` statistic. 
 ```r
-dimnames(out$statistics$sender_stats)
+dimnames(out$sender_stats)
 ```
 
-The dimension of `out$statistics$sender_stats` is 115 x 10 x 2. On the rows we have the timepoints, the columns refer to the actors that can be senders and the slices refer to the different statistics. 
+The dimension of `out$sender_stats` is 115 x 10 x 2. On the rows we have the timepoints, the columns refer to the actors that can be senders and the slices refer to the different statistics. 
 
 Lets extend our model and also request a statistic for the receiver choice step:
 ```r
@@ -220,11 +220,11 @@ receiver_effects <- ~ inertia()
 out <- remstats(sender_effects = sender_effects, receiver_effects = receiver_effects, reh = history)
 ```
 
-We can access the statistic computed for the receiver choice step with `out$statistics$receiver_stats`. In this step, the baseline statistic is not automatically computed (and not defined). Hence, the dimensions of the statistics object for the receiver choice step are 115 x 10 x 1. On the rows we have again the timepoints, on the columns now the receivers and on the slices the statistics. 
+We can access the statistic computed for the receiver choice step with `out$receiver_stats`. In this step, the baseline statistic is not automatically computed (and not defined). Hence, the dimensions of the statistics object for the receiver choice step are 115 x 10 x 1. On the rows we have again the timepoints, on the columns now the receivers and on the slices the statistics. 
 
 Note that the computed values of the statistic in the receiver choice step are equal to the values for this receiver, given the current sender. For example, lets review the first six lines:
 ```r
-head(out$statistics$receiver_stats[,,"inertia"])
+head(out$receiver_stats[,,"inertia"])
 ```
 
 101 | 103 | 104 | 105 | 107 | 109 | 111 | 112 | 113 | 115

@@ -24,7 +24,7 @@ the 'rrankReceive' effect is only defined for directed events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ rrankReceive()
 tomstats(effects, reh = rehObject)
 aomstats(receiver_effects = effects, reh = rehObject)

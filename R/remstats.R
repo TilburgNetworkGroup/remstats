@@ -101,16 +101,11 @@
 #' (or one that can be coerced to that class): a symbolic description of the
 #' effects in the receiver choice step of model for which statistics are
 #' computed, see `Details'
-#' @param reh an object of class \code{"\link[remify]{reh}"} characterizing the
-#' relational event history, sorted by time with columns `time`, `dyad`,
-#' `weight`. Alternatively, an object of class \code{"\link[base]{data.frame}"}
-#' or \code{"\link[base]{matrix}"} characterizing the relational event history,
-#' sorted by time with columns `time`, `actor1`, `actor2` and optionally `type`
-#' and `weight`.
+#' @param reh an object of class \code{"\link[remify]{remify}"} characterizing 
+#' the relational event history.
 #' @param attributes optionally, an object of class
 #' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
 #' Details).
-#' @inheritParams remify::reh
 #' @param memory The memory to be used. See `Details'.
 #' @param memory_value Numeric value indicating the memory parameter. See
 #' `Details'.
@@ -142,12 +137,13 @@
 #' library(remstats)
 #'
 #' eff <- ~ inertia():send("extraversion") + otp()
-#' remstats(reh = history, tie_effects = eff, attributes = info)
+#' reh <- remify::remify(edgelist = history)
+#' remstats(reh = reh, tie_effects = eff, attributes = info)
 #'
 #' seff <- ~ send("extraversion")
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
 #' remstats(
-#'     reh = history, sender_effects = seff, receiver_effects = reff,
+#'     reh = reh, sender_effects = seff, receiver_effects = reff,
 #'     attributes = info
 #' )
 #'
@@ -160,9 +156,7 @@
 #'
 #' @export
 remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
-                     receiver_effects = NULL, attributes = NULL, actors = NULL,
-                     types = NULL, directed = TRUE, ordinal = FALSE,
-                     origin = NULL, omit_dyad = NULL,
+                     receiver_effects = NULL, attributes = NULL, 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf,
                      adjmat = NULL, output = c("all", "stats_only")) {
@@ -183,24 +177,20 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
     if (!is.null(tie_effects)) {
         out <- tomstats(
             effects = tie_effects, reh = reh,
-            attributes = attributes, actors = actors, types = types,
-            directed = directed, ordinal = ordinal, origin = origin,
-            omit_dyad = omit_dyad, memory = memory,
+            attributes = attributes, memory = memory,
             memory_value = memory_value, start = start,
             stop = stop, adjmat = adjmat, output = output
         )
     }
 
     if (!is.null(sender_effects) | !is.null(receiver_effects)) {
-        if (!directed) {
+        if (!attr(reh, "directed")) {
             stop("Undirected events are not defined for the actor-oriented model.")
         }
         out <- aomstats(
             reh = reh, sender_effects = sender_effects,
             receiver_effects = receiver_effects,
-            attributes = attributes, actors = actors, types = types,
-            ordinal = ordinal, origin = origin,
-            omit_dyad = omit_dyad, memory = memory,
+            attributes = attributes, memory = memory,
             memory_value = memory_value, start = start,
             stop = stop
         )

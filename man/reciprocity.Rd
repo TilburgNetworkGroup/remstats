@@ -38,7 +38,7 @@ statistic is similar to the "FrRecSnd" statistic in the R package relevent.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ reciprocity()
 remstats(reh = rehObject, tie_effects = effects)
 remstats(reh = rehObject, receiver_effects = effects)

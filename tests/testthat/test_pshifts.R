@@ -1,4 +1,3 @@
-library(remify)
 library(remstats)
 
 test_that("pshifts", {
@@ -8,7 +7,8 @@ test_that("pshifts", {
 		psABAB() 
 	
 	# Compute the statistics
-	out <- tomstats(form, reh = history[,c(1:3)])
+	reh <- remify::remify(history, model = "tie")
+	out <- tomstats(form, reh = reh)
 	stats <- out$statistics
 	
 	# Tests
@@ -34,7 +34,8 @@ test_that("pshifts", {
 		psABAB(consider_type = TRUE)
 	
 	# Compute the statistics
-	out <- tomstats(form, reh = history)
+	reh <- remify::remify(history, model = "tie")
+	out <- tomstats(form, reh = reh)
 	stats <- out$statistics
 	
 	# Tests

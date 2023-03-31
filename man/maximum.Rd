@@ -46,7 +46,7 @@ multiple exogenous effects.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ maximum("extraversion")
 remstats(
     reh = rehObject, tie_effects = effects, attributes = info,

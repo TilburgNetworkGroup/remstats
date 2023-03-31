@@ -3,9 +3,9 @@
 #' Computes statistics for the sender activity rate step and receiver choice
 #' step in actor-oriented relational event models (e.g., see Stadtfeld & Block,
 #' 2017).
-#' 
+#'
 #' @inheritParams remstats
-#' @param display_progress should a progress bar for the computation of the 
+#' @param display_progress should a progress bar for the computation of the
 #' endogenous statistics be shown (TRUE) or not (FALSE)?
 #'
 #' @section Effects:
@@ -14,9 +14,9 @@
 #' arguments in the form \code{~ effects}. The terms are separated by +
 #' operators. For example: \code{receiver_effects = ~ inertia() + otp()}.
 #' Interactions between two effects can be included with * or :
-#' operators. For example: \code{receivereffects = ~ inertia():otp()}.  A list 
+#' operators. For example: \code{receivereffects = ~ inertia():otp()}.  A list
 #' of available effects can be obtained with \code{\link{actor_effects}()}.
-#' 
+#'
 #' The majority of the statistics can be scaled in some way, see
 #' the documentation of the \code{scaling} argument in the separate effect
 #' functions for more information on this.
@@ -48,14 +48,14 @@
 #' `memory_value` parameter. For example, when `memory_value = 100` and `memory
 #' = "window"`, at time point $t$ only the past events that happened at most
 #' 100 time units ago are included in the computation of the statistics.
-#' A third option is to set `memory` to `"interval"`. In this case, the past 
-#' event history within a given time interval is considered. For example, when 
-#' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$ 
-#' only the past events tha happened between 50 and 100 time units ago are 
-#' included in the computation of the statistics. Finally, the fourth option is 
-#' to set `memory` to `"decay"`. In this case, the weight of the past event in 
-#' the computation of the statistics depend on the elapsed time between $t$ and 
-#' the past event. This weight is determined based on an exponential decay 
+#' A third option is to set `memory` to `"interval"`. In this case, the past
+#' event history within a given time interval is considered. For example, when
+#' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+#' only the past events tha happened between 50 and 100 time units ago are
+#' included in the computation of the statistics. Finally, the fourth option is
+#' to set `memory` to `"decay"`. In this case, the weight of the past event in
+#' the computation of the statistics depend on the elapsed time between $t$ and
+#' the past event. This weight is determined based on an exponential decay
 #' function with half-life parameter `memory_value` (see Brandes et al., 2009).
 #'
 #' @section Event weights:
@@ -66,11 +66,11 @@
 #' statistic does depend on time since the event and not on event weights).
 #'
 #' @section Subset of the relational event history:
-#' Optionally, statistics can be computed for a slice of the relational event 
-#' sequence - but based on the entire history. This is achieved by setting the 
-#' start and stop values equal to the index of the first and last event for 
-#' which statistics are requested. For example, start = 5 and stop = 5 computes 
-#' the statistics for only the 5th event in the relational event sequence, 
+#' Optionally, statistics can be computed for a slice of the relational event
+#' sequence - but based on the entire history. This is achieved by setting the
+#' start and stop values equal to the index of the first and last event for
+#' which statistics are requested. For example, start = 5 and stop = 5 computes
+#' the statistics for only the 5th event in the relational event sequence,
 #' based on the history that consists of events 1-4.
 #'
 #' @return \code{reh } Dataframe with the relational event history.
@@ -81,9 +81,10 @@
 #' @examples
 #' library(remstats)
 #' seff <- ~ send("extraversion")
+#' reh <- remify::remify(edgelist = history)
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
 #' aomstats(
-#'   reh = history, sender_effects = seff, receiver_effects = reff,
+#'   reh = reh, sender_effects = seff, receiver_effects = reff,
 #'   attributes = info
 #' )
 #'
@@ -93,30 +94,42 @@
 #'
 #'
 #' @export
-aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
-                     attributes = NULL, actors = NULL, types = NULL,
-                     ordinal = FALSE, origin = NULL, omit_dyad = NULL,
+aomstats <- function(reh,
+                     sender_effects = NULL,
+                     receiver_effects = NULL,
+                     attributes = NULL,
                      memory = c("full", "window", "decay", "interval"),
-                     memory_value = Inf, start = 1, stop = Inf, 
+                     memory_value = Inf,
+                     start = 1,
+                     stop = Inf,
                      display_progress = FALSE) {
-  # Prepare the edgelist
-  if (!("reh" %in% class(reh))) {
-    prep <- remify::reh(
-      edgelist = reh, actors = actors,
-      types = types, directed = TRUE, ordinal = ordinal,
-      origin = origin, omit_dyad = omit_dyad, model = "actor"
-    )
-  } else {
-    prep <- reh
+
+  # Check the reh
+  if (!("remify" %in% class(reh))) {
+    stop("Expected a reh object of class remify")
   }
 
-  # Extract relevant elements from the prepared remify::reh object
-  edgelist.reh <- prep$edgelist
-  actors <- attr(prep, "dictionary")$actors
-  types <- attr(prep, "dictionary")$types
+  # Extract relevant elements from the prepared remify::remify object
+  edgelist <- reh$edgelist
+  actors <- attr(reh, "dictionary")$actors
+  types <- attr(reh, "dictionary")$types
+
+  # Transform to cpp indexing!
+  mat_edges <- as.matrix(edgelist)
+  mat_edges[, 2] <- mat_edges[, 2] - 1
+  mat_edges[, 3] <- mat_edges[, 3] - 1
+
+  actors$actorID <- actors$actorID - 1
+
+  # Check for event weights
+  if (!("weight" %in% colnames(edgelist))) {
+    weights <- rep(1, nrow(edgelist))
+  } else {
+    weights <- edgelist$weight
+  }
 
   # Check for event types
-  if (nrow(types) > 1) {
+  if (!is.null(types)) {
     stop("Multiple event types are not yet defined for the actor-oriented model.")
   }
 
@@ -153,15 +166,9 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
   }
   start <- start - 1
   if (stop == Inf) {
-    stop <- nrow(edgelist.reh)
+    stop <- nrow(edgelist)
   }
   stop <- stop - 1
-
-  # Riskset
-  prepR <- getRisksetMatrix(
-    actors$actorID, types$typeID, nrow(actors),
-    nrow(types), TRUE
-  )
 
   # Initialize stats
   rateStats <- NULL
@@ -228,7 +235,7 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
           if (!all(actors[, 1] %in% dat$name)) {
             stop("Missing actors in the attributes object.")
           }
-          dat$name <- attr(prep, "dictionary")$actors[match(dat$name, attr(prep, "dictionary")$actors[, 1]), 2]
+          dat$name <- actors[match(dat$name, actors[, 1]), 2]
           colnames(dat)[3] <- x$variable
           as.matrix(dat)
         } else {
@@ -237,7 +244,7 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
           if (!all(actors[, 1] %in% dat$name)) {
             stop("Missing actors in the attributes object.")
           }
-          dat$name <- attr(prep, "dictionary")$actors[match(dat$name, attr(prep, "dictionary")$actors[, 1]), 2]
+          dat$name <- actors[match(dat$name, actors[, 1]), 2]
           as.matrix(dat)
         }
         # Check for actors in the attributes object that are not in the
@@ -259,11 +266,12 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
 
     # Compute the rate statistics
     rateStats <- compute_stats_rate(
-      sender_effectsN, edgelist.reh, prepR, actors[, 2], rateScaling, 
-      rateCovar, rate_interactions, memory, memory_value, start, stop, display_progress
+      sender_effectsN, mat_edges, actors[, 2], weights, rateCovar,
+      rate_interactions, memory, memory_value, rateScaling, start, stop,
+      display_progress
     )
 
-     # Dimnames statistics
+    # Dimnames statistics
     dimnames(rateStats) <-
       list(NULL, NULL, unlist(c(all_sender_effects[sender_effectsN])))
 
@@ -356,10 +364,7 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
           if (!all(actors[, 1] %in% dat$name)) {
             stop("Missing actors in the attributes object.")
           }
-          dat$name <- attr(prep, "dictionary")$actors[match(
-            dat$name,
-            attr(prep, "dictionary")$actors[, 1]
-          ), 2]
+          dat$name <- actors[match(dat$name, actors[, 1]), 2]
           colnames(dat)[3] <- x$variable
           as.matrix(dat)
         } else {
@@ -368,10 +373,7 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
           if (!all(actors[, 1] %in% dat$name)) {
             stop("Missing actors in the attributes object.")
           }
-          dat$name <- attr(prep, "dictionary")$actors[match(
-            dat$name,
-            attr(prep, "dictionary")$actors[, 1]
-          ), 2]
+          dat$name <- actors[match(dat$name, actors[, 1]), 2]
           as.matrix(dat)
         }
         # Check for actors in the attributes object that are not in the
@@ -382,7 +384,7 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
         }
         as.matrix(dat)
       } else if (x$effect == "tie") {
-        parse_tie(x, prep)
+        parse_tie(x, reh)
       } else {
         matrix()
       }
@@ -395,8 +397,8 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
 
     # Compute the choice statistics
     choiceStats <- compute_stats_choice(
-      receiver_effectsN, edgelist.reh, actors[, 2], prepR, 
-      choiceScaling, choiceCovar, choice_interactions, memory, memory_value, 
+      receiver_effectsN, mat_edges, actors[, 2], weights, choiceCovar,
+      choice_interactions, memory, memory_value, choiceScaling,
       start, stop, display_progress
     )
 
@@ -452,34 +454,8 @@ aomstats <- function(reh, sender_effects = NULL, receiver_effects = NULL,
       )
   }
 
-  # Riskset output 
-  riskset <- prepR
-  riskset <- as.data.frame(riskset)
-  colnames(riskset) <- c("sender", "receiver", "type", "id")
-  riskset$sender <- actors$actorName[match(riskset$sender, actors$actorID)]
-  riskset$receiver <- actors$actorName[match(riskset$receiver, actors$actorID)]
-  riskset$type <- types$typeName[match(riskset$type, types$typeID)]
-  if (!("reh" %in% class(reh))) {
-    riskset$id <- riskset$id + 1
-  } else {
-    riskset$stat_column <- riskset$id + 1
-  }
-  riskset <- as.data.frame(riskset)
-
-  # Edgelist output
-  if ("reh" %in% class(reh)) {
-    reh <- prep$edgelist
-  }
-
   # Output
-  out <- list(
-    statistics = list(
-      sender_stats = rateStats, receiver_stats = choiceStats
-    ),
-    reh = reh,
-    riskset = riskset,
-    actors = actors[, 1]
-  )
+  out <- list(sender_stats = rateStats, receiver_stats = choiceStats)
   class(out) <- c("aomstats", "remstats")
   attr(out, "model") <- "actor"
   attr(out, "formula") <- list(rate = rateFormula, choice = choiceFormula)

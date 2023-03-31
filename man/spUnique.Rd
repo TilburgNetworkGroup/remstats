@@ -31,7 +31,7 @@ events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history, directed = FALSE)
+rehObject <- remify(history, directed = FALSE)
 effects <- ~ spUnique()
 tomstats(effects, reh = rehObject)
 

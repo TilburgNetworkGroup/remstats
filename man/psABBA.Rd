@@ -32,7 +32,7 @@ events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ psABBA()
 tomstats(effects, reh = rehObject)
 

@@ -30,7 +30,7 @@ Optionally, a scaling method can be set with \code{scaling}. Note that an
 }
 \examples{
 library(remify)
-rehObject <- reh(history)
+rehObject <- remify(history)
 effects <- ~ itp()
 remstats(reh = rehObject, tie_effects = effects)
 remstats(reh = rehObject, receiver_effects = effects)

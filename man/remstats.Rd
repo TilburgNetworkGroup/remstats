@@ -25,8 +25,8 @@ remstats(
 )
 }
 \arguments{
-\item{reh}{an object of class \code{"\link[remify]{reh}"} characterizing the
-relational event history, sorted by time with columns `time`, `dyad`,
+\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
+the relational event history, sorted by time with columns `time`, `dyad`,
 `weight`. Alternatively, an object of class \code{"\link[base]{data.frame}"}
 or \code{"\link[base]{matrix}"} characterizing the relational event history,
 sorted by time with columns `time`, `actor1`, `actor2` and optionally `type`
@@ -51,7 +51,7 @@ computed, see `Details'}
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
 Details).}
 
-\item{actors}{character vector of actors' names that may be observed interacting in the network. If \code{NULL}, actor names will be taken from the input edgelist.}
+\item{actors}{character vector of actors' names that may be observed interacting in the network. If \code{NULL}, actors' names will be taken from the input edgelist.}
 
 \item{types}{character vector of event types that may occur in the network. If \code{NULL}, type names will be taken from the input edgelist.}
 
@@ -61,7 +61,7 @@ Details).}
 
 \item{origin}{time point since when events could occur (default is \code{NULL}). If it is defined, it must have the same class of the time column in the input edgelist.}
 
-\item{omit_dyad}{list of lists. Each list must have two objects: a first object named `time`, that is a vector of two values defining the first and last time point of the time window where to apply the change to the risk set and a second object, named `dyad`, which is a \code{"\link[base]{data.frame}"} where dyads to be removed are supplied in the format \code{actor1,actor2,type} (by row).}
+\item{omit_dyad}{list of lists. Each list refers to one risk set modification and must have two objects: a first object named `time`, that is a vector of two values defining the first and last time point of the time window where to apply the change to the risk set and a second object, named `dyad`, which is a \code{\link[base]{data.frame}} where dyads to be removed are supplied in the format \code{actor1,actor2,type} (by row). The \code{NA} value can be used to remove multiple objects from the risk set at once with one risk set modification list (see Details).}
 
 \item{memory}{The memory to be used. See `Details'.}
 
@@ -204,12 +204,13 @@ is accurate.
 library(remstats)
 
 eff <- ~ inertia():send("extraversion") + otp()
-remstats(reh = history, tie_effects = eff, attributes = info)
+reh <- remify::remify(edgelist = history)
+remstats(reh = reh, tie_effects = eff, attributes = info)
 
 seff <- ~ send("extraversion")
 reff <- ~ receive("agreeableness") + inertia() + otp()
 remstats(
-    reh = history, sender_effects = seff, receiver_effects = reff,
+    reh = reh, sender_effects = seff, receiver_effects = reff,
     attributes = info
 )
 

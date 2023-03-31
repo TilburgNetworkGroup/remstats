@@ -13,11 +13,11 @@
 Produce summaries of each statistic from a \code{\link{remstats}} object.
 }
 \examples{
-rehObject <- remify::reh(edgelist = history, model = "tie")
+rehObject <- remify::remify(edgelist = history, model = "tie")
 remstatsObject <- remstats::remstats(reh = rehObject, tie_effects = ~ remstats::inertia())
 summary(remstatsObject)
 
-rehObject <- remify::reh(edgelist = history, model = "actor")
+rehObject <- remify::remify(edgelist = history, model = "actor")
 remstatsObject <- remstats::remstats(reh = rehObject, receiver_effects = ~ inertia())
 summary(remstatsObject)
 

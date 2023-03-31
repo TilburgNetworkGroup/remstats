@@ -29,7 +29,7 @@ the order of these events determines whether the p-shift is observed.
 }
 \examples{
 library(remify)
-rehObject <- reh(history, directed = FALSE)
+rehObject <- remify(history, directed = FALSE)
 effects <- ~ psABAB()
 tomstats(effects, reh = rehObject, directed = FALSE)
 

@@ -5,11 +5,11 @@
 #' @param x object of class \code{\link{remstats}}.
 #'
 #' @examples
-#' rehObject <- remify::reh(edgelist = history, model = "tie")
+#' rehObject <- remify::remify(edgelist = history, model = "tie")
 #' remstatsObject <- remstats::remstats(reh = rehObject, tie_effects = ~ remstats::inertia())
 #' print(remstatsObject)
 #'
-#' rehObject <- remify::reh(edgelist = history, model = "actor")
+#' rehObject <- remify::remify(edgelist = history, model = "actor")
 #' remstatsObject <- remstats::remstats(reh = rehObject, receiver_effects = ~ inertia())
 #' print(remstatsObject)
 #'
@@ -41,11 +41,11 @@ print.remstats <- function(x, ...) {
       sep = "\n"
     ))
   } else if (model == "actor-oriented") {
-    if (is.null(x$statistics$sender_stats)) {
+    if (is.null(x$sender_stats)) {
       sender.title <- "> Sender model: empty"
     } else {
       sender.title <- "> Sender model:"
-      dim.sender.stats <- dim(x$statistics$sender_stats)
+      dim.sender.stats <- dim(x$sender_stats)
       dim.sender.long <- paste("\t >> Dimensions:",
         dim.sender.stats[1], "time points x",
         dim.sender.stats[2], "actors x",
@@ -53,18 +53,18 @@ print.remstats <- function(x, ...) {
         sep = " "
       )
       stats.sender.title <- paste("\t >> Statistics:")
-      stats.sender.names <- dimnames(x$statistics$sender_stats)[[3]]
+      stats.sender.names <- dimnames(x$sender_stats)[[3]]
       stats.sender.names2 <- lapply(1:length(stats.sender.names), function(i) {
         paste0("\t \t >>> ", i, ": ", stats.sender.names[i])
       })
       stats.sender.names3 <- paste(stats.sender.names2, collapse = "\n")
     }
 
-    if (is.null(x$statistics$receiver_stats)) {
+    if (is.null(x$receiver_stats)) {
       receiver.title <- "> Receiver model: empty"
     } else {
       receiver.title <- "> Receiver model:"
-      dim.receiver.stats <- dim(x$statistics$receiver_stats)
+      dim.receiver.stats <- dim(x$receiver_stats)
       dim.receiver.long <- paste("\t >> Dimensions:",
         dim.receiver.stats[1], "time points x",
         dim.receiver.stats[2], "actors x",
@@ -72,7 +72,7 @@ print.remstats <- function(x, ...) {
         sep = " "
       )
       stats.receiver.title <- paste("\t >> Statistics:")
-      stats.receiver.names <- dimnames(x$statistics$receiver_stats)[[3]]
+      stats.receiver.names <- dimnames(x$receiver_stats)[[3]]
       stats.receiver.names2 <- lapply(
         1:length(stats.receiver.names),
         function(i) {
@@ -82,13 +82,13 @@ print.remstats <- function(x, ...) {
       stats.receiver.names3 <- paste(stats.receiver.names2, collapse = "\n")
     }
 
-    if (is.null(x$statistics$sender_stats)) {
+    if (is.null(x$sender_stats)) {
       cat(paste(title, model.title,
         sender.title, receiver.title, dim.receiver.long, stats.receiver.title,
         stats.receiver.names3,
         sep = "\n"
       ))
-    } else if (is.null(x$statistics$receiver_stats)) {
+    } else if (is.null(x$receiver_stats)) {
       cat(paste(title, model.title,
         sender.title, dim.sender.long, stats.sender.title, stats.sender.names3,
         sep = "\n"
@@ -111,31 +111,31 @@ print.remstats <- function(x, ...) {
 #' @param x object of class \code{\link{remstats}}.
 #'
 #' @examples
-#' rehObject <- remify::reh(edgelist = history, model = "tie")
+#' rehObject <- remify::remify(edgelist = history, model = "tie")
 #' remstatsObject <- remstats::remstats(reh = rehObject, tie_effects = ~ remstats::inertia())
 #' summary(remstatsObject)
 #'
-#' rehObject <- remify::reh(edgelist = history, model = "actor")
+#' rehObject <- remify::remify(edgelist = history, model = "actor")
 #' remstatsObject <- remstats::remstats(reh = rehObject, receiver_effects = ~ inertia())
 #' summary(remstatsObject)
 #'
 #' @export
 
-summary.remstats <- function(x, ...) {
-  if (!any(class(x) == "remstats")) {
+summary.remstats <- function(object, ...) {
+  if (!any(class(object) == "remstats")) {
     stop("Expected object of class 'remstats'")
   }
 
-  model <- ifelse(any(class(x) == "tomstats"), "tie-oriented", "actor-oriented")
+  model <- ifelse(any(class(object) == "tomstats"), "tie-oriented", "actor-oriented")
 
   if (model == "tie-oriented") {
-    out <- apply(x$statistics, 3, function(y) {
+    out <- apply(object$statistics, 3, function(y) {
       summary(as.vector(y))
     })
   }
 
   if (model == "actor-oriented") {
-    out <- lapply(x$statistics, function(y) {
+    out <- lapply(object$statistics, function(y) {
       if (!is.null(y)) {
         apply(y, 3, function(z) {
           summary(as.vector(z))

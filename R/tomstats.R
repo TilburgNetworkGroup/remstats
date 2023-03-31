@@ -77,11 +77,11 @@
 #' statistic does depend on time since the event and not on event weights).
 #'
 #' @section Subset of the relational event history:
-#' Optionally, statistics can be computed for a slice of the relational event 
-#' sequence - but based on the entire history. This is achieved by setting the 
-#' start and stop values equal to the index of the first and last event for 
-#' which statistics are requested. For example, start = 5 and stop = 5 computes 
-#' the statistics for only the 5th event in the relational event sequence, 
+#' Optionally, statistics can be computed for a slice of the relational event
+#' sequence - but based on the entire history. This is achieved by setting the
+#' start and stop values equal to the index of the first and last event for
+#' which statistics are requested. For example, start = 5 and stop = 5 computes
+#' the statistics for only the 5th event in the relational event sequence,
 #' based on the history that consists of events 1-4.
 #'
 #' @section Adjacency matrix:
@@ -102,40 +102,54 @@
 #'
 #' @examples
 #' library(remstats)
+#' reh <- remify::remify(edgelist = history)
 #' effects <- ~ inertia():send("extraversion") + otp()
-#' tomstats(effects, reh = history, attributes = info)
+#' tomstats(effects, reh = reh, attributes = info)
 #'
 #' @references Butts, C. T. (2008). A relational event framework for social
 #' action. Sociological Methodology, 38(1), 155–200.
 #' \url{https://doi.org/10.1111/j.1467-9531.2008.00203.x}
 #'
 #' @export
-tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
-                     types = NULL, directed = TRUE, ordinal = FALSE,
-                     origin = NULL, omit_dyad = NULL,
+tomstats <- function(effects, reh, attributes = NULL, 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf, adjmat = NULL,
                      output = c("all", "stats_only")) {
-  # Prepare the reh
-  if (!("reh" %in% class(reh))) {
-    prep <- remify::reh(
-      edgelist = reh, actors = actors,
-      types = types, directed = directed, ordinal = ordinal,
-      origin = origin, omit_dyad = omit_dyad, model = "tie"
-    )
-  } else {
-    prep <- reh
+  # Check the reh
+  if (!("remify" %in% class(reh))) {
+    stop("Expected a reh object of class remify")
   }
 
-  # Extract relevant elements from the prepared remify::reh object
-  edgelist.reh <- prep$edgelist
-  actors <- attr(prep, "dictionary")$actors
-  types <- attr(prep, "dictionary")$types
+  # Extract relevant elements from the prepared remify::remify object
+  edgelist.reh <- reh$edgelist
+  dyads <- attr(reh, "dyad")
+  actors <- attr(reh, "dictionary")$actors
+  types <- attr(reh, "dictionary")$types
+
+  # For now: change the remify output back to the old reh output
+  # Later: make use of the new remify output! [@mlmeijerink]
+  if (!("weight" %in% colnames(edgelist.reh))) {
+    weight <- rep(1, nrow(edgelist.reh))
+  } else {
+    weight <- edgelist.reh$weight
+  }
+  edgelist.reh <- matrix(cbind(edgelist.reh$time, dyads, weight), 
+    ncol = 3, byrow = FALSE)
+
+  # For now: change all indices back to cpp indices. 
+  # Later: check if we can work with the new indices [@mlmeijerink]
+  edgelist.reh[,2] <- edgelist.reh[,2] - 1
+  actors$actorID <- actors$actorID - 1
+  if(is.null(types)) {
+    types <- data.frame(typeName = 0, typeID = 0)
+  } else {
+    types$typeID <- types$typeID - 1
+  }  
 
   # Riskset
   prepR <- getRisksetMatrix(
     actors$actorID, types$typeID, nrow(actors),
-    nrow(types), directed
+    nrow(types), attr(reh, "directed")
   )
 
   # Match output
@@ -180,7 +194,7 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
 
   # Prepare main effects
   form <- effects
-  effects <- parse_formula(form, "rem", ordinal)
+  effects <- parse_formula(form, "rem", attr(reh, "ordinal"))
   all_effects <- c(
     "baseline", # 1
     "send", "receive", # 2 #3
@@ -227,14 +241,14 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
   effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
 
   # Check correct specification effects
-  if (!directed) {
+  if (!attr(reh, "directed")) {
     if (any(effectsN %in%
       c(2, 3, 11:21, 24:28, 30:31, 35:38, 40:50, 53:57, 60:61, 63:66))) {
       stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
     }
   }
 
-  if (directed) {
+  if (attr(reh, "directed")) {
     if (any(effectsN %in% c(22:23, 58:59, 67:71, 76:77))) {
       stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
     }
@@ -258,7 +272,7 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
   }
 
   # Prepare interaction effects
-  effects_int <- parse_int(form, "rem", effects, ordinal)
+  effects_int <- parse_int(form, "rem", effects, attr(reh, "ordinal"))
   effectsN <- append(effectsN, rep(99, length(effects_int)), length(effectsN))
   interactions <- list()
   interactions[which(effectsN == 99)] <- effects_int
@@ -318,7 +332,7 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
       }
       as.matrix(dat)
     } else if (x$effect == "tie") {
-      parse_tie(x, prep)
+      parse_tie(x, reh)
     } else if (x$effect == "event") {
       if (length(x$x) != nrow(edgelist.reh)) {
         stop("Length of vector 'x' in event() does not match number of events in edgelist")
@@ -349,7 +363,7 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
   scaling <- as.numeric(sapply(effects, function(x) x$scaling))
 
   # Check correct scaling inertia statistic
-  if (!directed) {
+  if (!attr(reh, "directed")) {
     if (any(sapply(effects, function(x) x$effect == "inertia"))) {
       idx <- which(sapply(effects, function(x) x$effect == "inertia"))
       if (any(scaling[idx] == 2)) {
@@ -363,8 +377,8 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
   if (any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72, 76:77))) {
     if (is.null(adjmat)) {
       adjmat <- compute_adjmat(
-        edgelist.reh, nrow(actors), prep$D,
-        directed, memory, memory_value, start, stop
+        edgelist.reh, nrow(actors), reh$D,
+        attr(reh, "directed"), memory, memory_value, start, stop
       )
     }
   } else {
@@ -376,7 +390,7 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
   # Compute statistics
   statistics <- compute_stats_tie(
     effectsN, edgelist.reh, adjmat, actors[, 2],
-    types[, 2], prepR, scaling, covar, interactions, start, stop, directed
+    types[, 2], prepR, scaling, covar, interactions, start, stop, attr(reh, "directed")
   )
 
   # Dimnames statistics
@@ -440,7 +454,7 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
     # Riskset output
     riskset <- prepR
     riskset <- as.data.frame(riskset)
-    if (directed) {
+    if (attr(reh, "directed")) {
       colnames(riskset) <- c("sender", "receiver", "type", "id")
       riskset$sender <- actors$actorName[match(riskset$sender, actors$actorID)]
       riskset$receiver <- actors$actorName[match(
@@ -454,24 +468,15 @@ tomstats <- function(effects, reh, attributes = NULL, actors = NULL,
       riskset$actor2 <- actors$actorName[match(riskset$actor2, actors$actorID)]
       riskset$type <- types$typeName[match(riskset$type, types$typeID)]
     }
-    if (!("reh" %in% class(reh))) {
-      riskset$id <- riskset$id + 1
-    } else {
-      riskset$stat_column <- riskset$id + 1
-    }
-
-    # Edgelist output
-    if ("reh" %in% class(reh)) {
-      reh <- prep$edgelist
+    riskset$id <- riskset$id + 1
+    if(length(unique(riskset$type)) == 1) {
+      riskset <- riskset[,-3]
     }
 
     # Output
     out <- list(
       statistics = statistics,
-      reh = reh,
       riskset = riskset,
-      actors = actors[, 1],
-      types = types[, 1],
       adjmat = adjmat
     )
   } else {

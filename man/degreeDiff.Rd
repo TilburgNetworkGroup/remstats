@@ -31,7 +31,7 @@ undirected events.
 }
 \examples{
 library(remify)
-rehObject <- reh(history, directed = FALSE)
+rehObject <- remify(history, directed = FALSE)
 effects <- ~ degreeDiff()
 remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
 tomstats(effects, reh = rehObject, directed = FALSE)
