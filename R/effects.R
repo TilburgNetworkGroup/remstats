@@ -25,10 +25,11 @@
 #' @aliases intercept
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
-#' remstats(reh = rehObject, tie_effects = ~1)
-#' remstats(reh = rehObject, sender_effects = ~1)
+#' reh_tie <- remify::remify(history, model = "tie")
+#' remstats(reh = reh_tie, tie_effects = ~1)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(reh = reh_actor, sender_effects = ~1)
 NULL
 
 #' send
@@ -69,11 +70,12 @@ NULL
 #' multiple exogenous effects.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ send("extraversion")
-#' remstats(reh = rehObject, tie_effects = effects, attributes = info)
-#' remstats(reh = rehObject, sender_effects = effects, attributes = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, sender_effects = effects, attributes = info)
 #'
 #' @export
 send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -114,11 +116,12 @@ send <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @inheritParams send
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ receive("extraversion")
-#' remstats(reh = rehObject, tie_effects = effects, attributes = info)
-#' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects, attributes = info)
 #'
 #' @export
 receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -152,7 +155,6 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' statistic per time point can be requested with "std".
 #'
 #' @examples
-#' library(remify)
 #' data(info)
 #' actors <- unique(info$name)
 #' age <- info[match(actors, info$name), "age"]
@@ -162,10 +164,12 @@ receive <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #'     })
 #' })
 #' rownames(both_old) <- colnames(both_old) <- actors
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ tie(both_old, variableName = "both.old")
-#' remstats(reh = rehObject, tie_effects = effects, attributes = info)
-#' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects, attributes = info)
 #'
 #' @export
 tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
@@ -218,11 +222,12 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 #' @inheritParams send
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ same("age")
-#' remstats(reh = rehObject, tie_effects = effects, attributes = info)
-#' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects, attributes = info)
 #'
 #' @export
 same <- function(variable, attributes = NULL) {
@@ -265,11 +270,12 @@ same <- function(variable, attributes = NULL) {
 #' should be converted to the absolute difference (default is TRUE).
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ difference("extraversion", absolute = TRUE)
-#' remstats(reh = rehObject, tie_effects = effects, attributes = info)
-#' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects, attributes = info)
 #'
 #' @export
 difference <- function(variable, attributes = NULL,
@@ -329,11 +335,12 @@ difference <- function(variable, attributes = NULL,
 #' @inheritParams send
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ average("extraversion")
-#' remstats(reh = rehObject, tie_effects = effects, attributes = info)
-#' remstats(reh = rehObject, receiver_effects = effects, attributes = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects, attributes = info)
 #'
 #' @export
 average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -373,14 +380,9 @@ average <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @inheritParams send
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ minimum("extraversion")
-#' remstats(
-#'     reh = rehObject, tie_effects = effects, attributes = info,
-#'     directed = FALSE
-#' )
-#' tomstats(effects, reh = rehObject, attributes = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attributes = info)
 #'
 #' @export
 minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -420,14 +422,9 @@ minimum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @inheritParams send
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ maximum("extraversion")
-#' remstats(
-#'     reh = rehObject, tie_effects = effects, attributes = info,
-#'     directed = FALSE
-#' )
-#' tomstats(effects, reh = rehObject, attributes = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attributes = info)
 #'
 #' @export
 maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
@@ -454,11 +451,10 @@ maximum <- function(variable, attributes = NULL, scaling = c("as.is", "std")) {
 #' @seealso \code{\link{FEtype}}
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' work <- ifelse(history$setting == "work", 1, 0)
 #' effects <- ~ event(x = work, variableName = "setting_is_work")
-#' remstats(reh = rehObject, tie_effects = effects)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 event <- function(x, variableName = NULL) {
@@ -496,12 +492,10 @@ event <- function(x, variableName = NULL) {
 #' @seealso \code{\link{event}}
 #'
 #' @examples
-#' library(remify)
 #' history$type <- history$setting
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ FEtype()
-#' remstats(reh = rehObject, tie_effects = effects, attributes = info)
-#' tomstats(effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 FEtype <- function() {
@@ -543,14 +537,13 @@ FEtype <- function() {
 #' events separately for each event type (TRUE) or sum across different event
 #' types (FALSE, default).
 #'
-#' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' @examples 
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ inertia()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 inertia <- function(scaling = c("as.is", "prop", "std"),
@@ -603,13 +596,12 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
 #' different event types (FALSE, default).
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ reciprocity()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 reciprocity <- function(scaling = c("as.is", "prop", "std"),
@@ -667,13 +659,12 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ indegreeSender()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, sender_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(sender_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, sender_effects = effects)
 #'
 #' @export
 indegreeSender <- function(scaling = c("as.is", "prop", "std"),
@@ -723,13 +714,12 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ indegreeReceiver()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
@@ -780,13 +770,12 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ outdegreeSender()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, sender_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(sender_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, sender_effects = effects)
 #'
 #' @export
 outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
@@ -836,13 +825,12 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ outdegreeReceiver()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
@@ -900,13 +888,13 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{outdegreeSender}}, \code{\link{outdegreeReceiver}}, or
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
-#' @examples
-#' library(remify)
-#' rehObject <- remify(history)
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, sender_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(sender_effects = effects, reh = rehObject)
+#' @examples 
+#' effects <- ~ totaldegreeSender()
+#' reh_tie <- remify::remify(history, model = "tie")
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, sender_effects = effects)
 #'
 #' @export
 totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
@@ -957,13 +945,12 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' \code{\link{totaldegreeSender}} for other types of degree effects.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ totaldegreeReceiver()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
@@ -1045,11 +1032,9 @@ totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
 #' undirected events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history, directed = FALSE)
+#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ degreeDiff()
-#' remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
-#' tomstats(effects, reh = rehObject, directed = FALSE)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 degreeDiff <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1100,11 +1085,9 @@ degreeDiff <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' undirected events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history, directed = FALSE)
+#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ degreeMin()
-#' remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
-#' tomstats(effects, reh = rehObject, directed = FALSE)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 degreeMin <- function(scaling = c("as.is", "prop", "std"),
@@ -1156,11 +1139,9 @@ degreeMin <- function(scaling = c("as.is", "prop", "std"),
 #' undirected events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history, directed = FALSE)
+#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ degreeMax()
-#' remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
-#' tomstats(effects, reh = rehObject, directed = FALSE)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 degreeMax <- function(scaling = c("as.is", "prop", "std"),
@@ -1211,13 +1192,12 @@ degreeMax <- function(scaling = c("as.is", "prop", "std"),
 #' undirected relational events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ otp()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1260,13 +1240,12 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' undirected relational events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ itp()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1315,13 +1294,12 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' undirected relational events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ osp()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1364,13 +1342,12 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' undirected relational events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ isp()
-#' remstats(reh = rehObject, tie_effects = effects)
-#' remstats(reh = rehObject, receiver_effects = effects)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify(history, model = "actor")
+#' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
 isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1413,10 +1390,9 @@ isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' relational events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history, directed = FALSE)
+#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ sp()
-#' tomstats(effects, reh = rehObject)
+#' remstats(tie_effects = effects, reh = reh_tie)
 #'
 #' @export
 sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1460,10 +1436,9 @@ sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' relational events.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history, directed = FALSE)
+#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ spUnique()
-#' tomstats(effects, reh = rehObject)
+#' remstats(tie_effects = effects, reh = reh_tie)
 #'
 #' @export
 spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
@@ -1532,10 +1507,9 @@ ccp <- function(duration) {
 #' shifts.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABBA()
-#' tomstats(effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 psABBA <- function(consider_type = FALSE) {
@@ -1580,10 +1554,9 @@ psABBA <- function(consider_type = FALSE) {
 #' shifts.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABBY()
-#' tomstats(effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 psABBY <- function(consider_type = FALSE) {
@@ -1628,10 +1601,9 @@ psABBY <- function(consider_type = FALSE) {
 #' shifts.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABXA()
-#' tomstats(effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 psABXA <- function(consider_type = FALSE) {
@@ -1676,10 +1648,9 @@ psABXA <- function(consider_type = FALSE) {
 #' shifts.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABXB()
-#' tomstats(effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 psABXB <- function(consider_type = FALSE) {
@@ -1723,10 +1694,9 @@ psABXB <- function(consider_type = FALSE) {
 #' shifts.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABXY()
-#' tomstats(effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 psABXY <- function(consider_type = FALSE) {
@@ -1771,10 +1741,9 @@ psABXY <- function(consider_type = FALSE) {
 #' \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAB}} for other dyadic participation shifts.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABAY()
-#' tomstats(effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
 psABAY <- function(consider_type = FALSE) {
@@ -1817,10 +1786,9 @@ psABAY <- function(consider_type = FALSE) {
 #' \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation shifts.
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history, directed = FALSE)
+#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ psABAB()
-#' tomstats(effects, reh = rehObject, directed = FALSE)
+#' remstats(tie_effects = effects, reh = reh_tie)
 #'
 #' @export
 psABAB <- function(consider_type = FALSE) {
@@ -1861,13 +1829,12 @@ psABAB <- function(consider_type = FALSE) {
 #' other type of recency effects
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ rrankSend()
-#' remstats(tie_effects = effects, reh = rehObject)
-#' remstats(receiver_effects = effects, reh = rehObject)
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(tie_effects = effects, reh = reh_tie)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
 rrankSend <- function(consider_type = FALSE) {
@@ -1905,11 +1872,13 @@ rrankSend <- function(consider_type = FALSE) {
 #' other type of recency effects
 #'
 #' @examples
-#' library(remify)
-#' rehObject <- remify(history)
+#' 
+#' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ rrankReceive()
-#' tomstats(effects, reh = rehObject)
-#' aomstats(receiver_effects = effects, reh = rehObject)
+#' remstats(reh = reh_tie, tie_effects = effects)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
 rrankReceive <- function(consider_type = FALSE) {
@@ -1951,8 +1920,11 @@ rrankReceive <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' effects <- ~ recencySendSender()
-#' tomstats(effects, reh = history)
-#' aomstats(sender_effects = effects, reh = history)
+#' reh_tie <- remify::remify(history, model = "tie")
+#' remstats(tie_effects = effects, reh = reh_tie)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(sender_effects = effects, reh = reh_actor)
 #'
 #' @export
 recencySendSender <- function(consider_type = FALSE) {
@@ -1991,8 +1963,11 @@ recencySendSender <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' effects <- ~ recencySendReceiver()
-#' tomstats(effects, reh = history)
-#' aomstats(receiver_effects = effects, reh = history)
+#' reh_tie <- remify::remify(history, model = "tie")
+#' remstats(tie_effects = effects, reh = reh_tie)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
 recencySendReceiver <- function(consider_type = FALSE) {
@@ -2031,8 +2006,11 @@ recencySendReceiver <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' effects <- ~ recencyReceiveSender()
-#' tomstats(effects, reh = history)
-#' aomstats(sender_effects = effects, reh = history)
+#' reh_tie <- remify::remify(history, model = "tie")
+#' remstats(tie_effects = effects, reh = reh_tie)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(sender_effects = effects, reh = reh_actor)
 #'
 #' @export
 recencyReceiveSender <- function(consider_type = FALSE) {
@@ -2072,8 +2050,11 @@ recencyReceiveSender <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' effects <- ~ recencyReceiveReceiver()
-#' tomstats(effects, reh = history)
-#' aomstats(receiver_effects = effects, reh = history)
+#' reh_tie <- remify::remify(history, model = "tie")
+#' remstats(tie_effects = effects, reh = reh_tie)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
 recencyReceiveReceiver <- function(consider_type = FALSE) {
@@ -2113,8 +2094,11 @@ recencyReceiveReceiver <- function(consider_type = FALSE) {
 #'
 #' @examples
 #' effects <- ~ recencyContinue()
-#' tomstats(effects, reh = history)
-#' aomstats(receiver_effects = effects, reh = history)
+#' reh_tie <- remify::remify(history, model = "tie")
+#' remstats(tie_effects = effects, reh = reh_tie)
+#' 
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
 recencyContinue <- function(consider_type = FALSE) {
@@ -2156,7 +2140,7 @@ recencyContinue <- function(consider_type = FALSE) {
 #' 
 #' # Model with interaction effects
 #' interaction_effects <- ~ inertia()*
-#'  userStat(x = actor101stat, variableName ="actor101event")
+#'  userStat(x = actor101_stat, variableName ="actor101event")
 #' remstats(reh = reh, tie_effects = interaction_effects)
 #'
 #' @export

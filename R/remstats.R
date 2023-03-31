@@ -137,13 +137,14 @@
 #' library(remstats)
 #'
 #' eff <- ~ inertia():send("extraversion") + otp()
-#' reh <- remify::remify(edgelist = history)
-#' remstats(reh = reh, tie_effects = eff, attributes = info)
+#' reh_tie <- remify::remify(edgelist = history, model = "tie")
+#' remstats(reh = reh_tie, tie_effects = eff, attributes = info)
 #'
 #' seff <- ~ send("extraversion")
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
+#' reh_actor <- remify::remify(edgelist = history, model = "actor")
 #' remstats(
-#'     reh = reh, sender_effects = seff, receiver_effects = reff,
+#'     reh = reh_tie, sender_effects = seff, receiver_effects = reff,
 #'     attributes = info
 #' )
 #'

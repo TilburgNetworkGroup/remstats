@@ -4,16 +4,15 @@ Date: TBD (mid-april)
 **IMPORTANT**: remstats 3.1.0 works with remify >= 3.0.0. **Make sure remify is updated.** If earlier versions of remify are in use, remstats 3.1.0 will break down.
 
 ## New features
-* `print()`, `summary()`, and `plot()` methods.
+* `print()`, and `summary()` methods.
 
 ## Major changes
 * `edgelist` argument is renamed to `reh`. 
-* `edgelist` must be an object of class `remify`.
+* `reh` must be an object of class `remify`.
 * `id` column in `attributes` object is renamed to `name`.
 * `aomstats` output is reduced to the list of statistics (sender_stats and receiver_stats)
 
 ## Minor changes
-* Integrated with remulate. 
 * Integrated with remify v3.0.0
 * Updated tests.
 * `evls`, `edgelist`, `actors`, and `types` output objects are removed from `tomstats`.

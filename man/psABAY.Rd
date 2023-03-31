@@ -31,10 +31,9 @@ events in the edgelist occur at the same time point, the order of these
 events determines whether the p-shift is observed.
 }
 \examples{
-library(remify)
-rehObject <- remify(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ psABAY()
-tomstats(effects, reh = rehObject)
+remstats(reh = reh_tie, tie_effects = effects)
 
 }
 \seealso{

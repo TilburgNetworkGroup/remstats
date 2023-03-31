@@ -9,11 +9,6 @@ aomstats(
   sender_effects = NULL,
   receiver_effects = NULL,
   attributes = NULL,
-  actors = NULL,
-  types = NULL,
-  ordinal = FALSE,
-  origin = NULL,
-  omit_dyad = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = Inf,
   start = 1,
@@ -23,11 +18,7 @@ aomstats(
 }
 \arguments{
 \item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
-the relational event history, sorted by time with columns `time`, `dyad`,
-`weight`. Alternatively, an object of class \code{"\link[base]{data.frame}"}
-or \code{"\link[base]{matrix}"} characterizing the relational event history,
-sorted by time with columns `time`, `actor1`, `actor2` and optionally `type`
-and `weight`.}
+the relational event history.}
 
 \item{sender_effects}{an object of class \code{"\link[stats]{formula}"} (or
 one that can be coerced to that class): a symbolic description of the
@@ -43,16 +34,6 @@ computed, see `Details'}
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
 Details).}
 
-\item{actors}{character vector of actors' names that may be observed interacting in the network. If \code{NULL}, actors' names will be taken from the input edgelist.}
-
-\item{types}{character vector of event types that may occur in the network. If \code{NULL}, type names will be taken from the input edgelist.}
-
-\item{ordinal}{logical value indicating whether only the order of events matters in the model (\code{TRUE}) or also the waiting time must be considered in the model (\code{FALSE}).}
-
-\item{origin}{time point since when events could occur (default is \code{NULL}). If it is defined, it must have the same class of the time column in the input edgelist.}
-
-\item{omit_dyad}{list of lists. Each list refers to one risk set modification and must have two objects: a first object named `time`, that is a vector of two values defining the first and last time point of the time window where to apply the change to the risk set and a second object, named `dyad`, which is a \code{\link[base]{data.frame}} where dyads to be removed are supplied in the format \code{actor1,actor2,type} (by row). The \code{NA} value can be used to remove multiple objects from the risk set at once with one risk set modification list (see Details).}
-
 \item{memory}{The memory to be used. See `Details'.}
 
 \item{memory_value}{Numeric value indicating the memory parameter. See
@@ -66,7 +47,7 @@ event in the relational event history for which statistics must be computed
 event in the relational event history for which statistics muts be computed
 (see 'Details')}
 
-\item{display_progress}{should a progress bar for the computation of the 
+\item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 }
 \value{
@@ -88,7 +69,7 @@ supplied to the \code{sender_effects} and/or \code{receiver_effects}
 arguments in the form \code{~ effects}. The terms are separated by +
 operators. For example: \code{receiver_effects = ~ inertia() + otp()}.
 Interactions between two effects can be included with * or :
-operators. For example: \code{receivereffects = ~ inertia():otp()}.  A list 
+operators. For example: \code{receivereffects = ~ inertia():otp()}.  A list
 of available effects can be obtained with \code{\link{actor_effects}()}.
 
 The majority of the statistics can be scaled in some way, see
@@ -126,14 +107,14 @@ Mulders & Leenders, 2019). This length of this time window is set by the
 `memory_value` parameter. For example, when `memory_value = 100` and `memory
 = "window"`, at time point $t$ only the past events that happened at most
 100 time units ago are included in the computation of the statistics.
-A third option is to set `memory` to `"interval"`. In this case, the past 
-event history within a given time interval is considered. For example, when 
-`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$ 
-only the past events tha happened between 50 and 100 time units ago are 
-included in the computation of the statistics. Finally, the fourth option is 
-to set `memory` to `"decay"`. In this case, the weight of the past event in 
-the computation of the statistics depend on the elapsed time between $t$ and 
-the past event. This weight is determined based on an exponential decay 
+A third option is to set `memory` to `"interval"`. In this case, the past
+event history within a given time interval is considered. For example, when
+`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+only the past events tha happened between 50 and 100 time units ago are
+included in the computation of the statistics. Finally, the fourth option is
+to set `memory` to `"decay"`. In this case, the weight of the past event in
+the computation of the statistics depend on the elapsed time between $t$ and
+the past event. This weight is determined based on an exponential decay
 function with half-life parameter `memory_value` (see Brandes et al., 2009).
 }
 
@@ -148,18 +129,18 @@ statistic does depend on time since the event and not on event weights).
 
 \section{Subset of the relational event history}{
 
-Optionally, statistics can be computed for a slice of the relational event 
-sequence - but based on the entire history. This is achieved by setting the 
-start and stop values equal to the index of the first and last event for 
-which statistics are requested. For example, start = 5 and stop = 5 computes 
-the statistics for only the 5th event in the relational event sequence, 
+Optionally, statistics can be computed for a slice of the relational event
+sequence - but based on the entire history. This is achieved by setting the
+start and stop values equal to the index of the first and last event for
+which statistics are requested. For example, start = 5 and stop = 5 computes
+the statistics for only the 5th event in the relational event sequence,
 based on the history that consists of events 1-4.
 }
 
 \examples{
 library(remstats)
 seff <- ~ send("extraversion")
-reh <- remify::remify(edgelist = history)
+reh <- remify::remify(edgelist = history, model = "actor")
 reff <- ~ receive("agreeableness") + inertia() + otp()
 aomstats(
   reh = reh, sender_effects = seff, receiver_effects = reff,

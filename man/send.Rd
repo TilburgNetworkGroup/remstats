@@ -46,10 +46,11 @@ Note that it is possible to omit the attributes object in the call of
 multiple exogenous effects.
 }
 \examples{
-library(remify)
-rehObject <- remify(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ send("extraversion")
-remstats(reh = rehObject, tie_effects = effects, attributes = info)
-remstats(reh = rehObject, sender_effects = effects, attributes = info)
+remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+
+reh_actor <- remify(history, model = "actor")
+remstats(reh = reh_actor, sender_effects = effects, attributes = info)
 
 }

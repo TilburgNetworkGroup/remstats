@@ -23,11 +23,13 @@ actors from which sender i has most recently received past events. Note that
 the 'rrankReceive' effect is only defined for directed events.
 }
 \examples{
-library(remify)
-rehObject <- remify(history)
+
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ rrankReceive()
-tomstats(effects, reh = rehObject)
-aomstats(receiver_effects = effects, reh = rehObject)
+remstats(reh = reh_tie, tie_effects = effects)
+
+reh_actor <- remify::remify(history, model = "actor")
+remstats(receiver_effects = effects, reh = reh_actor)
 
 }
 \seealso{

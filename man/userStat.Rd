@@ -32,7 +32,7 @@ remstats(reh = reh, tie_effects = effects)
 
 # Model with interaction effects
 interaction_effects <- ~ inertia()*
- userStat(x = actor101stat, variableName ="actor101event")
+ userStat(x = actor101_stat, variableName ="actor101event")
 remstats(reh = reh, tie_effects = interaction_effects)
 
 }

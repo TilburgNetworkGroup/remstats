@@ -4,7 +4,7 @@
 \alias{summary.remstats}
 \title{Relational Event Network Statistics Summaries}
 \usage{
-\method{summary}{remstats}(x, ...)
+\method{summary}{remstats}(object, ...)
 }
 \arguments{
 \item{x}{object of class \code{\link{remstats}}.}

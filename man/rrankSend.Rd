@@ -25,13 +25,12 @@ actors to which sender i has most recently send past events. Note that the
 'rrankSend' effect is only defined for directed events.
 }
 \examples{
-library(remify)
-rehObject <- remify(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ rrankSend()
-remstats(tie_effects = effects, reh = rehObject)
-remstats(receiver_effects = effects, reh = rehObject)
-tomstats(effects, reh = rehObject)
-aomstats(receiver_effects = effects, reh = rehObject)
+remstats(tie_effects = effects, reh = reh_tie)
+
+reh_actor <- remify::remify(history, model = "actor")
+remstats(receiver_effects = effects, reh = reh_actor)
 
 }
 \seealso{

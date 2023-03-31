@@ -102,7 +102,7 @@
 #'
 #' @examples
 #' library(remstats)
-#' reh <- remify::remify(edgelist = history)
+#' reh <- remify::remify(edgelist = history, model = "tie")
 #' effects <- ~ inertia():send("extraversion") + otp()
 #' tomstats(effects, reh = reh, attributes = info)
 #'

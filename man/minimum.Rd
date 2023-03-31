@@ -45,13 +45,8 @@ Note that it is possible to omit the attributes object in the call of
 multiple exogenous effects.
 }
 \examples{
-library(remify)
-rehObject <- remify(history)
+reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 effects <- ~ minimum("extraversion")
-remstats(
-    reh = rehObject, tie_effects = effects, attributes = info,
-    directed = FALSE
-)
-tomstats(effects, reh = rehObject, attributes = info)
+remstats(reh = reh_tie, tie_effects = effects, attributes = info)
 
 }

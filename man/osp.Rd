@@ -29,13 +29,12 @@ minimum of past \emph{(i,h)}, \emph{(j,h)} events, summed over all actors
 that an 'osp' effect is only defined for directed events.
 }
 \examples{
-library(remify)
-rehObject <- remify(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ osp()
-remstats(reh = rehObject, tie_effects = effects)
-remstats(reh = rehObject, receiver_effects = effects)
-tomstats(effects, reh = rehObject)
-aomstats(receiver_effects = effects, reh = rehObject)
+remstats(reh = reh_tie, tie_effects = effects)
+
+reh_actor <- remify(history, model = "actor")
+remstats(reh = reh_actor, receiver_effects = effects)
 
 }
 \seealso{

@@ -30,11 +30,9 @@ and actor \emph{j}, respectively. The degreeDiff effect is only defined for
 undirected events.
 }
 \examples{
-library(remify)
-rehObject <- remify(history, directed = FALSE)
+reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 effects <- ~ degreeDiff()
-remstats(reh = rehObject, tie_effects = effects, directed = FALSE)
-tomstats(effects, reh = rehObject, directed = FALSE)
+remstats(reh = reh_tie, tie_effects = effects)
 
 }
 \seealso{

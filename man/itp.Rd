@@ -29,13 +29,12 @@ Optionally, a scaling method can be set with \code{scaling}. Note that an
 'itp' effect is only defined for directed events.
 }
 \examples{
-library(remify)
-rehObject <- remify(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ itp()
-remstats(reh = rehObject, tie_effects = effects)
-remstats(reh = rehObject, receiver_effects = effects)
-tomstats(effects, reh = rehObject)
-aomstats(receiver_effects = effects, reh = rehObject)
+remstats(reh = reh_tie, tie_effects = effects)
+
+reh_actor <- remify(history, model = "actor")
+remstats(reh = reh_actor, receiver_effects = effects)
 
 }
 \seealso{

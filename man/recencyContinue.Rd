@@ -25,8 +25,11 @@ that has past since the dyad was last active + 1).
 }
 \examples{
 effects <- ~ recencyContinue()
-tomstats(effects, reh = history)
-aomstats(receiver_effects = effects, reh = history)
+reh_tie <- remify::remify(history, model = "tie")
+remstats(tie_effects = effects, reh = reh_tie)
+
+reh_actor <- remify::remify(history, model = "actor")
+remstats(receiver_effects = effects, reh = reh_actor)
 
 }
 \seealso{

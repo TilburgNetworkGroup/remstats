@@ -31,10 +31,9 @@ p-shift is observed. Note that the AB-BA pshift is only defined for directed
 events.
 }
 \examples{
-library(remify)
-rehObject <- remify(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ psABBA()
-tomstats(effects, reh = rehObject)
+remstats(reh = reh_tie, tie_effects = effects)
 
 }
 \seealso{
