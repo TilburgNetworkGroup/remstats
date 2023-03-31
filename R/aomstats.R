@@ -73,7 +73,6 @@
 #' the statistics for only the 5th event in the relational event sequence,
 #' based on the history that consists of events 1-4.
 #'
-#' @return \code{reh } Dataframe with the relational event history.
 #' @return \code{statistics  } List with in the first element the statistics
 #' for the sender activity rate step and in the second element the statistics
 #' for the receiver choice step

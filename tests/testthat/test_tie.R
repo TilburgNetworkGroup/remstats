@@ -127,85 +127,85 @@ test_that("expected statistic tie-oriented model", {
   # Expected name of the statistic
   mod <- ~ tie(x = both_old)
   reh_tie <- remify::remify(history, model = "tie")
-  tomres <- remstats(reh = reh_tie, tie_effects = mod)
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "tie")
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod)
+  expect_equal(dimnames(tie_stats)[[3]][2], "tie")
 
   mod <- ~ tie(x = both_old) + tie(x = t(both_old))
-  tomres <- remstats(reh = reh_tie, tie_effects = mod)
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "tie1")
-  expect_equal(dimnames(tomres$statistics)[[3]][3], "tie2")
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod)
+  expect_equal(dimnames(tie_stats)[[3]][2], "tie1")
+  expect_equal(dimnames(tie_stats)[[3]][3], "tie2")
 
   mod <- ~ tie(x = both_old, variableName = "both_old")
-  tomres <- remstats(reh = reh_tie, tie_effects = mod)
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "both_old")
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod)
+  expect_equal(dimnames(tie_stats)[[3]][2], "both_old")
 
   mod <- ~ tie(x = both_old, variableName = "test") +
     tie(x = both_old, variableName = "check")
-  tomres <- remstats(reh = reh_tie, tie_effects = mod)
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "test")
-  expect_equal(dimnames(tomres$statistics)[[3]][3], "check")
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod)
+  expect_equal(dimnames(tie_stats)[[3]][2], "test")
+  expect_equal(dimnames(tie_stats)[[3]][3], "check")
 
   # Expected statistic
   mod <- ~ tie(x = both_old)
-  tomres <- remstats(reh = reh_tie, tie_effects = mod)
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod)
 
-  dyads <- which(tomres$riskset[, 1] %in% actors[age == 1] &
-    tomres$riskset[, 2] %in% actors[age == 1])
-  nondyads <- (1:nrow(tomres$riskset))[-dyads]
+  dyads <- which(attr(tie_stats, "riskset")[, 1] %in% actors[age == 1] &
+    attr(tie_stats, "riskset")[, 2] %in% actors[age == 1])
+  nondyads <- (1:nrow(attr(tie_stats, "riskset")))[-dyads]
 
-  expect_true(all(tomres$statistics[, dyads, 2] == 1))
-  expect_true(all(tomres$statistics[, nondyads, 2] == 0))
+  expect_true(all(tie_stats[, dyads, 2] == 1))
+  expect_true(all(tie_stats[, nondyads, 2] == 0))
 
   # Expected "std" statistic
   mod <- ~ tie(x = both_old, scaling = "std")
-  tomres <- remstats(reh = reh_tie, tie_effects = mod)
-  stat <- matrix(0, nrow = 1, ncol = nrow(tomres$riskset))
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod)
+  stat <- matrix(0, nrow = 1, ncol = nrow(attr(tie_stats, "riskset")))
   stat[dyads] <- 1
   stat <- as.numeric(scale(as.numeric(stat)))
   expect_true(all(sapply(1:nrow(history), function(x) {
-    all.equal(stat, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Repeat for undirected events
   mod <- ~ tie(x = both_old)
   reh_undirected <- remify::remify(history, model = "tie", directed = FALSE)
-  tomres <- remstats(reh = reh_undirected, tie_effects = mod)
+  tie_stats <- remstats(reh = reh_undirected, tie_effects = mod)
 
-  dyads <- which(tomres$riskset[, 1] %in% actors[age == 1] &
-    tomres$riskset[, 2] %in% actors[age == 1])
-  nondyads <- (1:nrow(tomres$riskset))[-dyads]
+  dyads <- which(attr(tie_stats, "riskset")[, 1] %in% actors[age == 1] &
+    attr(tie_stats, "riskset")[, 2] %in% actors[age == 1])
+  nondyads <- (1:nrow(attr(tie_stats, "riskset")))[-dyads]
 
-  expect_true(all(tomres$statistics[, dyads, 2] == 1))
-  expect_true(all(tomres$statistics[, nondyads, 2] == 0))
+  expect_true(all(tie_stats[, dyads, 2] == 1))
+  expect_true(all(tie_stats[, nondyads, 2] == 0))
 
   mod <- ~ tie(x = both_old, scaling = "std")
-  tomres <- remstats(reh = reh_undirected, tie_effects = mod)
-  stat <- matrix(0, nrow = 1, ncol = nrow(tomres$riskset))
+  tie_stats <- remstats(reh = reh_undirected, tie_effects = mod)
+  stat <- matrix(0, nrow = 1, ncol = nrow(attr(tie_stats, "riskset")))
   stat[dyads] <- 1
   stat <- as.numeric(scale(as.numeric(stat)))
   expect_true(all(sapply(1:nrow(history), function(x) {
-    all.equal(stat, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Repeat for typed events
   mod <- ~ tie(x = both_old)
   history$type <- history$setting
-  tomres <- remstats(reh = reh_tie, tie_effects = mod)
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod)
 
-  dyads <- which(tomres$riskset[, 1] %in% actors[age == 1] &
-    tomres$riskset[, 2] %in% actors[age == 1])
-  nondyads <- (1:nrow(tomres$riskset))[-dyads]
+  dyads <- which(attr(tie_stats, "riskset")[, 1] %in% actors[age == 1] &
+    attr(tie_stats, "riskset")[, 2] %in% actors[age == 1])
+  nondyads <- (1:nrow(attr(tie_stats, "riskset")))[-dyads]
 
-  expect_true(all(tomres$statistics[, dyads, 2] == 1))
-  expect_true(all(tomres$statistics[, nondyads, 2] == 0))
+  expect_true(all(tie_stats[, dyads, 2] == 1))
+  expect_true(all(tie_stats[, nondyads, 2] == 0))
 
   mod <- ~ tie(x = both_old, scaling = "std")
-  tomres <- remstats(reh = reh_tie, tie_effects = mod)
-  stat <- matrix(0, nrow = 1, ncol = nrow(tomres$riskset))
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod)
+  stat <- matrix(0, nrow = 1, ncol = nrow(attr(tie_stats, "riskset")))
   stat[dyads] <- 1
   stat <- as.numeric(scale(as.numeric(stat)))
   expect_true(all(sapply(1:nrow(history), function(x) {
-    all.equal(stat, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 })
 

@@ -115,11 +115,11 @@
 #' @param stop an optional integer value, specifying the index of the last
 #' event in the relational event history for which statistics muts be computed
 #' (see 'Details')
-#' @param adjmat optionally, a previously computed adjacency matrix with on the
-#' rows the time points and on the columns the risk set entries
-#' @param output indicates which output objects need to be provided, i.e.,
-#' either only the statistics matrix ("stats_only", faster!) or all the below
-#' defined information objects ("all", default).
+#' @param adjmat optionally, for a tie-oriented model a previously computed 
+#' adjacency matrix with on the rows the time points and on the columns the 
+#' risk set entries
+#' @param get_adjmat for a tie-oriented model, whether the adjmat computed by 
+#' remstats should be outputted as an attribute of the statistics.
 #'
 #' @return \code{statistics } In case of the tie-oriented model, an array with
 #' the computed statistics, where rows refer to time points, columns refer to
@@ -129,9 +129,6 @@
 #' the second element the statistics for the receiver choice step, where rows
 #' refer to time points, columns refer to potential senders or recievers,
 #' respectively.
-#' @return \code{reh } Dataframe with the relational event history.
-#' @return \code{adjmat } Matrix with the adjacency matrix, rows refer to
-#' timepoints and columns to riskset entries
 #'
 #' @examples
 #' library(remstats)
@@ -160,7 +157,7 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
                      receiver_effects = NULL, attributes = NULL, 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf,
-                     adjmat = NULL, output = c("all", "stats_only")) {
+                     adjmat = NULL, get_adjmat = FALSE) {
     if (!is.null(tie_effects) &
         (!is.null(sender_effects) | !is.null(receiver_effects))) {
         stop("Supply effects for the tie-oriented model to tie_effects OR
@@ -180,7 +177,7 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
             effects = tie_effects, reh = reh,
             attributes = attributes, memory = memory,
             memory_value = memory_value, start = start,
-            stop = stop, adjmat = adjmat, output = output
+            stop = stop, adjmat = adjmat, get_adjmat = get_adjmat
         )
     }
 

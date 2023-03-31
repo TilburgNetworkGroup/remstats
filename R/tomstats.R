@@ -7,6 +7,10 @@
 #' that can be coerced to that class): a symbolic description of the effects in
 #' the model for which statistics are computed, see 'Details' for the available
 #' effects and their corresponding statistics
+#' @param adjmat optionally, a previously computed adjacency matrix with on the
+#' rows the time points and on the columns the risk set entries
+#' @param get_adjmat whether the adjmat computed by tomstats should be 
+#' outputted as an attribute of the statistics.
 #' @inheritParams remstats
 #'
 #' @section Effects:
@@ -94,11 +98,6 @@
 #' @return \code{statistics } array with the computed statistics, where rows
 #' refer to time points, columns refer to potential relational event (i.e.,
 #' potential edges) in the risk set and slices refer to statistics
-#' @return \code{reh } data.frame with the relational event history
-#' @return \code{adjmat } matrix with the adjacency matrix, rows refer to
-#' time points and columns to risk set entries. At timepoint t, it gives the
-#' cumulative weight until t-1 (i.e., the events that occurred before time
-#' point t).
 #'
 #' @examples
 #' library(remstats)
@@ -114,7 +113,7 @@
 tomstats <- function(effects, reh, attributes = NULL, 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf, adjmat = NULL,
-                     output = c("all", "stats_only")) {
+                     get_adjmat = FALSE) {
   # Check the reh
   if (!("remify" %in% class(reh))) {
     stop("Expected a reh object of class remify")
@@ -151,9 +150,6 @@ tomstats <- function(effects, reh, attributes = NULL,
     actors$actorID, types$typeID, nrow(actors),
     nrow(types), attr(reh, "directed")
   )
-
-  # Match output
-  output <- match.arg(output)
 
   # Match memory
   memory <- match.arg(memory)
@@ -450,44 +446,32 @@ tomstats <- function(effects, reh, attributes = NULL,
       }
     )
 
-  if (output == "all") {
-    # Riskset output
-    riskset <- prepR
-    riskset <- as.data.frame(riskset)
-    if (attr(reh, "directed")) {
-      colnames(riskset) <- c("sender", "receiver", "type", "id")
-      riskset$sender <- actors$actorName[match(riskset$sender, actors$actorID)]
-      riskset$receiver <- actors$actorName[match(
-        riskset$receiver,
-        actors$actorID
-      )]
-      riskset$type <- types$typeName[match(riskset$type, types$typeID)]
-    } else {
-      colnames(riskset) <- c("actor1", "actor2", "type", "id")
-      riskset$actor1 <- actors$actorName[match(riskset$actor1, actors$actorID)]
-      riskset$actor2 <- actors$actorName[match(riskset$actor2, actors$actorID)]
-      riskset$type <- types$typeName[match(riskset$type, types$typeID)]
-    }
-    riskset$id <- riskset$id + 1
-    if(length(unique(riskset$type)) == 1) {
-      riskset <- riskset[,-3]
-    }
-
-    # Output
-    out <- list(
-      statistics = statistics,
-      riskset = riskset,
-      adjmat = adjmat
-    )
+  
+  # Riskset output
+  riskset <- prepR
+  riskset <- as.data.frame(riskset)
+  if (attr(reh, "directed")) {
+    colnames(riskset) <- c("sender", "receiver", "type", "id")
+    riskset$sender <- actors$actorName[match(riskset$sender, actors$actorID)]
+    riskset$receiver <- actors$actorName[match(riskset$receiver,actors$actorID)]
+    riskset$type <- types$typeName[match(riskset$type, types$typeID)]
   } else {
-    # Output
-    out <- list(
-      statistics = statistics
-    )
+    colnames(riskset) <- c("actor1", "actor2", "type", "id")
+    riskset$actor1 <- actors$actorName[match(riskset$actor1, actors$actorID)]
+    riskset$actor2 <- actors$actorName[match(riskset$actor2, actors$actorID)]
+    riskset$type <- types$typeName[match(riskset$type, types$typeID)]
   }
-
-  class(out) <- c("tomstats", "remstats")
-  attr(out, "model") <- "tie"
-  attr(out, "formula") <- form
-  out
+  riskset$id <- riskset$id + 1
+  if(length(unique(riskset$type)) == 1) {
+    riskset <- riskset[,-3]
+  }
+    
+  class(statistics) <- c("tomstats", "remstats")
+  attr(statistics, "model") <- "tie"
+  attr(statistics, "formula") <- form
+  attr(statistics, "riskset") <- riskset
+  if(get_adjmat) {
+    attr(statistics, "adjmat") <- adjmat
+  }
+  statistics
 }

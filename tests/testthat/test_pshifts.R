@@ -8,8 +8,7 @@ test_that("pshifts", {
 	
 	# Compute the statistics
 	reh <- remify::remify(history, model = "tie")
-	out <- tomstats(form, reh = reh)
-	stats <- out$statistics
+	stats <- tomstats(form, reh = reh)
 	
 	# Tests
 	expect_true(all(stats %in% c(0,1)))
@@ -35,8 +34,7 @@ test_that("pshifts", {
 	
 	# Compute the statistics
 	reh <- remify::remify(history, model = "tie")
-	out <- tomstats(form, reh = reh)
-	stats <- out$statistics
+	stats <- tomstats(form, reh = reh)
 	
 	# Tests
 	expect_true(all(stats %in% c(0,1)))

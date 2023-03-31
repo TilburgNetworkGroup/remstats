@@ -11,11 +11,11 @@ Date: TBD (mid-april)
 * `reh` must be an object of class `remify`.
 * `id` column in `attributes` object is renamed to `name`.
 * `aomstats` output is reduced to the list of statistics (sender_stats and receiver_stats)
+* `tomstats` output is reduced to the array of statistics. The risk set is now an attribute. The adjmat is only an attribute if requested with "get_adjmat" (this is changed to save memory). 
 
 ## Minor changes
 * Integrated with remify v3.0.0
 * Updated tests.
-* `evls`, `edgelist`, `actors`, and `types` output objects are removed from `tomstats`.
 
 # remstats 3.0.3
 Date: 16-Mar-23

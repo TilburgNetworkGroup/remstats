@@ -2,7 +2,7 @@ library(remstats)
 
 reh_tie <- remify::remify(history, model = "tie")
 dummy <- remstats(reh = reh_tie, tie_effects = ~1)
-riskset <- dummy$riskset
+riskset <- attr(dummy, "riskset")
 same_age <- as.numeric(
     apply(riskset, 1, function(x) {
         info$age[info$name == as.numeric(x[1]) & info$time == 0] ==

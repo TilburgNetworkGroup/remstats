@@ -2,16 +2,16 @@ library(remstats)
 
 test_that("output tomstats", {
   reh_tie <- remify::remify(history, model = "tie")
-  out <- tomstats(~ send("extraversion"):inertia(),
+  stats <- tomstats(~ send("extraversion"):inertia(),
     reh = reh_tie,
-    attributes = info
+    attributes = info,
+    get_adjmat = TRUE
   )
 
-  stats <- out$statistics
-  riskset <- out$riskset
-  adjmat <- out$adjmat
+  riskset <- attr(stats, "riskset")
+  adjmat <- attr(stats, "adjmat")
 
-  expect_output(str(out), "List of 3")
+  expect_output(str(stats), "List of 3")
   expect_equal(dim(stats), c(nrow(reh_tie$edgelist), nrow(riskset), 4))
   expect_equal(dim(adjmat), c(nrow(reh_tie$edgelist), nrow(riskset)))
 })
@@ -40,16 +40,16 @@ test_that("output aomstats", {
 test_that("output remstats", {
   # Tie-oriented model
   reh_tie <- remify::remify(history, model = "tie")
-  out <- remstats(
+  stats <- remstats(
     tie_effects = ~ send("extraversion"):inertia(),
-    reh = reh_tie, attributes = info
+    reh = reh_tie, attributes = info, get_adjmat = TRUE
   )
 
-  stats <- out$statistics
-  riskset <- out$riskset
-  adjmat <- out$adjmat
+  riskset <- attr(stats, "riskset")
+  adjmat <- attr(stats, "adjmat")
 
-  expect_output(str(out), "List of 3")
+
+  expect_output(str(stats), "List of 3")
   expect_equal(dim(stats), c(nrow(reh_tie$edgelist), nrow(riskset), 4))
   expect_equal(dim(adjmat), c(nrow(reh_tie$edgelist), nrow(riskset)))
 

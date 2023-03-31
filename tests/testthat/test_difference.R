@@ -168,14 +168,14 @@ test_that("expected statistic tie-oriented model", {
     info$x <- sample(1:5, size = nrow(info), replace = TRUE)
     mod <- ~ difference("x")
     reh_tie <- remify::remify(history, model = "tie")
-    tomres <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
+    expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
     first_info <- subset(info, time == 0)
-    riskset <- tomres$riskset
+    riskset <- attr(tie_stats, "riskset")
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
@@ -183,7 +183,7 @@ test_that("expected statistic tie-oriented model", {
             first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
-        all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Rows 41 to 71 are expected to be equal to the following row
@@ -195,7 +195,7 @@ test_that("expected statistic tie-oriented model", {
             second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
-        all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Rows 72 to 115 are expected to be equal to the following row
@@ -207,21 +207,21 @@ test_that("expected statistic tie-oriented model", {
             third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
-        all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Repeat for "std" scaling
     mod <- ~ difference("x", scaling = "std")
-    tomres <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
+    expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
     stat1 <- scale(stat1)
     expect_true(all(sapply(1:40, function(x) {
         all.equal(as.numeric(stat1),
-            tomres$statistics[x, , 2],
+            tie_stats[x, , 2],
             check.attributes = FALSE
         )
     })))
@@ -230,7 +230,7 @@ test_that("expected statistic tie-oriented model", {
     stat2 <- scale(stat2)
     expect_true(all(sapply(41:71, function(x) {
         all.equal(as.numeric(stat2),
-            tomres$statistics[x, , 2],
+            tie_stats[x, , 2],
             check.attributes = FALSE
         )
     })))
@@ -239,17 +239,17 @@ test_that("expected statistic tie-oriented model", {
     stat3 <- scale(stat3)
     expect_true(all(sapply(72:115, function(x) {
         all.equal(as.numeric(stat3),
-            tomres$statistics[x, , 2],
+            tie_stats[x, , 2],
             check.attributes = FALSE
         )
     })))
 
     # Repeat for absolute = FALSE
     mod <- ~ difference("x", absolute = FALSE)
-    tomres <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
+    expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
@@ -259,7 +259,7 @@ test_that("expected statistic tie-oriented model", {
             first_info$x[first_info$name == receiver]
     }))
     expect_true(all(sapply(1:40, function(x) {
-        all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Rows 41 to 71 are expected to be equal to the following row
@@ -270,7 +270,7 @@ test_that("expected statistic tie-oriented model", {
             second_info$x[second_info$name == receiver]
     }))
     expect_true(all(sapply(41:71, function(x) {
-        all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Rows 72 to 115 are expected to be equal to the following row
@@ -281,21 +281,21 @@ test_that("expected statistic tie-oriented model", {
             third_info$x[third_info$name == receiver]
     }))
     expect_true(all(sapply(72:115, function(x) {
-        all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Repeat for absolute = FALSE and "std" scaling
     mod <- ~ difference("x", scaling = "std", absolute = FALSE)
-    tomres <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
+    expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
     stat1 <- scale(stat1)
     expect_true(all(sapply(1:40, function(x) {
         all.equal(as.numeric(stat1),
-            tomres$statistics[x, , 2],
+            tie_stats[x, , 2],
             check.attributes = FALSE
         )
     })))
@@ -304,7 +304,7 @@ test_that("expected statistic tie-oriented model", {
     stat2 <- scale(stat2)
     expect_true(all(sapply(41:71, function(x) {
         all.equal(as.numeric(stat2),
-            tomres$statistics[x, , 2],
+            tie_stats[x, , 2],
             check.attributes = FALSE
         )
     })))
@@ -313,7 +313,7 @@ test_that("expected statistic tie-oriented model", {
     stat3 <- scale(stat3)
     expect_true(all(sapply(72:115, function(x) {
         all.equal(as.numeric(stat3),
-            tomres$statistics[x, , 2],
+            tie_stats[x, , 2],
             check.attributes = FALSE
         )
     })))
@@ -322,15 +322,15 @@ test_that("expected statistic tie-oriented model", {
     mod <- ~ difference("x")
     reh_undirected <- remify::remify(history, model = "tie", 
         directed = FALSE)
-    tomres <- remstats(
+    tie_stats <- remstats(
         reh = reh_undirected, tie_effects = mod, attributes = info
     )
 
     # Expected name of the statistic
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
+    expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
-    riskset <- tomres$riskset
+    riskset <- attr(tie_stats, "riskset")
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
@@ -338,7 +338,7 @@ test_that("expected statistic tie-oriented model", {
             first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
-        all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Rows 41 to 71 are expected to be equal to the following row
@@ -349,7 +349,7 @@ test_that("expected statistic tie-oriented model", {
             second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
-        all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Rows 72 to 115 are expected to be equal to the following row
@@ -360,18 +360,18 @@ test_that("expected statistic tie-oriented model", {
             third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
-        all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Repeat for typed events
     history$type <- history$setting
-    tomres <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
 
     # Expected name of the statistic
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "difference_x")
+    expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
-    riskset <- tomres$riskset
+    riskset <- attr(tie_stats, "riskset")
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
@@ -379,7 +379,7 @@ test_that("expected statistic tie-oriented model", {
             first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
-        all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Rows 41 to 71 are expected to be equal to the following row
@@ -390,7 +390,7 @@ test_that("expected statistic tie-oriented model", {
             second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
-        all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 
     # Rows 72 to 115 are expected to be equal to the following row
@@ -401,7 +401,7 @@ test_that("expected statistic tie-oriented model", {
             third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
-        all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+        all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
     })))
 })
 

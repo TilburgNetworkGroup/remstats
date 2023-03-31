@@ -156,81 +156,81 @@ test_that("expected output from receive()", {
 test_that("expected statistic tie-oriented model", {
   mod <- ~ receive("extraversion")
   reh_tie <- remify::remify(history, model = "tie")
-  tomres <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
   
   # Expected name of the statistic
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "receive_extraversion")
+  expect_equal(dimnames(tie_stats)[[3]][2], "receive_extraversion")
   
   # The first 40 rows are expected to be equal to the following row
   first_info <- subset(info, time == 0)
-  stat1 <- first_info$extraversion[match(tomres$riskset$receiver, first_info$name)]
+  stat1 <- first_info$extraversion[match(attr(tie_stats, "riskset")$receiver, first_info$name)]
   expect_true(all(sapply(1:40, function(x) {
-    all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 41 to 71 are expected to be equal to the following row
   second_info <- subset(info, time == 9432)
-  stat2 <- second_info$extraversion[match(tomres$riskset$receiver, second_info$name)]
+  stat2 <- second_info$extraversion[match(attr(tie_stats, "riskset")$receiver, second_info$name)]
   expect_true(all(sapply(41:71, function(x) {
-    all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 72 to 115 are expected to be equal to the following row
   third_info <- subset(info, time == 18864)
-  stat3 <- third_info$extraversion[match(tomres$riskset$receiver, third_info$name)]
+  stat3 <- third_info$extraversion[match(attr(tie_stats, "riskset")$receiver, third_info$name)]
   expect_true(all(sapply(72:115, function(x) {
-    all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
   })))
   
   # Repeat for standardized effects
   mod <- ~ receive("extraversion", scaling = "std")
-  tomres <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
   
   # Expected name of the statistic
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "receive_extraversion")
+  expect_equal(dimnames(tie_stats)[[3]][2], "receive_extraversion")
   
   # The first 40 rows are expected to be equal to the following row
   stat1 <- as.numeric(scale(stat1))
   expect_true(all(sapply(1:40, function(x) {
-    all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 41 to 71 are expected to be equal to the following row
   stat2 <- as.numeric(scale(stat2))
   expect_true(all(sapply(41:71, function(x) {
-    all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 72 to 115 are expected to be equal to the following row
   stat3 <- as.numeric(scale(stat3))
   expect_true(all(sapply(72:115, function(x) {
-    all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
   })))
   
   # Repeat for typed events
   mod <- ~ receive("extraversion")
   history$type <- history$setting
-  tomres <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+  tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
   
   # Expected name of the statistic
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "receive_extraversion")
+  expect_equal(dimnames(tie_stats)[[3]][2], "receive_extraversion")
   
   # The first 40 rows are expected to be equal to the following row
-  stat1 <- first_info$extraversion[match(tomres$riskset$receiver, first_info$name)]
+  stat1 <- first_info$extraversion[match(attr(tie_stats, "riskset")$receiver, first_info$name)]
   expect_true(all(sapply(1:40, function(x) {
-    all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 41 to 71 are expected to be equal to the following row
-  stat2 <- second_info$extraversion[match(tomres$riskset$receiver, second_info$name)]
+  stat2 <- second_info$extraversion[match(attr(tie_stats, "riskset")$receiver, second_info$name)]
   expect_true(all(sapply(41:71, function(x) {
-    all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
   })))
   
   # Rows 72 to 115 are expected to be equal to the following row
-  stat3 <- third_info$extraversion[match(tomres$riskset$receiver, third_info$name)]
+  stat3 <- third_info$extraversion[match(attr(tie_stats, "riskset")$receiver, third_info$name)]
   expect_true(all(sapply(72:115, function(x) {
-    all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 })
 

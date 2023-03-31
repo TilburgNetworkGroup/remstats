@@ -4,8 +4,7 @@ test_that("interaction effects", {
 	form <- ~ inertia():reciprocity() + FEtype():inertia()
 	history$type <- history$setting
 	reh <- remify::remify(history, model = "tie")
-	out <- tomstats(form, reh = reh)
-	stats <- out$statistics
+	stats <- tomstats(form, reh = reh)
 	expect_equal(stats[,,5], stats[,,2]*stats[,,3])	
 	expect_equal(stats[,,6], stats[,,2]*stats[,,4])	
 	

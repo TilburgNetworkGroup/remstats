@@ -55,34 +55,34 @@ test_that("expected statistic", {
     # Expected name of the statistic
     mod <- ~ event(x = work)
     reh <- remify::remify(history, model = "tie")
-    tomres <- remstats(reh = reh, tie_effects = mod)
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "event")
+    tie_stats <- remstats(reh = reh, tie_effects = mod)
+    expect_equal(dimnames(tie_stats)[[3]][2], "event")
 
     mod <- ~ event(x = work) + event(x = work + 1)
-    tomres <- remstats(reh = reh, tie_effects = mod)
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "event1")
-    expect_equal(dimnames(tomres$statistics)[[3]][3], "event2")
+    tie_stats <- remstats(reh = reh, tie_effects = mod)
+    expect_equal(dimnames(tie_stats)[[3]][2], "event1")
+    expect_equal(dimnames(tie_stats)[[3]][3], "event2")
 
     mod <- ~ event(x = work, variableName = "work")
-    tomres <- remstats(reh = reh, tie_effects = mod)
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "work")
+    tie_stats <- remstats(reh = reh, tie_effects = mod)
+    expect_equal(dimnames(tie_stats)[[3]][2], "work")
 
     mod <- ~ event(x = work, variableName = "test") +
         event(x = work, variableName = "check")
-    tomres <- remstats(reh = reh, tie_effects = mod)
-    expect_equal(dimnames(tomres$statistics)[[3]][2], "test")
-    expect_equal(dimnames(tomres$statistics)[[3]][3], "check")
+    tie_stats <- remstats(reh = reh, tie_effects = mod)
+    expect_equal(dimnames(tie_stats)[[3]][2], "test")
+    expect_equal(dimnames(tie_stats)[[3]][3], "check")
 
     # Expected statistic
     mod <- ~ event(x = work)
-    tomres <- remstats(reh = reh, tie_effects = mod)
-    stat <- replicate(n = nrow(tomres$riskset), work)
-    expect_equal(stat, tomres$statistics[, , 2])
+    tie_stats <- remstats(reh = reh, tie_effects = mod)
+    stat <- replicate(n = nrow(attr(tie_stats, "riskset")), work)
+    expect_equal(stat, tie_stats[, , 2])
 
     # Repeat with start and stop values
-    tomres <- remstats(
+    tie_stats <- remstats(
         reh = reh, tie_effects = mod,
         start = 5, stop = 10
     )
-    expect_equal(stat[5:10, ], tomres$statistics[, , 2])
+    expect_equal(stat[5:10, ], tie_stats[, , 2])
 })

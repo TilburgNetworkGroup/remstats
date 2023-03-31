@@ -113,14 +113,14 @@ test_that("expected output from maximum()", {
 test_that("expected statistic tie-oriented model", {
   mod <- ~ maximum("extraversion")
   reh <- remify::remify(history, model = "tie")
-  tomres <- remstats(reh = reh, tie_effects = mod, attributes = info)
+  tie_stats <- remstats(reh = reh, tie_effects = mod, attributes = info)
 
   # Expected name of the statistic
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "maximum_extraversion")
+  expect_equal(dimnames(tie_stats)[[3]][2], "maximum_extraversion")
 
   # The first 40 rows are expected to be equal to the following row
   first_info <- subset(info, time == 0)
-  riskset <- tomres$riskset
+  riskset <- attr(tie_stats, "riskset")
   stat1 <- as.numeric(apply(riskset, 1, function(x) {
     sender <- as.numeric(x[1])
     receiver <- as.numeric(x[2])
@@ -130,7 +130,7 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(1:40, function(x) {
-    all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Rows 41 to 71 are expected to be equal to the following row
@@ -144,7 +144,7 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(41:71, function(x) {
-    all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Rows 72 to 115 are expected to be equal to the following row
@@ -158,21 +158,21 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(72:115, function(x) {
-    all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Repeat for undirected events ---------------------------------------------
   mod <- ~ maximum("extraversion")
   reh_undirected <- remify::remify(history, model = "tie", directed = FALSE)
-  tomres <- remstats(
+  tie_stats <- remstats(
     reh = reh_undirected, tie_effects = mod, attributes = info,
   )
 
   # Expected name of the statistic
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "maximum_extraversion")
+  expect_equal(dimnames(tie_stats)[[3]][2], "maximum_extraversion")
 
   # The first 40 rows are expected to be equal to the following row
-  riskset <- tomres$riskset
+  riskset <- attr(tie_stats, "riskset")
   stat1 <- as.numeric(apply(riskset, 1, function(x) {
     sender <- as.numeric(x[1])
     receiver <- as.numeric(x[2])
@@ -182,7 +182,7 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(1:40, function(x) {
-    all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Rows 41 to 71 are expected to be equal to the following row
@@ -195,7 +195,7 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(41:71, function(x) {
-    all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Rows 72 to 115 are expected to be equal to the following row
@@ -208,23 +208,23 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(72:115, function(x) {
-    all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Repeat for "std" scaling -------------------------------------------------
   mod <- ~ maximum("extraversion", scaling = "std")
-  tomres <- remstats(
+  tie_stats <- remstats(
     reh = reh_undirected, tie_effects = mod, attributes = info,
   )
 
   # Expected name of the statistic
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "maximum_extraversion")
+  expect_equal(dimnames(tie_stats)[[3]][2], "maximum_extraversion")
 
   # The first 40 rows are expected to be equal to the following row
   stat1 <- scale(stat1)
   expect_true(all(sapply(1:40, function(x) {
     all.equal(as.numeric(stat1),
-      tomres$statistics[x, , 2],
+      tie_stats[x, , 2],
       check.attributes = FALSE
     )
   })))
@@ -233,7 +233,7 @@ test_that("expected statistic tie-oriented model", {
   stat2 <- scale(stat2)
   expect_true(all(sapply(41:71, function(x) {
     all.equal(as.numeric(stat2),
-      tomres$statistics[x, , 2],
+      tie_stats[x, , 2],
       check.attributes = FALSE
     )
   })))
@@ -242,7 +242,7 @@ test_that("expected statistic tie-oriented model", {
   stat3 <- scale(stat3)
   expect_true(all(sapply(72:115, function(x) {
     all.equal(as.numeric(stat3),
-      tomres$statistics[x, , 2],
+      tie_stats[x, , 2],
       check.attributes = FALSE
     )
   })))
@@ -250,13 +250,13 @@ test_that("expected statistic tie-oriented model", {
   # Repeat for typed events --------------------------------------------------
   history$type <- history$setting
   mod <- ~ maximum("extraversion")
-  tomres <- remstats(reh = reh, tie_effects = mod, attributes = info)
+  tie_stats <- remstats(reh = reh, tie_effects = mod, attributes = info)
 
   # Expected name of the statistic
-  expect_equal(dimnames(tomres$statistics)[[3]][2], "maximum_extraversion")
+  expect_equal(dimnames(tie_stats)[[3]][2], "maximum_extraversion")
 
   # The first 40 rows are expected to be equal to the following row
-  riskset <- tomres$riskset
+  riskset <- attr(tie_stats, "riskset")
   stat1 <- as.numeric(apply(riskset, 1, function(x) {
     sender <- as.numeric(x[1])
     receiver <- as.numeric(x[2])
@@ -266,7 +266,7 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(1:40, function(x) {
-    all.equal(stat1, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Rows 41 to 71 are expected to be equal to the following row
@@ -279,7 +279,7 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(41:71, function(x) {
-    all.equal(stat2, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 
   # Rows 72 to 115 are expected to be equal to the following row
@@ -292,6 +292,6 @@ test_that("expected statistic tie-oriented model", {
     ))
   }))
   expect_true(all(sapply(72:115, function(x) {
-    all.equal(stat3, tomres$statistics[x, , 2], check.attributes = FALSE)
+    all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
   })))
 })

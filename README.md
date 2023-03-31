@@ -120,27 +120,21 @@ Now, we have everything we need to compute our first statistic:
 out <- remstats(tie_effects = effects, reh = reh)
 ```
 
-The `remstats()` function outputs a list with multiple objects. We can view the names of these objects with:
+The `remstats()` function outputs a 3-dimensional array with statistics. On the rows of this array are the timepoints, the columns refer to the potential events in the riskset and the slices refer to the different statistics:
 ```r
-names(out)
-```
-Here, we can see that `remstats()` outputs an object named `statistics`, `riskset`, and `adjmat`. 
-
-The `statistics` object is a 3-dimensional array. On the rows of this array are the timepoints, the columns refer to the potential events in the riskset and the slices refer to the different statistics:
-```r
-dim(out$statistics)
+dim(out)
 ```
 Our statistics object has 115 rows, corresponding to the 115 events in the relational event history. It has 90 columns, corresponding to the 90 events in the riskset. The statistics object has two slices, that is because the baseline statistics is automatically computed when the timing of the events in the relational event history is exact (unless removed by specifying `-1` in the `effects` formula) and saved in the first slice. The `remstats()` procedure assumes that the timing of the events in the relational event history is exact and the full likelihood is used in the estimation, unless the argument `ordinal` in `remify::remify()` is set to `TRUE`. 
 
 We can view the names of the statistics that are in the statistics object with:
 ```r
-dimnames(out$statistics)
+dimnames(out)
 ```
 Here, we see that, indeed, a baseline and inertia statistic are computed. 
 
-Since we did not request anything special for the riskset in `remify::remify()`, it consists of every directed pair of actors observed in the relational event history, which is 10*9 = 90 pairs. These pairs are saved in the `riskset` object. We can ask for the first few lines of this riskset:
+Since we did not request anything special for the riskset in `remify::remify()`, it consists of every directed pair of actors observed in the relational event history, which is 10*9 = 90 pairs. These pairs are saved in the `riskset` attribute. We can ask for the first few lines of this riskset:
 ```r
-head(out$riskset)
+head(attr(out, "riskset"))
 ```
 sender  | receiver | id
 ---     | ---   |  ---
