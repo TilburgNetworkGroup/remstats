@@ -118,6 +118,9 @@ tomstats <- function(effects, reh, attributes = NULL,
   if (!("remify" %in% class(reh))) {
     stop("Expected a reh object of class remify")
   }
+  if (attr(reh, "model") != "tie") {
+    stop("The reh object should be prepared with the model argument set to `tie' if tie_effects are computed")
+  }
 
   # Extract relevant elements from the prepared remify::remify object
   edgelist.reh <- reh$edgelist

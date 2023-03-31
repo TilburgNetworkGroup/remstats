@@ -141,7 +141,7 @@
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
 #' reh_actor <- remify::remify(edgelist = history, model = "actor")
 #' remstats(
-#'     reh = reh_tie, sender_effects = seff, receiver_effects = reff,
+#'     reh = reh_actor, sender_effects = seff, receiver_effects = reff,
 #'     attributes = info
 #' )
 #'

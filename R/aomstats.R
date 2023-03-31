@@ -107,6 +107,9 @@ aomstats <- function(reh,
   if (!("remify" %in% class(reh))) {
     stop("Expected a reh object of class remify")
   }
+  if (attr(reh, "model") != "actor") {
+    stop("The reh object should be prepared with the model argument set to `actor' if effects for the actor-oriented model are computed")
+  }
 
   # Extract relevant elements from the prepared remify::remify object
   edgelist <- reh$edgelist

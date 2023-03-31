@@ -6,59 +6,59 @@ test_that("expected errors and warnings", {
   # Expected errors for sender effects
   mod <- ~ recencySendReceiver()
   expect_error(
-    remstats(reh = reh_actor, sender_effects = mod, attributes = info),
+    remstats(reh = reh_actor, sender_effects = mod),
     "not defined for the sender activity model"
   )
 
   mod <- ~ recencyReceiveReceiver()
   expect_error(
-    remstats(reh = reh_actor, sender_effects = mod, attributes = info),
+    remstats(reh = reh_actor, sender_effects = mod),
     "not defined for the sender activity model"
   )
 
   mod <- ~ recencyContinue()
   expect_error(
-    remstats(reh = reh_actor, sender_effects = mod, attributes = info),
+    remstats(reh = reh_actor, sender_effects = mod),
     "not defined for the sender activity model"
   )
 
   # Expected errors for receiver effects
   mod <- ~ recencySendSender()
   expect_error(
-    remstats(reh = reh_actor, receiver_effects = mod, attributes = info),
+    remstats(reh = reh_actor, receiver_effects = mod),
     "not defined for the receiver choice model"
   )
 
   mod <- ~ recencyReceiveSender()
   expect_error(
-    remstats(reh = reh_actor, receiver_effects = mod, attributes = info),
+    remstats(reh = reh_actor, receiver_effects = mod),
     "not defined for the receiver choice model"
   )
 
   # Expect errors for undirected events
-  reh_tie <- remify::remify(history, model = "tie", directed = F)
+  reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 
   mod <- ~ recencySendReceiver()
   expect_error(
-    remstats(reh = reh_tie, tie_effects = mod, attributes = info),
+    remstats(reh = reh_tie, tie_effects = mod),
     "undirected events"
   )
 
   mod <- ~ recencySendSender()
   expect_error(
-    remstats(reh = reh_tie, tie_effects = mod, attributes = info),
+    remstats(reh = reh_tie, tie_effects = mod),
     "undirected events"
   )
 
   mod <- ~ recencyReceiveReceiver()
   expect_error(
-    remstats(reh = reh_tie, tie_effects = mod, attributes = info),
+    remstats(reh = reh_tie, tie_effects = mod),
     "undirected events"
   )
 
   mod <- ~ recencyReceiveSender()
   expect_error(
-    remstats(reh = reh_tie, tie_effects = mod, attributes = info),
+    remstats(reh = reh_tie, tie_effects = mod),
     "undirected events"
   )
 })
