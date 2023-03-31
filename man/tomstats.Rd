@@ -13,7 +13,7 @@ tomstats(
   start = 1,
   stop = Inf,
   adjmat = NULL,
-  output = c("all", "stats_only")
+  get_adjmat = FALSE
 )
 }
 \arguments{
@@ -45,21 +45,13 @@ event in the relational event history for which statistics muts be computed
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the
 rows the time points and on the columns the risk set entries}
 
-\item{output}{indicates which output objects need to be provided, i.e.,
-either only the statistics matrix ("stats_only", faster!) or all the below
-defined information objects ("all", default).}
+\item{get_adjmat}{whether the adjmat computed by tomstats should be 
+outputted as an attribute of the statistics.}
 }
 \value{
 \code{statistics } array with the computed statistics, where rows
 refer to time points, columns refer to potential relational event (i.e.,
 potential edges) in the risk set and slices refer to statistics
-
-\code{reh } data.frame with the relational event history
-
-\code{adjmat } matrix with the adjacency matrix, rows refer to
-time points and columns to risk set entries. At timepoint t, it gives the
-cumulative weight until t-1 (i.e., the events that occurred before time
-point t).
 }
 \description{
 Computes statistics for modeling relational event history data

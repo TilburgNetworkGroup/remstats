@@ -15,7 +15,7 @@ remstats(
   start = 1,
   stop = Inf,
   adjmat = NULL,
-  output = c("all", "stats_only")
+  get_adjmat = FALSE
 )
 }
 \arguments{
@@ -54,12 +54,12 @@ event in the relational event history for which statistics must be computed
 event in the relational event history for which statistics muts be computed
 (see 'Details')}
 
-\item{adjmat}{optionally, a previously computed adjacency matrix with on the
-rows the time points and on the columns the risk set entries}
+\item{adjmat}{optionally, for a tie-oriented model a previously computed 
+adjacency matrix with on the rows the time points and on the columns the 
+risk set entries}
 
-\item{output}{indicates which output objects need to be provided, i.e.,
-either only the statistics matrix ("stats_only", faster!) or all the below
-defined information objects ("all", default).}
+\item{get_adjmat}{for a tie-oriented model, whether the adjmat computed by 
+remstats should be outputted as an attribute of the statistics.}
 }
 \value{
 \code{statistics } In case of the tie-oriented model, an array with
@@ -70,11 +70,6 @@ in the first element the statistics for the sender activity rate step and in
 the second element the statistics for the receiver choice step, where rows
 refer to time points, columns refer to potential senders or recievers,
 respectively.
-
-\code{reh } Dataframe with the relational event history.
-
-\code{adjmat } Matrix with the adjacency matrix, rows refer to
-timepoints and columns to riskset entries
 }
 \description{
 Computes statistics for modeling relational events with a tie-oriented

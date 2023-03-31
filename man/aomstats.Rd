@@ -51,8 +51,6 @@ event in the relational event history for which statistics muts be computed
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 }
 \value{
-\code{reh } Dataframe with the relational event history.
-
 \code{statistics  } List with in the first element the statistics
 for the sender activity rate step and in the second element the statistics
 for the receiver choice step
