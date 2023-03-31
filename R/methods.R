@@ -24,7 +24,7 @@ print.remstats <- function(x, ...) {
   model.title <- paste("> Model:", model, sep = " ")
 
   if (model == "tie-oriented") {
-    dim.stats <- dim(x$statistics)
+    dim.stats <- dim(x)
     dim.long <- paste("> Dimensions:",
       dim.stats[1], "time points x",
       dim.stats[2], "dyads x",
@@ -32,7 +32,7 @@ print.remstats <- function(x, ...) {
       sep = " "
     )
     stats.title <- paste("> Statistics:")
-    stats.names <- dimnames(x$statistics)[[3]]
+    stats.names <- dimnames(x)[[3]]
     stats.names2 <- lapply(1:length(stats.names), function(i) {
       paste0("\t >> ", i, ": ", stats.names[i])
     })
@@ -129,13 +129,13 @@ summary.remstats <- function(object, ...) {
   model <- ifelse(any(class(object) == "tomstats"), "tie-oriented", "actor-oriented")
 
   if (model == "tie-oriented") {
-    out <- apply(object$statistics, 3, function(y) {
+    out <- apply(object, 3, function(y) {
       summary(as.vector(y))
     })
   }
 
   if (model == "actor-oriented") {
-    out <- lapply(object$statistics, function(y) {
+    out <- lapply(object, function(y) {
       if (!is.null(y)) {
         apply(y, 3, function(z) {
           summary(as.vector(z))
