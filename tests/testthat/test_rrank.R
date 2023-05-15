@@ -1,58 +1,59 @@
 library(remify)
-library(remstats)
 
 test_that("rrankSend", {
 	data(history)
 	
-	rehObject <- reh(edgelist = history, model = "tie")
-	tomres <- tomstats(edgelist = rehObject, effects = ~ rrankSend())
-	aomres <- aomstats(edgelist = rehObject, receiver_effects = ~ rrankSend())
+	reh_tie <- remify::remify(history, model = "tie")
+	reh_actor <- remify::remify(history, model = "actor")
+	tie_stats <- tomstats(reh = reh_tie, effects = ~ rrankSend())
+	aomres <- aomstats(reh = reh_actor, receiver_effects = ~ rrankSend())
 	
 	# The value of the recency statistic is between 0 and 1
-	expect_true(all(tomres$statistics[,,2] >= 0) & all(tomres$statistics[,,2] <= 1))
-	expect_true(all(aomres$statistics$receiver_stats >= 0) & all(aomres$statistics$receiver_stats <= 1))
+	expect_true(all(tie_stats[,,2] >= 0) & all(tie_stats[,,2] <= 1))
+	expect_true(all(aomres$receiver_stats >= 0) & all(aomres$receiver_stats <= 1))
 	
 	# Ranks are smaller than the maximum number of actors
-	n <- length(unique(info$id))
-	ranks <- 1/tomres$statistics[,,2]
-	expect_true(max(tomres$statistics[,,2]) < n)
-	ranks <- 1/aomres$statistics$receiver_stats
-	expect_true(max(aomres$statistics$receiver_stats) < n)
+	n <- length(unique(info$name))
+	ranks <- 1/tie_stats[,,2]
+	expect_true(max(tie_stats[,,2]) < n)
+	ranks <- 1/aomres$receiver_stats
+	expect_true(max(aomres$receiver_stats) < n)
 
 	# Randomly select timepoint and check for most recent event
-	edgelist <- tomres$edgelist
-	riskset <- tomres$riskset
+	edgelist <- reh_tie$edgelist
+	riskset <- attr(tie_stats, "riskset")
 	rt <- sample(1:nrow(edgelist), 1)
-	event <- edgelist[rt-1,]
-	stat <- tomres$statistics[,,2]
-	expect_equal(stat[rt, event[2] + 1], 1)
+	event <- attr(reh_tie, "dyad")[rt-1]
+	stat <- tie_stats[,,2]
+	expect_equal(stat[rt, event], 1)
 })
 
 test_that("rrankReceive", {
 	data(history)
 	
-	rehObject <- reh(edgelist = history, model = "tie")
-	tomres <- tomstats(edgelist = rehObject, effects = ~ rrankReceive())
-	aomres <- aomstats(edgelist = rehObject, receiver_effects = ~ rrankReceive())
+	reh_tie <- remify::remify(history, model = "tie")
+	reh_actor <- remify::remify(history, model = "actor")
+	tie_stats <- tomstats(reh = reh_tie, effects = ~ rrankReceive())
+	aomres <- aomstats(reh = reh_actor, receiver_effects = ~ rrankReceive())
 	
 	# The value of the recency statistic is between 0 and 1
-	expect_true(all(tomres$statistics[,,2] >= 0) & all(tomres$statistics[,,2] <= 1))
-	expect_true(all(aomres$statistics$receiver_stats >= 0) & all(aomres$statistics$receiver_stats <= 1))
+	expect_true(all(tie_stats[,,2] >= 0) & all(tie_stats[,,2] <= 1))
+	expect_true(all(aomres$receiver_stats >= 0) & all(aomres$receiver_stats <= 1))
 	
 	# Ranks are smaller than the maximum number of actors
-	n <- length(unique(info$id))
-	ranks <- 1/tomres$statistics[,,2]
-	expect_true(max(tomres$statistics[,,2]) < n)
-	ranks <- 1/aomres$statistics$receiver_stats
-	expect_true(max(aomres$statistics$receiver_stats) < n)
+	n <- length(unique(info$name))
+	ranks <- 1/tie_stats[,,2]
+	expect_true(max(tie_stats[,,2]) < n)
+	ranks <- 1/aomres$receiver_stats
+	expect_true(max(aomres$receiver_stats) < n)
 	
 	# Randomly select timepoint and check for most recent event
-	edgelist <- tomres$edgelist
-	riskset <- tomres$riskset
+	edgelist <- reh_tie$edgelist
+	riskset <- attr(tie_stats, "riskset")
 	rt <- sample(1:nrow(edgelist), 1)
-	event <- edgelist[rt-1,]
-	stat <- tomres$statistics[,,2]
-	revent <- which(riskset$receiver == riskset$sender[event[2] + 1] &
-			riskset$sender == riskset$receiver[event[2] + 1])
+	event <- attr(reh_tie, "dyad")[rt-1]
+	stat <- tie_stats[,,2]
+	revent <- which(riskset$receiver == riskset$sender[event] &
+			riskset$sender == riskset$receiver[event])
 	expect_equal(stat[rt, revent], 1)
 })

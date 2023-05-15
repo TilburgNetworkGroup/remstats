@@ -39,12 +39,11 @@ persistence statistic in Section 2.2.2 of Butts (2008). Note that this
 scaling method is only defined for directed events.
 }
 \examples{
-library(remify)
-rehObject <- reh(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ inertia()
-remstats(edgelist = rehObject, tie_effects = effects)
-remstats(edgelist = rehObject, receiver_effects = effects)
-tomstats(effects, edgelist = rehObject)
-aomstats(receiver_effects = effects, edgelist = rehObject)
+remstats(reh = reh_tie, tie_effects = effects)
+
+reh_actor <- remify(history, model = "actor")
+remstats(reh = reh_actor, receiver_effects = effects)
 
 }

@@ -1,3 +1,22 @@
+# remstats 3.1.0
+Date: TBD (mid-april)
+
+**IMPORTANT**: remstats 3.1.0 works with remify >= 3.0.0. **Make sure remify is updated.** If earlier versions of remify are in use, remstats 3.1.0 will break down.
+
+## New features
+* `print()`, and `summary()` methods.
+
+## Major changes
+* `edgelist` argument is renamed to `reh`. 
+* `reh` must be an object of class `remify`.
+* `id` column in `attributes` object is renamed to `name`.
+* `aomstats` output is reduced to the list of statistics (sender_stats and receiver_stats)
+* `tomstats` output is reduced to the array of statistics. The risk set is now an attribute. The adjmat is only an attribute if requested with "get_adjmat" (this is changed to save memory). 
+
+## Minor changes
+* Integrated with remify v3.0.0
+* Updated tests.
+
 # remstats 3.0.3
 Date: 16-Mar-23
 

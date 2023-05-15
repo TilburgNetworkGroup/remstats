@@ -30,10 +30,9 @@ that the `unique shared partners' effect is only defined for undirected
 events.
 }
 \examples{
-library(remify)
-rehObject <- reh(history, directed = FALSE)
+reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 effects <- ~ spUnique()
-tomstats(effects, edgelist = rehObject)
+remstats(tie_effects = effects, reh = reh_tie)
 
 }
 \seealso{

@@ -5,15 +5,10 @@
 \title{aomstats}
 \usage{
 aomstats(
-  edgelist,
+  reh,
   sender_effects = NULL,
   receiver_effects = NULL,
   attributes = NULL,
-  actors = NULL,
-  types = NULL,
-  ordinal = FALSE,
-  origin = NULL,
-  omit_dyad = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = Inf,
   start = 1,
@@ -22,12 +17,8 @@ aomstats(
 )
 }
 \arguments{
-\item{edgelist}{an object of class \code{"\link[remify]{reh}"}
-characterizing the relational event history sorted by time with columns
-`time`, `dyad`, `weight`. Alternatively, an object of class
-\code{"\link[base]{data.frame}"} or \code{"\link[base]{matrix}"} sorted by
-time with columns `time`, `actor1`, `actor2` and optionally `type` and
-`weight`.}
+\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
+the relational event history.}
 
 \item{sender_effects}{an object of class \code{"\link[stats]{formula}"} (or
 one that can be coerced to that class): a symbolic description of the
@@ -43,33 +34,23 @@ computed, see `Details'}
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
 Details).}
 
-\item{actors}{character vector of actors' names that may be observed interacting in the network. If \code{NULL}, actor names will be taken from the input edgelist.}
-
-\item{types}{character vector of event types that may occur in the network. If \code{NULL}, type names will be taken from the input edgelist.}
-
-\item{ordinal}{logical value indicating whether only the order of events matters in the model (\code{TRUE}) or also the waiting time must be considered in the model (\code{FALSE}).}
-
-\item{origin}{time point since when events could occur (default is \code{NULL}). If it is defined, it must have the same class of the time column in the input edgelist.}
-
-\item{omit_dyad}{list of lists. Each list must have two objects: a first object named `time`, that is a vector of two values defining the first and last time point of the time window where to apply the change to the risk set and a second object, named `dyad`, which is a \code{"\link[base]{data.frame}"} where dyads to be removed are supplied in the format \code{actor1,actor2,type} (by row).}
-
 \item{memory}{The memory to be used. See `Details'.}
 
 \item{memory_value}{Numeric value indicating the memory parameter. See
 `Details'.}
 
-\item{start}{integer value, refers to the index in the edgelist of the first
-event for which statistics are requested (see 'Details')}
+\item{start}{an optional integer value, specifying the index of the first
+event in the relational event history for which statistics must be computed
+(see 'Details')}
 
-\item{stop}{integer value, refers to the index in the edgelist of the last
-event for which statistics are requested (see 'Details')}
+\item{stop}{an optional integer value, specifying the index of the last
+event in the relational event history for which statistics muts be computed
+(see 'Details')}
 
-\item{display_progress}{should a progress bar for the computation of the 
+\item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 }
 \value{
-\code{edgelist } Dataframe with the edgelist
-
 \code{statistics  } List with in the first element the statistics
 for the sender activity rate step and in the second element the statistics
 for the receiver choice step
@@ -86,7 +67,7 @@ supplied to the \code{sender_effects} and/or \code{receiver_effects}
 arguments in the form \code{~ effects}. The terms are separated by +
 operators. For example: \code{receiver_effects = ~ inertia() + otp()}.
 Interactions between two effects can be included with * or :
-operators. For example: \code{receivereffects = ~ inertia():otp()}.  A list 
+operators. For example: \code{receivereffects = ~ inertia():otp()}.  A list
 of available effects can be obtained with \code{\link{actor_effects}()}.
 
 The majority of the statistics can be scaled in some way, see
@@ -98,20 +79,20 @@ functions for more information on this.
 
 For the computation of the \emph{exogenous} statistics an attributes object
 with the exogenous covariate information has to be supplied to the
-\code{attributes} argument in either \code{aomstats()} or in the separate
-effect functions supplied to the \code{sender_effects} or
-\code{receiver_effects} argument (e.g., see \code{\link{send}}). This
-\code{attributes} object should be constructed as follows: A dataframe with
-rows refering to the attribute value of actor \emph{i} at timepoint
-\emph{t}. An `id` column is required that contains the actor id
-(corresponding to the actor id's in the edgelist). A `time` column is
-required that contains the time when attributes change (set to zero if none
-of the attributes vary over time). Subsequent columns contain the attributes
-that are called in the specifications of exogenous statistics (column name
-corresponding to the string supplied to the \code{variable} argument in the
-effect function). Note that the procedure for the exogenous effect `tie'
-deviates from this, here the exogenous covariate information has to be
-specified in a different way, see \code{\link{tie}}.
+\code{attributes} argument in either \code{remstats()} or in the separate
+effect functions supplied to the \code{..._effects} arguments (e.g., see
+\code{\link{send}}). This \code{attributes} object should be constructed as
+follows: A dataframe with rows refering to the attribute value of actor
+\emph{i} at timepoint \emph{t}. A `name` column is required that contains the
+actor name (corresponding to the actor names in the relational event
+history). A `time` column is required that contains the time when attributes
+change (set to zero if none of the attributes vary over time). Subsequent
+columns contain the attributes that are called in the specifications of
+exogenous statistics (column name corresponding to the string supplied to
+the \code{variable} argument in the effect function). Note that the
+procedure for the exogenous effects `tie' and `event' deviates from this,
+here the exogenous covariate information has to be specified in a different
+way, see \code{\link{tie}} and \code{\link{event}}.
 }
 
 \section{Memory}{
@@ -124,53 +105,43 @@ Mulders & Leenders, 2019). This length of this time window is set by the
 `memory_value` parameter. For example, when `memory_value = 100` and `memory
 = "window"`, at time point $t$ only the past events that happened at most
 100 time units ago are included in the computation of the statistics.
-A third option is to set `memory` to `"interval"`. In this case, the past 
-event history within a given time interval is considered. For example, when 
-`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$ 
-only the past events tha happened between 50 and 100 time units ago are 
-included in the computation of the statistics. Finally, the fourth option is 
-to set `memory` to `"decay"`. In this case, the weight of the past event in 
-the computation of the statistics depend on the elapsed time between $t$ and 
-the past event. This weight is determined based on an exponential decay 
+A third option is to set `memory` to `"interval"`. In this case, the past
+event history within a given time interval is considered. For example, when
+`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+only the past events tha happened between 50 and 100 time units ago are
+included in the computation of the statistics. Finally, the fourth option is
+to set `memory` to `"decay"`. In this case, the weight of the past event in
+the computation of the statistics depend on the elapsed time between $t$ and
+the past event. This weight is determined based on an exponential decay
 function with half-life parameter `memory_value` (see Brandes et al., 2009).
 }
 
 \section{Event weights}{
 
-Note that if the edgelist contains a column that is named ``weight'', it is
-assumed that these affect the endogenous statistics. These settings are
-defined globally in the \code{aomstats} function and affect the computation
-of all endogenous statistics with the following exceptions (that follow
-logically from their definition). Since spUnique is a count of the number of
-unique interaction partners, and the recency statistics (recencyContinue,
-recencySendSender, recencySendReceiver, recencyReceiveSender,
-recencyReceiveReceiver) depend on the time past, the computation of these
-statistics do not depend on event weights. Since the baseline statistic is
-always one, the FEtype statistic is binary and does not depend on past
-events, and the p-shifts (PSAB-BA, PSAB-BY, PSAB-XA, PSAB-XB, PSAB-XY and
-PSAB-AY) are binary and only dependent on the previous event, these
-statistics are not affected by the memory settings or the supplied event
-weights. The recency-rank statistics (rrankSend, rrankReceive) are (for now)
-only available with the "full" memory, and are, per definition, not affected
-by supplied event weights.
+Note that if the relational event history contains a column that is named
+``weight'', it is assumed that these affect the endogenous statistics. These
+affect the computation of all endogenous statistics with a few exceptions
+that follow logically from their definition (e.g., the recenyContinue
+statistic does depend on time since the event and not on event weights).
 }
 
-\section{Subset of the edgelist}{
+\section{Subset of the relational event history}{
 
-Optionally, statistics can be computed for a slice of the edgelist - but
-based on the entire history. This is achieved by setting the start and
-stop values equal to the index of the first and last event for which
-statistics are requested. For example, start = 5 and stop = 5 computes the
-statistics for only the 5th event in the edgelist, based on the history that
-consists of events 1-4.
+Optionally, statistics can be computed for a slice of the relational event
+sequence - but based on the entire history. This is achieved by setting the
+start and stop values equal to the index of the first and last event for
+which statistics are requested. For example, start = 5 and stop = 5 computes
+the statistics for only the 5th event in the relational event sequence,
+based on the history that consists of events 1-4.
 }
 
 \examples{
 library(remstats)
 seff <- ~ send("extraversion")
+reh <- remify::remify(edgelist = history, model = "actor")
 reff <- ~ receive("agreeableness") + inertia() + otp()
 aomstats(
-  edgelist = history, sender_effects = seff, receiver_effects = reff,
+  reh = reh, sender_effects = seff, receiver_effects = reff,
   attributes = info
 )
 

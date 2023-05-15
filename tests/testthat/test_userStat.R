@@ -1,14 +1,15 @@
 library(remstats)
 
-dummy <- remstats(edgelist = history, tie_effects = ~1)
-riskset <- dummy$riskset
+reh_tie <- remify::remify(history, model = "tie")
+dummy <- remstats(reh = reh_tie, tie_effects = ~1)
+riskset <- attr(dummy, "riskset")
 same_age <- as.numeric(
     apply(riskset, 1, function(x) {
-        info$age[info$id == as.numeric(x[1]) & info$time == 0] ==
-            info$age[info$id == as.numeric(x[2]) & info$time == 0]
+        info$age[info$name == as.numeric(x[1]) & info$time == 0] ==
+            info$age[info$name == as.numeric(x[2]) & info$time == 0]
     })
 )
-same_age <- t(replicate(n = nrow(dummy$evls), same_age))
+same_age <- t(replicate(n = nrow(history), same_age))
 
 test_that("expected errors and warnings", {
     # Expected error for unequal number of rows
@@ -16,7 +17,7 @@ test_that("expected errors and warnings", {
     mod <- ~ userStat(x = temp)
 
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = reh_tie, tie_effects = mod),
         "does not match number of events"
     )
     # ADD for sender_effects and receiver_effects
@@ -26,7 +27,7 @@ test_that("expected errors and warnings", {
     mod <- ~ userStat(x = temp)
 
     expect_error(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = reh_tie, tie_effects = mod),
         "does not match number of dyads"
     )
     # ADD for sender_effects and receiver_effects
@@ -38,7 +39,7 @@ test_that("expected errors and warnings", {
     expect_warning(userStat(x = temp), "missing values")
 
     expect_warning(
-        remstats(edgelist = history, tie_effects = mod),
+        remstats(reh = reh_tie, tie_effects = mod),
         "missing values"
     )
 })

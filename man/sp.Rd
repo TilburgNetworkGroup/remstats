@@ -29,10 +29,9 @@ Optionally, a scaling method can be set with \code{scaling}. Note that the
 `shared partners' effect is only defined for undirected events.
 }
 \examples{
-library(remify)
-rehObject <- reh(history, directed = FALSE)
+reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 effects <- ~ sp()
-tomstats(effects, edgelist = rehObject)
+remstats(tie_effects = effects, reh = reh_tie)
 
 }
 \seealso{

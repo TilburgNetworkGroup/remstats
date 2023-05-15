@@ -30,19 +30,20 @@ The statistic is equal to the value of the exogenous attribute for
 dyad \emph{(i,j)} in matrix \code{x}.
 }
 \examples{
-library(remify)
 data(info)
-actors <- unique(info$id)
-age <- info[match(actors, info$id), "age"]
+actors <- unique(info$name)
+age <- info[match(actors, info$name), "age"]
 both_old <- sapply(seq_along(actors), function(i) {
     sapply(seq_along(actors), function(j) {
         ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)
     })
 })
 rownames(both_old) <- colnames(both_old) <- actors
-rehObject <- reh(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ tie(both_old, variableName = "both.old")
-remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
-remstats(edgelist = rehObject, receiver_effects = effects, attributes = info)
+remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+
+reh_actor <- remify(history, model = "actor")
+remstats(reh = reh_actor, receiver_effects = effects, attributes = info)
 
 }

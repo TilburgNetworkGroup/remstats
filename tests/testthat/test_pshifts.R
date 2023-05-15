@@ -1,4 +1,3 @@
-library(remify)
 library(remstats)
 
 test_that("pshifts", {
@@ -8,14 +7,14 @@ test_that("pshifts", {
 		psABAB() 
 	
 	# Compute the statistics
-	out <- tomstats(form, edgelist = history[,c(1:3)])
-	stats <- out$statistics
+	reh <- remify::remify(history, model = "tie")
+	stats <- tomstats(form, reh = reh)
 	
 	# Tests
 	expect_true(all(stats %in% c(0,1)))
 	expect_equal(rowSums(stats[,,"psABBA"]), c(0, rep(1, nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABAB"]), c(0, rep(1, nrow(stats)-1)))
-	n <- length(unique(info$id))
+	n <- length(unique(info$name))
 	expect_equal(rowSums(stats[,,"psABBY"]), c(0, rep(n-2, nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABXA"]), c(0, rep(n-2, nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABXB"]), c(0, rep(n-2, nrow(stats)-1)))
@@ -34,14 +33,14 @@ test_that("pshifts", {
 		psABAB(consider_type = TRUE)
 	
 	# Compute the statistics
-	out <- tomstats(form, edgelist = history)
-	stats <- out$statistics
+	reh <- remify::remify(history, model = "tie")
+	stats <- tomstats(form, reh = reh)
 	
 	# Tests
 	expect_true(all(stats %in% c(0,1)))
 	expect_equal(rowSums(stats[,,"psABBA.type"]), c(0, rep(1, nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABAB.type"]), c(0, rep(1, nrow(stats)-1)))
-	n <- length(unique(info$id))
+	n <- length(unique(info$name))
 	expect_equal(rowSums(stats[,,"psABBY.type"]), c(0, rep(n-2, nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABXA.type"]), c(0, rep(n-2, nrow(stats)-1)))
 	expect_equal(rowSums(stats[,,"psABXB.type"]), c(0, rep(n-2, nrow(stats)-1)))

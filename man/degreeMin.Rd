@@ -39,11 +39,9 @@ every actor is equally likely to be involved in an event and the statistic
 is set equal to 1/n, where n refers to the number of actors.
 }
 \examples{
-library(remify)
-rehObject <- reh(history, directed = FALSE)
+reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 effects <- ~ degreeMin()
-remstats(edgelist = rehObject, tie_effects = effects, directed = FALSE)
-tomstats(effects, edgelist = rehObject, directed = FALSE)
+remstats(reh = reh_tie, tie_effects = effects)
 
 }
 \seealso{

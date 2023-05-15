@@ -22,11 +22,10 @@ The statistic at timepoint \emph{t} is for all dyads in the risk set equal
 to the attribute of the event at timepoint \emph{t}.
 }
 \examples{
-library(remify)
-rehObject <- reh(history)
+reh_tie <- remify::remify(history, model = "tie")
 work <- ifelse(history$setting == "work", 1, 0)
 effects <- ~ event(x = work, variableName = "setting_is_work")
-remstats(edgelist = rehObject, tie_effects = effects)
+remstats(reh = reh_tie, tie_effects = effects)
 
 }
 \seealso{

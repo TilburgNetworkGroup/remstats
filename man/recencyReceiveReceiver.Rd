@@ -26,8 +26,11 @@ events.
 }
 \examples{
 effects <- ~ recencyReceiveReceiver()
-tomstats(effects, edgelist = history)
-aomstats(receiver_effects = effects, edgelist = history)
+reh_tie <- remify::remify(history, model = "tie")
+remstats(tie_effects = effects, reh = reh_tie)
+
+reh_actor <- remify::remify(history, model = "actor")
+remstats(receiver_effects = effects, reh = reh_actor)
 
 }
 \seealso{

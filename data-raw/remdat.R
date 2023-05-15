@@ -3,7 +3,7 @@ rm(list=ls())
 set.seed(8787)
 
 # Create actors and exogenous information on them
-info <- data.frame(id = sample(101:115, 10))
+info <- data.frame(name = sample(101:115, 10))
 info$time <- 0
 info$age <- sample(c(0,1), 10, replace = T, prob = c(0.8, 0.2))
 info$sex <- sample(c(0,1), 10, replace = T, prob = c(0.8, 0.2))
@@ -16,8 +16,8 @@ info$agreeableness <- ifelse(info$agreeableness > 7, 7, info$agreeableness)
 
 # Sample events between actors
 history <- data.frame(time = cumsum(rexp(125, rate = 0.004)))
-history$actor1 <- sample(info$id, 125, replace = T)
-history$actor2 <- sample(info$id, 125, replace = T)
+history$actor1 <- sample(info$name, 125, replace = T)
+history$actor2 <- sample(info$name, 125, replace = T)
 history <- history[history$actor1!=history$actor2,]
 history$setting <- sample(c("work", "social"), size = nrow(history), prob = c(0.7, 0.3), replace = T)
 history$weight <- rexp(nrow(history), 2)
@@ -49,7 +49,7 @@ info$agreeableness <- (info$agreeableness-mean(info$agreeableness)
 )/sd(info$agreeableness)
 info$extraversion <- round(info$extraversion, 2)
 info$agreeableness <- round(info$agreeableness, 2)
-info <- info[order(info$id, info$time),]
+info <- info[order(info$name, info$time),]
 rownames(info) <- NULL
 
 usethis::use_data(info, history, overwrite = TRUE)

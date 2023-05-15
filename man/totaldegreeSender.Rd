@@ -39,12 +39,12 @@ that every actor is equally likely to send a message and the statistic is
 set equal to 1/n, where n refers to the number of actors.
 }
 \examples{
-library(remify)
-rehObject <- reh(history)
-remstats(edgelist = rehObject, tie_effects = effects)
-remstats(edgelist = rehObject, sender_effects = effects)
-tomstats(effects, edgelist = rehObject)
-aomstats(sender_effects = effects, edgelist = rehObject)
+effects <- ~ totaldegreeSender()
+reh_tie <- remify::remify(history, model = "tie")
+remstats(reh = reh_tie, tie_effects = effects)
+
+reh_actor <- remify(history, model = "actor")
+remstats(reh = reh_actor, sender_effects = effects)
 
 }
 \seealso{

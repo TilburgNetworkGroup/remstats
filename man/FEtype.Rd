@@ -23,12 +23,10 @@ Note that specifying fixed effects for event types is only available when
 event types are modeled in the dependent variable.
 }
 \examples{
-library(remify)
 history$type <- history$setting
-rehObject <- reh(history)
+reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ FEtype()
-remstats(edgelist = rehObject, tie_effects = effects, attributes = info)
-tomstats(effects, edgelist = rehObject)
+remstats(reh = reh_tie, tie_effects = effects)
 
 }
 \seealso{
