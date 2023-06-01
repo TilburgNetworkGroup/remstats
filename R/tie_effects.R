@@ -1,14 +1,16 @@
 #' tie_effects
-#' 
-#' Overview of statistics in the tie-oriented model, see Details. 
-#' 
-#' @param directed outputs all statistics in the tie-oriented model for 
-#' directed events if true, or all statistics in the tie-oriented model for 
+#'
+#' Overview of statistics in the tie-oriented model, see Details.
+#'
+#' @param directed outputs all statistics in the tie-oriented model for
+#' directed events if true, or all statistics in the tie-oriented model for
 #' undirected events if false.
-#' 
+#' @param endogenous outputs all endogenous statistics in the tie-oriented
+#' model if true, or all exogenous statistics if false
+#'
 #' @details
-#' Overview of statistics in the tie-oriented model. 
-#' 
+#' Overview of statistics in the tie-oriented model.
+#'
 #' Exogenous statistics:
 #' \itemize{
 #'  \item \code{\link{send}()}
@@ -55,78 +57,99 @@
 #'  \item \code{\link{FEtype}()}
 #'  \item \code{\link{userStat}()}
 #' }
-#' 
+#'
 #' @export
-tie_effects <- function(directed = NULL) {
-    # Name all effects
-    effects <- c(
-        "send",
-        "receive",
-        "tie",
-        "same",
-        "difference",
-        "average",
-        "minimum",
-        "maximum",
-        "event",
-        "indegreeSender",
-        "indegreeReceiver",
-        "outdegreeSender",
-        "outdegreeReceiver",
-        "totaldegreeSender",
-        "totaldegreeReceiver",
-        "totaldegreeDyad",
-        "degreeDiff",
-        "degreeMin",
-        "degreeMax",
-        "inertia",
-        "reciprocity",
-        "otp",
-        "itp",
-        "osp",
-        "isp",
-        "sp",
-        "spUnique",
-        #"ccp",
-        "psABBA",
-        "psABBY",
-        "psABXA",
-        "psABXB",
-        "psABXY",
-        "psABAY",
-        "psABAB",
-        "rrankSend",
-        "rrankReceive",
-        "recencySendSender",
-        "recencySendReceiver",
-        "recencyReceiveSender",
-        "recencyReceiveReceiver",
-        "recencyContinue",
-        "FEtype",
-        "userStat"
-    )
+tie_effects <- function(directed = NULL, endogenous = NULL) {
+  # Name all effects
+  effects <- c(
+    "send",
+    "receive",
+    "tie",
+    "same",
+    "difference",
+    "average",
+    "minimum",
+    "maximum",
+    "event",
+    "indegreeSender",
+    "indegreeReceiver",
+    "outdegreeSender",
+    "outdegreeReceiver",
+    "totaldegreeSender",
+    "totaldegreeReceiver",
+    "totaldegreeDyad",
+    "degreeDiff",
+    "degreeMin",
+    "degreeMax",
+    "inertia",
+    "reciprocity",
+    "otp",
+    "itp",
+    "osp",
+    "isp",
+    "sp",
+    "spUnique",
+    # "ccp",
+    "psABBA",
+    "psABBY",
+    "psABXA",
+    "psABXB",
+    "psABXY",
+    "psABAY",
+    "psABAB",
+    "rrankSend",
+    "rrankReceive",
+    "recencySendSender",
+    "recencySendReceiver",
+    "recencyReceiveSender",
+    "recencyReceiveReceiver",
+    "recencyContinue",
+    "FEtype",
+    "userStat"
+  )
 
-    if (!is.null(directed)) {
-        if (directed) {
-            # Filter out effects that are not defined for directed events
-            directed_effects <- effects[!(effects %in% c(
-                "sp", "spUnique", "degreeMin", "degreeMax", "ccp", "degreeDiff"
-            ))]
-            return(directed_effects)
-        } else if (!directed) {
-            # Filter out effects that are not defined for directed events
-            undirected_effects <- effects[!(effects %in% c(
-                "send", "receive", "reciprocity", "indegreeSender",
-                "indegreeReceiver", "outdegreeSender", "outdegreeReceiver",
-                "totaldegreeSender", "totaldegreeReceiver", "otp", "itp",
-                "osp", "isp", "psABBA", "psABBY", "psABXA", "psABXB", "psABXY",
-                "rrankSend", "rrankReceive", "recencySendSender",
-                "recencySendReceiver", "recencyReceiveSender",
-                "recencyReceiveReceiver"
-            ))]
-            return(undirected_effects)
-        }
+  if (!is.null(directed)) {
+    if (directed) {
+      # Filter out effects that are not defined for directed events
+      effects <- effects[!(effects %in% c(
+        "sp", "spUnique", "degreeMin", "degreeMax", "ccp", "degreeDiff"
+      ))]
+    } else if (!directed) {
+      # Filter out effects that are not defined for directed events
+      effects <- effects[!(effects %in% c(
+        "send", "receive", "reciprocity", "indegreeSender",
+        "indegreeReceiver", "outdegreeSender", "outdegreeReceiver",
+        "totaldegreeSender", "totaldegreeReceiver", "otp", "itp",
+        "osp", "isp", "psABBA", "psABBY", "psABXA", "psABXB", "psABXY",
+        "rrankSend", "rrankReceive", "recencySendSender",
+        "recencySendReceiver", "recencyReceiveSender",
+        "recencyReceiveReceiver"
+      ))]
     }
+  }
 
-    effects
+  if (!is.null(endogenous)) {
+    if (endogenous) {
+      # Filter out exogenous effects
+      effects <- effects[!(effects %in% c(
+        "send", "receive", "tie", "same", "difference", "average",
+        "minimum", "maximum", "event", "FEtype", "userStat"
+      ))]
+    } else if (!endogenous) {
+      # Filter out endogenous effects
+      effects <- effects[!(effects %in% c(
+        "indegreeSender", "indegreeReceiver", "outdegreeSender",
+        "outdegreeReceiver", "totaldegreeSender", "totaldegreeReceiver",
+        "totaldegreeDyad", "degreeDiff", "degreeMin", "degreeMax",
+        "inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp",
+        "spUnique", "psABBA", "psABBY", "psABXA", "psABXB", "psABXY",
+        "psABAY", "psABAB", "rrankSend", "rrankReceive",
+        "recencySendSender", "recencySendReceiver", "recencyReceiveSender",
+        "recencyReceiveReceiver", "recencyContinue"
+      ))]
+    }
+  }
+
+
+  effects
 }
