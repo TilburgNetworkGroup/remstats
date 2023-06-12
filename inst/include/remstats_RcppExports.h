@@ -109,6 +109,27 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
+    inline arma::mat computeTriadStatsNoTypes(int type, const arma::mat& adjmat, arma::vec actors, const arma::mat& riskset) {
+        typedef SEXP(*Ptr_computeTriadStatsNoTypes)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr_computeTriadStatsNoTypes p_computeTriadStatsNoTypes = NULL;
+        if (p_computeTriadStatsNoTypes == NULL) {
+            validateSignature("arma::mat(*computeTriadStatsNoTypes)(int,const arma::mat&,arma::vec,const arma::mat&)");
+            p_computeTriadStatsNoTypes = (Ptr_computeTriadStatsNoTypes)R_GetCCallable("remstats", "_remstats_computeTriadStatsNoTypes");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_computeTriadStatsNoTypes(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(adjmat)), Shield<SEXP>(Rcpp::wrap(actors)), Shield<SEXP>(Rcpp::wrap(riskset)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
     inline arma::cube compute_stats_tie(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, const arma::mat& riskset, const arma::vec& scaling, const Rcpp::List& covariates, const Rcpp::List& interactions, int start, int stop, bool directed) {
         typedef SEXP(*Ptr_compute_stats_tie)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_tie p_compute_stats_tie = NULL;

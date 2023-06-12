@@ -17,6 +17,10 @@ compute_adjmat <- function(edgelist, N, D, directed, memory, memory_value, start
     .Call(`_remstats_compute_adjmat`, edgelist, N, D, directed, memory, memory_value, start, stop)
 }
 
+computeTriadStatsNoTypes <- function(type, adjmat, actors, riskset) {
+    .Call(`_remstats_computeTriadStatsNoTypes`, type, adjmat, actors, riskset)
+}
+
 compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed) {
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed)
 }

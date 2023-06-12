@@ -1498,21 +1498,22 @@ arma::mat triad_tie(int type,
   return stat;
 }
 
-// computeTriadStatsDirectedNoTypes
+// computeTriadStatsNoTypes
 //
 // Computes the triad statistics for the tie-oriented model with directed
 // dyadic events
 //
-// type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp
+// type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp, 5 = sp, 6 = unique sp
 // adjmat: matrix (events x dyads)
 // start: integer, first event in the edgelist for which the statistic is
 // computed
 // stop: integer, last event in the edgelist for which the statistic is
 // computed
-arma::mat computeTriadStatsDirectedNoTypes(int type,
-                                           const arma::mat &adjmat,
-                                           arma::vec actors,
-                                           const arma::mat &riskset)
+// [[Rcpp::export]]
+arma::mat computeTriadStatsNoTypes(int type,
+                                   const arma::mat &adjmat,
+                                   arma::vec actors,
+                                   const arma::mat &riskset)
 {
   // Initialize saving space
   arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
@@ -1523,7 +1524,14 @@ arma::mat computeTriadStatsDirectedNoTypes(int type,
   {
     for (arma::uword j = 0; j < actors.n_elem; ++j)
     {
-      dyadIndices(i, j) = remify::getDyadIndex(i, j, 0, actors.n_elem, true);
+      if ((type == 5) | (type == 6))
+      {
+        dyadIndices(i, j) = remify::getDyadIndex(i, j, 0, actors.n_elem, false);
+      }
+      else
+      {
+        dyadIndices(i, j) = remify::getDyadIndex(i, j, 0, actors.n_elem, true);
+      }
     }
   }
 
@@ -1595,7 +1603,7 @@ arma::mat computeTriadStatsDirectedNoTypes(int type,
       // Insert a column of zeros at the i-th position
       selectedCols1.insert_cols(i, zeroColumn);
 
-      // Get all past events received by receiver j
+      // Get all past events sent by receiver j
       colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.row(j).t());
       colIndices2.shed_row(j);
       selectedCols2 = adjmat.cols(colIndices2);
@@ -1621,6 +1629,48 @@ arma::mat computeTriadStatsDirectedNoTypes(int type,
       // Insert a column of zeros at the j-th position
       selectedCols2.insert_cols(j, zeroColumn);
       break;
+
+    case 5:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.col(i));
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
+
+      // Get all past events sent by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.row(j).t());
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      break;
+
+    case 6:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.col(i));
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
+
+      // Convert elements in selectedCols1 to 1 if greater than 0
+      selectedCols1 = arma::conv_to<arma::mat>::from(selectedCols1 > 0);
+
+      // Get all past events sent by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.row(j).t());
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      // Convert elements in selectedCols2 to 1 if greater than 0
+      selectedCols2 = arma::conv_to<arma::mat>::from(selectedCols2 > 0);
+
+      break;
     }
 
     // Calculate the element-wise minimum
@@ -1634,9 +1684,9 @@ arma::mat computeTriadStatsDirectedNoTypes(int type,
   return stat;
 }
 
-// computeTriadStatsDirectedTypesNotConsidered
+// computeTriadStatsTypesNotConsidered
 //
-// Computes the triad statistics for the tie-oriented model with directed
+// Computes the triad statistics for the tie-oriented model with
 // types events, summing over event types (i.e., consider_type = FALSE)
 //
 // type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp
@@ -1645,280 +1695,403 @@ arma::mat computeTriadStatsDirectedNoTypes(int type,
 // computed
 // stop: integer, last event in the edgelist for which the statistic is
 // computed
-arma::mat computeTriadStatsDirectedTypesNotConsidered(
-    int type, 
-    const arma::mat& adjmat, 
-    const arma::vec &actors, 
-    const arma::vec& types, 
-    const arma::mat& riskset) {
+arma::mat computeTriadStatsTypesNotConsidered(
+    int type,
+    const arma::mat &adjmat,
+    const arma::vec &actors,
+    const arma::vec &types,
+    const arma::mat &riskset)
+{
 
-    // Initialize saving space
-    arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
+  // Initialize saving space
+  arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
 
-    // Pre-compute dyad indices
-    arma::cube dyadIndices(actors.n_elem, actors.n_elem, types.n_elem);
-    for(arma::uword i = 0; i < actors.n_elem; ++i) {
-        for(arma::uword j = 0; j < actors.n_elem; ++j) {
-            for(arma::uword c = 0; c < types.n_elem; ++c) {
-                dyadIndices(i,j,c) = remify::getDyadIndex(i, j, c, actors.n_elem, true);
-            }
-        }
-    }
-
-    // Initialize selectedCols1, selectedCols2, colIndices1, colIndices2 
-    // with their maximum required sizes
-    arma::cube selectedCols1(adjmat.n_rows, actors.n_elem, types.n_elem);
-    arma::cube selectedCols2(adjmat.n_rows, actors.n_elem, types.n_elem);
-    arma::uvec colIndices1(actors.n_elem);
-    arma::uvec colIndices2(actors.n_elem);
-
-    // Initialize sumAcrossTypes1, minMatrix, and rowSums
-    arma::mat sumAcrossTypes1(adjmat.n_rows, actors.n_elem);
-    arma::mat sumAcrossTypes2(adjmat.n_rows, actors.n_elem);
-    arma::mat minMatrix(adjmat.n_rows, actors.n_elem);
-    arma::vec rowSums(adjmat.n_rows);
-
-    // Initialize a zero column
-    arma::mat zeroColumn = arma::zeros<arma::mat>(adjmat.n_rows, 1);
-
-    // For loop over dyads
-    for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
-        // Sender i and receiver j
-        arma::uword i = riskset(d, 0);
-        arma::uword j = riskset(d, 1);
-        
-        switch (type)
+  // Pre-compute dyad indices
+  arma::cube dyadIndices(actors.n_elem, actors.n_elem, types.n_elem);
+  for (arma::uword i = 0; i < actors.n_elem; ++i)
+  {
+    for (arma::uword j = 0; j < actors.n_elem; ++j)
+    {
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        if ((type == 5) | (type == 6))
         {
-        case 1:
-            // For loop over event types
-            for(arma::uword c = 0; c < types.n_elem; ++c) {
-                // Get all past events sent by sender i 
-                colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
-                colIndices1.shed_row(i);
-                arma::mat temp1 = adjmat.cols(colIndices1); 
-                // Insert a column of zeros at the i-th position
-                temp1.insert_cols(i, zeroColumn);
-                selectedCols1.slice(c) = temp1;
-
-                // Get all past events received by receiver j 
-                colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
-                colIndices2.shed_row(j);
-                arma::mat temp2 = adjmat.cols(colIndices2);  
-
-                // Insert a column of zeros at the j-th position
-                temp2.insert_cols(j, zeroColumn);
-                selectedCols2.slice(c) = temp2;  
-            }
-            break;
-
-        case 2:
-            // For loop over event types
-            for(arma::uword c = 0; c < types.n_elem; ++c) {
-                // Get all past events send by receiver j 
-                colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
-                colIndices1.shed_row(j);
-                arma::mat temp1 = adjmat.cols(colIndices1); 
-                // Insert a column of zeros at the j-th position
-                temp1.insert_cols(j, zeroColumn);
-                selectedCols1.slice(c) = temp1;
-
-                // Get all past events received by sender i
-                colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
-                colIndices2.shed_row(i);
-                arma::mat temp2 = adjmat.cols(colIndices2);  
-
-                // Insert a column of zeros at the i-th position
-                temp2.insert_cols(i, zeroColumn);
-                selectedCols2.slice(c) = temp2;  
-            }
-            break;
-
-        case 3:
-            // For loop over event types
-            for(arma::uword c = 0; c < types.n_elem; ++c) {
-                 // Get all past events sent by sender i 
-                colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
-                colIndices1.shed_row(i);
-                arma::mat temp1 = adjmat.cols(colIndices1); 
-                // Insert a column of zeros at the i-th position
-                temp1.insert_cols(i, zeroColumn);
-                selectedCols1.slice(c) = temp1;
-
-                // Get all past events sent by receiver j 
-                colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
-                colIndices2.shed_row(j);
-                arma::mat temp2 = adjmat.cols(colIndices2);  
-
-                // Insert a column of zeros at the j-th position
-                temp2.insert_cols(j, zeroColumn);
-                selectedCols2.slice(c) = temp2;  
-            }
-            break;
-
-        case 4:
-            // For loop over event types
-            for(arma::uword c = 0; c < types.n_elem; ++c) {
-                // Get all past events received by sender i
-                colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
-                colIndices1.shed_row(i);
-                arma::mat temp1 = adjmat.cols(colIndices1); 
-                // Insert a column of zeros at the i-th position
-                temp1.insert_cols(i, zeroColumn);
-                selectedCols1.slice(c) = temp1;
-
-                // Get all past events received by receiver j 
-                colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
-                colIndices2.shed_row(j);
-                arma::mat temp2 = adjmat.cols(colIndices2);  
-
-                // Insert a column of zeros at the j-th position
-                temp2.insert_cols(j, zeroColumn);
-                selectedCols2.slice(c) = temp2;  
-            }
-            break;
-        }        
-
-        // Compute the sum of elements across all slices
-        sumAcrossTypes1 = arma::sum(selectedCols1, 2);
-        sumAcrossTypes2 = arma::sum(selectedCols2, 2);
-
-        // Calculate the element-wise minimum
-        minMatrix = arma::min(sumAcrossTypes1, sumAcrossTypes2);
-
-        // Calculate the sum per time point
-        rowSums = arma::sum(minMatrix, 1);
-        stat.col(d) = rowSums;
+          dyadIndices(i, j, c) = remify::getDyadIndex(i, j, c, actors.n_elem, false);
+        }
+        else
+        {
+          dyadIndices(i, j, c) = remify::getDyadIndex(i, j, c, actors.n_elem, true);
+        }
+      }
     }
-    return stat;
+  }
+
+  // Initialize selectedCols1, selectedCols2, colIndices1, colIndices2
+  // with their maximum required sizes
+  arma::cube selectedCols1(adjmat.n_rows, actors.n_elem, types.n_elem);
+  arma::cube selectedCols2(adjmat.n_rows, actors.n_elem, types.n_elem);
+  arma::uvec colIndices1(actors.n_elem);
+  arma::uvec colIndices2(actors.n_elem);
+
+  // Initialize sumAcrossTypes1, minMatrix, and rowSums
+  arma::mat sumAcrossTypes1(adjmat.n_rows, actors.n_elem);
+  arma::mat sumAcrossTypes2(adjmat.n_rows, actors.n_elem);
+  arma::mat minMatrix(adjmat.n_rows, actors.n_elem);
+  arma::vec rowSums(adjmat.n_rows);
+
+  // Initialize a zero column
+  arma::mat zeroColumn = arma::zeros<arma::mat>(adjmat.n_rows, 1);
+
+  // For loop over dyads
+  for (arma::uword d = 0; d < adjmat.n_cols; ++d)
+  {
+    // Sender i and receiver j
+    arma::uword i = riskset(d, 0);
+    arma::uword j = riskset(d, 1);
+
+    switch (type)
+    {
+    case 1:
+      // For loop over event types
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        // Get all past events sent by sender i
+        colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+        colIndices1.shed_row(i);
+        arma::mat temp1 = adjmat.cols(colIndices1);
+        // Insert a column of zeros at the i-th position
+        temp1.insert_cols(i, zeroColumn);
+        selectedCols1.slice(c) = temp1;
+
+        // Get all past events received by receiver j
+        colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
+        colIndices2.shed_row(j);
+        arma::mat temp2 = adjmat.cols(colIndices2);
+
+        // Insert a column of zeros at the j-th position
+        temp2.insert_cols(j, zeroColumn);
+        selectedCols2.slice(c) = temp2;
+      }
+      break;
+
+    case 2:
+      // For loop over event types
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        // Get all past events send by receiver j
+        colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+        colIndices1.shed_row(j);
+        arma::mat temp1 = adjmat.cols(colIndices1);
+        // Insert a column of zeros at the j-th position
+        temp1.insert_cols(j, zeroColumn);
+        selectedCols1.slice(c) = temp1;
+
+        // Get all past events received by sender i
+        colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+        colIndices2.shed_row(i);
+        arma::mat temp2 = adjmat.cols(colIndices2);
+
+        // Insert a column of zeros at the i-th position
+        temp2.insert_cols(i, zeroColumn);
+        selectedCols2.slice(c) = temp2;
+      }
+      break;
+
+    case 3:
+      // For loop over event types
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        // Get all past events sent by sender i
+        colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+        colIndices1.shed_row(i);
+        arma::mat temp1 = adjmat.cols(colIndices1);
+        // Insert a column of zeros at the i-th position
+        temp1.insert_cols(i, zeroColumn);
+        selectedCols1.slice(c) = temp1;
+
+        // Get all past events sent by receiver j
+        colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+        colIndices2.shed_row(j);
+        arma::mat temp2 = adjmat.cols(colIndices2);
+
+        // Insert a column of zeros at the j-th position
+        temp2.insert_cols(j, zeroColumn);
+        selectedCols2.slice(c) = temp2;
+      }
+      break;
+
+    case 4:
+      // For loop over event types
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        // Get all past events received by sender i
+        colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+        colIndices1.shed_row(i);
+        arma::mat temp1 = adjmat.cols(colIndices1);
+        // Insert a column of zeros at the i-th position
+        temp1.insert_cols(i, zeroColumn);
+        selectedCols1.slice(c) = temp1;
+
+        // Get all past events received by receiver j
+        colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
+        colIndices2.shed_row(j);
+        arma::mat temp2 = adjmat.cols(colIndices2);
+
+        // Insert a column of zeros at the j-th position
+        temp2.insert_cols(j, zeroColumn);
+        selectedCols2.slice(c) = temp2;
+      }
+      break;
+
+    case 5:
+      // For loop over event types
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        // Get all past events received by sender i
+        colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+        colIndices1.shed_row(i);
+        arma::mat temp1 = adjmat.cols(colIndices1);
+        // Insert a column of zeros at the i-th position
+        temp1.insert_cols(i, zeroColumn);
+        selectedCols1.slice(c) = temp1;
+
+        // Get all past events sent by receiver j
+        colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+        colIndices2.shed_row(j);
+        arma::mat temp2 = adjmat.cols(colIndices2);
+
+        // Insert a column of zeros at the j-th position
+        temp2.insert_cols(j, zeroColumn);
+        selectedCols2.slice(c) = temp2;
+      }
+      break;
+
+    case 6:
+      // For loop over event types
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        // Get all past events received by sender i
+        colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+        colIndices1.shed_row(i);
+        arma::mat temp1 = adjmat.cols(colIndices1);
+        // Insert a column of zeros at the i-th position
+        temp1.insert_cols(i, zeroColumn);
+        selectedCols1.slice(c) = temp1;
+
+        // Get all past events sent by receiver j
+        colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+        colIndices2.shed_row(j);
+        arma::mat temp2 = adjmat.cols(colIndices2);
+
+        // Insert a column of zeros at the j-th position
+        temp2.insert_cols(j, zeroColumn);
+        selectedCols2.slice(c) = temp2;
+      }
+      break;
+    }
+
+    // Compute the sum of elements across all slices
+    sumAcrossTypes1 = arma::sum(selectedCols1, 2);
+    sumAcrossTypes2 = arma::sum(selectedCols2, 2);
+
+    if (type == 6)
+    {
+      // Convert elements in sumAcrossTypes1 to 1 if greater than 0
+      sumAcrossTypes1 = arma::conv_to<arma::mat>::from(sumAcrossTypes1 > 0);
+      // Convert elements in sumAcrossTypes2 to 1 if greater than 0
+      sumAcrossTypes2 = arma::conv_to<arma::mat>::from(sumAcrossTypes2 > 0);
+    }
+
+    // Calculate the element-wise minimum
+    minMatrix = arma::min(sumAcrossTypes1, sumAcrossTypes2);
+
+    // Calculate the sum per time point
+    rowSums = arma::sum(minMatrix, 1);
+    stat.col(d) = rowSums;
+  }
+  return stat;
 }
 
-arma::mat computeTriadStatsDirectedTypesConsidered(
-    int type, 
-    const arma::mat& adjmat, 
-    const arma::vec &actors, 
-    const arma::vec& types, 
-    const arma::mat& riskset) {
+arma::mat computeTriadStatsTypesConsidered(
+    int type,
+    const arma::mat &adjmat,
+    const arma::vec &actors,
+    const arma::vec &types,
+    const arma::mat &riskset)
+{
 
-    // Initialize saving space
-    arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
+  // Initialize saving space
+  arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
 
-    // Pre-compute dyad indices
-    arma::cube dyadIndices(actors.n_elem, actors.n_elem, types.n_elem);
-    for(arma::uword i = 0; i < actors.n_elem; ++i) {
-        for(arma::uword j = 0; j < actors.n_elem; ++j) {
-            for(arma::uword c = 0; c < types.n_elem; ++c) {
-                dyadIndices(i,j,c) = remify::getDyadIndex(i, j, c, actors.n_elem, true);
-            }
-        }
-    }
-
-    // Initialize selectedCols1, selectedCols2, colIndices1, colIndices2 
-    // with their maximum required sizes
-    arma::mat selectedCols1(adjmat.n_rows, actors.n_elem);
-    arma::mat selectedCols2(adjmat.n_rows, actors.n_elem);
-    arma::uvec colIndices1(actors.n_elem);
-    arma::uvec colIndices2(actors.n_elem);
-
-    // Initialize minMatrix and rowSums
-    arma::mat minMatrix(adjmat.n_rows, actors.n_elem);
-    arma::vec rowSums(adjmat.n_rows);
-
-    // Initialize a zero column
-    arma::mat zeroColumn = arma::zeros<arma::mat>(adjmat.n_rows, 1);
-
-    // For loop over dyads
-    for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
-        // Sender i and receiver j
-        arma::uword i = riskset(d, 0);
-        arma::uword j = riskset(d, 1);
-        arma::uword c = riskset(d, 2);
-
-        switch (type)
+  // Pre-compute dyad indices
+  arma::cube dyadIndices(actors.n_elem, actors.n_elem, types.n_elem);
+  for (arma::uword i = 0; i < actors.n_elem; ++i)
+  {
+    for (arma::uword j = 0; j < actors.n_elem; ++j)
+    {
+      for (arma::uword c = 0; c < types.n_elem; ++c)
+      {
+        if ((type == 5) | (type == 6))
         {
-        case 1:
-            // Get all past events sent by sender i 
-            colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
-            colIndices1.shed_row(i);
-            selectedCols1 = adjmat.cols(colIndices1);  
+          dyadIndices(i, j, c) = remify::getDyadIndex(i, j, c, actors.n_elem, false);
+        }
+        else
+        {
+          dyadIndices(i, j, c) = remify::getDyadIndex(i, j, c, actors.n_elem, true);
+        }
+      }
+    }
+  }
 
-            // Insert a column of zeros at the i-th position
-            selectedCols1.insert_cols(i, zeroColumn);
+  // Initialize selectedCols1, selectedCols2, colIndices1, colIndices2
+  // with their maximum required sizes
+  arma::mat selectedCols1(adjmat.n_rows, actors.n_elem);
+  arma::mat selectedCols2(adjmat.n_rows, actors.n_elem);
+  arma::uvec colIndices1(actors.n_elem);
+  arma::uvec colIndices2(actors.n_elem);
 
-            // Get all past events received by receiver j 
-            colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
-            colIndices2.shed_row(j);
-            selectedCols2 = adjmat.cols(colIndices2);  
+  // Initialize minMatrix and rowSums
+  arma::mat minMatrix(adjmat.n_rows, actors.n_elem);
+  arma::vec rowSums(adjmat.n_rows);
 
-            // Insert a column of zeros at the j-th position
-            selectedCols2.insert_cols(j, zeroColumn);
-            break;
-            
-        case 2:
-            // Get all past events send by receiver j 
-            colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
-            colIndices1.shed_row(j);
-            selectedCols1 = adjmat.cols(colIndices1);  
+  // Initialize a zero column
+  arma::mat zeroColumn = arma::zeros<arma::mat>(adjmat.n_rows, 1);
 
-            // Insert a column of zeros at the j-th position
-            selectedCols1.insert_cols(j, zeroColumn);
+  // For loop over dyads
+  for (arma::uword d = 0; d < adjmat.n_cols; ++d)
+  {
+    // Sender i and receiver j
+    arma::uword i = riskset(d, 0);
+    arma::uword j = riskset(d, 1);
+    arma::uword c = riskset(d, 2);
 
-            // Get all past events received by sender i
-            colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
-            colIndices2.shed_row(i);
-            selectedCols2 = adjmat.cols(colIndices2);  
+    switch (type)
+    {
+    case 1:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
 
-            // Insert a column of zeros at the i-th position
-            selectedCols2.insert_cols(i, zeroColumn);
-            break;
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
 
-        case 3:
-            // Get all past events sent by sender i 
-            colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
-            colIndices1.shed_row(i);
-            selectedCols1 = adjmat.cols(colIndices1);  
+      // Get all past events received by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
 
-            // Insert a column of zeros at the i-th position
-            selectedCols1.insert_cols(i, zeroColumn);
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      break;
 
-            // Get all past events sent by receiver j 
-            colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
-            colIndices2.shed_row(j);
-            selectedCols2 = adjmat.cols(colIndices2);  
+    case 2:
+      // Get all past events send by receiver j
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+      colIndices1.shed_row(j);
+      selectedCols1 = adjmat.cols(colIndices1);
 
-            // Insert a column of zeros at the j-th position
-            selectedCols2.insert_cols(j, zeroColumn);
-            break;
+      // Insert a column of zeros at the j-th position
+      selectedCols1.insert_cols(j, zeroColumn);
 
-        case 4:
-            // Get all past events received by sender i 
-            colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
-            colIndices1.shed_row(i);
-            selectedCols1 = adjmat.cols(colIndices1);  
+      // Get all past events received by sender i
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+      colIndices2.shed_row(i);
+      selectedCols2 = adjmat.cols(colIndices2);
 
-            // Insert a column of zeros at the i-th position
-            selectedCols1.insert_cols(i, zeroColumn);
+      // Insert a column of zeros at the i-th position
+      selectedCols2.insert_cols(i, zeroColumn);
+      break;
 
-            // Get all past events received by receiver j 
-            colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
-            colIndices2.shed_row(j);
-            selectedCols2 = adjmat.cols(colIndices2);  
+    case 3:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
 
-            // Insert a column of zeros at the j-th position
-            selectedCols2.insert_cols(j, zeroColumn);
-            break;
-        }   
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
 
-        // Calculate the element-wise minimum
-        arma::mat minMatrix = arma::min(selectedCols1, selectedCols2);
+      // Get all past events sent by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
 
-        // Calculate the sum per time point
-        arma::vec rowSums = arma::sum(minMatrix, 1);
-        stat.col(d) = rowSums;
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      break;
+
+    case 4:
+      // Get all past events received by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
+
+      // Get all past events received by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      break;
+
+    case 5:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
+
+      // Get all past events sent by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      break;
+
+    case 6:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
+
+      // Convert elements in selectedCols1 to 1 if greater than 0
+      selectedCols1 = arma::conv_to<arma::mat>::from(selectedCols1 > 0);
+
+      // Get all past events sent by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      // Convert elements in selectedCols2 to 1 if greater than 0
+      selectedCols2 = arma::conv_to<arma::mat>::from(selectedCols2 > 0);
+
+      break;
     }
 
-    return stat;
-}
+    // Calculate the element-wise minimum
+    arma::mat minMatrix = arma::min(selectedCols1, selectedCols2);
 
+    // Calculate the sum per time point
+    arma::vec rowSums = arma::sum(minMatrix, 1);
+    stat.col(d) = rowSums;
+  }
+
+  return stat;
+}
 
 // pshift_tie
 //
@@ -3296,11 +3469,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 18 otp
     case 18:
       // Compute statistic
-      if(types.n_elem == 1) {
-        stat = computeTriadStatsDirectedNoTypes(1, adjmat, actors, riskset);
-      } else {
-        stat = computeTriadStatsDirectedTypesNotConsidered(1, adjmat, actors, types, riskset);
-      }      
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset);
+      }
+      else
+      {
+        stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset);
+      }
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3311,11 +3487,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 19 itp
     case 19:
       // Compute statistic
-      if(types.n_elem == 1) {
-        stat = computeTriadStatsDirectedNoTypes(2, adjmat, actors, riskset);
-      } else {
-        stat = computeTriadStatsDirectedTypesNotConsidered(2, adjmat, actors, types, riskset);
-      }      
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset);
+      }
+      else
+      {
+        stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset);
+      }
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3326,11 +3505,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 20 osp
     case 20:
       // Compute statistic
-      if(types.n_elem == 1) {
-        stat = computeTriadStatsDirectedNoTypes(3, adjmat, actors, riskset);
-      } else {
-        stat = computeTriadStatsDirectedTypesNotConsidered(3, adjmat, actors, types, riskset);
-      }      
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset);
+      }
+      else
+      {
+        stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset);
+      }
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3341,11 +3523,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 21 osp
     case 21:
       // Compute statistic
-      if(types.n_elem == 1) {
-        stat = computeTriadStatsDirectedNoTypes(4, adjmat, actors, riskset);
-      } else {
-        stat = computeTriadStatsDirectedTypesNotConsidered(4, adjmat, actors, types, riskset);
-      }      
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset);
+      }
+      else
+      {
+        stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset);
+      }
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3356,8 +3541,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 22 sp
     case 22:
       // Compute statistic
-      stat = triad_tie(5, edgelist, actors, types, adjmat,
-                       riskset, start, stop, FALSE);
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset);
+      }
+      else
+      {
+        stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset);
+      }
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3368,8 +3559,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 23 spUnique
     case 23:
       // Compute statistic
-      stat = triad_tie(6, edgelist, actors, types, adjmat,
-                       riskset, start, stop, FALSE);
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(6, adjmat, actors, riskset);
+      }
+      else
+      {
+        stat = computeTriadStatsTypesNotConsidered(6, adjmat, actors, types, riskset);
+      }
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3721,7 +3918,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 54 otp.type
     case 54:
       // Compute statistic
-      stat = computeTriadStatsDirectedTypesConsidered(1, adjmat, actors, types, riskset);
+      stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3732,7 +3929,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 55 itp.type
     case 55:
       // Compute statistic
-      stat = computeTriadStatsDirectedTypesConsidered(2, adjmat, actors, types, riskset);
+      stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3743,7 +3940,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 56 osp.type
     case 56:
       // Compute statistic
-      stat = computeTriadStatsDirectedTypesConsidered(3, adjmat, actors, types, riskset);
+      stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3754,7 +3951,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 57 isp.type
     case 57:
       // Compute statistic
-      stat = computeTriadStatsDirectedTypesConsidered(4, adjmat, actors, types, riskset);
+      stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3765,8 +3962,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 58 sp.type
     case 58:
       // Compute statistic
-      stat = triad_tie(5, edgelist, actors, types, adjmat,
-                       riskset, start, stop, TRUE);
+      stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3777,8 +3973,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 59 spUnique.type
     case 59:
       // Compute statistic
-      stat = triad_tie(6, edgelist, actors, types, adjmat,
-                       riskset, start, stop, TRUE);
+      stat = computeTriadStatsTypesConsidered(6, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {

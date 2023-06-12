@@ -183,6 +183,43 @@ RcppExport SEXP _remstats_compute_adjmat(SEXP edgelistSEXP, SEXP NSEXP, SEXP DSE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// computeTriadStatsNoTypes
+arma::mat computeTriadStatsNoTypes(int type, const arma::mat& adjmat, arma::vec actors, const arma::mat& riskset);
+static SEXP _remstats_computeTriadStatsNoTypes_try(SEXP typeSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP risksetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type adjmat(adjmatSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type actors(actorsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    rcpp_result_gen = Rcpp::wrap(computeTriadStatsNoTypes(type, adjmat, actors, riskset));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _remstats_computeTriadStatsNoTypes(SEXP typeSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP risksetSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_remstats_computeTriadStatsNoTypes_try(typeSEXP, adjmatSEXP, actorsSEXP, risksetSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // compute_stats_tie
 arma::cube compute_stats_tie(const arma::vec& effects, const arma::mat& edgelist, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, const arma::mat& riskset, const arma::vec& scaling, const Rcpp::List& covariates, const Rcpp::List& interactions, int start, int stop, bool directed);
 static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP typesSEXP, SEXP risksetSEXP, SEXP scalingSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP) {
@@ -249,6 +286,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::cube(*compute_stats_choice)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
         signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
         signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,int,bool,std::string,arma::vec,int,int)");
+        signatures.insert("arma::mat(*computeTriadStatsNoTypes)(int,const arma::mat&,arma::vec,const arma::mat&)");
         signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int,bool)");
     }
     return signatures.find(sig) != signatures.end();
@@ -260,6 +298,7 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
     R_RegisterCCallable("remstats", "_remstats_compute_stats_choice", (DL_FUNC)_remstats_compute_stats_choice_try);
     R_RegisterCCallable("remstats", "_remstats_getRisksetMatrix", (DL_FUNC)_remstats_getRisksetMatrix_try);
     R_RegisterCCallable("remstats", "_remstats_compute_adjmat", (DL_FUNC)_remstats_compute_adjmat_try);
+    R_RegisterCCallable("remstats", "_remstats_computeTriadStatsNoTypes", (DL_FUNC)_remstats_computeTriadStatsNoTypes_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_tie", (DL_FUNC)_remstats_compute_stats_tie_try);
     R_RegisterCCallable("remstats", "_remstats_RcppExport_validate", (DL_FUNC)_remstats_RcppExport_validate);
     return R_NilValue;
@@ -270,6 +309,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 12},
     {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
     {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 8},
+    {"_remstats_computeTriadStatsNoTypes", (DL_FUNC) &_remstats_computeTriadStatsNoTypes, 4},
     {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 12},
     {"_remstats_combine_arrays", (DL_FUNC) &_remstats_combine_arrays, 2},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},

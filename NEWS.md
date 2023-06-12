@@ -1,5 +1,14 @@
+# remstats 3.1.1
+Date: 01-07-2023
+
+## New features
+* `bind_remstats()`
+
+## Minor changes
+* Decreased computation time triadic statistics
+
 # remstats 3.1.0
-Date: TBD (mid-april)
+Date: 01-06-2023
 
 **IMPORTANT**: remstats 3.1.0 works with remify >= 3.0.0. **Make sure remify is updated.** If earlier versions of remify are in use, remstats 3.1.0 will break down.
 

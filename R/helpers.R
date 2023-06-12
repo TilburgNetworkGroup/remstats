@@ -438,4 +438,122 @@ process_covariate <- function(effects, attributes, actors, edgelist, reh,
   })
 }
 
+#'
+# Prepare all information prior to using the cpp function 
+prepare_tomstats <- function(effects, reh, attributes = NULL,
+                     memory = c("full", "window", "decay", "interval"),
+                     memory_value = NA, start = 1, stop = Inf) {
+  
+  # Process the reh object
+  reh_list <- process_reh(reh)
+  edgelist <- reh_list$edgelist 
+  dyads <- reh_list$dyads
+  actors <- reh_list$actors
+  types <- reh_list$types
+
+  # Riskset
+  prepR <- getRisksetMatrix(
+    actorID = actors$actorID,
+    typeID = types$typeID,
+    N = nrow(actors),
+    C = nrow(types),
+    directed = attr(reh, "directed")
+  )
+
+  # Match memory
+  memory <- match.arg(memory)
+  memory_value <- validate_memory(memory, memory_value)
+
+  # Convert R start and stop indices to C++ (indexing starts at 0)
+  if (start < 1) {
+    stop("start should be set to 1 or larger.")
+  }
+  if (stop < start) {
+    stop("stop cannot be smaller than start.")
+  }
+  start <- start - 1
+  if (stop == Inf) {
+    stop <- nrow(edgelist)
+  }
+  stop <- stop - 1
+
+  # Prepare main effects
+  form <- effects
+  effects <- parse_formula(form, "rem", attr(reh, "ordinal"))
+  all_effects <- all_tie_effects()
+  effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
+
+  # Check correct specification effects
+  if (!attr(reh, "directed")) {
+    if (any(effectsN %in%
+      c(2, 3, 11:21, 24:28, 30:31, 35:38, 40:50, 53:57, 60:61, 63:66))) {
+      stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
+    }
+  }
+
+  if (attr(reh, "directed")) {
+    if (any(effectsN %in% c(22:23, 58:59, 67:71, 76:77))) {
+      stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
+    }
+  }
+
+  # Prepare fixed effects
+  if (any(sapply(effects, function(x) x$effect == "FEtype"))) {
+    C <- nrow(types)
+    FEeffects <- lapply(2:C, function(c) {
+      x <- list()
+      x$effect <- "FEtype"
+      x$scaling <- 1
+      x$typeName <- types$typeName[c]
+      x$typeID <- types$typeID[c]
+      x
+    })
+
+    pos <- which(sapply(effects, function(x) x$effect == "FEtype"))
+    effects <- append(effects[-pos], FEeffects, pos - 1)
+    effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
+  }
+
+  # Prepare interaction effects
+  effects_int <- parse_int(form, "rem", effects, attr(reh, "ordinal"))
+  effectsN <- append(effectsN, rep(99, length(effects_int)), length(effectsN))
+  interactions <- list()
+  interactions[which(effectsN == 99)] <- effects_int
+
+  # Prepare covariate information
+  covar <- process_covariate(effects, attributes, actors, edgelist, reh, prepR)
+
+  # Prepare scaling info (vector length p)
+  scaling <- as.numeric(sapply(effects, function(x) x$scaling))
+
+  # Check correct scaling inertia statistic
+  if (!attr(reh, "directed")) {
+    if (any(sapply(effects, function(x) x$effect == "inertia"))) {
+      idx <- which(sapply(effects, function(x) x$effect == "inertia"))
+      if (any(scaling[idx] == 2)) {
+        stop("Proportional scaling of the inertia effect is not defined for undirected events")
+      }
+    }
+  }
+
+  # Output
+  list(
+    form = form,
+    all_effects = all_effects, 
+    effects= effects, 
+    effectsN = effectsN, 
+    edgelist = edgelist, 
+    actors = actors,
+    types = types, 
+    prepR = prepR, 
+    memory = memory, 
+    memory_value = memory_value,
+    scaling = scaling, 
+    covar = covar, 
+    interactions = interactions, 
+    start = start, 
+    stop = stop
+  )
+}
+
 

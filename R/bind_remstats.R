@@ -61,10 +61,10 @@ bind_remstats <- function(...) {
 
     # Format output
     class(statistics) <- class(arg.list[[1]])
-    attr(statistics, "model") <- attr(arg.list[1], "model")
+    attr(statistics, "model") <- attr(arg.list[[1]], "model")
     attr(statistics, "formula") <- final_formula
-    attr(statistics, "riskset") <- attr(arg.list[1], "riskset")
-    attr(statistics, "adjmat") <-  attr(arg.list[1], "adjmat")
+    attr(statistics, "riskset") <- attr(arg.list[[1]], "riskset")
+    attr(statistics, "adjmat") <-  attr(arg.list[[1]], "adjmat")
     
     # Output
     statistics
