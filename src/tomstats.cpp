@@ -1309,9 +1309,15 @@ arma::mat reciprocity_tie(const arma::mat &edgelist,
 // computed
 // consider_type: boolean indicating whether to compute the degree per
 // event type (TRUE) or sum across types (FALSE)
-arma::mat triad_tie(int type, const arma::mat &edgelist,
-                    const arma::vec &actors, const arma::vec &types, const arma::mat &adjmat,
-                    const arma::mat &riskset, int start, int stop, bool consider_type)
+arma::mat triad_tie(int type,
+                    const arma::mat &edgelist,
+                    const arma::vec &actors,
+                    const arma::vec &types,
+                    const arma::mat &adjmat,
+                    const arma::mat &riskset,
+                    int start,
+                    int stop,
+                    bool consider_type)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -1320,25 +1326,13 @@ arma::mat triad_tie(int type, const arma::mat &edgelist,
   // Initialize saving space
   arma::mat stat(slice.n_rows, adjmat.n_cols, arma::fill::zeros);
 
-  // New adjmat with only zeros and ones
+  // Copy adjmat
   arma::mat new_adjmat = adjmat;
-
+  // Replace adjacency counts with absent/present indicators (0/1) if type
+  // equals 6
   if (type == 6)
   {
-    for (arma::uword i = 0; i < adjmat.n_rows; ++i)
-    {
-      for (arma::uword j = 0; j < adjmat.n_cols; ++j)
-      {
-        if (adjmat(i, j) > 0)
-        {
-          new_adjmat(i, j) = 1;
-        }
-        else
-        {
-          new_adjmat(i, j) = 0;
-        }
-      }
-    }
+    new_adjmat = arma::conv_to<arma::mat>::from(adjmat > 0);
   }
 
   if (consider_type)
@@ -1503,6 +1497,428 @@ arma::mat triad_tie(int type, const arma::mat &edgelist,
   // Output the computed stat
   return stat;
 }
+
+// computeTriadStatsDirectedNoTypes
+//
+// Computes the triad statistics for the tie-oriented model with directed
+// dyadic events
+//
+// type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp
+// adjmat: matrix (events x dyads)
+// start: integer, first event in the edgelist for which the statistic is
+// computed
+// stop: integer, last event in the edgelist for which the statistic is
+// computed
+arma::mat computeTriadStatsDirectedNoTypes(int type,
+                                           const arma::mat &adjmat,
+                                           arma::vec actors,
+                                           const arma::mat &riskset)
+{
+  // Initialize saving space
+  arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
+
+  // Pre-compute dyad indices
+  arma::mat dyadIndices(actors.n_elem, actors.n_elem);
+  for (arma::uword i = 0; i < actors.n_elem; ++i)
+  {
+    for (arma::uword j = 0; j < actors.n_elem; ++j)
+    {
+      dyadIndices(i, j) = remify::getDyadIndex(i, j, 0, actors.n_elem, true);
+    }
+  }
+
+  // Initialize selectedCols1, selectedCols2, colIndices1, colIndices2 with
+  // their maximum required sizes
+  arma::mat selectedCols1(adjmat.n_rows, actors.n_elem);
+  arma::mat selectedCols2(adjmat.n_rows, actors.n_elem);
+  arma::uvec colIndices1(actors.n_elem);
+  arma::uvec colIndices2(actors.n_elem);
+
+  // Initialize minMatrix and rowSums
+  arma::mat minMatrix(adjmat.n_rows, actors.n_elem);
+  arma::vec rowSums(adjmat.n_rows);
+
+  // Initialize a zero column
+  arma::mat zeroColumn = arma::zeros<arma::mat>(adjmat.n_rows, 1);
+
+  // For loop over dyads
+  for (arma::uword d = 0; d < adjmat.n_cols; ++d)
+  {
+    // Sender i and receiver j
+    arma::uword i = riskset(d, 0);
+    arma::uword j = riskset(d, 1);
+
+    switch (type)
+    {
+    case 1:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.row(i).t());
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
+
+      // Get all past events received by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.col(j));
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      break;
+
+    case 2:
+      // Get all past events send by receiver j
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.row(j).t());
+      colIndices1.shed_row(j);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols1.insert_cols(j, zeroColumn);
+
+      // Get all past events received by sender i
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.col(i));
+      colIndices2.shed_row(i);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols2.insert_cols(i, zeroColumn);
+      break;
+
+    case 3:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.row(i).t());
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
+
+      // Get all past events received by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.row(j).t());
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      break;
+
+    case 4:
+      // Get all past events sent by sender i
+      colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.col(i));
+      colIndices1.shed_row(i);
+      selectedCols1 = adjmat.cols(colIndices1);
+
+      // Insert a column of zeros at the i-th position
+      selectedCols1.insert_cols(i, zeroColumn);
+
+      // Get all past events received by receiver j
+      colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.col(j));
+      colIndices2.shed_row(j);
+      selectedCols2 = adjmat.cols(colIndices2);
+
+      // Insert a column of zeros at the j-th position
+      selectedCols2.insert_cols(j, zeroColumn);
+      break;
+    }
+
+    // Calculate the element-wise minimum
+    arma::mat minMatrix = arma::min(selectedCols1, selectedCols2);
+
+    // Calculate the sum per time point
+    arma::vec rowSums = arma::sum(minMatrix, 1);
+    stat.col(d) = rowSums;
+  }
+
+  return stat;
+}
+
+// computeTriadStatsDirectedTypesNotConsidered
+//
+// Computes the triad statistics for the tie-oriented model with directed
+// types events, summing over event types (i.e., consider_type = FALSE)
+//
+// type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp
+// adjmat: matrix (events x dyads)
+// start: integer, first event in the edgelist for which the statistic is
+// computed
+// stop: integer, last event in the edgelist for which the statistic is
+// computed
+arma::mat computeTriadStatsDirectedTypesNotConsidered(
+    int type, 
+    const arma::mat& adjmat, 
+    const arma::vec &actors, 
+    const arma::vec& types, 
+    const arma::mat& riskset) {
+
+    // Initialize saving space
+    arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
+
+    // Pre-compute dyad indices
+    arma::cube dyadIndices(actors.n_elem, actors.n_elem, types.n_elem);
+    for(arma::uword i = 0; i < actors.n_elem; ++i) {
+        for(arma::uword j = 0; j < actors.n_elem; ++j) {
+            for(arma::uword c = 0; c < types.n_elem; ++c) {
+                dyadIndices(i,j,c) = remify::getDyadIndex(i, j, c, actors.n_elem, true);
+            }
+        }
+    }
+
+    // Initialize selectedCols1, selectedCols2, colIndices1, colIndices2 
+    // with their maximum required sizes
+    arma::cube selectedCols1(adjmat.n_rows, actors.n_elem, types.n_elem);
+    arma::cube selectedCols2(adjmat.n_rows, actors.n_elem, types.n_elem);
+    arma::uvec colIndices1(actors.n_elem);
+    arma::uvec colIndices2(actors.n_elem);
+
+    // Initialize sumAcrossTypes1, minMatrix, and rowSums
+    arma::mat sumAcrossTypes1(adjmat.n_rows, actors.n_elem);
+    arma::mat sumAcrossTypes2(adjmat.n_rows, actors.n_elem);
+    arma::mat minMatrix(adjmat.n_rows, actors.n_elem);
+    arma::vec rowSums(adjmat.n_rows);
+
+    // Initialize a zero column
+    arma::mat zeroColumn = arma::zeros<arma::mat>(adjmat.n_rows, 1);
+
+    // For loop over dyads
+    for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
+        // Sender i and receiver j
+        arma::uword i = riskset(d, 0);
+        arma::uword j = riskset(d, 1);
+        
+        switch (type)
+        {
+        case 1:
+            // For loop over event types
+            for(arma::uword c = 0; c < types.n_elem; ++c) {
+                // Get all past events sent by sender i 
+                colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+                colIndices1.shed_row(i);
+                arma::mat temp1 = adjmat.cols(colIndices1); 
+                // Insert a column of zeros at the i-th position
+                temp1.insert_cols(i, zeroColumn);
+                selectedCols1.slice(c) = temp1;
+
+                // Get all past events received by receiver j 
+                colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
+                colIndices2.shed_row(j);
+                arma::mat temp2 = adjmat.cols(colIndices2);  
+
+                // Insert a column of zeros at the j-th position
+                temp2.insert_cols(j, zeroColumn);
+                selectedCols2.slice(c) = temp2;  
+            }
+            break;
+
+        case 2:
+            // For loop over event types
+            for(arma::uword c = 0; c < types.n_elem; ++c) {
+                // Get all past events send by receiver j 
+                colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+                colIndices1.shed_row(j);
+                arma::mat temp1 = adjmat.cols(colIndices1); 
+                // Insert a column of zeros at the j-th position
+                temp1.insert_cols(j, zeroColumn);
+                selectedCols1.slice(c) = temp1;
+
+                // Get all past events received by sender i
+                colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+                colIndices2.shed_row(i);
+                arma::mat temp2 = adjmat.cols(colIndices2);  
+
+                // Insert a column of zeros at the i-th position
+                temp2.insert_cols(i, zeroColumn);
+                selectedCols2.slice(c) = temp2;  
+            }
+            break;
+
+        case 3:
+            // For loop over event types
+            for(arma::uword c = 0; c < types.n_elem; ++c) {
+                 // Get all past events sent by sender i 
+                colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+                colIndices1.shed_row(i);
+                arma::mat temp1 = adjmat.cols(colIndices1); 
+                // Insert a column of zeros at the i-th position
+                temp1.insert_cols(i, zeroColumn);
+                selectedCols1.slice(c) = temp1;
+
+                // Get all past events sent by receiver j 
+                colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+                colIndices2.shed_row(j);
+                arma::mat temp2 = adjmat.cols(colIndices2);  
+
+                // Insert a column of zeros at the j-th position
+                temp2.insert_cols(j, zeroColumn);
+                selectedCols2.slice(c) = temp2;  
+            }
+            break;
+
+        case 4:
+            // For loop over event types
+            for(arma::uword c = 0; c < types.n_elem; ++c) {
+                // Get all past events received by sender i
+                colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+                colIndices1.shed_row(i);
+                arma::mat temp1 = adjmat.cols(colIndices1); 
+                // Insert a column of zeros at the i-th position
+                temp1.insert_cols(i, zeroColumn);
+                selectedCols1.slice(c) = temp1;
+
+                // Get all past events received by receiver j 
+                colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
+                colIndices2.shed_row(j);
+                arma::mat temp2 = adjmat.cols(colIndices2);  
+
+                // Insert a column of zeros at the j-th position
+                temp2.insert_cols(j, zeroColumn);
+                selectedCols2.slice(c) = temp2;  
+            }
+            break;
+        }        
+
+        // Compute the sum of elements across all slices
+        sumAcrossTypes1 = arma::sum(selectedCols1, 2);
+        sumAcrossTypes2 = arma::sum(selectedCols2, 2);
+
+        // Calculate the element-wise minimum
+        minMatrix = arma::min(sumAcrossTypes1, sumAcrossTypes2);
+
+        // Calculate the sum per time point
+        rowSums = arma::sum(minMatrix, 1);
+        stat.col(d) = rowSums;
+    }
+    return stat;
+}
+
+arma::mat computeTriadStatsDirectedTypesConsidered(
+    int type, 
+    const arma::mat& adjmat, 
+    const arma::vec &actors, 
+    const arma::vec& types, 
+    const arma::mat& riskset) {
+
+    // Initialize saving space
+    arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
+
+    // Pre-compute dyad indices
+    arma::cube dyadIndices(actors.n_elem, actors.n_elem, types.n_elem);
+    for(arma::uword i = 0; i < actors.n_elem; ++i) {
+        for(arma::uword j = 0; j < actors.n_elem; ++j) {
+            for(arma::uword c = 0; c < types.n_elem; ++c) {
+                dyadIndices(i,j,c) = remify::getDyadIndex(i, j, c, actors.n_elem, true);
+            }
+        }
+    }
+
+    // Initialize selectedCols1, selectedCols2, colIndices1, colIndices2 
+    // with their maximum required sizes
+    arma::mat selectedCols1(adjmat.n_rows, actors.n_elem);
+    arma::mat selectedCols2(adjmat.n_rows, actors.n_elem);
+    arma::uvec colIndices1(actors.n_elem);
+    arma::uvec colIndices2(actors.n_elem);
+
+    // Initialize minMatrix and rowSums
+    arma::mat minMatrix(adjmat.n_rows, actors.n_elem);
+    arma::vec rowSums(adjmat.n_rows);
+
+    // Initialize a zero column
+    arma::mat zeroColumn = arma::zeros<arma::mat>(adjmat.n_rows, 1);
+
+    // For loop over dyads
+    for(arma::uword d = 0; d < adjmat.n_cols; ++d) {
+        // Sender i and receiver j
+        arma::uword i = riskset(d, 0);
+        arma::uword j = riskset(d, 1);
+        arma::uword c = riskset(d, 2);
+
+        switch (type)
+        {
+        case 1:
+            // Get all past events sent by sender i 
+            colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+            colIndices1.shed_row(i);
+            selectedCols1 = adjmat.cols(colIndices1);  
+
+            // Insert a column of zeros at the i-th position
+            selectedCols1.insert_cols(i, zeroColumn);
+
+            // Get all past events received by receiver j 
+            colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
+            colIndices2.shed_row(j);
+            selectedCols2 = adjmat.cols(colIndices2);  
+
+            // Insert a column of zeros at the j-th position
+            selectedCols2.insert_cols(j, zeroColumn);
+            break;
+            
+        case 2:
+            // Get all past events send by receiver j 
+            colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+            colIndices1.shed_row(j);
+            selectedCols1 = adjmat.cols(colIndices1);  
+
+            // Insert a column of zeros at the j-th position
+            selectedCols1.insert_cols(j, zeroColumn);
+
+            // Get all past events received by sender i
+            colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+            colIndices2.shed_row(i);
+            selectedCols2 = adjmat.cols(colIndices2);  
+
+            // Insert a column of zeros at the i-th position
+            selectedCols2.insert_cols(i, zeroColumn);
+            break;
+
+        case 3:
+            // Get all past events sent by sender i 
+            colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(i).t());
+            colIndices1.shed_row(i);
+            selectedCols1 = adjmat.cols(colIndices1);  
+
+            // Insert a column of zeros at the i-th position
+            selectedCols1.insert_cols(i, zeroColumn);
+
+            // Get all past events sent by receiver j 
+            colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).row(j).t());
+            colIndices2.shed_row(j);
+            selectedCols2 = adjmat.cols(colIndices2);  
+
+            // Insert a column of zeros at the j-th position
+            selectedCols2.insert_cols(j, zeroColumn);
+            break;
+
+        case 4:
+            // Get all past events received by sender i 
+            colIndices1 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(i));
+            colIndices1.shed_row(i);
+            selectedCols1 = adjmat.cols(colIndices1);  
+
+            // Insert a column of zeros at the i-th position
+            selectedCols1.insert_cols(i, zeroColumn);
+
+            // Get all past events received by receiver j 
+            colIndices2 = arma::conv_to<arma::uvec>::from(dyadIndices.slice(c).col(j));
+            colIndices2.shed_row(j);
+            selectedCols2 = adjmat.cols(colIndices2);  
+
+            // Insert a column of zeros at the j-th position
+            selectedCols2.insert_cols(j, zeroColumn);
+            break;
+        }   
+
+        // Calculate the element-wise minimum
+        arma::mat minMatrix = arma::min(selectedCols1, selectedCols2);
+
+        // Calculate the sum per time point
+        arma::vec rowSums = arma::sum(minMatrix, 1);
+        stat.col(d) = rowSums;
+    }
+
+    return stat;
+}
+
 
 // pshift_tie
 //
@@ -2031,385 +2447,385 @@ arma::mat rrank_tie(int type, const arma::mat &edgelist,
 // event type (TRUE) or sum across types (FALSE)
 // directed: boolean, whether events are directed or undirected
 arma::mat recency_tie(int type,
-                        const arma::mat &edgelist,
-                        const arma::mat &riskset,
-                        arma::uword N,
-                        arma::uword C,
-                        int start,
-                        int stop,
-                        bool consider_type,
-                        bool directed)
+                      const arma::mat &edgelist,
+                      const arma::mat &riskset,
+                      arma::uword N,
+                      arma::uword C,
+                      int start,
+                      int stop,
+                      bool consider_type,
+                      bool directed)
 {
 
-    // Initialize vector with times the dyads were last active
-    arma::vec lastActive(riskset.n_rows);
-    lastActive.fill(arma::datum::inf);
+  // Initialize vector with times the dyads were last active
+  arma::vec lastActive(riskset.n_rows);
+  lastActive.fill(arma::datum::inf);
 
-    // Select the past
-    double time = edgelist(start, 0);
-    arma::uvec past = arma::find(edgelist.col(0) < time);
+  // Select the past
+  double time = edgelist(start, 0);
+  arma::uvec past = arma::find(edgelist.col(0) < time);
 
-    // For loop over the past
-    for (arma::uword m = 0; m < past.n_elem; ++m)
+  // For loop over the past
+  for (arma::uword m = 0; m < past.n_elem; ++m)
+  {
+    // Sender, receiver and event type
+    int d = edgelist(past(m), 1);
+    arma::uword s = riskset(d, 0);
+    arma::uword r = riskset(d, 1);
+    arma::uword c = riskset(d, 2);
+
+    // Event time
+    double time = edgelist(past(m), 0);
+
+    // Find respective dyads
+    if (type == 1)
     {
-        // Sender, receiver and event type
-        int d = edgelist(past(m), 1);
-        arma::uword s = riskset(d, 0);
-        arma::uword r = riskset(d, 1);
-        arma::uword c = riskset(d, 2);
+      // Last time active as dyad
+      if (consider_type)
+      {
+        lastActive(d) = time;
+      }
+      else
+      {
+        // For loop over event types
+        for (arma::uword k = 0; k < C; k++)
+        {
+          int dyad = remify::getDyadIndex(s, r, k, N, directed);
+          lastActive(dyad) = time;
+        }
+      }
+    }
+    else if (type == 2)
+    {
+      // Last time the sender was active as sender
+      if (consider_type)
+      {
+        // For loop over receivers
+        for (arma::uword j = 0; j < N; j++)
+        {
+          if (j == s)
+          {
+            continue;
+          }
+          int dyad = remify::getDyadIndex(s, j, c, N, directed);
+          lastActive(dyad) = time;
+        }
+      }
+      else
+      {
+        // For loop over receivers
+        for (arma::uword j = 0; j < N; j++)
+        {
+          if (j == s)
+          {
+            continue;
+          }
+          // For loop over event types
+          for (arma::uword k = 0; k < C; ++k)
+          {
+            int dyad = remify::getDyadIndex(s, j, k, N, directed);
+            lastActive(dyad) = time;
+          }
+        }
+      }
+    }
+    else if (type == 3)
+    {
+      // Last time the receiver was active as sender
+      if (consider_type)
+      {
+        // For loop over senders
+        for (arma::uword i = 0; i < N; i++)
+        {
+          if (i == s)
+          {
+            continue;
+          }
+          int dyad = remify::getDyadIndex(i, s, c, N, directed);
+          lastActive(dyad) = time;
+        }
+      }
+      else
+      {
+        // For loop over senders
+        for (arma::uword i = 0; i < N; i++)
+        {
+          if (i == s)
+          {
+            continue;
+          }
+          // For loop over event types
+          for (arma::uword k = 0; k < C; ++k)
+          {
+            int dyad = remify::getDyadIndex(i, s, k, N, directed);
+            lastActive(dyad) = time;
+          }
+        }
+      }
+    }
+    else if (type == 4)
+    {
+      // Last time the sender was active as receiver
+      if (consider_type)
+      {
+        // For loop over receivers
+        for (arma::uword j = 0; j < N; j++)
+        {
+          if (j == r)
+          {
+            continue;
+          }
+          int dyad = remify::getDyadIndex(s, r, c, N, directed);
+          lastActive(dyad) = time;
+        }
+      }
+      else
+      {
+        // For loop over receivers
+        for (arma::uword j = 0; j < N; j++)
+        {
+          if (j == r)
+          {
+            continue;
+          }
+          // For loop over event types
+          for (arma::uword k = 0; k < C; ++k)
+          {
+            int dyad = remify::getDyadIndex(s, r, k, N, directed);
+            lastActive(dyad) = time;
+          }
+        }
+      }
+    }
+    else if (type == 5)
+    {
+      // Last time the receiver was active as receiver
+      if (consider_type)
+      {
+        // For loop over senders
+        for (arma::uword i = 0; i < N; i++)
+        {
+          if (i == r)
+          {
+            continue;
+          }
+          int dyad = remify::getDyadIndex(i, r, c, N, directed);
+          lastActive(dyad) = time;
+        }
+      }
+      else
+      {
+        // For loop over senders
+        for (arma::uword i = 0; i < N; i++)
+        {
+          if (i == r)
+          {
+            continue;
+          }
+          // For loop over event types
+          for (arma::uword k = 0; k < C; ++k)
+          {
+            int dyad = remify::getDyadIndex(i, r, k, N, directed);
+            lastActive(dyad) = time;
+          }
+        }
+      }
+    }
+  }
 
-        // Event time
-        double time = edgelist(past(m), 0);
+  // Initialize statistic
+  arma::mat stat((stop - start + 1), riskset.n_rows);
 
-        // Find respective dyads
-        if (type == 1)
+  // Helper
+  arma::vec updateActive = lastActive;
+
+  // For loop over time points
+  for (int m = 0; m < (stop - start + 1); ++m)
+  {
+    // Event indicator
+    int event = start + m;
+
+    // Event time
+    double time = edgelist(event, 0);
+
+    // Compute statistic
+    arma::vec frC = 1 / ((time - lastActive) + 1);
+    arma::rowvec fr = arma::conv_to<arma::rowvec>::from(frC);
+    stat.row(m) = fr;
+
+    // Sender, receiver and event type
+    int d = edgelist(event, 1);
+    arma::uword s = riskset(d, 0);
+    arma::uword r = riskset(d, 1);
+    arma::uword c = riskset(d, 2);
+
+    // Update updateActive
+    // Find respective dyads
+    if (type == 1)
+    {
+      // Last time active as dyad
+      if (consider_type)
+      {
+        updateActive(d) = time;
+      }
+      else
+      {
+        // For loop over event types
+        for (arma::uword k = 0; k < C; k++)
         {
-            // Last time active as dyad
-            if (consider_type)
-            {
-                lastActive(d) = time;
-            }
-            else
-            {
-                // For loop over event types
-                for (arma::uword k = 0; k < C; k++)
-                {
-                    int dyad = remify::getDyadIndex(s, r, k, N, directed);
-                    lastActive(dyad) = time;
-                }
-            }
+          int dyad = remify::getDyadIndex(s, r, k, N, directed);
+          updateActive(dyad) = time;
         }
-        else if (type == 2)
+      }
+    }
+    else if (type == 2)
+    {
+      // Last time the sender was active as sender
+      if (consider_type)
+      {
+        // For loop over receivers
+        for (arma::uword j = 0; j < N; j++)
         {
-            // Last time the sender was active as sender
-            if (consider_type)
-            {
-                // For loop over receivers
-                for (arma::uword j = 0; j < N; j++)
-                {
-                    if (j == s)
-                    {
-                        continue;
-                    }
-                    int dyad = remify::getDyadIndex(s, j, c, N, directed);
-                    lastActive(dyad) = time;
-                }
-            }
-            else
-            {
-                // For loop over receivers
-                for (arma::uword j = 0; j < N; j++)
-                {
-                    if (j == s)
-                    {
-                        continue;
-                    }
-                    // For loop over event types
-                    for (arma::uword k = 0; k < C; ++k)
-                    {
-                        int dyad = remify::getDyadIndex(s, j, k, N, directed);
-                        lastActive(dyad) = time;
-                    }
-                }
-            }
+          if (j == s)
+          {
+            continue;
+          }
+          int dyad = remify::getDyadIndex(s, j, c, N, directed);
+          updateActive(dyad) = time;
         }
-        else if (type == 3)
+      }
+      else
+      {
+        // For loop over receivers
+        for (arma::uword j = 0; j < N; j++)
         {
-            // Last time the receiver was active as sender
-            if (consider_type)
-            {
-                // For loop over senders
-                for (arma::uword i = 0; i < N; i++)
-                {
-                    if (i == s)
-                    {
-                        continue;
-                    }
-                    int dyad = remify::getDyadIndex(i, s, c, N, directed);
-                    lastActive(dyad) = time;
-                }
-            }
-            else
-            {
-                // For loop over senders
-                for (arma::uword i = 0; i < N; i++)
-                {
-                    if (i == s)
-                    {
-                        continue;
-                    }
-                    // For loop over event types
-                    for (arma::uword k = 0; k < C; ++k)
-                    {
-                        int dyad = remify::getDyadIndex(i, s, k, N, directed);
-                        lastActive(dyad) = time;
-                    }
-                }
-            }
+          if (j == s)
+          {
+            continue;
+          }
+          // For loop over event types
+          for (arma::uword k = 0; k < C; ++k)
+          {
+            int dyad = remify::getDyadIndex(s, j, k, N, directed);
+            updateActive(dyad) = time;
+          }
         }
-        else if (type == 4)
+      }
+    }
+    else if (type == 3)
+    {
+      // Last time the receiver was active as sender
+      if (consider_type)
+      {
+        // For loop over senders
+        for (arma::uword i = 0; i < N; i++)
         {
-            // Last time the sender was active as receiver
-            if (consider_type)
-            {
-                // For loop over receivers
-                for (arma::uword j = 0; j < N; j++)
-                {
-                    if (j == r)
-                    {
-                        continue;
-                    }
-                    int dyad = remify::getDyadIndex(s, r, c, N, directed);
-                    lastActive(dyad) = time;
-                }
-            }
-            else
-            {
-                // For loop over receivers
-                for (arma::uword j = 0; j < N; j++)
-                {
-                    if (j == r)
-                    {
-                        continue;
-                    }
-                    // For loop over event types
-                    for (arma::uword k = 0; k < C; ++k)
-                    {
-                        int dyad = remify::getDyadIndex(s, r, k, N, directed);
-                        lastActive(dyad) = time;
-                    }
-                }
-            }
+          if (i == s)
+          {
+            continue;
+          }
+          int dyad = remify::getDyadIndex(i, s, c, N, directed);
+          updateActive(dyad) = time;
         }
-        else if (type == 5)
+      }
+      else
+      {
+        // For loop over senders
+        for (arma::uword i = 0; i < N; i++)
         {
-            // Last time the receiver was active as receiver
-            if (consider_type)
-            {
-                // For loop over senders
-                for (arma::uword i = 0; i < N; i++)
-                {
-                    if (i == r)
-                    {
-                        continue;
-                    }
-                    int dyad = remify::getDyadIndex(i, r, c, N, directed);
-                    lastActive(dyad) = time;
-                }
-            }
-            else
-            {
-                // For loop over senders
-                for (arma::uword i = 0; i < N; i++)
-                {
-                    if (i == r)
-                    {
-                        continue;
-                    }
-                    // For loop over event types
-                    for (arma::uword k = 0; k < C; ++k)
-                    {
-                        int dyad = remify::getDyadIndex(i, r, k, N, directed);
-                        lastActive(dyad) = time;
-                    }
-                }
-            }
+          if (i == s)
+          {
+            continue;
+          }
+          // For loop over event types
+          for (arma::uword k = 0; k < C; ++k)
+          {
+            int dyad = remify::getDyadIndex(i, s, k, N, directed);
+            updateActive(dyad) = time;
+          }
         }
+      }
+    }
+    else if (type == 4)
+    {
+      // Last time the sender was active as receiver
+      if (consider_type)
+      {
+        // For loop over receivers
+        for (arma::uword j = 0; j < N; j++)
+        {
+          if (j == r)
+          {
+            continue;
+          }
+          int dyad = remify::getDyadIndex(r, j, c, N, directed);
+          updateActive(dyad) = time;
+        }
+      }
+      else
+      {
+        // For loop over receivers
+        for (arma::uword j = 0; j < N; j++)
+        {
+          if (j == r)
+          {
+            continue;
+          }
+          // For loop over event types
+          for (arma::uword k = 0; k < C; ++k)
+          {
+            int dyad = remify::getDyadIndex(r, j, k, N, directed);
+            updateActive(dyad) = time;
+          }
+        }
+      }
+    }
+    else if (type == 5)
+    {
+      // Last time the receiver was active as receiver
+      if (consider_type)
+      {
+        // For loop over senders
+        for (arma::uword i = 0; i < N; i++)
+        {
+          if (i == r)
+          {
+            continue;
+          }
+          int dyad = remify::getDyadIndex(i, r, c, N, directed);
+          updateActive(dyad) = time;
+        }
+      }
+      else
+      {
+        // For loop over senders
+        for (arma::uword i = 0; i < N; i++)
+        {
+          if (i == r)
+          {
+            continue;
+          }
+          // For loop over event types
+          for (arma::uword k = 0; k < C; ++k)
+          {
+            int dyad = remify::getDyadIndex(i, r, k, N, directed);
+            updateActive(dyad) = time;
+          }
+        }
+      }
     }
 
-    // Initialize statistic
-    arma::mat stat((stop - start + 1), riskset.n_rows);
-
-    // Helper
-    arma::vec updateActive = lastActive;
-
-    // For loop over time points
-    for (int m = 0; m < (stop - start + 1); ++m)
+    // Update lastActive?
+    if (event < stop)
     {
-        // Event indicator
-        int event = start + m;
-
-        // Event time
-        double time = edgelist(event, 0);
-
-        // Compute statistic
-        arma::vec frC = 1 / ((time - lastActive) + 1);
-        arma::rowvec fr = arma::conv_to<arma::rowvec>::from(frC);
-        stat.row(m) = fr;
-
-        // Sender, receiver and event type
-        int d = edgelist(event, 1);
-        arma::uword s = riskset(d, 0);
-        arma::uword r = riskset(d, 1);
-        arma::uword c = riskset(d, 2);
-
-        // Update updateActive
-        // Find respective dyads
-        if (type == 1)
-        {
-            // Last time active as dyad
-            if (consider_type)
-            {
-                updateActive(d) = time;
-            }
-            else
-            {
-                // For loop over event types
-                for (arma::uword k = 0; k < C; k++)
-                {
-                    int dyad = remify::getDyadIndex(s, r, k, N, directed);
-                    updateActive(dyad) = time;
-                }
-            }
-        }
-        else if (type == 2)
-        {
-            // Last time the sender was active as sender
-            if (consider_type)
-            {
-                // For loop over receivers
-                for (arma::uword j = 0; j < N; j++)
-                {
-                    if (j == s)
-                    {
-                        continue;
-                    }
-                    int dyad = remify::getDyadIndex(s, j, c, N, directed);
-                    updateActive(dyad) = time;
-                }
-            }
-            else
-            {
-                // For loop over receivers
-                for (arma::uword j = 0; j < N; j++)
-                {
-                    if (j == s)
-                    {
-                        continue;
-                    }
-                    // For loop over event types
-                    for (arma::uword k = 0; k < C; ++k)
-                    {
-                        int dyad = remify::getDyadIndex(s, j, k, N, directed);
-                        updateActive(dyad) = time;
-                    }
-                }
-            }
-        }
-        else if (type == 3)
-        {
-            // Last time the receiver was active as sender
-            if (consider_type)
-            {
-                // For loop over senders
-                for (arma::uword i = 0; i < N; i++)
-                {
-                    if (i == s)
-                    {
-                        continue;
-                    }
-                    int dyad = remify::getDyadIndex(i, s, c, N, directed);
-                    updateActive(dyad) = time;
-                }
-            }
-            else
-            {
-                // For loop over senders
-                for (arma::uword i = 0; i < N; i++)
-                {
-                    if (i == s)
-                    {
-                        continue;
-                    }
-                    // For loop over event types
-                    for (arma::uword k = 0; k < C; ++k)
-                    {
-                        int dyad = remify::getDyadIndex(i, s, k, N, directed);
-                        updateActive(dyad) = time;
-                    }
-                }
-            }
-        }
-        else if (type == 4)
-        {
-            // Last time the sender was active as receiver
-            if (consider_type)
-            {
-                // For loop over receivers
-                for (arma::uword j = 0; j < N; j++)
-                {
-                    if (j == r)
-                    {
-                        continue;
-                    }
-                    int dyad = remify::getDyadIndex(r, j, c, N, directed);
-                    updateActive(dyad) = time;
-                }
-            }
-            else
-            {
-                // For loop over receivers
-                for (arma::uword j = 0; j < N; j++)
-                {
-                    if (j == r)
-                    {
-                        continue;
-                    }
-                    // For loop over event types
-                    for (arma::uword k = 0; k < C; ++k)
-                    {
-                        int dyad = remify::getDyadIndex(r, j, k, N, directed);
-                        updateActive(dyad) = time;
-                    }
-                }
-            }
-        }
-        else if (type == 5)
-        {
-            // Last time the receiver was active as receiver
-            if (consider_type)
-            {
-                // For loop over senders
-                for (arma::uword i = 0; i < N; i++)
-                {
-                    if (i == r)
-                    {
-                        continue;
-                    }
-                    int dyad = remify::getDyadIndex(i, r, c, N, directed);
-                    updateActive(dyad) = time;
-                }
-            }
-            else
-            {
-                // For loop over senders
-                for (arma::uword i = 0; i < N; i++)
-                {
-                    if (i == r)
-                    {
-                        continue;
-                    }
-                    // For loop over event types
-                    for (arma::uword k = 0; k < C; ++k)
-                    {
-                        int dyad = remify::getDyadIndex(i, r, k, N, directed);
-                        updateActive(dyad) = time;
-                    }
-                }
-            }
-        }
-
-        // Update lastActive?
-        if (event < stop)
-        {
-            if (edgelist(event + 1, 0) > time)
-            {
-                lastActive = updateActive;
-            }
-        }
+      if (edgelist(event + 1, 0) > time)
+      {
+        lastActive = updateActive;
+      }
     }
+  }
 
-    return stat;
+  return stat;
 }
 
 // tie_tie
@@ -2880,8 +3296,11 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 18 otp
     case 18:
       // Compute statistic
-      stat = triad_tie(1, edgelist, actors, types, adjmat,
-                       riskset, start, stop, FALSE);
+      if(types.n_elem == 1) {
+        stat = computeTriadStatsDirectedNoTypes(1, adjmat, actors, riskset);
+      } else {
+        stat = computeTriadStatsDirectedTypesNotConsidered(1, adjmat, actors, types, riskset);
+      }      
       // Standardize
       if (scaling(i) == 2)
       {
@@ -2892,8 +3311,11 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 19 itp
     case 19:
       // Compute statistic
-      stat = triad_tie(2, edgelist, actors, types, adjmat,
-                       riskset, start, stop, FALSE);
+      if(types.n_elem == 1) {
+        stat = computeTriadStatsDirectedNoTypes(2, adjmat, actors, riskset);
+      } else {
+        stat = computeTriadStatsDirectedTypesNotConsidered(2, adjmat, actors, types, riskset);
+      }      
       // Standardize
       if (scaling(i) == 2)
       {
@@ -2904,8 +3326,11 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 20 osp
     case 20:
       // Compute statistic
-      stat = triad_tie(3, edgelist, actors, types, adjmat,
-                       riskset, start, stop, FALSE);
+      if(types.n_elem == 1) {
+        stat = computeTriadStatsDirectedNoTypes(3, adjmat, actors, riskset);
+      } else {
+        stat = computeTriadStatsDirectedTypesNotConsidered(3, adjmat, actors, types, riskset);
+      }      
       // Standardize
       if (scaling(i) == 2)
       {
@@ -2916,8 +3341,11 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 21 osp
     case 21:
       // Compute statistic
-      stat = triad_tie(4, edgelist, actors, types, adjmat,
-                       riskset, start, stop, FALSE);
+      if(types.n_elem == 1) {
+        stat = computeTriadStatsDirectedNoTypes(4, adjmat, actors, riskset);
+      } else {
+        stat = computeTriadStatsDirectedTypesNotConsidered(4, adjmat, actors, types, riskset);
+      }      
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3293,8 +3721,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 54 otp.type
     case 54:
       // Compute statistic
-      stat = triad_tie(1, edgelist, actors, types, adjmat,
-                       riskset, start, stop, TRUE);
+      stat = computeTriadStatsDirectedTypesConsidered(1, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3305,8 +3732,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 55 itp.type
     case 55:
       // Compute statistic
-      stat = triad_tie(2, edgelist, actors, types, adjmat,
-                       riskset, start, stop, TRUE);
+      stat = computeTriadStatsDirectedTypesConsidered(2, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3317,8 +3743,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 56 osp.type
     case 56:
       // Compute statistic
-      stat = triad_tie(3, edgelist, actors, types, adjmat,
-                       riskset, start, stop, TRUE);
+      stat = computeTriadStatsDirectedTypesConsidered(3, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {
@@ -3329,8 +3754,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     // 57 isp.type
     case 57:
       // Compute statistic
-      stat = triad_tie(4, edgelist, actors, types, adjmat,
-                       riskset, start, stop, TRUE);
+      stat = computeTriadStatsDirectedTypesConsidered(4, adjmat, actors, types, riskset);
       // Standardize
       if (scaling(i) == 2)
       {

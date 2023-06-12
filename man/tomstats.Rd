@@ -45,7 +45,7 @@ event in the relational event history for which statistics muts be computed
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the
 rows the time points and on the columns the risk set entries}
 
-\item{get_adjmat}{whether the adjmat computed by tomstats should be 
+\item{get_adjmat}{whether the adjmat computed by tomstats should be
 outputted as an attribute of the statistics.}
 }
 \value{

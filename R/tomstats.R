@@ -1,3 +1,121 @@
+#'
+# Prepare all information prior to using the cpp function 
+prepare_tomstats <- function(effects, reh, attributes = NULL,
+                     memory = c("full", "window", "decay", "interval"),
+                     memory_value = NA, start = 1, stop = Inf) {
+  
+  # Process the reh object
+  reh_list <- process_reh(reh)
+  edgelist <- reh_list$edgelist 
+  dyads <- reh_list$dyads
+  actors <- reh_list$actors
+  types <- reh_list$types
+
+  # Riskset
+  prepR <- getRisksetMatrix(
+    actorID = actors$actorID,
+    typeID = types$typeID,
+    N = nrow(actors),
+    C = nrow(types),
+    directed = attr(reh, "directed")
+  )
+
+  # Match memory
+  memory <- match.arg(memory)
+  memory_value <- validate_memory(memory, memory_value)
+
+  # Convert R start and stop indices to C++ (indexing starts at 0)
+  if (start < 1) {
+    stop("start should be set to 1 or larger.")
+  }
+  if (stop < start) {
+    stop("stop cannot be smaller than start.")
+  }
+  start <- start - 1
+  if (stop == Inf) {
+    stop <- nrow(edgelist)
+  }
+  stop <- stop - 1
+
+  # Prepare main effects
+  form <- effects
+  effects <- parse_formula(form, "rem", attr(reh, "ordinal"))
+  all_effects <- all_tie_effects()
+  effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
+
+  # Check correct specification effects
+  if (!attr(reh, "directed")) {
+    if (any(effectsN %in%
+      c(2, 3, 11:21, 24:28, 30:31, 35:38, 40:50, 53:57, 60:61, 63:66))) {
+      stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
+    }
+  }
+
+  if (attr(reh, "directed")) {
+    if (any(effectsN %in% c(22:23, 58:59, 67:71, 76:77))) {
+      stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
+    }
+  }
+
+  # Prepare fixed effects
+  if (any(sapply(effects, function(x) x$effect == "FEtype"))) {
+    C <- nrow(types)
+    FEeffects <- lapply(2:C, function(c) {
+      x <- list()
+      x$effect <- "FEtype"
+      x$scaling <- 1
+      x$typeName <- types$typeName[c]
+      x$typeID <- types$typeID[c]
+      x
+    })
+
+    pos <- which(sapply(effects, function(x) x$effect == "FEtype"))
+    effects <- append(effects[-pos], FEeffects, pos - 1)
+    effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
+  }
+
+  # Prepare interaction effects
+  effects_int <- parse_int(form, "rem", effects, attr(reh, "ordinal"))
+  effectsN <- append(effectsN, rep(99, length(effects_int)), length(effectsN))
+  interactions <- list()
+  interactions[which(effectsN == 99)] <- effects_int
+
+  # Prepare covariate information
+  covar <- process_covariate(effects, attributes, actors, edgelist, reh, prepR)
+
+  # Prepare scaling info (vector length p)
+  scaling <- as.numeric(sapply(effects, function(x) x$scaling))
+
+  # Check correct scaling inertia statistic
+  if (!attr(reh, "directed")) {
+    if (any(sapply(effects, function(x) x$effect == "inertia"))) {
+      idx <- which(sapply(effects, function(x) x$effect == "inertia"))
+      if (any(scaling[idx] == 2)) {
+        stop("Proportional scaling of the inertia effect is not defined for undirected events")
+      }
+    }
+  }
+
+  # Output
+  list(
+    form = form,
+    all_effects = all_effects, 
+    effects= effects, 
+    effectsN = effectsN, 
+    edgelist = edgelist, 
+    actors = actors,
+    types = types, 
+    prepR = prepR, 
+    memory = memory, 
+    memory_value = memory_value,
+    scaling = scaling, 
+    covar = covar, 
+    interactions = interactions, 
+    start = start, 
+    stop = stop
+  )
+}
+
 #' tomstats
 #'
 #' Computes statistics for modeling relational event history data
@@ -9,7 +127,7 @@
 #' effects and their corresponding statistics
 #' @param adjmat optionally, a previously computed adjacency matrix with on the
 #' rows the time points and on the columns the risk set entries
-#' @param get_adjmat whether the adjmat computed by tomstats should be 
+#' @param get_adjmat whether the adjmat computed by tomstats should be
 #' outputted as an attribute of the statistics.
 #' @inheritParams remstats
 #'
@@ -110,273 +228,37 @@
 #' \url{https://doi.org/10.1111/j.1467-9531.2008.00203.x}
 #'
 #' @export
-tomstats <- function(effects, reh, attributes = NULL, 
+tomstats <- function(effects, reh, attributes = NULL,
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf, adjmat = NULL,
                      get_adjmat = FALSE) {
-  # Check the reh
-  if (!("remify" %in% class(reh))) {
-    stop("Expected a reh object of class remify")
-  }
-  if (attr(reh, "model") != "tie") {
-    stop("The reh object should be prepared with the model argument set to `tie' if tie_effects are computed")
-  }
 
-  # Extract relevant elements from the prepared remify::remify object
-  edgelist.reh <- reh$edgelist
-  dyads <- attr(reh, "dyad")
-  actors <- attr(reh, "dictionary")$actors
-  types <- attr(reh, "dictionary")$types
+  # Prepare all required objects
+  object_list <- prepare_tomstats(effects = effects, reh = reh, 
+    attributes = attributes, memory = memory, memory_value = memory_value, 
+    start = start, stop = stop)
 
-  # For now: change the remify output back to the old reh output
-  # Later: make use of the new remify output! [@mlmeijerink]
-  if (!("weight" %in% colnames(edgelist.reh))) {
-    weight <- rep(1, nrow(edgelist.reh))
-  } else {
-    weight <- edgelist.reh$weight
-  }
-  edgelist.reh <- matrix(cbind(edgelist.reh$time, dyads, weight), 
-    ncol = 3, byrow = FALSE)
-
-  # For now: change all indices back to cpp indices. 
-  # Later: check if we can work with the new indices [@mlmeijerink]
-  edgelist.reh[,2] <- edgelist.reh[,2] - 1
-  actors$actorID <- actors$actorID - 1
-  if(is.null(types)) {
-    types <- data.frame(typeName = 0, typeID = 0)
-  } else {
-    types$typeID <- types$typeID - 1
-  }  
-
-  # Riskset
-  prepR <- getRisksetMatrix(
-    actors$actorID, types$typeID, nrow(actors),
-    nrow(types), attr(reh, "directed")
-  )
-
-  # Match memory
-  memory <- match.arg(memory)
-  if (memory == "full") {
-    memory_value <- Inf
-  }
-  if (memory == "window") {
-    if ((!(length(memory_value) == 1)) || (!is.numeric(memory_value))) {
-      stop("A 'memory_value' should be supplied when memory is 'window'")
-    }
-  }
-  if (memory == "decay") {
-    if ((!(length(memory_value) == 1)) || (!is.numeric(memory_value))) {
-      stop("A 'memory_value' should be supplied when memory is 'decay'")
-    }
-  }
-  if (memory == "interval") {
-    if ((!(length(memory_value) == 2)) || (!is.numeric(memory_value))) {
-      stop("Two 'memory_value' values should be supplied when memory is 'interval'")
-    }
-    if (memory_value[1] > memory_value[2]) {
-      stop("The first memory_value value should be lower than the second")
-    }
-  }
-
-  # Convert R start and stop indices to C++ (indexing starts at 0)
-  if (start < 1) {
-    stop("start should be set to 1 or larger.")
-  }
-  if (stop < start) {
-    stop("stop cannot be smaller than start.")
-  }
-  start <- start - 1
-  if (stop == Inf) {
-    stop <- nrow(edgelist.reh)
-  }
-  stop <- stop - 1
-
-  # Prepare main effects
-  form <- effects
-  effects <- parse_formula(form, "rem", attr(reh, "ordinal"))
-  all_effects <- c(
-    "baseline", # 1
-    "send", "receive", # 2 #3
-    "same", "difference", "average", # 4 #5 #6
-    "minimum", "maximum", "removed", # 7 #8 #9
-    "inertia", "reciprocity", # 10 #11
-    "indegreeSender", "indegreeReceiver", # 12 #13
-    "outdegreeSender", "outdegreeReceiver", # 14 #15
-    "totaldegreeSender", "totaldegreeReceiver", # 16, #17
-    "otp", "itp", "osp", "isp", # 18 #19 #20 #21
-    "sp", "spUnique", # 22, #23
-    "psABBA", "psABBY", "psABXA", # 24 #25 #26
-    "psABXB", "psABXY", "psABAY", # 27 #28 #29
-    "rrankSend", "rrankReceive", # 30 #31
-    "FEtype", "event", # 32 #33
-    "recencyContinue", # 34
-    "recencySendSender", "recencySendReceiver", # 35 #36
-    "recencyReceiveSender", "recencyReceiveReceiver", # 37 #38
-    "tie", # 39
-
-    "indegreeSender.type", "indegreeReceiver.type", # 40 #41
-    "outdegreeSender.type", "outdegreeReceiver.type", # 42 #43
-    "totaldegreeSender.type", "totaldegreeReceiver.type", # 44 #45
-    "psABBA.type", "psABBY.type", "psABXA.type", # 46 #47 #48
-    "psABXB.type", "psABXY.type", "psABAY.type", # 49 #50 #51
-    "inertia.type", "reciprocity.type", # 52 #53
-    "otp.type", "itp.type", "osp.type", "isp.type", # 54 #55 #56 #57
-    "sp.type", "spUnique.type", # 58, #59
-    "rrankSend.type", "rrankReceive.type", # 60 #61
-    "recencyContinue.type", # 62
-    "recencySendSender.type", "recencySendReceiver.type", # 63 #64
-    "recencyReceiveSender.type", "recencyReceiveReceiver.type", # 65 #66
-
-    "degreeMin", "degreeMax", # 67 #68
-    "degreeMin.type", "degreeMax.type", # 69 #70
-    "ccp", # 71
-    "totaldegreeDyad", # 72
-    "userStat", # 73
-    "psABAB", "psABAB.type", # 74 #75
-    "degreeDiff", "degreeDiff.type", # 76 #77
-
-    "interact"
-  ) # 99
-  effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
-
-  # Check correct specification effects
-  if (!attr(reh, "directed")) {
-    if (any(effectsN %in%
-      c(2, 3, 11:21, 24:28, 30:31, 35:38, 40:50, 53:57, 60:61, 63:66))) {
-      stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
-    }
-  }
-
-  if (attr(reh, "directed")) {
-    if (any(effectsN %in% c(22:23, 58:59, 67:71, 76:77))) {
-      stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
-    }
-  }
-
-  # Prepare fixed effects
-  if (any(sapply(effects, function(x) x$effect == "FEtype"))) {
-    C <- nrow(types)
-    FEeffects <- lapply(2:C, function(c) {
-      x <- list()
-      x$effect <- "FEtype"
-      x$scaling <- 1
-      x$typeName <- types$typeName[c]
-      x$typeID <- types$typeID[c]
-      x
-    })
-
-    pos <- which(sapply(effects, function(x) x$effect == "FEtype"))
-    effects <- append(effects[-pos], FEeffects, pos - 1)
-    effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
-  }
-
-  # Prepare interaction effects
-  effects_int <- parse_int(form, "rem", effects, attr(reh, "ordinal"))
-  effectsN <- append(effectsN, rep(99, length(effects_int)), length(effectsN))
-  interactions <- list()
-  interactions[which(effectsN == 99)] <- effects_int
-
-  # Prepare covariate information
-  covar <- lapply(effects, function(x) {
-    if (x$effect %in% c(
-      "send", "receive", "same", "difference", "average",
-      "minimum", "maximum"
-    )) {
-      if (is.null(x$x)) {
-        # Check if the variable name is in the attributes object
-        if (!(x$variable %in% colnames(attributes))) {
-          stop(paste0("Variable '", x$variable, "' not in attributes object for the '", x$effect, "' effect."))
-        }
-        # Check if the time variable is available
-        if (!("time" %in% colnames(attributes))) {
-          stop("time variable is missing in attributes object")
-        }
-        if (anyNA(attributes$time)) {
-          stop("time variable in attributes cannot have missing values")
-        }
-        # Collect the information in a dataframe
-        dat <- data.frame(
-          name = attributes$name,
-          time = attributes$time,
-          x = attributes[, x$variable]
-        )
-        # Warning for missing values
-        if (anyNA(dat)) {
-          warning(paste0("Missing values in the attributes object for the '", x$effect, "' effect can cause unexpected behavior."))
-        }
-        # Check if all actors are in the attributes
-        dat$name <- as.character(dat$name)
-        if (!all(actors[, 1] %in% dat$name)) {
-          stop("Missing actors in the attributes object.")
-        }
-        dat$name <- actors[match(dat$name, actors[, 1]), 2]
-        colnames(dat)[3] <- x$variable
-        dat <- dat[order(as.numeric(dat$name)), ]
-        as.matrix(dat)
-      } else {
-        dat <- x$x
-        # Check if all actors are in the attributes
-        dat$name <- as.character(dat$name)
-        if (!all(actors[, 1] %in% dat$name)) {
-          stop("Missing actors in the attributes object.")
-        }
-        dat$name <- actors[match(dat$name, actors[, 1]), 2]
-        dat <- dat[order(as.numeric(dat$name)), ]
-      }
-      # Check for actors in the attributes object that are not in the
-      # risk set
-      if (any(is.na(dat$name))) {
-        warning(paste0("Attributes contain actors that are not in the risk set. These are not included in the computation of the statistics."))
-        dat <- dat[!is.na(dat$name), ]
-      }
-      as.matrix(dat)
-    } else if (x$effect == "tie") {
-      parse_tie(x, reh)
-    } else if (x$effect == "event") {
-      if (length(x$x) != nrow(edgelist.reh)) {
-        stop("Length of vector 'x' in event() does not match number of events in edgelist")
-      }
-      dat <- x$x
-      as.matrix(dat)
-    } else if (x$effect == "FEtype") {
-      dat <- x$typeID
-      as.matrix(dat)
-    } else if (x$effect == "ccp") {
-      dat <- x$x
-      as.matrix(dat)
-    } else if (x$effect == "userStat") {
-      if (NROW(x$x) != nrow(edgelist.reh)) {
-        stop("Number of rows of matrix 'x' in userStat() does not match number of events in edgelist")
-      }
-      if (NCOL(x$x) != nrow(prepR)) {
-        stop("Number of columns of matrix 'x' in userStat() does not match number of dyads in risk set")
-      }
-      dat <- x$x
-      as.matrix(dat)
-    } else {
-      matrix()
-    }
-  })
-
-  # Prepare scaling info (vector length p)
-  scaling <- as.numeric(sapply(effects, function(x) x$scaling))
-
-  # Check correct scaling inertia statistic
-  if (!attr(reh, "directed")) {
-    if (any(sapply(effects, function(x) x$effect == "inertia"))) {
-      idx <- which(sapply(effects, function(x) x$effect == "inertia"))
-      if (any(scaling[idx] == 2)) {
-        stop("Proportional scaling of the inertia effect is not defined for undirected events")
-      }
-    }
-  }
-
+  form <- object_list$form
+  all_effects <- object_list$all_effects
+  effects <- object_list$effects
+  effectsN <- object_list$effectsN
+  edgelist <- object_list$edgelist
+  actors <- object_list$actor
+  types <- object_list$types
+  prepR <- object_list$prepR
+  memory <- object_list$memory
+  memory_value <- object_list$memory_value
+  scaling <- object_list$scaling
+  covar <- object_list$covar
+  interactions <- object_list$interactions
+  start <- object_list$start
+  stop <- object_list$stop
 
   # Compute the adjacency matrix
   if (any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72, 76:77))) {
     if (is.null(adjmat)) {
       adjmat <- compute_adjmat(
-        edgelist.reh, nrow(actors), reh$D,
+        edgelist, nrow(actors), reh$D,
         attr(reh, "directed"), memory, memory_value, start, stop
       )
     }
@@ -388,93 +270,26 @@ tomstats <- function(effects, reh, attributes = NULL,
 
   # Compute statistics
   statistics <- compute_stats_tie(
-    effectsN, edgelist.reh, adjmat, actors[, 2],
+    effectsN, edgelist, adjmat, actors[, 2],
     types[, 2], prepR, scaling, covar, interactions, start, stop, attr(reh, "directed")
   )
 
-  # Dimnames statistics
-  dimnames(statistics) <-
-    list(NULL, NULL, unlist(c(all_effects[effectsN])))
-
-  # Add variable name to exogenous statistics
-  dimnames(statistics)[[3]][which(effectsN %in% c(2:8, 73))] <-
-    sapply(
-      effects[which(effectsN %in% c(2:8, 73))],
-      function(x) {
-        if (!is.null(x$variable)) {
-          paste0(x$effect, "_", x$variable)
-        } else {
-          x$effect
-        }
-      }
-    )
-
-  # Add variable name to event and tie statistic
-  dimnames(statistics)[[3]][which(effectsN %in% c(33, 39))] <-
-    sapply(
-      effects[which(effectsN %in% c(33, 39))],
-      function(x) {
-        if (!is.null(x$variable)) {
-          paste0(x$variable)
-        } else {
-          x$effect
-        }
-      }
-    )
-
-  # Add counter to tie name
-  tie_effects <- grepl("tie", dimnames(statistics)[[3]])
-  if (sum(tie_effects) > 1) {
-    dimnames(statistics)[[3]][tie_effects] <-
-      paste0("tie", 1:sum(tie_effects))
-  }
-
-  # Add counter to event name
-  event_effects <- grepl("event", dimnames(statistics)[[3]])
-  if (sum(event_effects) > 1) {
-    dimnames(statistics)[[3]][event_effects] <-
-      paste0("event", 1:sum(event_effects))
-  }
-
-  # Add variable name to interaction statistics
-  dimnames(statistics)[[3]][which(effectsN == 99)] <-
-    sapply(
-      interactions[which(effectsN == 99)],
-      function(x) {
-        paste0(
-          dimnames(statistics)[[3]][as.numeric(x[1])],
-          ".x.",
-          dimnames(statistics)[[3]][as.numeric(x[2])]
-        )
-      }
-    )
-
+  # Add variable names to the statistics dimnames
+  statistics <- add_variable_names(statistics, all_effects, effectsN, effects, 
+    interactions)
   
-  # Riskset output
-  riskset <- prepR
-  riskset <- as.data.frame(riskset)
-  if (attr(reh, "directed")) {
-    colnames(riskset) <- c("sender", "receiver", "type", "id")
-    riskset$sender <- actors$actorName[match(riskset$sender, actors$actorID)]
-    riskset$receiver <- actors$actorName[match(riskset$receiver,actors$actorID)]
-    riskset$type <- types$typeName[match(riskset$type, types$typeID)]
-  } else {
-    colnames(riskset) <- c("actor1", "actor2", "type", "id")
-    riskset$actor1 <- actors$actorName[match(riskset$actor1, actors$actorID)]
-    riskset$actor2 <- actors$actorName[match(riskset$actor2, actors$actorID)]
-    riskset$type <- types$typeName[match(riskset$type, types$typeID)]
-  }
-  riskset$id <- riskset$id + 1
-  if(length(unique(riskset$type)) == 1) {
-    riskset <- riskset[,-3]
-  }
-    
+  # Modify riskset output 
+  riskset <- modify_riskset(prepR, reh, actors, types)
+
+  # Format output
   class(statistics) <- c("tomstats", "remstats")
   attr(statistics, "model") <- "tie"
   attr(statistics, "formula") <- form
   attr(statistics, "riskset") <- riskset
-  if(get_adjmat) {
+  if (get_adjmat) {
     attr(statistics, "adjmat") <- adjmat
   }
+
+  # Output
   statistics
 }

@@ -61,52 +61,20 @@
 #' @export
 tie_effects <- function(directed = NULL, endogenous = NULL) {
   # Name all effects
-  effects <- c(
-    "send",
-    "receive",
-    "tie",
-    "same",
-    "difference",
-    "average",
-    "minimum",
-    "maximum",
-    "event",
-    "indegreeSender",
-    "indegreeReceiver",
-    "outdegreeSender",
-    "outdegreeReceiver",
-    "totaldegreeSender",
-    "totaldegreeReceiver",
-    "totaldegreeDyad",
-    "degreeDiff",
-    "degreeMin",
-    "degreeMax",
-    "inertia",
-    "reciprocity",
-    "otp",
-    "itp",
-    "osp",
-    "isp",
-    "sp",
-    "spUnique",
-    # "ccp",
-    "psABBA",
-    "psABBY",
-    "psABXA",
-    "psABXB",
-    "psABXY",
-    "psABAY",
-    "psABAB",
-    "rrankSend",
-    "rrankReceive",
-    "recencySendSender",
-    "recencySendReceiver",
-    "recencyReceiveSender",
-    "recencyReceiveReceiver",
-    "recencyContinue",
-    "FEtype",
-    "userStat"
-  )
+  effects <- sort(all_tie_effects())
+
+  # Remove .type effects
+  effects <- sub("\\.type$", "", effects)
+  effects <- effects[!duplicated(effects)]
+
+  # Filter out 'removed'
+  effects <- effects[effects != "removed"]
+
+  # Filter out 'interact'
+  effects <- effects[effects != "interact"]
+  
+  # Filter out 'cpp' (temporarily?)
+  effects <- effects[effects != "ccp"]
 
   if (!is.null(directed)) {
     if (directed) {

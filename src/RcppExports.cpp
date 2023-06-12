@@ -228,6 +228,18 @@ RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP,
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// combine_arrays
+arma::cube combine_arrays(const Rcpp::List& array_list, int along);
+RcppExport SEXP _remstats_combine_arrays(SEXP array_listSEXP, SEXP alongSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type array_list(array_listSEXP);
+    Rcpp::traits::input_parameter< int >::type along(alongSEXP);
+    rcpp_result_gen = Rcpp::wrap(combine_arrays(array_list, along));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 // validate (ensure exported C++ functions exist before calling them)
 static int _remstats_RcppExport_validate(const char* sig) { 
@@ -259,6 +271,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
     {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 8},
     {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 12},
+    {"_remstats_combine_arrays", (DL_FUNC) &_remstats_combine_arrays, 2},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };
