@@ -7,7 +7,7 @@
 tomstats(
   effects,
   reh,
-  attributes = NULL,
+  attr_data = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
   start = 1,
@@ -25,7 +25,7 @@ effects and their corresponding statistics}
 \item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
 the relational event history.}
 
-\item{attributes}{optionally, an object of class
+\item{attr_data}{optionally, an object of class
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
 Details).}
 
@@ -82,13 +82,13 @@ undirected events (see the documentation of the statistics). Note that
 undirected events are only available for the tie-oriented model.
 }
 
-\section{Attributes}{
+\section{attr_data}{
 
 For the computation of the \emph{exogenous} statistics an attributes object
 with the exogenous covariate information has to be supplied to the
-\code{attributes} argument in either \code{remstats()} or in the separate
+\code{attr_data} argument in either \code{remstats()} or in the separate
 effect functions supplied to the \code{..._effects} arguments (e.g., see
-\code{\link{send}}). This \code{attributes} object should be constructed as
+\code{\link{send}}). This \code{attr_data} object should be constructed as
 follows: A dataframe with rows refering to the attribute value of actor
 \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 actor name (corresponding to the actor names in the relational event
@@ -155,7 +155,7 @@ is accurate.
 library(remstats)
 reh <- remify::remify(edgelist = history, model = "tie")
 effects <- ~ inertia():send("extraversion") + otp()
-tomstats(effects, reh = reh, attributes = info)
+tomstats(effects, reh = reh, attr_data = info)
 
 }
 \references{

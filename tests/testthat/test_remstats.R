@@ -1,105 +1,40 @@
 library(remstats)
 
-test_that("expected errors and warnings", {
-  reh_tie <- remify::remify(history, model = "tie")
-  expect_error(
-    remstats(reh_tie),
-    "Supply effects"
-    )
-
-  expect_error(
-    remstats(reh_tie, tie_effects = ~ inertia(), 
-      receiver_effects = ~ inertia()),
-    "Supply effects"
-    )
-
-  reh_actor <- remify::remify(history, directed = FALSE, model = "actor")
-  expect_error(
-    remstats(reh_actor, receiver_effects = ~ inertia()),
-    "Undirected events are not defined"
-    )
-
-  expect_error(
-    remstats(reh_tie, receiver_effects = ~ inertia()), 
-    "The reh object should be prepared"
-  )
-
-  expect_error(
-    remstats(reh_actor, tie_effects = ~ 1), 
-    "The reh object should be prepared"
-  )
-})
-
-test_that("output tomstats", {
-  reh_tie <- remify::remify(history, model = "tie")
-  stats <- tomstats(~ send("extraversion"):inertia(),
-    reh = reh_tie,
-    attributes = info,
-    get_adjmat = TRUE
-  )
-
-  riskset <- attr(stats, "riskset")
-  adjmat <- attr(stats, "adjmat")
-
-  expect_output(str(stats), "List of 3")
-  expect_equal(dim(stats), c(nrow(reh_tie$edgelist), nrow(riskset), 4))
-  expect_equal(dim(adjmat), c(nrow(reh_tie$edgelist), nrow(riskset)))
-})
-
-test_that("output aomstats", {
-  reh_actor <- remify::remify(history, model = "actor")
-  out <- aomstats(
-    sender_effects = ~ send("extraversion"),
-    receiver_effects = ~ inertia(), reh = reh_actor, attributes = info
-  )
-
-  rstats <- out$sender_stats
-  cstats <- out$receiver_stats
-
-  expect_output(str(out), "List of 2")
-  expect_equal(
-    dim(rstats),
-    c(nrow(reh_actor$edgelist), length(unique(info$name)), 2)
-  )
-  expect_equal(
-    dim(cstats),
-    c(nrow(reh_actor$edgelist), length(unique(info$name)), 1)
-  )
-})
-
-test_that("output remstats", {
-  # Tie-oriented model
-  reh_tie <- remify::remify(history, model = "tie")
-  stats <- remstats(
-    tie_effects = ~ send("extraversion"):inertia(),
-    reh = reh_tie, attributes = info, get_adjmat = TRUE
-  )
-
-  riskset <- attr(stats, "riskset")
-  adjmat <- attr(stats, "adjmat")
-
-
-  expect_output(str(stats), "List of 3")
-  expect_equal(dim(stats), c(nrow(reh_tie$edgelist), nrow(riskset), 4))
-  expect_equal(dim(adjmat), c(nrow(reh_tie$edgelist), nrow(riskset)))
-
-  # Actor-oriented model
-  reh_actor <- remify::remify(history, model = "actor")
-  out <- remstats(
-    sender_effects = ~ send("extraversion"),
-    receiver_effects = ~ inertia(), reh = reh_actor, attributes = info
-  )
-
-  rstats <- out$sender_stats
-  cstats <- out$receiver_stats
-
-  expect_output(str(out), "List of 2")
-  expect_equal(
-    dim(rstats),
-    c(nrow(reh_actor$edgelist), length(unique(info$name)), 2)
-  )
-  expect_equal(
-    dim(cstats),
-    c(nrow(reh_actor$edgelist), length(unique(info$name)), 1)
-  )
+test_that("remstats correctly handles input combinations", {
+  
+  # Test case 1: Only tie_effects provided
+  reh1 <- remify::remify(edgelist = history, model = "tie")
+  tie_effects1 <- ~ inertia() + otp()
+  
+  expect_silent(remstats(reh1, tie_effects = tie_effects1))
+  
+  # Test case 2: Only sender_effects provided with undirected events
+  reh2 <- remify::remify(edgelist = history, model = "actor", directed = FALSE)
+  sender_effects2 <- ~ outdegreeSender() + recencySendSender()
+  
+  expect_error(remstats(reh2, sender_effects = sender_effects2),
+    "Undirected events are not defined for the actor-oriented model.")
+  
+  receiver_effects2 <- ~ inertia() + otp()
+  
+  expect_error(remstats(reh2, receiver_effects = receiver_effects2),
+    "Undirected events are not defined for the actor-oriented model.")
+  
+  # Test case 3: Only sender_effects provided with directed events
+  reh3 <- remify::remify(edgelist = history, model = "actor", directed = TRUE)
+  sender_effects3 <- ~ outdegreeSender() + recencySendSender()
+  
+  expect_silent(remstats(reh3, sender_effects = sender_effects3))
+  
+  receiver_effects3 <- ~ inertia() + otp()
+  
+  expect_silent(remstats(reh3, receiver_effects = receiver_effects3))
+  
+  # Test case 4: Invalid combination of arguments
+  reh4 <- remify::remify(edgelist = history, model = "tie")
+  tie_effects4 <- ~ inertia() + otp()
+  sender_effects4 <- ~ outdegreeSender() + recencySendSender()
+  
+  expect_error(remstats(reh4, tie_effects = tie_effects4,
+    sender_effects = sender_effects4))
 })

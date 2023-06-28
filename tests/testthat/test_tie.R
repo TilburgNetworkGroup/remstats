@@ -14,7 +14,7 @@ test_that("expected errors and warnings", {
   mod <- ~ tie(x = both_old)
   reh_actor <- remify::remify(history, model = "actor")
   expect_error(
-    remstats(reh = reh_actor, sender_effects = mod, attributes = info),
+    remstats(reh = reh_actor, sender_effects = mod, attr_data = info),
     "not defined for the sender activity model"
   )
 

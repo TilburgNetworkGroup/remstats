@@ -36,12 +36,12 @@
 #' undirected events (see the documentation of the statistics). Note that
 #' undirected events are only available for the tie-oriented model.
 #'
-#' @section Attributes:
+#' @section attr_data:
 #' For the computation of the \emph{exogenous} statistics an attributes object
 #' with the exogenous covariate information has to be supplied to the
-#' \code{attributes} argument in either \code{remstats()} or in the separate
+#' \code{attr_data} argument in either \code{remstats()} or in the separate
 #' effect functions supplied to the \code{..._effects} arguments (e.g., see
-#' \code{\link{send}}). This \code{attributes} object should be constructed as
+#' \code{\link{send}}). This \code{attr_data} object should be constructed as
 #' follows: A dataframe with rows refering to the attribute value of actor
 #' \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 #' actor name (corresponding to the actor names in the relational event
@@ -103,45 +103,45 @@
 #' library(remstats)
 #' reh <- remify::remify(edgelist = history, model = "tie")
 #' effects <- ~ inertia():send("extraversion") + otp()
-#' tomstats(effects, reh = reh, attributes = info)
+#' tomstats(effects, reh = reh, attr_data = info)
 #'
 #' @references Butts, C. T. (2008). A relational event framework for social
 #' action. Sociological Methodology, 38(1), 155–200.
 #' \url{https://doi.org/10.1111/j.1467-9531.2008.00203.x}
 #'
 #' @export
-tomstats <- function(effects, reh, attributes = NULL,
+tomstats <- function(effects, reh, attr_data = NULL,
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf, adjmat = NULL,
                      get_adjmat = FALSE) {
 
-  # Prepare all required objects
-  object_list <- prepare_tomstats(effects = effects, reh = reh, 
-    attributes = attributes, memory = memory, memory_value = memory_value, 
+  # Prepare all required inputs
+  inputs <- prepare_tomstats(effects = effects, reh = reh, 
+    attr_data = attr_data, memory = memory, memory_value = memory_value, 
     start = start, stop = stop)
 
-  form <- object_list$form
-  all_effects <- object_list$all_effects
-  effects <- object_list$effects
-  effectsN <- object_list$effectsN
-  edgelist <- object_list$edgelist
-  actors <- object_list$actor
-  types <- object_list$types
-  prepR <- object_list$prepR
-  memory <- object_list$memory
-  memory_value <- object_list$memory_value
-  scaling <- object_list$scaling
-  covar <- object_list$covar
-  interactions <- object_list$interactions
-  start <- object_list$start
-  stop <- object_list$stop
+  form <- inputs$form
+  all_effects <- inputs$all_effects
+  effects <- inputs$effects
+  effectsN <- inputs$effectsN
+  edgelist <- inputs$edgelist
+  actors <- inputs$actor
+  types <- inputs$types
+  prepR <- inputs$prepR
+  memory <- inputs$memory
+  memory_value <- inputs$memory_value
+  scaling <- inputs$scaling
+  covar <- inputs$covar
+  interactions <- inputs$interactions
+  start <- inputs$start
+  stop <- inputs$stop
 
   # Compute the adjacency matrix
   if (any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72, 76:77))) {
     if (is.null(adjmat)) {
       adjmat <- compute_adjmat(
-        edgelist, nrow(actors), reh$D,
-        attr(reh, "directed"), memory, memory_value, start, stop
+        edgelist, nrow(prepR), attr(reh, "directed"), 
+        memory, memory_value, start, stop
       )
     }
   } else {

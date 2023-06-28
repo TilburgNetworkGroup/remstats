@@ -24,9 +24,9 @@ statistics in the combined object are removed.
 library(remstats)
 reh <- remify::remify(edgelist = history, model = "tie")
 effects1 <- ~ inertia():send("extraversion") + otp()
-stats1 <- tomstats(effects1, reh = reh, attributes = info)
+stats1 <- tomstats(effects1, reh = reh, attr_data = info)
 effects2 <- ~ reciprocity()
-stats2 <- tomstats(effects2, reh = reh, attributes = info)
+stats2 <- tomstats(effects2, reh = reh, attr_data = info)
 statsC <- bind_remstats(stats1, stats2)
 
 }

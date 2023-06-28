@@ -6,97 +6,97 @@ test_that("expected errors and warnings", {
 
     # Expected errors for wrong "variable"
     expect_error(
-        difference(variable = "test", attributes = info),
-        "not in attributes"
+        difference(variable = "test", attr_data = info),
+        "not in attr_data"
     )
 
     mod <- ~ difference(variable = "test")
     reh_tie <- remify::remify(history, model = "tie")
     reh_actor <- remify::remify(history, model = "actor")
     expect_error(
-        remstats(reh = reh_tie, tie_effects = mod, attributes = info),
-        "not in attributes"
+        remstats(reh = reh_tie, tie_effects = mod, attr_data = info),
+        "not in attr_data"
     )
 
     expect_error(
-        remstats(reh = reh_actor, receiver_effects = mod, attributes = info),
-        "not in attributes"
+        remstats(reh = reh_actor, receiver_effects = mod, attr_data = info),
+        "not in attr_data"
     )
 
     # Expected errors for missing time variable
     expect_error(
-        difference(variable = "extraversion", attributes = info[, -2]),
+        difference(variable = "extraversion", attr_data = info[, -2]),
         "time variable is missing"
     )
 
     mod <- ~ difference(variable = "extraversion")
-    attr <- info[, -2]
+    attr_object <- info[, -2]
     expect_error(
-        remstats(reh = reh_tie, tie_effects = mod, attributes = attr),
+        remstats(reh = reh_tie, tie_effects = mod, attr_data = attr_object),
         "time variable is missing"
     )
 
     expect_error(
-        remstats(reh = reh_actor, receiver_effects = mod, attributes = attr),
+        remstats(reh = reh_actor, receiver_effects = mod, attr_data = attr_object),
         "time variable is missing"
     )
 
     # Expected errors for sender effects
     expect_error(
-        remstats(reh = reh_actor, sender_effects = mod, attributes = info),
+        remstats(reh = reh_actor, sender_effects = mod, attr_data = info),
         "not defined for the sender activity model"
     )
 
     # Expect warning for missing values
-    attr <- info
-    attr$extraversion[1] <- NA
+    attr_object <- info
+    attr_object$extraversion[1] <- NA
     expect_warning(
-        difference(variable = "extraversion", attributes = attr),
+        difference(variable = "extraversion", attr_data = attr_object),
         "unexpected behavior"
     )
 
     expect_warning(
-        remstats(reh = reh_tie, tie_effects = mod, attributes = attr),
+        remstats(reh = reh_tie, tie_effects = mod, attr_data = attr_object),
         "unexpected behavior"
     )
 
     expect_warning(
-        remstats(reh = reh_actor, receiver_effects = mod, attributes = attr),
+        remstats(reh = reh_actor, receiver_effects = mod, attr_data = attr_object),
         "unexpected behavior"
     )
 
     # Expect error for missing time values
-    attr <- info
-    attr$time[1] <- NA
+    attr_object <- info
+    attr_object$time[1] <- NA
     expect_error(
-        difference(variable = "extraversion", attributes = attr),
+        difference(variable = "extraversion", attr_data = attr_object),
         "cannot have missing values"
     )
 
     expect_error(
-        remstats(reh = reh_tie, tie_effects = mod, attributes = attr),
+        remstats(reh = reh_tie, tie_effects = mod, attr_data = attr_object),
         "cannot have missing values"
     )
 
     expect_error(
-        remstats(reh = reh_actor, receiver_effects = mod, attributes = attr),
+        remstats(reh = reh_actor, receiver_effects = mod, attr_data = attr_object),
         "cannot have missing values"
     )
 
     # Expect warning for extra actor
-    attr <- rbind(info, info[1, ])
-    attr[nrow(attr), 1] <- 999
+    attr_object <- rbind(info, info[1, ])
+    attr_object[nrow(attr_object), 1] <- 999
     expect_warning(
-        remstats(reh = reh_tie, tie_effects = mod, attributes = attr),
+        remstats(reh = reh_tie, tie_effects = mod, attr_data = attr_object),
         "actors that are not in the risk set"
     )
 
     expect_warning(
-        remstats(reh = reh_actor, receiver_effects = mod, attributes = attr),
+        remstats(reh = reh_actor, receiver_effects = mod, attr_data = attr_object),
         "actors that are not in the risk set"
     )
 
-    mod <- ~ difference(variable = "extraversion", attributes = attr)
+    mod <- ~ difference(variable = "extraversion", attr_data = attr_object)
     expect_warning(
         remstats(reh = reh_tie, tie_effects = mod),
         "actors that are not in the risk set"
@@ -108,19 +108,19 @@ test_that("expected errors and warnings", {
     )
 
     # Missing actor
-    attr <- subset(info, name != 101)
+    attr_object <- subset(info, name != 101)
     mod <- ~ difference(variable = "extraversion")
     expect_error(
-        remstats(reh = reh_tie, tie_effects = mod, attributes = attr),
+        remstats(reh = reh_tie, tie_effects = mod, attr_data = attr_object),
         "Missing actors"
     )
 
     expect_error(
-        remstats(reh = reh_actor, receiver_effects = mod, attributes = attr),
+        remstats(reh = reh_actor, receiver_effects = mod, attr_data = attr_object),
         "Missing actors"
     )
 
-    mod <- ~ difference(variable = "extraversion", attributes = attr)
+    mod <- ~ difference(variable = "extraversion", attr_data = attr_object)
     expect_error(
         remstats(reh = reh_tie, tie_effects = mod),
         "Missing actors"
@@ -157,10 +157,10 @@ test_that("expected output from difference()", {
         ), out
     )
 
-    # Expected output with object supplied to "attributes" argument
+    # Expected output with object supplied to "attr_data" argument
     out$scaling <- 2
     out$x <- info[, c("name", "time", "extraversion")]
-    expect_equal(difference(variable = "extraversion", attributes = info), out)
+    expect_equal(difference(variable = "extraversion", attr_data = info), out)
 })
 
 test_that("expected statistic tie-oriented model", {
@@ -168,14 +168,14 @@ test_that("expected statistic tie-oriented model", {
     info$x <- sample(1:5, size = nrow(info), replace = TRUE)
     mod <- ~ difference("x")
     reh_tie <- remify::remify(history, model = "tie")
-    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attr_data = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
     first_info <- subset(info, time == 0)
-    riskset <- attr(tie_stats, "riskset")
+    riskset <- attr_object(tie_stats, "riskset")
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
@@ -183,7 +183,7 @@ test_that("expected statistic tie-oriented model", {
             first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
-        all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat1, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Rows 41 to 71 are expected to be equal to the following row
@@ -195,7 +195,7 @@ test_that("expected statistic tie-oriented model", {
             second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
-        all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat2, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Rows 72 to 115 are expected to be equal to the following row
@@ -207,12 +207,12 @@ test_that("expected statistic tie-oriented model", {
             third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
-        all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat3, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Repeat for "std" scaling
     mod <- ~ difference("x", scaling = "std")
-    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attr_data = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
@@ -222,7 +222,7 @@ test_that("expected statistic tie-oriented model", {
     expect_true(all(sapply(1:40, function(x) {
         all.equal(as.numeric(stat1),
             tie_stats[x, , 2],
-            check.attributes = FALSE
+            check.attr_data = FALSE
         )
     })))
 
@@ -231,7 +231,7 @@ test_that("expected statistic tie-oriented model", {
     expect_true(all(sapply(41:71, function(x) {
         all.equal(as.numeric(stat2),
             tie_stats[x, , 2],
-            check.attributes = FALSE
+            check.attr_data = FALSE
         )
     })))
 
@@ -240,13 +240,13 @@ test_that("expected statistic tie-oriented model", {
     expect_true(all(sapply(72:115, function(x) {
         all.equal(as.numeric(stat3),
             tie_stats[x, , 2],
-            check.attributes = FALSE
+            check.attr_data = FALSE
         )
     })))
 
     # Repeat for absolute = FALSE
     mod <- ~ difference("x", absolute = FALSE)
-    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attr_data = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
@@ -259,7 +259,7 @@ test_that("expected statistic tie-oriented model", {
             first_info$x[first_info$name == receiver]
     }))
     expect_true(all(sapply(1:40, function(x) {
-        all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat1, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Rows 41 to 71 are expected to be equal to the following row
@@ -270,7 +270,7 @@ test_that("expected statistic tie-oriented model", {
             second_info$x[second_info$name == receiver]
     }))
     expect_true(all(sapply(41:71, function(x) {
-        all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat2, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Rows 72 to 115 are expected to be equal to the following row
@@ -281,12 +281,12 @@ test_that("expected statistic tie-oriented model", {
             third_info$x[third_info$name == receiver]
     }))
     expect_true(all(sapply(72:115, function(x) {
-        all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat3, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Repeat for absolute = FALSE and "std" scaling
     mod <- ~ difference("x", scaling = "std", absolute = FALSE)
-    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attr_data = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
@@ -296,7 +296,7 @@ test_that("expected statistic tie-oriented model", {
     expect_true(all(sapply(1:40, function(x) {
         all.equal(as.numeric(stat1),
             tie_stats[x, , 2],
-            check.attributes = FALSE
+            check.attr_data = FALSE
         )
     })))
 
@@ -305,7 +305,7 @@ test_that("expected statistic tie-oriented model", {
     expect_true(all(sapply(41:71, function(x) {
         all.equal(as.numeric(stat2),
             tie_stats[x, , 2],
-            check.attributes = FALSE
+            check.attr_data = FALSE
         )
     })))
 
@@ -314,7 +314,7 @@ test_that("expected statistic tie-oriented model", {
     expect_true(all(sapply(72:115, function(x) {
         all.equal(as.numeric(stat3),
             tie_stats[x, , 2],
-            check.attributes = FALSE
+            check.attr_data = FALSE
         )
     })))
 
@@ -323,14 +323,14 @@ test_that("expected statistic tie-oriented model", {
     reh_undirected <- remify::remify(history, model = "tie", 
         directed = FALSE)
     tie_stats <- remstats(
-        reh = reh_undirected, tie_effects = mod, attributes = info
+        reh = reh_undirected, tie_effects = mod, attr_data = info
     )
 
     # Expected name of the statistic
     expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
-    riskset <- attr(tie_stats, "riskset")
+    riskset <- attr_object(tie_stats, "riskset")
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
@@ -338,7 +338,7 @@ test_that("expected statistic tie-oriented model", {
             first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
-        all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat1, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Rows 41 to 71 are expected to be equal to the following row
@@ -349,7 +349,7 @@ test_that("expected statistic tie-oriented model", {
             second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
-        all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat2, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Rows 72 to 115 are expected to be equal to the following row
@@ -360,18 +360,18 @@ test_that("expected statistic tie-oriented model", {
             third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
-        all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat3, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Repeat for typed events
     history$type <- history$setting
-    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attributes = info)
+    tie_stats <- remstats(reh = reh_tie, tie_effects = mod, attr_data = info)
 
     # Expected name of the statistic
     expect_equal(dimnames(tie_stats)[[3]][2], "difference_x")
 
     # The first 40 rows are expected to be equal to the following row
-    riskset <- attr(tie_stats, "riskset")
+    riskset <- attr_object(tie_stats, "riskset")
     stat1 <- as.numeric(apply(riskset, 1, function(x) {
         sender <- as.numeric(x[1])
         receiver <- as.numeric(x[2])
@@ -379,7 +379,7 @@ test_that("expected statistic tie-oriented model", {
             first_info$x[first_info$name == receiver])
     }))
     expect_true(all(sapply(1:40, function(x) {
-        all.equal(stat1, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat1, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Rows 41 to 71 are expected to be equal to the following row
@@ -390,7 +390,7 @@ test_that("expected statistic tie-oriented model", {
             second_info$x[second_info$name == receiver])
     }))
     expect_true(all(sapply(41:71, function(x) {
-        all.equal(stat2, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat2, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 
     # Rows 72 to 115 are expected to be equal to the following row
@@ -401,7 +401,7 @@ test_that("expected statistic tie-oriented model", {
             third_info$x[third_info$name == receiver])
     }))
     expect_true(all(sapply(72:115, function(x) {
-        all.equal(stat3, tie_stats[x, , 2], check.attributes = FALSE)
+        all.equal(stat3, tie_stats[x, , 2], check.attr_data = FALSE)
     })))
 })
 
@@ -410,9 +410,9 @@ test_that("expected statistic actor-oriented model", {
     info$x <- sample(1:5, size = nrow(info), replace = T)
     mod <- ~ difference("x")
     reh_actor <- remify::remify(history, model = "actor")
-    actors <- attr(reh_actor, "dictionary")$actors
+    actors <- attr_object(reh_actor, "dictionary")$actors
     aomres <- remstats(
-        reh = reh_actor, receiver_effects = mod, attributes = info
+        reh = reh_actor, receiver_effects = mod, attr_data = info
     )
 
     # Expected name of the statistic
@@ -463,7 +463,7 @@ test_that("expected statistic actor-oriented model", {
     # Repeat for scaling = "std" -----------------------------------------------
     mod <- ~ difference("x", scaling = "std")
     aomres <- remstats(
-        reh = reh_actor, receiver_effects = mod, attributes = info
+        reh = reh_actor, receiver_effects = mod, attr_data = info
     )
 
     # Expected name of the statistic
@@ -508,7 +508,7 @@ test_that("expected statistic actor-oriented model", {
     # Repeat for absolute = FALSE ----------------------------------------------
     mod <- ~ difference("x", absolute = FALSE)
     aomres <- remstats(
-        reh = reh_actor, receiver_effects = mod, attributes = info
+        reh = reh_actor, receiver_effects = mod, attr_data = info
     )
 
     # Expected name of the statistic
@@ -559,7 +559,7 @@ test_that("expected statistic actor-oriented model", {
     # Repeat for absolute = FALSE and scaling = "std" --------------------------
     mod <- ~ difference("x", absolute = FALSE, scaling = "std")
     aomres <- remstats(
-        reh = reh_actor, receiver_effects = mod, attributes = info
+        reh = reh_actor, receiver_effects = mod, attr_data = info
     )
 
     # Expected name of the statistic

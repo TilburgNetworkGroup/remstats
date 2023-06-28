@@ -4,13 +4,13 @@
 \alias{minimum}
 \title{minimum}
 \usage{
-minimum(variable, attributes = NULL, scaling = c("as.is", "std"))
+minimum(variable, attr_data = NULL, scaling = c("as.is", "std"))
 }
 \arguments{
 \item{variable}{string with the name of the column in the
-\code{attributes} object for which the statistic has to be computed.}
+\code{attr_data} object for which the statistic has to be computed.}
 
-\item{attributes}{optionally, an object of class
+\item{attr_data}{optionally, an object of class
 \code{\link[base]{data.frame}} that contains the attribute, see
 'Details.'}
 
@@ -29,7 +29,7 @@ The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the
 minimum of the values of actor \emph{i} and \emph{j} on the attribute at
 timepoint \emph{t}.
 
-The \code{attributes} object should be constructed as a
+The \code{attr_data} object should be constructed as a
 \code{\link[base]{data.frame}} where each row refers to the attribute value
 of actor \emph{i} at timepoint \emph{t}:
 \itemize{
@@ -40,13 +40,13 @@ column with only zero's if the attribute does not vary over time).}
 specification of the "minimum" effect (i.e., the column name should
 correspond to the string that is supplied to the \code{variable} argument)}
 }
-Note that it is possible to omit the attributes object in the call of
+Note that it is possible to omit the attr_data object in the call of
 \code{minimum()} and, instead, supply it in the call of \code{remstats()} for
 multiple exogenous effects.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 effects <- ~ minimum("extraversion")
-remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
 
 }

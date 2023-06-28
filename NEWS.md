@@ -3,6 +3,10 @@ Date: 01-07-2023
 
 ## New features
 * `bind_remstats()`
+* Compute statistics for only the "active" dyads in the risk set (in combination with remify, see `remify::remify` `riskset` argument)
+
+## Major changes
+* The `attributes` argument that exists in many of the function is renamed to `attr_data` to avoid naming conflicts. 
 
 ## Minor changes
 * Decreased computation time triadic statistics

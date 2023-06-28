@@ -2,7 +2,7 @@ Package: remstats
 Type: Package
 Title: Computes Statistics For Relational Event History Data
 Version: 3.1.0
-Date: 2023-04-16
+Date: 2023-07-01
 Authors@R: 
     c(
         person(
@@ -73,5 +73,7 @@ Imports:
 LinkingTo: Rcpp, RcppArmadillo, remify, RcppProgress
 Suggests: 
     graphics,
-    testthat, tinytest
+    testthat (>= 3.0.0),
+    tinytest
 SystemRequirements: GNU make
+Config/testthat/edition: 3

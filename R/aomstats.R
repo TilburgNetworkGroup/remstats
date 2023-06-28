@@ -21,12 +21,12 @@
 #' the documentation of the \code{scaling} argument in the separate effect
 #' functions for more information on this.
 #'
-#' @section Attributes:
+#' @section attr_data:
 #' For the computation of the \emph{exogenous} statistics an attributes object
 #' with the exogenous covariate information has to be supplied to the
-#' \code{attributes} argument in either \code{remstats()} or in the separate
+#' \code{attr_data} argument in either \code{remstats()} or in the separate
 #' effect functions supplied to the \code{..._effects} arguments (e.g., see
-#' \code{\link{send}}). This \code{attributes} object should be constructed as
+#' \code{\link{send}}). This \code{attr_data} object should be constructed as
 #' follows: A dataframe with rows refering to the attribute value of actor
 #' \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 #' actor name (corresponding to the actor names in the relational event
@@ -84,7 +84,7 @@
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
 #' aomstats(
 #'   reh = reh, sender_effects = seff, receiver_effects = reff,
-#'   attributes = info
+#'   attr_data = info
 #' )
 #'
 #' @references Stadtfeld, C., & Block, P. (2017). Interactions, actors, and
@@ -96,7 +96,7 @@
 aomstats <- function(reh,
                      sender_effects = NULL,
                      receiver_effects = NULL,
-                     attributes = NULL,
+                     attr_data = NULL,
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = Inf,
                      start = 1,
@@ -180,6 +180,7 @@ aomstats <- function(reh,
   rateFormula <- sender_effects
   if (!is.null(sender_effects)) {
     # Prepare main sender_effects
+    check_formula(rateFormula)
     sender_effects <- parse_formula(rateFormula, "rateEffects")
     all_sender_effects <- c(
       "baseline", "send", # 1,2
@@ -213,46 +214,46 @@ aomstats <- function(reh,
     rateCovar <- lapply(sender_effects, function(x) {
       if (x$effect == "send") {
         if (is.null(x$x)) {
-          # Check if the variable name is in the attributes object
-          if (!(x$variable %in% colnames(attributes))) {
-            stop(paste0("Variable '", x$variable, "' not in attributes object for the '", x$effect, "' effect."))
+          # Check if the variable name is in the attr_data object
+          if (!(x$variable %in% colnames(attr_data))) {
+            stop(paste0("Variable '", x$variable, "' not in attr_data object for the '", x$effect, "' effect."))
           }
           # Check if the time variable is available
-          if (!("time" %in% colnames(attributes))) {
-            stop(paste0("time variable is missing in attributes object"))
+          if (!("time" %in% colnames(attr_data))) {
+            stop(paste0("time variable is missing in attr_data object"))
           }
-          if (anyNA(attributes$time)) {
-            stop("time variable in attributes cannot have missing values")
+          if (anyNA(attr_data$time)) {
+            stop("time variable in attr_data cannot have missing values")
           }
           dat <- data.frame(
-            name = attributes$name,
-            time = attributes$time,
-            x = attributes[, x$variable]
+            name = attr_data$name,
+            time = attr_data$time,
+            x = attr_data[, x$variable]
           )
           # Warning for missing values
           if (anyNA(dat)) {
-            warning(paste0("Missing values in the attributes object for the '", x$effect, "' effect can cause unexpected behavior."))
+            warning(paste0("Missing values in the attr_data object for the '", x$effect, "' effect can cause unexpected behavior."))
           }
-          # Check if all actors are in the attributes
+          # Check if all actors are in the attr_data
           if (!all(actors[, 1] %in% dat$name)) {
-            stop("Missing actors in the attributes object.")
+            stop("Missing actors in the attr_data object.")
           }
           dat$name <- actors[match(dat$name, actors[, 1]), 2]
           colnames(dat)[3] <- x$variable
           as.matrix(dat)
         } else {
           dat <- x$x
-          # Check if all actors are in the attributes
+          # Check if all actors are in the attr_data
           if (!all(actors[, 1] %in% dat$name)) {
-            stop("Missing actors in the attributes object.")
+            stop("Missing actors in the attr_data object.")
           }
           dat$name <- actors[match(dat$name, actors[, 1]), 2]
           as.matrix(dat)
         }
-        # Check for actors in the attributes object that are not in the
+        # Check for actors in the attr_data object that are not in the
         # risk set
         if (any(is.na(dat$name))) {
-          warning(paste0("Attributes contain actors that are not in the risk set. These are not included in the computation of the statistics."))
+          warning(paste0("attr_data contain actors that are not in the risk set. These are not included in the computation of the statistics."))
           dat <- dat[!is.na(dat$name), ]
         }
         as.matrix(dat)
@@ -301,6 +302,7 @@ aomstats <- function(reh,
   choiceFormula <- receiver_effects
   if (!is.null(receiver_effects)) {
     # Prepare main receiver_effects
+    check_formula(choiceFormula)
     receiver_effects <- parse_formula(choiceFormula, "choiceEffects")
     all_receiver_effects <- c(
       "receive", "same", "difference", "average", # 1, 2, 3, 4
@@ -342,46 +344,46 @@ aomstats <- function(reh,
     choiceCovar <- lapply(receiver_effects, function(x) {
       if (x$effect %in% c("receive", "same", "difference", "average")) {
         if (is.null(x$x)) {
-          # Check if the variable name is in the attributes object
-          if (!(x$variable %in% colnames(attributes))) {
-            stop(paste0("Variable '", x$variable, "' not in attributes object for the '", x$effect, "' effect."))
+          # Check if the variable name is in the attr_data object
+          if (!(x$variable %in% colnames(attr_data))) {
+            stop(paste0("Variable '", x$variable, "' not in attr_data object for the '", x$effect, "' effect."))
           }
           # Check if the time variable is available
-          if (!("time" %in% colnames(attributes))) {
-            stop(paste0("time variable is missing in attributes object"))
+          if (!("time" %in% colnames(attr_data))) {
+            stop(paste0("time variable is missing in attr_data object"))
           }
-          if (anyNA(attributes$time)) {
-            stop("time variable in attributes cannot have missing values")
+          if (anyNA(attr_data$time)) {
+            stop("time variable in attr_data cannot have missing values")
           }
           dat <- data.frame(
-            name = attributes$name,
-            time = attributes$time,
-            x = attributes[, x$variable]
+            name = attr_data$name,
+            time = attr_data$time,
+            x = attr_data[, x$variable]
           )
           # Warning for missing values
           if (anyNA(dat)) {
-            warning(paste0("Missing values in the attributes object for the '", x$effect, "' effect can cause unexpected behavior."))
+            warning(paste0("Missing values in the attr_data object for the '", x$effect, "' effect can cause unexpected behavior."))
           }
-          # Check if all actors are in the attributes
+          # Check if all actors are in the attr_data
           if (!all(actors[, 1] %in% dat$name)) {
-            stop("Missing actors in the attributes object.")
+            stop("Missing actors in the attr_data object.")
           }
           dat$name <- actors[match(dat$name, actors[, 1]), 2]
           colnames(dat)[3] <- x$variable
           as.matrix(dat)
         } else {
           dat <- x$x
-          # Check if all actors are in the attributes
+          # Check if all actors are in the attr_data
           if (!all(actors[, 1] %in% dat$name)) {
-            stop("Missing actors in the attributes object.")
+            stop("Missing actors in the attr_data object.")
           }
           dat$name <- actors[match(dat$name, actors[, 1]), 2]
           as.matrix(dat)
         }
-        # Check for actors in the attributes object that are not in the
+        # Check for actors in the attr_data object that are not in the
         # risk set
         if (any(is.na(dat$name))) {
-          warning(paste0("Attributes contain actors that are not in the risk set. These are not included in the computation of the statistics."))
+          warning(paste0("attr_data contain actors that are not in the risk set. These are not included in the computation of the statistics."))
           dat <- dat[!is.na(dat$name), ]
         }
         as.matrix(dat)

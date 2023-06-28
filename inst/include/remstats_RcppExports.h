@@ -88,38 +88,17 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat compute_adjmat(const arma::mat& edgelist, int N, int D, bool directed, std::string memory, arma::vec memory_value, int start, int stop) {
-        typedef SEXP(*Ptr_compute_adjmat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline arma::mat compute_adjmat(const arma::mat& edgelist, int D, bool directed, std::string memory, arma::vec memory_value, int start, int stop) {
+        typedef SEXP(*Ptr_compute_adjmat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_adjmat p_compute_adjmat = NULL;
         if (p_compute_adjmat == NULL) {
-            validateSignature("arma::mat(*compute_adjmat)(const arma::mat&,int,int,bool,std::string,arma::vec,int,int)");
+            validateSignature("arma::mat(*compute_adjmat)(const arma::mat&,int,bool,std::string,arma::vec,int,int)");
             p_compute_adjmat = (Ptr_compute_adjmat)R_GetCCallable("remstats", "_remstats_compute_adjmat");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_compute_adjmat(Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(N)), Shield<SEXP>(Rcpp::wrap(D)), Shield<SEXP>(Rcpp::wrap(directed)), Shield<SEXP>(Rcpp::wrap(memory)), Shield<SEXP>(Rcpp::wrap(memory_value)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<arma::mat >(rcpp_result_gen);
-    }
-
-    inline arma::mat computeTriadStatsNoTypes(int type, const arma::mat& adjmat, arma::vec actors, const arma::mat& riskset) {
-        typedef SEXP(*Ptr_computeTriadStatsNoTypes)(SEXP,SEXP,SEXP,SEXP);
-        static Ptr_computeTriadStatsNoTypes p_computeTriadStatsNoTypes = NULL;
-        if (p_computeTriadStatsNoTypes == NULL) {
-            validateSignature("arma::mat(*computeTriadStatsNoTypes)(int,const arma::mat&,arma::vec,const arma::mat&)");
-            p_computeTriadStatsNoTypes = (Ptr_computeTriadStatsNoTypes)R_GetCCallable("remstats", "_remstats_computeTriadStatsNoTypes");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_computeTriadStatsNoTypes(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(adjmat)), Shield<SEXP>(Rcpp::wrap(actors)), Shield<SEXP>(Rcpp::wrap(riskset)));
+            rcpp_result_gen = p_compute_adjmat(Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(D)), Shield<SEXP>(Rcpp::wrap(directed)), Shield<SEXP>(Rcpp::wrap(memory)), Shield<SEXP>(Rcpp::wrap(memory_value)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

@@ -4,13 +4,13 @@
 \alias{same}
 \title{same}
 \usage{
-same(variable, attributes = NULL)
+same(variable, attr_data = NULL)
 }
 \arguments{
 \item{variable}{string with the name of the column in the
-\code{attributes} object for which the statistic has to be computed.}
+\code{attr_data} object for which the statistic has to be computed.}
 
-\item{attributes}{optionally, an object of class
+\item{attr_data}{optionally, an object of class
 \code{\link[base]{data.frame}} that contains the attribute, see
 'Details.'}
 }
@@ -31,7 +31,7 @@ on the attribute as the active sender \emph{i} at timepoint \emph{t}
 (actor-oriented model) and equal to 0 for dyads and receivers that do not
 have the same value.
 
-The \code{attributes} object should be constructed as a
+The \code{attr_data} object should be constructed as a
 \code{\link[base]{data.frame}} where each row refers to the attribute value
 of actor \emph{i} at timepoint \emph{t}:
 \itemize{
@@ -42,16 +42,16 @@ column with only zero's if the attribute does not vary over time).}
 specification of the "same" effect (i.e., the column name should correspond
 to the string that is supplied to the \code{variable} argument)}
 }
-Note that it is possible to omit the attributes object in the call of
+Note that it is possible to omit the attr_data object in the call of
 \code{same()} and, instead, supply it in the call of \code{remstats()} for
 multiple exogenous effects.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ same("age")
-remstats(reh = reh_tie, tie_effects = effects, attributes = info)
+remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
 
-reh_actor <- remify(history, model = "actor")
-remstats(reh = reh_actor, receiver_effects = effects, attributes = info)
+reh_actor <- remify::remify(history, model = "actor")
+remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
 
 }
