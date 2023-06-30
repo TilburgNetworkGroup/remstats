@@ -80,8 +80,8 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   # Reduce risk set to "active" dyads only
   if (attr(reh, "riskset") == "active") {
     # Get dyadInfo
-    dyad <- attr(rehActive, "dyad")
-    dyadIDactive <- as.vector(attr(rehActive, "dyadIDactive"))
+    dyad <- attr(reh, "dyad")
+    dyadIDactive <- as.vector(attr(reh, "dyadIDactive"))
     dyadInfo <- data.frame(dyadIDactive, dyad)
     dyadInfo <- unique(dyadInfo[order(dyadIDactive), ])
 
