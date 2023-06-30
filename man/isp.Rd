@@ -4,7 +4,7 @@
 \alias{isp}
 \title{isp}
 \usage{
-isp(scaling = c("as.is", "std"), consider_type = FALSE)
+isp(scaling = c("none", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{scaling}{the method for scaling the triad statistic. Default is to not

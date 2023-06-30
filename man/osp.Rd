@@ -4,7 +4,7 @@
 \alias{osp}
 \title{osp}
 \usage{
-osp(scaling = c("as.is", "std"), consider_type = FALSE)
+osp(scaling = c("none", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{scaling}{the method for scaling the triad statistic. Default is to not

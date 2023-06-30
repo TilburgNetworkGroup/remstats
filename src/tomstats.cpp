@@ -7,6 +7,8 @@
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
 #include <progress_bar.hpp>
+#include <iostream>
+#include <map>
 
 using namespace Rcpp;
 
@@ -225,7 +227,7 @@ arma::mat standardize(arma::mat stat)
 //
 // [[Rcpp::export]]
 arma::mat compute_adjmat(const arma::mat &edgelist, int D, bool directed,
-                         std::string memory, arma::vec memory_value, int start,
+                         Rcpp::String memory, arma::vec memory_value, int start,
                          int stop)
 {
 
@@ -856,7 +858,7 @@ arma::mat calc_degree_directed(int type,
       }
 
       // Actor's outdegree
-      if ((type == 1) || (type == 2) || (type == 5) || (type == 6))
+      if ((type == 3) || (type == 4) || (type == 5) || (type == 6))
       {
 
         // Get the dyad IDs for "actor" as sender
@@ -1054,7 +1056,6 @@ arma::mat calc_degree_undirected(int type,
       // Dyad info
       int actor1 = riskset(d, 0);
       int actor2 = riskset(d, 1);
-      int event_type = riskset(d, 2);
 
       // Degree info
       arma::vec deg1 = deg.col(actor1);
@@ -1106,7 +1107,7 @@ arma::mat calc_inertia(const arma::mat &edgelist,
                        int start,
                        int stop,
                        bool consider_type,
-                       int scaling)
+                       Rcpp::String scaling)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -1150,18 +1151,12 @@ arma::mat calc_inertia(const arma::mat &edgelist,
   // Scale by the outdegree of the sender >> the fraction of messages i sent to
   // j >> if i hasn't sent any messages yet, than all n-1 actors are equally
   // likely to get a message
-  if ((scaling == 2) & (directed))
+  if ((scaling == "prop") & (directed))
   {
     arma::mat deg = calc_degree_directed(3, edgelist, riskset, adjmat, actors, types, start, stop, consider_type, true);
     stat = stat / deg;
     double rep = 1.0 / (actors.n_elem - 1.0);
     stat.replace(arma::datum::nan, rep);
-  }
-
-  // Scale through standardiation
-  if (scaling == 3)
-  {
-    stat = standardize(stat);
   }
 
   // Output the computed stat
@@ -1191,7 +1186,7 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
                            int start,
                            int stop,
                            bool consider_type,
-                           int scaling)
+                           Rcpp::String scaling)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -1239,18 +1234,12 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
   // Scale by the indegree of the sender >> the fraction of messages i received
   // from j >> if i hasn't received any messages yet, than all n-1 actors are
   // equally likely to get a message
-  if (scaling == 2)
+  if (scaling == "prop")
   {
     arma::mat deg = calc_degree_directed(1, edgelist, riskset, adjmat, actors, types, start, stop, consider_type, true);
     stat = stat / deg;
     double rep = 1.0 / (actors.n_elem - 1.0);
     stat.replace(arma::datum::nan, rep);
-  }
-
-  // Scale through standardiation
-  if (scaling == 3)
-  {
-    stat = standardize(stat);
   }
 
   // Output the computed stat
@@ -2495,7 +2484,7 @@ arma::mat calc_recency(int type,
 
 // calc_tie_stats_exo
 arma::mat calc_tie_stats_exo(const arma::mat &covariates, const arma::mat &edgelist,
-                  const arma::mat &riskset, int start, int stop)
+                             const arma::mat &riskset, int start, int stop)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -2539,7 +2528,7 @@ arma::mat get_user_stat(const arma::mat &covariates, int start, int stop)
 
 // calc_event_stats_exo
 arma::mat calc_event_stats_exo(const arma::mat &covariates, const arma::mat &edgelist,
-                    const arma::mat &riskset, int start, int stop)
+                               const arma::mat &riskset, int start, int stop)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -2562,7 +2551,7 @@ arma::mat calc_event_stats_exo(const arma::mat &covariates, const arma::mat &edg
 }
 
 arma::mat calc_FEtype(const arma::mat &covariates,
-                     const arma::mat &edgelist, const arma::mat &riskset, int start, int stop)
+                      const arma::mat &edgelist, const arma::mat &riskset, int start, int stop)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -2661,24 +2650,112 @@ arma::mat current_common_partners(const arma::mat &edgelist,
   return stat;
 }
 
+int getEffectNumber(std::string effect)
+{
+
+  std::map<std::string, int> effectsMap;
+
+  // Baseline
+  effectsMap["baseline"] = 1;
+  effectsMap["FEtype"] = 2;
+
+  // Exogenous stats
+  effectsMap["send"] = 11;
+  effectsMap["receive"] = 12;
+  effectsMap["tie"] = 13;
+  effectsMap["same"] = 14;
+  effectsMap["difference"] = 15;
+  effectsMap["average"] = 16;
+  effectsMap["minimum"] = 17;
+  effectsMap["maximum"] = 18;
+  effectsMap["event"] = 19;
+
+  // Endogenous stats
+  effectsMap["inertia"] = 101;
+  effectsMap["reciprocity"] = 102;
+
+  effectsMap["indegreeSender"] = 111;
+  effectsMap["indegreeReceiver"] = 112;
+  effectsMap["outdegreeSender"] = 113;
+  effectsMap["outdegreeReceiver"] = 114;
+  effectsMap["totaldegreeSender"] = 115;
+  effectsMap["totaldegreeReceiver"] = 116;
+
+  effectsMap["totaldegreeDyad"] = 117;
+  effectsMap["degreeMin"] = 118;
+  effectsMap["degreeMax"] = 119;
+  effectsMap["degreeDiff"] = 120;
+  effectsMap["ccp"] = 121;
+
+  effectsMap["otp"] = 131;
+  effectsMap["itp"] = 132;
+  effectsMap["osp"] = 133;
+  effectsMap["isp"] = 134;
+  effectsMap["sp"] = 135;
+  effectsMap["spUnique"] = 136;
+
+  effectsMap["psABBA"] = 141;
+  effectsMap["psABBY"] = 142;
+  effectsMap["psABXA"] = 143;
+  effectsMap["psABXB"] = 144;
+  effectsMap["psABXY"] = 145;
+  effectsMap["psABAY"] = 146;
+  effectsMap["psABAB"] = 147;
+
+  effectsMap["rrankSend"] = 151;
+  effectsMap["rrankReceive"] = 152;
+
+  effectsMap["recencyContinue"] = 161;
+  effectsMap["recencySendSender"] = 162;
+  effectsMap["recencySendReceiver"] = 163;
+  effectsMap["recencyReceiveSender"] = 164;
+  effectsMap["recencyReceiveReceiver"] = 165;
+
+  // userStat
+  effectsMap["userStat"] = 888;
+
+  // interaction effects
+  effectsMap["interact"] = 999;
+
+  // find effect number
+  auto result = effectsMap.find(effect);
+  int numericValue = 0;
+  if (result != effectsMap.end())
+  {
+    numericValue = result->second; // Access the second element
+  }
+  else
+  {
+    std::cout << "Effect not found in the map." << std::endl;
+  }
+
+  return numericValue;
+}
+
 //[[Rcpp::export]]
-arma::cube compute_stats_tie(const arma::vec &effects,
-                             const arma::mat &edgelist, const arma::mat &adjmat,
-                             const arma::vec &actors, const arma::vec &types,
-                             const arma::mat &riskset, const arma::vec &scaling,
-                             const Rcpp::List &covariates, const Rcpp::List &interactions,
+arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
+                             const arma::mat &edgelist,
+                             const arma::mat &adjmat,
+                             const arma::vec &actors,
+                             const arma::vec &types,
+                             const arma::mat &riskset,
+                             Rcpp::CharacterVector &scaling,
+                             Rcpp::LogicalVector &consider_type,
+                             const Rcpp::List &covariates,
+                             const Rcpp::List &interactions,
                              int start, int stop, bool directed)
 {
 
   // Initialize saving space
   int M = stop - start + 1;
-  arma::cube stats(M, riskset.n_rows, effects.n_elem);
+  arma::cube stats(M, riskset.n_rows, effects.size());
 
   // For loop over effects
-  for (arma::uword i = 0; i < effects.n_elem; ++i)
+  for (int i = 0; i < effects.size(); ++i)
   {
-    // Current effect
-    int effect = effects(i);
+    // Get case number
+    Rcpp::String effectName = effects(i);
+    int effect = getEffectNumber(effectName);
 
     // Initialize saving space
     arma::mat stat(stats.n_rows, stats.n_cols, arma::fill::zeros);
@@ -2687,117 +2764,111 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     switch (effect)
     {
 
-    // 1 baseline
+    // baseline
     case 1:
       stat.fill(1);
       break;
 
-    // 2 send
+    // FEtype
     case 2:
       // Compute statistic
-      stat = calc_actor_stats_exo(1, covariates[i],
-                                  edgelist, actors, types, riskset, start, stop);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
+      stat = calc_FEtype(covariates[i], edgelist, riskset, start, stop);
       break;
 
-    // 3 receive
-    case 3:
+    // send
+    case 11:
       // Compute statistic
-      stat = calc_actor_stats_exo(2, covariates[i],
-                                  edgelist, actors, types, riskset, start, stop);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
+      stat = calc_actor_stats_exo(1, covariates[i], edgelist, actors, types,
+                                  riskset, start, stop);
       break;
 
-    // 4 same
-    case 4:
+    // receive
+    case 12:
+      // Compute statistic
+      stat = calc_actor_stats_exo(2, covariates[i], edgelist, actors, types,
+                                  riskset, start, stop);
+      break;
+
+    // tie
+    case 13:
+      // Compute statistic
+      stat = calc_tie_stats_exo(covariates[i], edgelist, riskset, start, stop);
+      break;
+
+    // same
+    case 14:
       // Compute statistic
       stat = calc_dyad_stats_exo(1, covariates[i], edgelist, riskset, start,
                                  stop);
       break;
 
-    // 5 difference
-    case 5:
+    // difference
+    case 15:
       // Compute statistic
       stat = calc_dyad_stats_exo(2, covariates[i], edgelist, riskset, start,
                                  stop);
       // Absolute values
-      if ((scaling(i) == 2) || (scaling(i) == 4))
+      if ((scaling(i) == "none_abs") || (scaling(i) == "std_abs"))
       {
         stat = abs(stat);
       }
-      // Standardize
-      if ((scaling(i) == 3) || (scaling(i) == 4))
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_abs")
       {
         stat = standardize(stat);
       }
       break;
 
-    // 6 average
-    case 6:
+    // average
+    case 16:
       // Compute statistic
       stat = calc_dyad_stats_exo(3, covariates[i], edgelist, riskset, start,
                                  stop);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 7 minimum
-    case 7:
+    // minimum
+    case 17:
       // Compute statistic
       stat = calc_dyad_stats_exo(4, covariates[i], edgelist, riskset, start,
                                  stop);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 8 maximum
-    case 8:
+    // maximum
+    case 18:
       // Compute statistic
       stat = calc_dyad_stats_exo(5, covariates[i], edgelist, riskset, start,
                                  stop);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 10 inertia
-    case 10:
+    // event
+    case 19:
+      // Compute statistic
+      stat = calc_event_stats_exo(covariates[i], edgelist, riskset, start,
+                                  stop);
+      break;
+
+    // inertia
+    case 101:
       // Compute statistic
       stat = calc_inertia(edgelist, adjmat, riskset, actors, types, directed,
-                          start, stop, false, scaling(i));
+                          start, stop, consider_type(i), scaling(i));
       break;
 
-    // 11 reciprocity
-    case 11:
+    // reciprocity
+    case 102:
       // Compute statistic
       stat = calc_reciprocity(edgelist, adjmat, riskset, actors, types, start,
-                              stop, false, scaling(i));
+                              stop, consider_type(i), scaling(i));
       break;
 
-    // 12 indegreeSender
-    case 12:
+    // indegreeSender
+    case 111:
       // Compute statistic
-      stat = calc_degree_directed(1, edgelist, riskset, adjmat, actors, types, start, stop, false, true);
+      stat = calc_degree_directed(1, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
       // Divide by the number/weight of past events >> the fraction of messages
       // received by the sender. If no messages have been exchanged yet, then
       // all actors are equally likely to send a message.
-      if (scaling(i) == 2)
+      if (scaling(i) == "prop")
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
@@ -2812,19 +2883,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
           stat.row(0) = rep;
         }
       }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 13 indegreeReceiver
-    case 13:
+    // indegreeReceiver
+    case 112:
       // Compute statistic
-      stat = calc_degree_directed(2, edgelist, riskset, adjmat, actors, types, start, stop, false, true);
+      stat = calc_degree_directed(2, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
       // Divide by the number/weight of past events
-      if (scaling(i) == 2)
+      if (scaling(i) == "prop")
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
@@ -2839,19 +2905,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
           stat.row(0) = rep;
         }
       }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 14 outdegreeSender
-    case 14:
+    // outdegreeSender
+    case 113:
       // Compute statistic
-      stat = calc_degree_directed(3, edgelist, riskset, adjmat, actors, types, start, stop, false, true);
+      stat = calc_degree_directed(3, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
       // Divide by the number/weight of past events
-      if (scaling(i) == 2)
+      if (scaling(i) == "prop")
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
@@ -2866,19 +2927,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
           stat.row(0) = rep;
         }
       }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 15 outdegreeReceiver
-    case 15:
+    // outdegreeReceiver
+    case 114:
       // Compute statistic
-      stat = calc_degree_directed(4, edgelist, riskset, adjmat, actors, types, start, stop, false, true);
+      stat = calc_degree_directed(4, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
       // Divide by the number/weight of past events
-      if (scaling(i) == 2)
+      if (scaling(i) == "prop")
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
@@ -2893,19 +2949,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
           stat.row(0) = rep;
         }
       }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 16 totaldegreeSender
-    case 16:
+    // totaldegreeSender
+    case 115:
       // Compute statistic
-      stat = calc_degree_directed(5, edgelist, riskset, adjmat, actors, types, start, stop, false, true);
+      stat = calc_degree_directed(5, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
       // Divide by two times the number/weight of past events
-      if (scaling(i) == 2)
+      if (scaling(i) == "prop")
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
@@ -2920,19 +2971,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
           stat.row(0) = rep;
         }
       }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 17 totaldegreeReceiver
-    case 17:
+    // totaldegreeReceiver
+    case 116:
       // Compute statistic
-      stat = calc_degree_directed(6, edgelist, riskset, adjmat, actors, types, start, stop, false, true);
+      stat = calc_degree_directed(6, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
       // Divide by two times the number/weight of past events
-      if (scaling(i) == 2)
+      if (scaling(i) == "prop")
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
@@ -2947,15 +2993,10 @@ arma::cube compute_stats_tie(const arma::vec &effects,
           stat.row(0) = rep;
         }
       }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
       break;
 
-    // 18 otp
-    case 18:
+    // otp
+    case 131:
       // Compute statistic
       if (types.n_elem == 1)
       {
@@ -2966,14 +3007,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
         stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset);
       }
       // Standardize
-      if (scaling(i) == 2)
+      if (scaling(i) == "std")
       {
         stat = standardize(stat);
       }
       break;
 
-    // 19 itp
-    case 19:
+    // itp
+    case 132:
       // Compute statistic
       if (types.n_elem == 1)
       {
@@ -2984,14 +3025,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
         stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset);
       }
       // Standardize
-      if (scaling(i) == 2)
+      if (scaling(i) == "std")
       {
         stat = standardize(stat);
       }
       break;
 
-    // 20 osp
-    case 20:
+    // osp
+    case 133:
       // Compute statistic
       if (types.n_elem == 1)
       {
@@ -3002,14 +3043,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
         stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset);
       }
       // Standardize
-      if (scaling(i) == 2)
+      if (scaling(i) == "std")
       {
         stat = standardize(stat);
       }
       break;
 
-    // 21 osp
-    case 21:
+    // isp
+    case 134:
       // Compute statistic
       if (types.n_elem == 1)
       {
@@ -3020,14 +3061,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
         stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset);
       }
       // Standardize
-      if (scaling(i) == 2)
+      if (scaling(i) == "std")
       {
         stat = standardize(stat);
       }
       break;
 
-    // 22 sp
-    case 22:
+    // sp
+    case 135:
       // Compute statistic
       if (types.n_elem == 1)
       {
@@ -3038,14 +3079,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
         stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset);
       }
       // Standardize
-      if (scaling(i) == 2)
+      if (scaling(i) == "std")
       {
         stat = standardize(stat);
       }
       break;
 
-    // 23 spUnique
-    case 23:
+    // spUnique
+    case 136:
       // Compute statistic
       if (types.n_elem == 1)
       {
@@ -3056,121 +3097,95 @@ arma::cube compute_stats_tie(const arma::vec &effects,
         stat = computeTriadStatsTypesNotConsidered(6, adjmat, actors, types, riskset);
       }
       // Standardize
-      if (scaling(i) == 2)
+      if (scaling(i) == "std")
       {
         stat = standardize(stat);
       }
       break;
 
-    // 24 psABBA
-    case 24:
+    // psABBA
+    case 141:
       // Compute statistic
       stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, false);
       break;
 
-    // 25 psABBY
-    case 25:
+    // psABBY
+    case 142:
       // Compute statistic
       stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, false);
       break;
 
-    // 26 psABXA
-    case 26:
+    // psABXA
+    case 143:
       // Compute statistic
       stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, false);
       break;
 
-    // 27 psABXB
-    case 27:
+    // psABXB
+    case 144:
       // Compute statistic
       stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, false);
       break;
 
-    // 28 psABXY
-    case 28:
+    // psABXY
+    case 145:
       // Compute statistic
       stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, false);
       break;
 
-    // 29 psABAY
-    case 29:
+    // psABAY
+    case 146:
       // Compute statistic
       stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, false);
       break;
 
-    // 30 rrankSend
-    case 30:
+    // rrankSend
+    case 151:
       // Compute statistic
       stat = calc_rrank(1, edgelist, riskset, actors.n_elem,
                         types.n_elem, start, stop, false);
       break;
 
-    // 31 rrankReceive
-    case 31:
+    // rrankReceive
+    case 152:
       // Compute statistic
       stat = calc_rrank(2, edgelist, riskset, actors.n_elem,
                         types.n_elem, start, stop, false);
       break;
 
-    // 32 FEtype
-    case 32:
-      // Compute statistic
-      stat = calc_FEtype(covariates[i], edgelist, riskset, start,
-                        stop);
-      break;
-
-    // 33 event
-    case 33:
-      // Compute statistic
-      stat = calc_event_stats_exo(covariates[i], edgelist, riskset, start,
-                       stop);
-      break;
-
-    // 34 recencyContinue
-    case 34:
+    // recencyContinue
+    case 161:
       // Compute statistic
       stat = calc_recency(1, edgelist, riskset, actors.n_elem,
                           types.n_elem, start, stop, false, directed);
       break;
 
-    // 35 recencySendSender
-    case 35:
+    // recencySendSender
+    case 162:
       // Compute statistic
       stat = calc_recency(2, edgelist, riskset, actors.n_elem,
                           types.n_elem, start, stop, false, directed);
       break;
 
-    // 36 recencySendReceiver
-    case 36:
+    // recencySendReceiver
+    case 163:
       // Compute statistic
       stat = calc_recency(3, edgelist, riskset, actors.n_elem,
                           types.n_elem, start, stop, false, directed);
       break;
 
-    // 37 recencyReceiveSender
-    case 37:
+    // recencyReceiveSender
+    case 164:
       // Compute statistic
       stat = calc_recency(4, edgelist, riskset, actors.n_elem,
                           types.n_elem, start, stop, false, directed);
       break;
 
-    // 38 recencyReceiveReceiver
-    case 38:
+    // recencyReceiveReceiver
+    case 165:
       // Compute statistic
       stat = calc_recency(5, edgelist, riskset, actors.n_elem,
                           types.n_elem, start, stop, false, directed);
-      break;
-
-    // 39 tie
-    case 39:
-      // Compute statistic
-      stat = calc_tie_stats_exo(covariates[i], edgelist, riskset, start,
-                     stop);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
       break;
 
     // 40 indegreeSender.type
@@ -3668,6 +3683,12 @@ arma::cube compute_stats_tie(const arma::vec &effects,
       // Element-wise multiplication
       stat = stats.slice(main1 - 1) % stats.slice(main2 - 1);
       break;
+    }
+
+    // Standardize
+    if (scaling(i) == "std")
+    {
+      stat = standardize(stat);
     }
 
     // Save statistic

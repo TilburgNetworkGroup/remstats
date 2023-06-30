@@ -107,22 +107,34 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   check_formula(effects)
   form <- effects
   effects <- parse_formula(form, "rem", attr(reh, "ordinal"))
-  all_effects <- all_tie_effects()
-  effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
+  #all_effects <- all_tie_effects()
+  #effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
 
   # Check correct specification effects
-  if (!attr(reh, "directed")) {
-    if (any(effectsN %in%
-      c(2, 3, 11:21, 24:28, 30:31, 35:38, 40:50, 53:57, 60:61, 63:66))) {
-      stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
+  if(!attr(reh, "directed")) {
+    if(!all(sapply(effects, function(x) x$effect) %in% tie_effects(directed = FALSE))) {
+      stop("Attempting to request effects that are not (yet) defined for undirected events")
     }
   }
 
-  if (attr(reh, "directed")) {
-    if (any(effectsN %in% c(22:23, 58:59, 67:71, 76:77))) {
-      stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
+  if(attr(reh, "directed")) {
+    if(!all(sapply(effects, function(x) x$effect) %in% tie_effects(directed = isTRUE()))) {
+      stop("Attempting to request effects that are not (yet) defined for directed events")
     }
   }
+
+  #if (!attr(reh, "directed")) {
+  #  if (any(effectsN %in%
+  #    c(2, 3, 11:21, 24:28, 30:31, 35:38, 40:50, 53:57, 60:61, 63:66))) {
+  #    stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
+  #  }
+  #}
+
+  #if (attr(reh, "directed")) {
+  #  if (any(effectsN %in% c(22:23, 58:59, 67:71, 76:77))) {
+  #    stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
+  #  }
+  #}
 
   # Prepare fixed effects
   if (any(sapply(effects, function(x) x$effect == "FEtype"))) {
@@ -151,13 +163,20 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   covar <- process_covariate(effects, attr_data, actors, edgelist.reh, reh, prepR)
 
   # Prepare scaling info (vector length p)
-  scaling <- as.numeric(sapply(effects, function(x) x$scaling))
+  scaling <- sapply(effects, function(x) {
+	  ifelse("scaling" %in% names(x), x$scaling, "none")
+  })
+
+  # Prepare consider_type info
+  consider_type <- sapply(effects, function(x) {
+	  ifelse("consider_type" %in% names(x), x$consider_type, FALSE)
+  })
 
   # Check correct scaling inertia statistic
   if (!attr(reh, "directed")) {
     if (any(sapply(effects, function(x) x$effect == "inertia"))) {
       idx <- which(sapply(effects, function(x) x$effect == "inertia"))
-      if (any(scaling[idx] == 2)) {
+      if (any(scaling[idx] == "prop")) {
         stop("Proportional scaling of the inertia effect is not defined for undirected events")
       }
     }
@@ -176,6 +195,7 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
     memory = memory,
     memory_value = memory_value,
     scaling = scaling,
+    consider_type = consider_type,
     covar = covar,
     interactions = interactions,
     start = start,
@@ -271,47 +291,64 @@ validate_memory <- function(memory, memory_value) {
 # tie_effects <- all_tie_effects()
 all_tie_effects <- function() {
   c(
-    "baseline", # 1
-    "send", "receive", # 2 #3
-    "same", "difference", "average", # 4 #5 #6
-    "minimum", "maximum", "removed", # 7 #8 #9
-    "inertia", "reciprocity", # 10 #11
-    "indegreeSender", "indegreeReceiver", # 12 #13
-    "outdegreeSender", "outdegreeReceiver", # 14 #15
-    "totaldegreeSender", "totaldegreeReceiver", # 16, #17
-    "otp", "itp", "osp", "isp", # 18 #19 #20 #21
-    "sp", "spUnique", # 22, #23
-    "psABBA", "psABBY", "psABXA", # 24 #25 #26
-    "psABXB", "psABXY", "psABAY", # 27 #28 #29
-    "rrankSend", "rrankReceive", # 30 #31
-    "FEtype", "event", # 32 #33
-    "recencyContinue", # 34
-    "recencySendSender", "recencySendReceiver", # 35 #36
-    "recencyReceiveSender", "recencyReceiveReceiver", # 37 #38
-    "tie", # 39
+    "baseline", 
+    "FEtype",
 
-    "indegreeSender.type", "indegreeReceiver.type", # 40 #41
-    "outdegreeSender.type", "outdegreeReceiver.type", # 42 #43
-    "totaldegreeSender.type", "totaldegreeReceiver.type", # 44 #45
-    "psABBA.type", "psABBY.type", "psABXA.type", # 46 #47 #48
-    "psABXB.type", "psABXY.type", "psABAY.type", # 49 #50 #51
-    "inertia.type", "reciprocity.type", # 52 #53
-    "otp.type", "itp.type", "osp.type", "isp.type", # 54 #55 #56 #57
-    "sp.type", "spUnique.type", # 58, #59
-    "rrankSend.type", "rrankReceive.type", # 60 #61
-    "recencyContinue.type", # 62
-    "recencySendSender.type", "recencySendReceiver.type", # 63 #64
-    "recencyReceiveSender.type", "recencyReceiveReceiver.type", # 65 #66
+    # Exogenous stats
+    "send", 
+    "receive",
+    "tie",  
+    "same", 
+    "difference", 
+    "average", 
+    "minimum", 
+    "maximum", 
+    "event", 
 
-    "degreeMin", "degreeMax", # 67 #68
-    "degreeMin.type", "degreeMax.type", # 69 #70
-    "ccp", # 71
-    "totaldegreeDyad", # 72
-    "userStat", # 73
-    "psABAB", "psABAB.type", # 74 #75
-    "degreeDiff", "degreeDiff.type", # 76 #77
+    # Endogenous stats
+    "inertia", 
+    "reciprocity", 
 
-    "interact" # 99
+    "indegreeSender", 
+    "indegreeReceiver", 
+    "outdegreeSender", 
+    "outdegreeReceiver", 
+    "totaldegreeSender", 
+    "totaldegreeReceiver", 
+
+    "totaldegreeDyad",
+    "degreeMin", 
+    "degreeMax", 
+    "degreeDiff", 
+    "ccp",  
+
+    "otp", 
+    "itp", 
+    "osp", 
+    "isp", 
+    "sp", 
+    "spUnique", 
+
+    "psABBA", 
+    "psABBY", 
+    "psABXA", 
+    "psABXB", 
+    "psABXY", 
+    "psABAY", 
+    "psABAB", 
+
+    "rrankSend", 
+    "rrankReceive", 
+    
+    "recencyContinue", 
+    "recencySendSender", 
+    "recencySendReceiver",
+    "recencyReceiveSender", 
+    "recencyReceiveReceiver",
+
+    "userStat", 
+    
+    "interact" 
   )
 }
 
@@ -410,8 +447,6 @@ add_variable_names <- function(statistics, all_effects, effectsN, effects, inter
 # [examples]
 # exo_effect <- prep_exo(effect, variable, attr_data, scaling)
 prep_exo <- function(effect, variable, attr_data, scaling) {
-  # Match scaling
-  scaling <- match(scaling, c("as.is", "std"))
 
   # Check attr_data object
   if(is.function(attr_data)) {

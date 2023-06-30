@@ -4,7 +4,7 @@
 \alias{average}
 \title{average}
 \usage{
-average(variable, attr_data = NULL, scaling = c("as.is", "std"))
+average(variable, attr_data = NULL, scaling = c("none", "std"))
 }
 \arguments{
 \item{variable}{string with the name of the column in the
@@ -15,7 +15,7 @@ average(variable, attr_data = NULL, scaling = c("as.is", "std"))
 'Details.'}
 
 \item{scaling}{the method for scaling the statistic. Default is to not scale
-the statistic but keep it "as.is". Alternatively, standardization of the
+the statistic. Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 }
 \description{

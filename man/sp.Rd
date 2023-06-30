@@ -4,7 +4,7 @@
 \alias{sp}
 \title{sp}
 \usage{
-sp(scaling = c("as.is", "std"), consider_type = FALSE)
+sp(scaling = c("none", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{scaling}{the method for scaling the triad statistic. Default is to not

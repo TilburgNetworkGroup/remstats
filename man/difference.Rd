@@ -7,7 +7,7 @@
 difference(
   variable,
   attr_data = NULL,
-  scaling = c("as.is", "std"),
+  scaling = c("none", "std"),
   absolute = TRUE
 )
 }
@@ -20,7 +20,7 @@ difference(
 'Details.'}
 
 \item{scaling}{the method for scaling the statistic. Default is to not scale
-the statistic but keep it "as.is". Alternatively, standardization of the
+the statistic. Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 
 \item{absolute}{logical value indicating whether the difference values

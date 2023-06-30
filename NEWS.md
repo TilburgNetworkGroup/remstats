@@ -7,9 +7,10 @@ Date: 01-07-2023
 
 ## Major changes
 * The `attributes` argument that exists in many of the function is renamed to `attr_data` to avoid naming conflicts. 
+* Change of the `scaling = "as.is"` option to `scaling = "none"`.
 
 ## Minor changes
-* Decreased computation time triadic statistics
+* More efficient computation triadic statistics
 
 # remstats 3.1.0
 Date: 01-06-2023

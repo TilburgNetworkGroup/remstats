@@ -5,11 +5,11 @@
 \alias{outdegree}
 \title{outdegreeSender}
 \usage{
-outdegreeSender(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
+outdegreeSender(scaling = c("none", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{scaling}{the method for scaling the degree statistic. Default is
-to not scale the statistic but keep the raw counts 'as.is'. Alternatively,
+to not scale the statistic (scaling = "none"). Alternatively,
 scaling of the raw degree counts by the number of past events at time t can
 be requested with 'prop' or standardization of the raw degree counts per
 time point can be requested with 'std'.}

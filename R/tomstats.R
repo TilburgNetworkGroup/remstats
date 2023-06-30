@@ -131,6 +131,7 @@ tomstats <- function(effects, reh, attr_data = NULL,
   memory <- inputs$memory
   memory_value <- inputs$memory_value
   scaling <- inputs$scaling
+  consider_type <- inputs$consider_type
   covar <- inputs$covar
   interactions <- inputs$interactions
   start <- inputs$start
@@ -153,7 +154,7 @@ tomstats <- function(effects, reh, attr_data = NULL,
   # Compute statistics
   statistics <- compute_stats_tie(
     effectsN, edgelist, adjmat, actors[, 2],
-    types[, 2], prepR, scaling, covar, interactions, start, stop, attr(reh, "directed")
+    types[, 2], prepR, scaling, consider_type, covar, interactions, start, stop, attr(reh, "directed")
   )
 
   # Add variable names to the statistics dimnames

@@ -9,6 +9,10 @@ compute_stats_choice <- function(effects, edgelist, actors, weights, covariates,
     .Call(`_remstats_compute_stats_choice`, effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, display_progress)
 }
 
+testStringComparison <- function(scaling) {
+    invisible(.Call(`_remstats_testStringComparison`, scaling))
+}
+
 getRisksetMatrix <- function(actorID, typeID, N, C, directed) {
     .Call(`_remstats_getRisksetMatrix`, actorID, typeID, N, C, directed)
 }
@@ -17,8 +21,8 @@ compute_adjmat <- function(edgelist, D, directed, memory, memory_value, start, s
     .Call(`_remstats_compute_adjmat`, edgelist, D, directed, memory, memory_value, start, stop)
 }
 
-compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed) {
-    .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed)
+compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed) {
+    .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed)
 }
 
 combine_arrays <- function(array_list, along) {

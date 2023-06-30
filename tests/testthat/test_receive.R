@@ -163,21 +163,21 @@ test_that("expected statistic tie-oriented model", {
   
   # The first 40 rows are expected to be equal to the following row
   first_info <- subset(info, time == 0)
-  stat1 <- first_info$extraversion[match(attr_object(tie_stats, "riskset")$receiver, first_info$name)]
+  stat1 <- first_info$extraversion[match(attr(tie_stats, "riskset")$receiver, first_info$name)]
   expect_true(all(sapply(1:40, function(x) {
     all.equal(stat1, tie_stats[x, , 2], check.attr_data = FALSE)
   })))
   
   # Rows 41 to 71 are expected to be equal to the following row
   second_info <- subset(info, time == 9432)
-  stat2 <- second_info$extraversion[match(attr_object(tie_stats, "riskset")$receiver, second_info$name)]
+  stat2 <- second_info$extraversion[match(attr(tie_stats, "riskset")$receiver, second_info$name)]
   expect_true(all(sapply(41:71, function(x) {
     all.equal(stat2, tie_stats[x, , 2], check.attr_data = FALSE)
   })))
   
   # Rows 72 to 115 are expected to be equal to the following row
   third_info <- subset(info, time == 18864)
-  stat3 <- third_info$extraversion[match(attr_object(tie_stats, "riskset")$receiver, third_info$name)]
+  stat3 <- third_info$extraversion[match(attr(tie_stats, "riskset")$receiver, third_info$name)]
   expect_true(all(sapply(72:115, function(x) {
     all.equal(stat3, tie_stats[x, , 2], check.attr_data = FALSE)
   })))
@@ -216,19 +216,19 @@ test_that("expected statistic tie-oriented model", {
   expect_equal(dimnames(tie_stats)[[3]][2], "receive_extraversion")
   
   # The first 40 rows are expected to be equal to the following row
-  stat1 <- first_info$extraversion[match(attr_object(tie_stats, "riskset")$receiver, first_info$name)]
+  stat1 <- first_info$extraversion[match(attr(tie_stats, "riskset")$receiver, first_info$name)]
   expect_true(all(sapply(1:40, function(x) {
     all.equal(stat1, tie_stats[x, , 2], check.attr_data = FALSE)
   })))
   
   # Rows 41 to 71 are expected to be equal to the following row
-  stat2 <- second_info$extraversion[match(attr_object(tie_stats, "riskset")$receiver, second_info$name)]
+  stat2 <- second_info$extraversion[match(attr(tie_stats, "riskset")$receiver, second_info$name)]
   expect_true(all(sapply(41:71, function(x) {
     all.equal(stat2, tie_stats[x, , 2], check.attr_data = FALSE)
   })))
   
   # Rows 72 to 115 are expected to be equal to the following row
-  stat3 <- third_info$extraversion[match(attr_object(tie_stats, "riskset")$receiver, third_info$name)]
+  stat3 <- third_info$extraversion[match(attr(tie_stats, "riskset")$receiver, third_info$name)]
   expect_true(all(sapply(72:115, function(x) {
     all.equal(stat3, tie_stats[x, , 2], check.attr_data = FALSE)
   })))
@@ -237,7 +237,7 @@ test_that("expected statistic tie-oriented model", {
 test_that("expected statistic actor-oriented model", {
   reh_actor <- remify::remify(history, model = "actor")
   mod <- ~ receive("extraversion")
-  actors <- attr_object(reh_actor, "dictionary")$actors
+  actors <- attr(reh_actor, "dictionary")$actors
   aomres <- remstats(
     reh = reh_actor, receiver_effects = mod, attr_data = info
   )

@@ -4,7 +4,7 @@
 \alias{spUnique}
 \title{spUnique}
 \usage{
-spUnique(scaling = c("as.is", "std"), consider_type = FALSE)
+spUnique(scaling = c("none", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{scaling}{the method for scaling the triad statistic. Default is to not

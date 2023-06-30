@@ -120,7 +120,7 @@ test_that("expected statistic tie-oriented model", {
 
   # The first 40 rows are expected to be equal to the following row
   first_info <- subset(info, time == 0)
-  riskset <- attr_object(tie_stats, "riskset")
+  riskset <- attr(tie_stats, "riskset")
   stat1 <- as.numeric(apply(riskset, 1, function(x) {
     sender <- as.numeric(x[1])
     receiver <- as.numeric(x[2])
@@ -172,7 +172,7 @@ test_that("expected statistic tie-oriented model", {
   expect_equal(dimnames(tie_stats)[[3]][2], "minimum_extraversion")
 
   # The first 40 rows are expected to be equal to the following row
-  riskset <- attr_object(tie_stats, "riskset")
+  riskset <- attr(tie_stats, "riskset")
   stat1 <- as.numeric(apply(riskset, 1, function(x) {
     sender <- as.numeric(x[1])
     receiver <- as.numeric(x[2])
@@ -256,7 +256,7 @@ test_that("expected statistic tie-oriented model", {
   expect_equal(dimnames(tie_stats)[[3]][2], "minimum_extraversion")
 
   # The first 40 rows are expected to be equal to the following row
-  riskset <- attr_object(tie_stats, "riskset")
+  riskset <- attr(tie_stats, "riskset")
   stat1 <- as.numeric(apply(riskset, 1, function(x) {
     sender <- as.numeric(x[1])
     receiver <- as.numeric(x[2])

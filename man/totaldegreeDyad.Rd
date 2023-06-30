@@ -4,11 +4,11 @@
 \alias{totaldegreeDyad}
 \title{totaldegreeDyad}
 \usage{
-totaldegreeDyad(scaling = c("as.is", "prop", "std"))
+totaldegreeDyad(scaling = c("none", "prop", "std"))
 }
 \arguments{
 \item{scaling}{the method for scaling the degree statistic. Default is
-to not scale the statistic but keep the raw counts 'as.is'. Alternatively,
+to not scale the statistic (scaling = "none"). Alternatively,
 scaling of the raw degree counts by two times the number of past events at
 time t can be requested with 'prop' or standardization of the raw degree
 counts per time point can be requested with 'std'.}

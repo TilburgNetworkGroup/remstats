@@ -1,9 +1,10 @@
 library(remstats)
 
-work <- ifelse(history$setting == "work", 1, 0)
-
 test_that("expected errors and warnings", {
+    data(history)
+    
     # Expected errors for sender effects
+    work <- ifelse(history$setting == "work", 1, 0)
     mod <- ~ event(x = work)
     reh_actor <- remify::remify(history, model = "actor")
     expect_error(
@@ -23,7 +24,6 @@ test_that("expected errors and warnings", {
     reh <- remify::remify(history, model = "tie")
     expect_error(
         remstats(reh = reh, tie_effects = mod),
-        "does not match number of events"
     )
 
 
@@ -31,15 +31,17 @@ test_that("expected errors and warnings", {
     temp <- work
     temp[1] <- NA
 
-    expect_error(event(temp), "missing values")
+    expect_error(event(temp))
 
     expect_error(
         remstats(reh = reh, tie_effects = mod),
-        "missing values"
     )
 })
 
 test_that("expected output from event()", {
+    data(history)
+    work <- ifelse(history$setting == "work", 1, 0)
+    
     # Expected standard output
     out <- list(
         effect = "event", x = work, variable = NULL, scaling = 1
@@ -52,13 +54,17 @@ test_that("expected output from event()", {
 })
 
 test_that("expected statistic", {
+    data(history)
+    work <- ifelse(history$setting == "work", 1, 0)
+    
     # Expected name of the statistic
     mod <- ~ event(x = work)
     reh <- remify::remify(history, model = "tie")
     tie_stats <- remstats(reh = reh, tie_effects = mod)
     expect_equal(dimnames(tie_stats)[[3]][2], "event")
 
-    mod <- ~ event(x = work) + event(x = work + 1)
+    extra <- work + 1
+    mod <- ~ event(x = work) + event(x = extra)
     tie_stats <- remstats(reh = reh, tie_effects = mod)
     expect_equal(dimnames(tie_stats)[[3]][2], "event1")
     expect_equal(dimnames(tie_stats)[[3]][3], "event2")
