@@ -155,7 +155,7 @@ As an illustration, we are going to request the statistic for an effect of extra
 ```r
 ?send
 ```
-Here, we read that we need to supply the variable for which we want to specify a sender effect and that this variable should correspond to a column in the attributes object that we supply. Thus, we specify a send effect of extraversion with `send("extraversion", attributes = info)`. Here, we specify the attributes object within the `send()` function. Alternatively, it can be supplied to `remstats()`. 
+Here, we read that we need to supply the variable for which we want to specify a sender effect and that this variable should correspond to a column in the attr_data object that we supply. Thus, we specify a send effect of extraversion with `send("extraversion", attr_data = info)`. Here, we specify the attr_data object within the `send()` function. Alternatively, it can be supplied to `remstats()`. 
 
 Statistics in the `effects` formula should be separated with the `+`. Finally, we add an interaction between the `inertia()` statistic and the `send()` statistic. This can be done by using the `*` or `:` operator:
 ```r

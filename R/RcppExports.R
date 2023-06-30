@@ -13,12 +13,16 @@ getRisksetMatrix <- function(actorID, typeID, N, C, directed) {
     .Call(`_remstats_getRisksetMatrix`, actorID, typeID, N, C, directed)
 }
 
-compute_adjmat <- function(edgelist, N, D, directed, memory, memory_value, start, stop) {
-    .Call(`_remstats_compute_adjmat`, edgelist, N, D, directed, memory, memory_value, start, stop)
+compute_adjmat <- function(edgelist, D, directed, memory, memory_value, start, stop) {
+    .Call(`_remstats_compute_adjmat`, edgelist, D, directed, memory, memory_value, start, stop)
 }
 
 compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed) {
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, covariates, interactions, start, stop, directed)
+}
+
+combine_arrays <- function(array_list, along) {
+    .Call(`_remstats_combine_arrays`, array_list, along)
 }
 
 # Register entry points for exported C++ functions

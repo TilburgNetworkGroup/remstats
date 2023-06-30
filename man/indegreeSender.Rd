@@ -43,7 +43,7 @@ reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ indegreeSender()
 remstats(reh = reh_tie, tie_effects = effects)
 
-reh_actor <- remify(history, model = "actor")
+reh_actor <- remify::remify(history, model = "actor")
 remstats(reh = reh_actor, sender_effects = effects)
 
 }

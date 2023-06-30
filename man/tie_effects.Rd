@@ -4,18 +4,21 @@
 \alias{tie_effects}
 \title{tie_effects}
 \usage{
-tie_effects(directed = NULL)
+tie_effects(directed = NULL, endogenous = NULL)
 }
 \arguments{
-\item{directed}{outputs all statistics in the tie-oriented model for 
-directed events if true, or all statistics in the tie-oriented model for 
+\item{directed}{outputs all statistics in the tie-oriented model for
+directed events if true, or all statistics in the tie-oriented model for
 undirected events if false.}
+
+\item{endogenous}{outputs all endogenous statistics in the tie-oriented
+model if true, or all exogenous statistics if false}
 }
 \description{
 Overview of statistics in the tie-oriented model, see Details.
 }
 \details{
-Overview of statistics in the tie-oriented model. 
+Overview of statistics in the tie-oriented model.
 
 Exogenous statistics:
 \itemize{

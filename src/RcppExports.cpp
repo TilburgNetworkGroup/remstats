@@ -143,27 +143,26 @@ RcppExport SEXP _remstats_getRisksetMatrix(SEXP actorIDSEXP, SEXP typeIDSEXP, SE
     return rcpp_result_gen;
 }
 // compute_adjmat
-arma::mat compute_adjmat(const arma::mat& edgelist, int N, int D, bool directed, std::string memory, arma::vec memory_value, int start, int stop);
-static SEXP _remstats_compute_adjmat_try(SEXP edgelistSEXP, SEXP NSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP) {
+arma::mat compute_adjmat(const arma::mat& edgelist, int D, bool directed, std::string memory, arma::vec memory_value, int start, int stop);
+static SEXP _remstats_compute_adjmat_try(SEXP edgelistSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
-    Rcpp::traits::input_parameter< int >::type N(NSEXP);
     Rcpp::traits::input_parameter< int >::type D(DSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
     Rcpp::traits::input_parameter< std::string >::type memory(memorySEXP);
     Rcpp::traits::input_parameter< arma::vec >::type memory_value(memory_valueSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_adjmat(edgelist, N, D, directed, memory, memory_value, start, stop));
+    rcpp_result_gen = Rcpp::wrap(compute_adjmat(edgelist, D, directed, memory, memory_value, start, stop));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_compute_adjmat(SEXP edgelistSEXP, SEXP NSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP) {
+RcppExport SEXP _remstats_compute_adjmat(SEXP edgelistSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_adjmat_try(edgelistSEXP, NSEXP, DSEXP, directedSEXP, memorySEXP, memory_valueSEXP, startSEXP, stopSEXP));
+        rcpp_result_gen = PROTECT(_remstats_compute_adjmat_try(edgelistSEXP, DSEXP, directedSEXP, memorySEXP, memory_valueSEXP, startSEXP, stopSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -228,6 +227,18 @@ RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP,
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// combine_arrays
+arma::cube combine_arrays(const Rcpp::List& array_list, int along);
+RcppExport SEXP _remstats_combine_arrays(SEXP array_listSEXP, SEXP alongSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type array_list(array_listSEXP);
+    Rcpp::traits::input_parameter< int >::type along(alongSEXP);
+    rcpp_result_gen = Rcpp::wrap(combine_arrays(array_list, along));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 // validate (ensure exported C++ functions exist before calling them)
 static int _remstats_RcppExport_validate(const char* sig) { 
@@ -236,7 +247,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::cube(*compute_stats_rate)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
         signatures.insert("arma::cube(*compute_stats_choice)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
         signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
-        signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,int,bool,std::string,arma::vec,int,int)");
+        signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,bool,std::string,arma::vec,int,int)");
         signatures.insert("arma::cube(*compute_stats_tie)(const arma::vec&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,int,int,bool)");
     }
     return signatures.find(sig) != signatures.end();
@@ -257,8 +268,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_stats_rate", (DL_FUNC) &_remstats_compute_stats_rate, 12},
     {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 12},
     {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
-    {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 8},
+    {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 7},
     {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 12},
+    {"_remstats_combine_arrays", (DL_FUNC) &_remstats_combine_arrays, 2},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };

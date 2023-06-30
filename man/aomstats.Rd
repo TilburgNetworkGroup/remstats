@@ -8,7 +8,7 @@ aomstats(
   reh,
   sender_effects = NULL,
   receiver_effects = NULL,
-  attributes = NULL,
+  attr_data = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = Inf,
   start = 1,
@@ -30,7 +30,7 @@ which statistics are computed, see `Details'}
 effects in the receiver choice step of model for which statistics are
 computed, see `Details'}
 
-\item{attributes}{optionally, an object of class
+\item{attr_data}{optionally, an object of class
 \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
 Details).}
 
@@ -75,13 +75,13 @@ the documentation of the \code{scaling} argument in the separate effect
 functions for more information on this.
 }
 
-\section{Attributes}{
+\section{attr_data}{
 
 For the computation of the \emph{exogenous} statistics an attributes object
 with the exogenous covariate information has to be supplied to the
-\code{attributes} argument in either \code{remstats()} or in the separate
+\code{attr_data} argument in either \code{remstats()} or in the separate
 effect functions supplied to the \code{..._effects} arguments (e.g., see
-\code{\link{send}}). This \code{attributes} object should be constructed as
+\code{\link{send}}). This \code{attr_data} object should be constructed as
 follows: A dataframe with rows refering to the attribute value of actor
 \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 actor name (corresponding to the actor names in the relational event
@@ -142,7 +142,7 @@ reh <- remify::remify(edgelist = history, model = "actor")
 reff <- ~ receive("agreeableness") + inertia() + otp()
 aomstats(
   reh = reh, sender_effects = seff, receiver_effects = reff,
-  attributes = info
+  attr_data = info
 )
 
 }
