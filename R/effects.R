@@ -1006,15 +1006,23 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' is set equal to 2/n, where n refers to the number of actors.
 #' @export
 totaldegreeDyad <- function(scaling = c("none", "prop", "std")) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    list(
-        effect = "totaldegreeDyad",
-        scaling = scaling
-    )
+    # Add effect
+    call_args$effect <- "totaldegreeReceiver"
+	
+	return(call_args)
 }
 
 #' degreeDiff
@@ -1047,22 +1055,23 @@ totaldegreeDyad <- function(scaling = c("none", "prop", "std")) {
 #'
 #' @export
 degreeDiff <- function(scaling = c("none", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(degreeDiff))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "degreeDiff",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "degreeDiff.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "degreeDiff"
+	
+	return(call_args)
 }
 
 #' degreeMin
@@ -1101,22 +1110,23 @@ degreeDiff <- function(scaling = c("none", "std"), consider_type = FALSE) {
 #' @export
 degreeMin <- function(scaling = c("none", "prop", "std"),
                       consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(degreeMin))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "degreeMin",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "degreeMin.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "degreeMin"
+	
+	return(call_args)
 }
 
 #' degreeMax
@@ -1155,22 +1165,23 @@ degreeMin <- function(scaling = c("none", "prop", "std"),
 #' @export
 degreeMax <- function(scaling = c("none", "prop", "std"),
                       consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(degreeMax))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "degreeMax",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "degreeMax.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "degreeMax"
+	
+	return(call_args)
 }
 
 #' otp
@@ -1506,8 +1517,7 @@ ccp <- function(duration) {
     # Output
     list(
         effect = "ccp",
-        x = duration,
-        scaling = 1
+        x = duration
     )
 }
 
@@ -1546,18 +1556,20 @@ ccp <- function(duration) {
 #'
 #' @export
 psABBA <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABBA",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABBA.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABBA))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Add effect
+    call_args$effect <- "psABBA"
+	
+	return(call_args)
 }
 
 #' psABBY
@@ -1593,18 +1605,20 @@ psABBA <- function(consider_type = FALSE) {
 #'
 #' @export
 psABBY <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABBY",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABBY.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABBY))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABBY"
+	
+	return(call_args)
 }
 
 #' psABXA
@@ -1640,18 +1654,20 @@ psABBY <- function(consider_type = FALSE) {
 #'
 #' @export
 psABXA <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABXA",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABXA.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABXA))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABXA"
+	
+	return(call_args)
 }
 
 #' psABXB
@@ -1687,18 +1703,20 @@ psABXA <- function(consider_type = FALSE) {
 #'
 #' @export
 psABXB <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABXB",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABXB.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABXB))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABXB"
+	
+	return(call_args)
 }
 
 #' psABXY
@@ -1733,18 +1751,20 @@ psABXB <- function(consider_type = FALSE) {
 #'
 #' @export
 psABXY <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABXY",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABXY.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABXY))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABXY"
+	
+	return(call_args)
 }
 
 #' psABAY
@@ -1780,18 +1800,20 @@ psABXY <- function(consider_type = FALSE) {
 #'
 #' @export
 psABAY <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABAY",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABAY.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABAY))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABAY"
+	
+	return(call_args)
 }
 
 #' psABAB
@@ -1825,18 +1847,20 @@ psABAY <- function(consider_type = FALSE) {
 #'
 #' @export
 psABAB <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABAB",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABAB.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABAB))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABAB"
+	
+	return(call_args)
 }
 
 
@@ -1871,18 +1895,20 @@ psABAB <- function(consider_type = FALSE) {
 #'
 #' @export
 rrankSend <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "rrankSend",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "rrankSend.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(rrankSend))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "rrankSend"
+	
+	return(call_args)
 }
 
 #' rrankReceive
@@ -1915,18 +1941,20 @@ rrankSend <- function(consider_type = FALSE) {
 #'
 #' @export
 rrankReceive <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "rrankReceive",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "rrankReceive.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(rrankReceive))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "rrankReceive"
+	
+	return(call_args)
 }
 
 
@@ -1961,18 +1989,20 @@ rrankReceive <- function(consider_type = FALSE) {
 #'
 #' @export
 recencySendSender <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencySendSender",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencySendSender.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencySendSender))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencySendSender"
+	
+	return(call_args)
 }
 
 #' recencySendReceiver
@@ -2004,18 +2034,20 @@ recencySendSender <- function(consider_type = FALSE) {
 #'
 #' @export
 recencySendReceiver <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencySendReceiver",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencySendReceiver.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencySendReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencySendReceiver"
+	
+	return(call_args)
 }
 
 #' recencyReceiveSender
@@ -2047,18 +2079,20 @@ recencySendReceiver <- function(consider_type = FALSE) {
 #'
 #' @export
 recencyReceiveSender <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencyReceiveSender",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencyReceiveSender.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencyReceiveSender))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencyReceiveSender"
+	
+	return(call_args)
 }
 
 #' recencyReceiveReceiver
@@ -2091,18 +2125,20 @@ recencyReceiveSender <- function(consider_type = FALSE) {
 #'
 #' @export
 recencyReceiveReceiver <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencyReceiveReceiver",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencyReceiveReceiver.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencyReceiveReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencyReceiveReceiver"
+	
+	return(call_args)
 }
 
 #' recencyContinue
@@ -2135,18 +2171,20 @@ recencyReceiveReceiver <- function(consider_type = FALSE) {
 #'
 #' @export
 recencyContinue <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencyContinue",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencyContinue.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencyContinue))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencyContinue"
+	
+	return(call_args)
 }
 
 #' userStat

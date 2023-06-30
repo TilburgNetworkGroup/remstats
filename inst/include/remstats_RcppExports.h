@@ -25,11 +25,11 @@ namespace remstats {
         }
     }
 
-    inline arma::cube compute_stats_rate(const arma::vec& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, const arma::vec& scaling, int start, int stop, bool display_progress) {
+    inline arma::cube compute_stats_rate(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, bool display_progress) {
         typedef SEXP(*Ptr_compute_stats_rate)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_rate p_compute_stats_rate = NULL;
         if (p_compute_stats_rate == NULL) {
-            validateSignature("arma::cube(*compute_stats_rate)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
+            validateSignature("arma::cube(*compute_stats_rate)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
             p_compute_stats_rate = (Ptr_compute_stats_rate)R_GetCCallable("remstats", "_remstats_compute_stats_rate");
         }
         RObject rcpp_result_gen;
@@ -46,11 +46,11 @@ namespace remstats {
         return Rcpp::as<arma::cube >(rcpp_result_gen);
     }
 
-    inline arma::cube compute_stats_choice(const arma::vec& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, const arma::vec& scaling, int start, int stop, bool display_progress) {
+    inline arma::cube compute_stats_choice(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, bool display_progress) {
         typedef SEXP(*Ptr_compute_stats_choice)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_choice p_compute_stats_choice = NULL;
         if (p_compute_stats_choice == NULL) {
-            validateSignature("arma::cube(*compute_stats_choice)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
+            validateSignature("arma::cube(*compute_stats_choice)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
             p_compute_stats_choice = (Ptr_compute_stats_choice)R_GetCCallable("remstats", "_remstats_compute_stats_choice");
         }
         RObject rcpp_result_gen;

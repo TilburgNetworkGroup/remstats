@@ -23,7 +23,7 @@ arma::mat degree_aom(std::string type,
                      const arma::vec &weights,
                      std::string memory,
                      arma::vec memory_value,
-                     int scaling,
+                     Rcpp::String scaling,
                      int start,
                      int stop,
                      bool display_progress)
@@ -212,7 +212,7 @@ arma::mat degree_aom(std::string type,
 
     // Scaling in *choice(!)* model
     // Divide by the number of past events
-    if (scaling == 2)
+    if (scaling == "prop")
     {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
@@ -221,7 +221,7 @@ arma::mat degree_aom(std::string type,
         stat.replace(arma::datum::nan, 0);
     }
     // Standardize
-    if (scaling == 3)
+    if (scaling == "std")
     {
         // Iterate over events
         for (int m = 0; m < (stop - start + 1); ++m)
@@ -269,7 +269,7 @@ arma::mat exo_actor_aom(const arma::mat &covariates,
                         const arma::vec &actors,
                         int start,
                         int stop,
-                        int scaling)
+                        Rcpp::String scaling)
 {
     // Initialize saving space
     arma::mat stat((stop - start + 1), actors.n_elem, arma::fill::zeros);
@@ -332,7 +332,7 @@ arma::mat exo_actor_aom(const arma::mat &covariates,
     }
 
     // Scaling in *choice(!)* model
-    if (scaling == 2)
+    if (scaling == "std")
     {
         // Iterate over events
         for (int m = 0; m < (stop - start + 1); ++m)
@@ -533,7 +533,7 @@ arma::mat exo_dyad_aom(std::string type,
                        const arma::vec &actors,
                        int start,
                        int stop,
-                       int scaling)
+                       Rcpp::String scaling)
 {
 
     // Initialize saving space
@@ -684,7 +684,7 @@ arma::mat tie_aom(const arma::mat &covariates,
                   const arma::vec &actors,
                   int start,
                   int stop,
-                  int scaling)
+                  Rcpp::String scaling)
 {
 
     // Initialize saving space
@@ -703,7 +703,7 @@ arma::mat tie_aom(const arma::mat &covariates,
         stat.row(m) = covariates.row(sender);
 
         // Standardization
-        if (scaling == 2)
+        if (scaling == "std")
         {
             arma::rowvec statrow = stat.row(m);
             arma::vec statrowMin = statrow(arma::find(actors != sender));
@@ -743,7 +743,7 @@ arma::mat inertia_aom(const arma::mat &edgelist,
                       const arma::vec &weights,
                       std::string memory,
                       arma::vec memory_value,
-                      int scaling,
+                      Rcpp::String scaling,
                       int start,
                       int stop,
                       bool display_progress)
@@ -871,7 +871,7 @@ arma::mat inertia_aom(const arma::mat &edgelist,
     // Scale by the outdegree of the sender >> the fraction of messages i sent
     // to j >> if i hasn't sent any messages yet, than all n-1 actors are
     // equally likely to get a message
-    if (scaling == 2)
+    if (scaling == "prop")
     {
         arma::mat deg = degree_aom("out", edgelist, actors, weights, memory, memory_value, scaling = 1, start, stop, false);
 
@@ -890,7 +890,7 @@ arma::mat inertia_aom(const arma::mat &edgelist,
         }
     }
     // Standardize
-    if (scaling == 3)
+    if (scaling == "std")
     {
         // Iterate over events
         for (int m = 0; m < (stop - start + 1); ++m)
@@ -940,7 +940,7 @@ arma::mat reciprocity_aom(const arma::mat &edgelist,
                           const arma::vec &weights,
                           std::string memory,
                           arma::vec memory_value,
-                          int scaling,
+                          Rcpp::String scaling,
                           int start,
                           int stop,
                           bool display_progress)
@@ -1068,7 +1068,7 @@ arma::mat reciprocity_aom(const arma::mat &edgelist,
     // Scale by the indegree of the sender >> the fraction of messages j sent to
     // i >> if i hasn't received any messages yet, than all n-1 actors are
     // equally likely to get a message
-    if (scaling == 2)
+    if (scaling == "prop")
     {
         arma::mat deg = degree_aom("in", edgelist, actors, weights, memory, memory_value, scaling = 1, start, stop, false);
 
@@ -1087,7 +1087,7 @@ arma::mat reciprocity_aom(const arma::mat &edgelist,
         }
     }
     // Standardize
-    if (scaling == 3)
+    if (scaling == "std")
     {
         // Iterate over events
         for (int m = 0; m < (stop - start + 1); ++m)
@@ -1351,7 +1351,7 @@ arma::mat triad_aom(std::string type,
                     const arma::vec &weights,
                     std::string memory,
                     arma::vec memory_value,
-                    int scaling,
+                    Rcpp::String scaling,
                     int start,
                     int stop,
                     bool display_progress)
@@ -1560,7 +1560,7 @@ arma::mat triad_aom(std::string type,
     }
 
     // Scaling
-    if (scaling == 2)
+    if (scaling == "std")
     {
         // Iterate over time points
         for (int i = 0; i < (stop - start + 1); ++i)
@@ -1633,8 +1633,44 @@ arma::mat scale(arma::mat stat)
     return stat;
 }
 
+int getRateEffectNumber(std::string effect)
+{
+
+    std::map<std::string, int> effectsMap;
+
+    // Baseline
+    effectsMap["baseline"] = 1;
+
+    // Exogenous stats
+    effectsMap["send"] = 2;
+
+    // Endogenous stats
+    effectsMap["indegreeSender"] = 3;
+    effectsMap["outdegreeSender"] = 4;
+    effectsMap["totaldegreeSender"] = 5;
+    effectsMap["recencySendSender"] = 6;
+    effectsMap["recencyReceiveSender"] = 7;
+
+    // interaction effects
+    effectsMap["interact"] = 999;
+
+    // find effect number
+    auto result = effectsMap.find(effect);
+    int numericValue = 0;
+    if (result != effectsMap.end())
+    {
+        numericValue = result->second; // Access the second element
+    }
+    else
+    {
+        std::cout << "Effect not found in the map." << std::endl;
+    }
+
+    return numericValue;
+}
+
 //[[Rcpp::export]]
-arma::cube compute_stats_rate(const arma::vec &effects,
+arma::cube compute_stats_rate(Rcpp::CharacterVector &effects,
                               const arma::mat &edgelist,
                               const arma::vec &actors,
                               const arma::vec &weights,
@@ -1642,20 +1678,21 @@ arma::cube compute_stats_rate(const arma::vec &effects,
                               const Rcpp::List &interactions,
                               std::string memory,
                               const arma::vec memory_value,
-                              const arma::vec &scaling,
+                              Rcpp::CharacterVector &scaling,
                               int start,
                               int stop,
                               bool display_progress)
 {
 
     // Initialize saving space
-    arma::cube rateStats((stop - start + 1), actors.n_elem, effects.n_elem);
+    arma::cube rateStats((stop - start + 1), actors.n_elem, effects.size());
 
     // For loop over effects
-    for (arma::uword i = 0; i < effects.n_elem; ++i)
+    for (int i = 0; i < effects.size(); ++i)
     {
-        // Current effect
-        int effect = effects(i);
+        // Get case number
+        Rcpp::String effectName = effects(i);
+        int effect = getRateEffectNumber(effectName);
 
         // Initialize saving space
         arma::mat stat(rateStats.n_rows, rateStats.n_cols, arma::fill::zeros);
@@ -1671,29 +1708,19 @@ arma::cube compute_stats_rate(const arma::vec &effects,
         case 2:
             // Compute statistic
             stat = exo_actor_aom(covariates[i], edgelist, actors, start, stop, 1);
-            // Standardize
-            if (scaling(i) == 2)
-            {
-                stat = scale(stat);
-            }
             break;
         // 3 in-degree
         case 3:
             stat = degree_aom("in", edgelist, actors, weights, memory,
                               memory_value, 1, start, stop, display_progress);
             // Divide by the number of past events
-            if (scaling(i) == 2)
+            if (scaling(i) == "prop")
             {
                 for (arma::uword t = 0; t < stat.n_rows; ++t)
                 {
                     stat.row(t) = stat.row(t) / sum(stat.row(t));
                 }
                 stat.replace(arma::datum::nan, 0);
-            }
-            // Standardize
-            if (scaling(i) == 3)
-            {
-                stat = scale(stat);
             }
             break;
         // 4 out-degree
@@ -1701,7 +1728,7 @@ arma::cube compute_stats_rate(const arma::vec &effects,
             stat = degree_aom("out", edgelist, actors, weights, memory,
                               memory_value, 1, start, stop, display_progress);
             // Divide by the number of past events
-            if (scaling(i) == 2)
+            if (scaling(i) == "prop")
             {
                 for (arma::uword t = 0; t < stat.n_rows; ++t)
                 {
@@ -1709,29 +1736,19 @@ arma::cube compute_stats_rate(const arma::vec &effects,
                 }
                 stat.replace(arma::datum::nan, 0);
             }
-            // Standardize
-            if (scaling(i) == 3)
-            {
-                stat = scale(stat);
-            }
             break;
         // 5 total-degree
         case 5:
             stat = degree_aom("total", edgelist, actors, weights, memory,
                               memory_value, 1, start, stop, display_progress);
             // Divide by two times the number of past events
-            if (scaling(i) == 2)
+            if (scaling(i) == "prop")
             {
                 for (arma::uword t = 0; t < stat.n_rows; ++t)
                 {
                     stat.row(t) = stat.row(t) / (sum(stat.row(t)));
                 }
                 stat.replace(arma::datum::nan, 0);
-            }
-            // Standardize
-            if (scaling(i) == 3)
-            {
-                stat = scale(stat);
             }
             break;
         // 6 recencySendSender
@@ -1746,8 +1763,8 @@ arma::cube compute_stats_rate(const arma::vec &effects,
             stat = recency_aom("Receive", edgelist, actors, start, stop,
                                display_progress);
             break;
-        // 99 interact
-        case 99:
+        // 999 interact
+        case 999:
             // Get the indices of the statistics slices (+1) with the
             // statistics for which an interaction needs to be computed.
             arma::vec x = interactions[i];
@@ -1758,6 +1775,12 @@ arma::cube compute_stats_rate(const arma::vec &effects,
             break;
         }
 
+        // Standardize
+        if (scaling(i) == "std")
+        {
+            stat = scale(stat);
+        }
+
         // Save statistic
         rateStats.slice(i) = stat;
     }
@@ -1765,8 +1788,54 @@ arma::cube compute_stats_rate(const arma::vec &effects,
     return rateStats;
 }
 
+int getChoiceEffectNumber(std::string effect)
+{
+
+    std::map<std::string, int> effectsMap;
+
+    // Exogenous stats
+    effectsMap["receive"] = 1;
+    effectsMap["same"] = 2;
+    effectsMap["difference"] = 3;
+    effectsMap["average"] = 4;
+    effectsMap["tie"] = 5;
+
+    // Endogenous stats
+    effectsMap["inertia"] = 6;
+    effectsMap["reciprocity"] = 7;
+    effectsMap["indegreeReceiver"] = 8;
+    effectsMap["outdegreeReceiver"] = 9;
+    effectsMap["totaldegreeReceiver"] = 10;
+    effectsMap["otp"] = 11;
+    effectsMap["itp"] = 12;
+    effectsMap["osp"] = 13;
+    effectsMap["isp"] = 14;
+    effectsMap["rrankSend"] = 15;
+    effectsMap["rrankReceive"] = 16;
+    effectsMap["recencySendReceiver"] = 17;
+    effectsMap["recencyReceiveReceiver"] = 18;
+    effectsMap["recencyContinue"] = 19;
+
+    // interaction effects
+    effectsMap["interact"] = 999;
+
+    // find effect number
+    auto result = effectsMap.find(effect);
+    int numericValue = 0;
+    if (result != effectsMap.end())
+    {
+        numericValue = result->second; // Access the second element
+    }
+    else
+    {
+        std::cout << "Effect not found in the map." << std::endl;
+    }
+
+    return numericValue;
+}
+
 //[[Rcpp::export]]
-arma::cube compute_stats_choice(const arma::vec &effects,
+arma::cube compute_stats_choice(Rcpp::CharacterVector &effects,
                                 const arma::mat &edgelist,
                                 const arma::vec &actors,
                                 const arma::vec &weights,
@@ -1774,20 +1843,21 @@ arma::cube compute_stats_choice(const arma::vec &effects,
                                 const Rcpp::List &interactions,
                                 std::string memory,
                                 const arma::vec memory_value,
-                                const arma::vec &scaling,
+                                Rcpp::CharacterVector &scaling,
                                 int start,
                                 int stop,
                                 bool display_progress)
 {
 
     // Initialize saving space
-    arma::cube choiceStats((stop - start + 1), actors.n_elem, effects.n_elem);
+    arma::cube choiceStats((stop - start + 1), actors.n_elem, effects.size());
 
     // For loop over effects
-    for (arma::uword i = 0; i < effects.n_elem; ++i)
+    for (int i = 0; i < effects.size(); ++i)
     {
-        // Current effect
-        int effect = effects(i);
+        // Get case number
+        Rcpp::String effectName = effects(i);
+        int effect = getChoiceEffectNumber(effectName);
 
         // Initialize saving space
         arma::mat stat(choiceStats.n_rows, choiceStats.n_cols, arma::fill::zeros);
@@ -1902,7 +1972,7 @@ arma::cube compute_stats_choice(const arma::vec &effects,
                                display_progress);
             break;
         // 99 interact
-        case 99:
+        case 999:
             // Get the indices of the statistics slices (+1) with the
             // statistics for which an interaction needs to be computed.
             arma::vec x = interactions[i];

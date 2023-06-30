@@ -113,37 +113,23 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   check_formula(effects)
   form <- effects
   effects <- parse_formula(form, "rem", attr(reh, "ordinal"))
-  #all_effects <- all_tie_effects()
-  #effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
+  effectNames <- sapply(effects, function(x) x$effect)
 
   # Check correct specification effects
   if(!attr(reh, "directed")) {
-    if(!all(sapply(effects, function(x) x$effect) %in% tie_effects(directed = FALSE))) {
+    if(!all(effectNames %in% tie_effects(directed = FALSE))) {
       stop("Attempting to request effects that are not (yet) defined for undirected events")
     }
   }
 
   if(attr(reh, "directed")) {
-    if(!all(sapply(effects, function(x) x$effect) %in% tie_effects(directed = TRUE))) {
+    if(!all(effectNames %in% tie_effects(directed = TRUE))) {
       stop("Attempting to request effects that are not (yet) defined for directed events")
     }
   }
 
-  #if (!attr(reh, "directed")) {
-  #  if (any(effectsN %in%
-  #    c(2, 3, 11:21, 24:28, 30:31, 35:38, 40:50, 53:57, 60:61, 63:66))) {
-  #    stop(paste("Attempting to request effects that are not (yet) defined for undirected events"))
-  #  }
-  #}
-
-  #if (attr(reh, "directed")) {
-  #  if (any(effectsN %in% c(22:23, 58:59, 67:71, 76:77))) {
-  #    stop(paste("Attemping to request effects that are not (yet) defined for directed events"))
-  #  }
-  #}
-
   # Prepare fixed effects
-  if (any(sapply(effects, function(x) x$effect == "FEtype"))) {
+  if (any(effectNames == "FEtype")) {
     C <- nrow(types)
     FEeffects <- lapply(2:C, function(c) {
       x <- list()
@@ -154,16 +140,15 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
       x
     })
 
-    pos <- which(sapply(effects, function(x) x$effect == "FEtype"))
+    pos <- which(effectNames == "FEtype")
     effects <- append(effects[-pos], FEeffects, pos - 1)
-    effectsN <- match(sapply(effects, function(x) x$effect), all_effects)
   }
 
   # Prepare interaction effects
   effects_int <- parse_int(form, "rem", effects, attr(reh, "ordinal"))
-  #effectsN <- append(effectsN, rep(99, length(effects_int)), length(effectsN))
+  effectNames <- append(effectNames, rep("interact", length(effects_int)), length(effectNames))
   interactions <- list()
-  #interactions[which(effectsN == 99)] <- effects_int
+  interactions[which(effectNames == "interact")] <- effects_int
 
   # Prepare covariate information
   covar <- process_covariate(effects, attr_data, actors, edgelist.reh, reh, prepR)
@@ -172,11 +157,13 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   scaling <- sapply(effects, function(x) {
 	  ifelse("scaling" %in% names(x), x$scaling, "none")
   })
+  scaling <- append(scaling, rep("none", length(effects_int)), length(scaling))
 
   # Prepare consider_type info
   consider_type <- sapply(effects, function(x) {
 	  ifelse("consider_type" %in% names(x), x$consider_type, FALSE)
   })
+  consider_type <- append(consider_type, rep(FALSE, length(effects_int)), length(consider_type))
 
   # Check correct scaling inertia statistic
   if (!attr(reh, "directed")) {
@@ -191,9 +178,8 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   # Output
   list(
     form = form,
-    #all_effects = all_effects,
     effects = effects,
-    #effectsN = effectsN,
+    effectNames = effectNames,
     edgelist = edgelist.reh,
     actors = actors,
     types = types,
@@ -381,7 +367,7 @@ all_tie_effects <- function() {
 #   statistics, all_effects, effectsN, effects,
 #   interactions
 # )
-add_variable_names <- function(statistics, all_effects, effectsN, effects, interactions) {
+add_variable_names <- function(statistics, effectNames, effects, interactions) {
   # Helper function to add variable name to effect
   add_variable_name <- function(effect, variable) {
     if (!is.null(variable)) {
@@ -392,19 +378,15 @@ add_variable_names <- function(statistics, all_effects, effectsN, effects, inter
   }
 
   # Dimnames statistics
-  dimnames(statistics) <- list(NULL, NULL, unlist(c(all_effects[effectsN])))
+  dimnames(statistics) <- list(NULL, NULL, effectNames)
 
   # Add variable name to exogenous statistics
-  exogenous_indices <- which(effectsN %in% c(2:8, 73))
+  exogenous_indices <- which(sapply(effects, function(x) {
+    "variable" %in% names(x)
+  }))
+
   dimnames(statistics)[[3]][exogenous_indices] <- sapply(
     effects[exogenous_indices],
-    function(x) add_variable_name(x$effect, x$variable)
-  )
-
-  # Add variable name to event and tie statistic
-  event_tie_indices <- which(effectsN %in% c(33, 39))
-  dimnames(statistics)[[3]][event_tie_indices] <- sapply(
-    effects[event_tie_indices],
     function(x) add_variable_name(x$effect, x$variable)
   )
 
@@ -421,13 +403,13 @@ add_variable_names <- function(statistics, all_effects, effectsN, effects, inter
   }
 
   # Add variable name to interaction statistics
-  interaction_index <- which(effectsN == 99)
+  interaction_index <- which(effectNames == "interact")
   dimnames(statistics)[[3]][interaction_index] <- sapply(
     interactions[interaction_index],
     function(x) {
       paste0(
         dimnames(statistics)[[3]][as.numeric(x[1])],
-        ".x.",
+        ":",
         dimnames(statistics)[[3]][as.numeric(x[2])]
       )
     }

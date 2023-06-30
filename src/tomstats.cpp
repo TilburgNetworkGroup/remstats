@@ -2994,6 +2994,74 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       break;
 
+    // totaldegreeDyad
+    case 117:
+      // Compute statistic
+      stat = calc_degree_directed(7, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), directed);
+      // Divide by two times the number/weight of past events
+      if (scaling(i) == "prop")
+      {
+        for (arma::uword t = 0; t < stat.n_rows; ++t)
+        {
+          stat.row(t) = stat.row(t) / (2 * sum(adjmat.row(t)));
+        }
+        stat.replace(arma::datum::nan, 0);
+        // First row
+        if (start == 0)
+        {
+          arma::rowvec rep = arma::rowvec(stat.n_cols,
+                                          arma::fill::value(2.0 / actors.n_elem));
+          stat.row(0) = rep;
+        }
+      }
+      break;
+
+    // degreeMin
+    case 118:
+      // Compute statistic
+      stat = calc_degree_undirected(1, edgelist, riskset, adjmat, actors,
+                                    types, start, stop, consider_type(i));
+      // Divide by the number/weight of past events
+      if (scaling(i) == "prop")
+      {
+        for (arma::uword t = 0; t < stat.n_rows; ++t)
+        {
+          stat.row(t) = stat.row(t) / (sum(adjmat.row(t)));
+        }
+        stat.replace(arma::datum::nan, 0);
+      }
+      break;
+
+    // degreeMax
+    case 119:
+      // Compute statistic
+      stat = calc_degree_undirected(2, edgelist, riskset, adjmat, actors,
+                                    types, start, stop, consider_type(i));
+      // Divide by the number/weight of past events
+      if (scaling(i) == "prop")
+      {
+        for (arma::uword t = 0; t < stat.n_rows; ++t)
+        {
+          stat.row(t) = stat.row(t) / (sum(adjmat.row(t)));
+        }
+        stat.replace(arma::datum::nan, 0);
+      }
+      break;
+
+    // degreeDiff
+    case 120:
+      // Compute statistic
+      stat = calc_degree_undirected(3, edgelist, riskset, adjmat, actors,
+                                    types, start, stop, consider_type(i));
+      break;
+
+    // ccp
+    case 121:
+      // Compute statistic
+      stat = current_common_partners(edgelist, riskset,
+                                     actors, covariates[i], start, stop);
+      break;
+
     // otp
     case 131:
       // Compute statistic
@@ -3099,575 +3167,101 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // psABBA
     case 141:
       // Compute statistic
-      stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, false);
+      stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
       break;
 
     // psABBY
     case 142:
       // Compute statistic
-      stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, false);
+      stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
       break;
 
     // psABXA
     case 143:
       // Compute statistic
-      stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, false);
+      stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
       break;
 
     // psABXB
     case 144:
       // Compute statistic
-      stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, false);
+      stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
       break;
 
     // psABXY
     case 145:
       // Compute statistic
-      stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, false);
+      stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
       break;
 
     // psABAY
     case 146:
       // Compute statistic
-      stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, false);
+      stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      break;
+
+    // 74 psABAB
+    case 147:
+      // Compute statistic
+      stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
       break;
 
     // rrankSend
     case 151:
       // Compute statistic
       stat = calc_rrank(1, edgelist, riskset, actors.n_elem,
-                        types.n_elem, start, stop, false);
+                        types.n_elem, start, stop, consider_type(i));
       break;
 
     // rrankReceive
     case 152:
       // Compute statistic
       stat = calc_rrank(2, edgelist, riskset, actors.n_elem,
-                        types.n_elem, start, stop, false);
+                        types.n_elem, start, stop, consider_type(i));
       break;
 
     // recencyContinue
     case 161:
       // Compute statistic
       stat = calc_recency(1, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, false, directed);
+                          types.n_elem, start, stop, consider_type(i), directed);
       break;
 
     // recencySendSender
     case 162:
       // Compute statistic
       stat = calc_recency(2, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, false, directed);
+                          types.n_elem, start, stop, consider_type(i), directed);
       break;
 
     // recencySendReceiver
     case 163:
       // Compute statistic
       stat = calc_recency(3, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, false, directed);
+                          types.n_elem, start, stop, consider_type(i), directed);
       break;
 
     // recencyReceiveSender
     case 164:
       // Compute statistic
       stat = calc_recency(4, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, false, directed);
+                          types.n_elem, start, stop, consider_type(i), directed);
       break;
 
     // recencyReceiveReceiver
     case 165:
       // Compute statistic
       stat = calc_recency(5, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, false, directed);
+                          types.n_elem, start, stop, consider_type(i), directed);
       break;
 
-    // 40 indegreeSender.type
-    case 40:
-      // Compute statistic
-      stat = calc_degree_directed(1, edgelist, riskset, adjmat, actors, types, start, stop, true, true);
-      // Divide by the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
-        }
-        stat.replace(arma::datum::nan, 0);
-        // First row
-        if (start == 0)
-        {
-          arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                          arma::fill::value(1.0 / actors.n_elem));
-          stat.row(0) = rep;
-        }
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 41 indegreeReceiver.type
-    case 41:
-      // Compute statistic
-      stat = calc_degree_directed(2, edgelist, riskset, adjmat, actors, types, start, stop, true, true);
-      // Divide by the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
-        }
-        stat.replace(arma::datum::nan, 0);
-        // First row
-        if (start == 0)
-        {
-          arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                          arma::fill::value(1.0 / actors.n_elem));
-          stat.row(0) = rep;
-        }
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 42 outdegreeSender.type
-    case 42:
-      // Compute statistic
-      stat = calc_degree_directed(3, edgelist, riskset, adjmat, actors, types, start, stop, true, true);
-      // Divide by the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
-        }
-        stat.replace(arma::datum::nan, 0);
-        // First row
-        if (start == 0)
-        {
-          arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                          arma::fill::value(1.0 / actors.n_elem));
-          stat.row(0) = rep;
-        }
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 43 outdegreeReceiver.type
-    case 43:
-      // Compute statistic
-      stat = calc_degree_directed(4, edgelist, riskset, adjmat, actors, types, start, stop, true, true);
-      // Divide by the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
-        }
-        stat.replace(arma::datum::nan, 0);
-        // First row
-        if (start == 0)
-        {
-          arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                          arma::fill::value(1.0 / actors.n_elem));
-          stat.row(0) = rep;
-        }
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 44 totaldegreeSender.type
-    case 44:
-      // Compute statistic
-      stat = calc_degree_directed(5, edgelist, riskset, adjmat, actors, types, start, stop, true, true);
-      // Divide by two times the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / (2 * sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-        // First row
-        if (start == 0)
-        {
-          arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                          arma::fill::value(1.0 / actors.n_elem));
-          stat.row(0) = rep;
-        }
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 45 totaldegreeReceiver.type
-    case 45:
-      // Compute statistic
-      stat = calc_degree_directed(6, edgelist, riskset, adjmat, actors, types, start, stop, true, true);
-      // Divide by two times the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / (2 * sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-        // First row
-        if (start == 0)
-        {
-          arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                          arma::fill::value(1.0 / actors.n_elem));
-          stat.row(0) = rep;
-        }
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 46 psABBA.type
-    case 46:
-      // Compute statistic
-      stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, true);
-      break;
-
-    // 47 psABBY.type
-    case 47:
-      // Compute statistic
-      stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, true);
-      break;
-
-    // 48 psABXA.type
-    case 48:
-      // Compute statistic
-      stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, true);
-      break;
-
-    // 49 psABXB.type
-    case 49:
-      // Compute statistic
-      stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, true);
-      break;
-
-    // 50 psABXY.type
-    case 50:
-      // Compute statistic
-      stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, true);
-      break;
-
-    // 51 psABAY.type
-    case 51:
-      // Compute statistic
-      stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, true);
-      break;
-
-    // 52 inertia.type
-    case 52:
-      // Compute statistic
-      stat = calc_inertia(edgelist, adjmat, riskset, actors, types, directed,
-                          start, stop, true, scaling(i));
-      break;
-
-    // 53 reciprocity.type
-    case 53:
-      // Compute statistic
-      stat = calc_reciprocity(edgelist, adjmat, riskset, actors, types, start,
-                              stop, true, scaling(i));
-      break;
-
-    // 54 otp.type
-    case 54:
-      // Compute statistic
-      stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 55 itp.type
-    case 55:
-      // Compute statistic
-      stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 56 osp.type
-    case 56:
-      // Compute statistic
-      stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 57 isp.type
-    case 57:
-      // Compute statistic
-      stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 58 sp.type
-    case 58:
-      // Compute statistic
-      stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 59 spUnique.type
-    case 59:
-      // Compute statistic
-      stat = computeTriadStatsTypesConsidered(6, adjmat, actors, types, riskset);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 60 rrankSend.type
-    case 60:
-      // Compute statistic
-      stat = calc_rrank(1, edgelist, riskset, actors.n_elem,
-                        types.n_elem, start, stop, true);
-      break;
-
-    // 61 rrankReceive.type
-    case 61:
-      // Compute statistic
-      stat = calc_rrank(2, edgelist, riskset, actors.n_elem,
-                        types.n_elem, start, stop, true);
-      break;
-
-    // 62 recencyContinue.type
-    case 62:
-      // Compute statistic
-      stat = calc_recency(1, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, true, directed);
-      break;
-
-    // 63 recencySendSender.type
-    case 63:
-      // Compute statistic
-      stat = calc_recency(2, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, true, directed);
-      break;
-
-    // 64 recencySendReceiver.type
-    case 64:
-      // Compute statistic
-      stat = calc_recency(3, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, true, directed);
-      break;
-
-    // 65 recencyReceiveSender.type
-    case 65:
-      // Compute statistic
-      stat = calc_recency(4, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, true, directed);
-      break;
-
-    // 66 recencyReceiveReceiver.type
-    case 66:
-      // Compute statistic
-      stat = calc_recency(5, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, true, directed);
-      break;
-
-    // 67 degreeMin
-    case 67:
-      // Compute statistic
-      stat = calc_degree_undirected(1, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, false);
-      // Divide by the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / (sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 68 degreeMax
-    case 68:
-      // Compute statistic
-      stat = calc_degree_undirected(2, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, false);
-      // Divide by the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / (sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 69 degreeMin.type
-    case 69:
-      // Compute statistic
-      stat = calc_degree_undirected(1, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, true);
-      // Divide by the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / (sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 70 degreeMax.type
-    case 70:
-      // Compute statistic
-      stat = calc_degree_undirected(2, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, true);
-      // Divide by the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / (sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 71 ccp
-    case 71:
-      // Compute statistic
-      stat = current_common_partners(edgelist, riskset,
-                                     actors, covariates[i], start, stop);
-      break;
-
-    // 72 totaldegreeDyad
-    case 72:
-      // Compute statistic
-      stat = calc_degree_directed(7, edgelist, riskset, adjmat, actors, types, start, stop, false, directed);
-      // Divide by two times the number/weight of past events
-      if (scaling(i) == 2)
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
-        {
-          stat.row(t) = stat.row(t) / (2 * sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-        // First row
-        if (start == 0)
-        {
-          arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                          arma::fill::value(2.0 / actors.n_elem));
-          stat.row(0) = rep;
-        }
-      }
-      // Standardize
-      if (scaling(i) == 3)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 73 userStat
-    case 73:
+    // userStat
+    case 888:
       stat = get_user_stat(covariates[i], start, stop);
       break;
 
-    // 74 psABAB
-    case 74:
-      // Compute statistic
-      stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, false);
-      break;
-
-    // 75 psABAB.type
-    case 75:
-      // Compute statistic
-      stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, true);
-      break;
-    // 76 degreeDiff
-    case 76:
-      // Compute statistic
-      stat = calc_degree_undirected(3, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, false);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 77 degreeDiff.type
-    case 77:
-      // Compute statistic
-      stat = calc_degree_undirected(3, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, true);
-      // Standardize
-      if (scaling(i) == 2)
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // 99 interact
-    case 99:
+    // interact
+    case 999:
       // Get the indices of the statistics slices (+1) with the
       // statistics for which an interaction needs to be computed.
       arma::vec x = interactions[i];

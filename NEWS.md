@@ -1,3 +1,13 @@
+# remstats 3.1.2
+Date: TBD
+Works with remify >= 3.1.0. 
+
+## New features
+* `unique` argument in triadic statistics 
+
+## Major changes
+* Naming of the interaction effects from `var1.x.var2` to `var1:var2`. 
+
 # remstats 3.1.1
 Date: 01-07-2023
 

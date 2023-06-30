@@ -15,11 +15,11 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // compute_stats_rate
-arma::cube compute_stats_rate(const arma::vec& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, const arma::vec& scaling, int start, int stop, bool display_progress);
+arma::cube compute_stats_rate(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, bool display_progress);
 static SEXP _remstats_compute_stats_rate_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type effects(effectsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type effects(effectsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type actors(actorsSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
@@ -27,7 +27,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::List& >::type interactions(interactionsSEXP);
     Rcpp::traits::input_parameter< std::string >::type memory(memorySEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type memory_value(memory_valueSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type scaling(scalingSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type scaling(scalingSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
@@ -60,11 +60,11 @@ RcppExport SEXP _remstats_compute_stats_rate(SEXP effectsSEXP, SEXP edgelistSEXP
     return rcpp_result_gen;
 }
 // compute_stats_choice
-arma::cube compute_stats_choice(const arma::vec& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, const arma::vec& scaling, int start, int stop, bool display_progress);
+arma::cube compute_stats_choice(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, bool display_progress);
 static SEXP _remstats_compute_stats_choice_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type effects(effectsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type effects(effectsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type actors(actorsSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
@@ -72,7 +72,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::List& >::type interactions(interactionsSEXP);
     Rcpp::traits::input_parameter< std::string >::type memory(memorySEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type memory_value(memory_valueSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type scaling(scalingSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type scaling(scalingSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
@@ -245,8 +245,8 @@ END_RCPP
 static int _remstats_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
-        signatures.insert("arma::cube(*compute_stats_rate)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
-        signatures.insert("arma::cube(*compute_stats_choice)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
+        signatures.insert("arma::cube(*compute_stats_rate)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
+        signatures.insert("arma::cube(*compute_stats_choice)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
         signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
         signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,bool,Rcpp::String,arma::vec,int,int)");
         signatures.insert("arma::cube(*compute_stats_tie)(Rcpp::CharacterVector&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,Rcpp::CharacterVector&,Rcpp::LogicalVector&,const Rcpp::List&,const Rcpp::List&,int,int,bool)");
