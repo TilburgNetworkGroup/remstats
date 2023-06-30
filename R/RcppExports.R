@@ -9,10 +9,6 @@ compute_stats_choice <- function(effects, edgelist, actors, weights, covariates,
     .Call(`_remstats_compute_stats_choice`, effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, display_progress)
 }
 
-testStringComparison <- function(scaling) {
-    invisible(.Call(`_remstats_testStringComparison`, scaling))
-}
-
 getRisksetMatrix <- function(actorID, typeID, N, C, directed) {
     .Call(`_remstats_getRisksetMatrix`, actorID, typeID, N, C, directed)
 }

@@ -3003,12 +3003,11 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset);
-      }
-      // Standardize
-      if (scaling(i) == "std")
-      {
-        stat = standardize(stat);
+        if (consider_type(i)) {
+          stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset);
+        } else {
+          stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset);
+        }
       }
       break;
 
@@ -3021,12 +3020,11 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset);
-      }
-      // Standardize
-      if (scaling(i) == "std")
-      {
-        stat = standardize(stat);
+        if (consider_type(i)) {
+          stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset);
+        } else {
+          stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset);
+        }
       }
       break;
 
@@ -3039,12 +3037,11 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset);
-      }
-      // Standardize
-      if (scaling(i) == "std")
-      {
-        stat = standardize(stat);
+        if (consider_type(i)) {
+          stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset);
+        } else {
+          stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset);
+        }
       }
       break;
 
@@ -3057,12 +3054,11 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset);
-      }
-      // Standardize
-      if (scaling(i) == "std")
-      {
-        stat = standardize(stat);
+        if (consider_type(i)) {
+          stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset);
+        } else {
+          stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset);
+        }
       }
       break;
 
@@ -3075,12 +3071,11 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset);
-      }
-      // Standardize
-      if (scaling(i) == "std")
-      {
-        stat = standardize(stat);
+        if (consider_type(i)) {
+          stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset);
+        } else {
+          stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset);
+        }
       }
       break;
 
@@ -3093,12 +3088,11 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        stat = computeTriadStatsTypesNotConsidered(6, adjmat, actors, types, riskset);
-      }
-      // Standardize
-      if (scaling(i) == "std")
-      {
-        stat = standardize(stat);
+        if (consider_type(i)) {
+          stat = computeTriadStatsTypesConsidered(6, adjmat, actors, types, riskset);
+        } else {
+          stat = computeTriadStatsTypesNotConsidered(6, adjmat, actors, types, riskset);
+        }
       }
       break;
 

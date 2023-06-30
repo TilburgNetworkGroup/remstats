@@ -104,39 +104,6 @@ RcppExport SEXP _remstats_compute_stats_choice(SEXP effectsSEXP, SEXP edgelistSE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// testStringComparison
-void testStringComparison(std::string scaling);
-static SEXP _remstats_testStringComparison_try(SEXP scalingSEXP) {
-BEGIN_RCPP
-    Rcpp::traits::input_parameter< std::string >::type scaling(scalingSEXP);
-    testStringComparison(scaling);
-    return R_NilValue;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remstats_testStringComparison(SEXP scalingSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_testStringComparison_try(scalingSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
 // getRisksetMatrix
 arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed);
 static SEXP _remstats_getRisksetMatrix_try(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP NSEXP, SEXP CSEXP, SEXP directedSEXP) {
@@ -280,7 +247,6 @@ static int _remstats_RcppExport_validate(const char* sig) {
     if (signatures.empty()) {
         signatures.insert("arma::cube(*compute_stats_rate)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
         signatures.insert("arma::cube(*compute_stats_choice)(const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,const arma::vec&,int,int,bool)");
-        signatures.insert("void(*testStringComparison)(std::string)");
         signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
         signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,bool,Rcpp::String,arma::vec,int,int)");
         signatures.insert("arma::cube(*compute_stats_tie)(Rcpp::CharacterVector&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,Rcpp::CharacterVector&,Rcpp::LogicalVector&,const Rcpp::List&,const Rcpp::List&,int,int,bool)");
@@ -292,7 +258,6 @@ static int _remstats_RcppExport_validate(const char* sig) {
 RcppExport SEXP _remstats_RcppExport_registerCCallable() { 
     R_RegisterCCallable("remstats", "_remstats_compute_stats_rate", (DL_FUNC)_remstats_compute_stats_rate_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_choice", (DL_FUNC)_remstats_compute_stats_choice_try);
-    R_RegisterCCallable("remstats", "_remstats_testStringComparison", (DL_FUNC)_remstats_testStringComparison_try);
     R_RegisterCCallable("remstats", "_remstats_getRisksetMatrix", (DL_FUNC)_remstats_getRisksetMatrix_try);
     R_RegisterCCallable("remstats", "_remstats_compute_adjmat", (DL_FUNC)_remstats_compute_adjmat_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_tie", (DL_FUNC)_remstats_compute_stats_tie_try);
@@ -303,7 +268,6 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
 static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_stats_rate", (DL_FUNC) &_remstats_compute_stats_rate, 12},
     {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 12},
-    {"_remstats_testStringComparison", (DL_FUNC) &_remstats_testStringComparison, 1},
     {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
     {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 7},
     {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 13},

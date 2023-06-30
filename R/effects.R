@@ -562,6 +562,9 @@ inertia <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+
+    # Add effect
+    call_args$effect <- "inertia"
 	
 	return(call_args)
 }
@@ -618,6 +621,9 @@ reciprocity <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+
+    # Add effect
+    call_args$effect <- "reciprocity"
 	
 	return(call_args)
 }
@@ -679,6 +685,9 @@ indegreeSender <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+
+    # Add effect
+    call_args$effect <- "indegreeSender"
 	
 	return(call_args)
 }
@@ -732,6 +741,9 @@ indegreeReceiver <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+
+    # Add effect
+    call_args$effect <- "indegreeReceiver"
 	
 	return(call_args)
 }
@@ -786,6 +798,9 @@ outdegreeSender <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+
+    # Add effect
+    call_args$effect <- "outdegreeSender"
 	
 	return(call_args)
 }
@@ -839,6 +854,9 @@ outdegreeReceiver <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+
+    # Add effect
+    call_args$effect <- "outdegreeReceiver"
 	
 	return(call_args)
 }
@@ -901,6 +919,9 @@ totaldegreeSender <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+
+    # Add effect
+    call_args$effect <- "totaldegreeSender"
 	
 	return(call_args)
 }
@@ -955,6 +976,9 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+
+    # Add effect
+    call_args$effect <- "totaldegreeReceiver"
 	
 	return(call_args)
 }
@@ -1193,24 +1217,23 @@ degreeMax <- function(scaling = c("none", "prop", "std"),
 #' @export
 otp <- function(unique = FALSE, scaling = c("none", "std"), 
                 consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "otp",
-            scaling = scaling,
-            unique = unique
-        )
-    } else {
-        list(
-            effect = "otp.type",
-            scaling = scaling,
-            unique = unique
-        )
-    }
+    # Add effect
+    call_args$effect <- "otp"
+	
+	return(call_args)
 }
 
 #' itp
@@ -1254,24 +1277,23 @@ otp <- function(unique = FALSE, scaling = c("none", "std"),
 #' @export
 itp <- function(unique = FALSE, scaling = c("none", "std"), 
                 consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "itp",
-            scaling = scaling,
-            unique = unique
-        )
-    } else {
-        list(
-            effect = "itp.type",
-            scaling = scaling,
-            unique = unique
-        )
-    }
+    # Add effect
+    call_args$effect <- "itp"
+	
+	return(call_args)
 }
 
 #' osp
@@ -1310,22 +1332,23 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 #'
 #' @export
 osp <- function(scaling = c("none", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "osp",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "osp.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "osp"
+	
+	return(call_args)
 }
 
 #' isp
@@ -1358,22 +1381,23 @@ osp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 #'
 #' @export
 isp <- function(scaling = c("none", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "isp",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "isp.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "isp"
+	
+	return(call_args)
 }
 
 #' sp
@@ -1403,22 +1427,23 @@ isp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 #'
 #' @export
 sp <- function(scaling = c("none", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "sp",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "sp.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "sp"
+	
+	return(call_args)
 }
 
 #' spUnique
@@ -1449,22 +1474,23 @@ sp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 #'
 #' @export
 spUnique <- function(scaling = c("none", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "spUnique",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "spUnique.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "spUnique"
+	
+	return(call_args)
 }
 
 #' ccp

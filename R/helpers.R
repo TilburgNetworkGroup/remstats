@@ -118,7 +118,7 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   }
 
   if(attr(reh, "directed")) {
-    if(!all(sapply(effects, function(x) x$effect) %in% tie_effects(directed = isTRUE()))) {
+    if(!all(sapply(effects, function(x) x$effect) %in% tie_effects(directed = TRUE))) {
       stop("Attempting to request effects that are not (yet) defined for directed events")
     }
   }
@@ -155,9 +155,9 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
 
   # Prepare interaction effects
   effects_int <- parse_int(form, "rem", effects, attr(reh, "ordinal"))
-  effectsN <- append(effectsN, rep(99, length(effects_int)), length(effectsN))
+  #effectsN <- append(effectsN, rep(99, length(effects_int)), length(effectsN))
   interactions <- list()
-  interactions[which(effectsN == 99)] <- effects_int
+  #interactions[which(effectsN == 99)] <- effects_int
 
   # Prepare covariate information
   covar <- process_covariate(effects, attr_data, actors, edgelist.reh, reh, prepR)
@@ -185,9 +185,9 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   # Output
   list(
     form = form,
-    all_effects = all_effects,
+    #all_effects = all_effects,
     effects = effects,
-    effectsN = effectsN,
+    #effectsN = effectsN,
     edgelist = edgelist.reh,
     actors = actors,
     types = types,
@@ -532,13 +532,13 @@ parse_formula <- function(formula, type, ordinal = FALSE) {
   if (type == "rem" & !ordinal & attr(ft, "intercept") == 1) {
     effects <- append(
       effects,
-      list(list(effect = "baseline", scaling = 1)), 0
+      list(list(effect = "baseline")), 0
     )
   }
   if (type == "rateEffects" & attr(ft, "intercept") == 1) {
     effects <- append(
       effects,
-      list(list(effect = "baseline", scaling = 1)), 0
+      list(list(effect = "baseline")), 0
     )
   }
 

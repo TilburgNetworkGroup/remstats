@@ -67,26 +67,6 @@ namespace remstats {
         return Rcpp::as<arma::cube >(rcpp_result_gen);
     }
 
-    inline void testStringComparison(std::string scaling) {
-        typedef SEXP(*Ptr_testStringComparison)(SEXP);
-        static Ptr_testStringComparison p_testStringComparison = NULL;
-        if (p_testStringComparison == NULL) {
-            validateSignature("void(*testStringComparison)(std::string)");
-            p_testStringComparison = (Ptr_testStringComparison)R_GetCCallable("remstats", "_remstats_testStringComparison");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_testStringComparison(Shield<SEXP>(Rcpp::wrap(scaling)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-    }
-
     inline arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed) {
         typedef SEXP(*Ptr_getRisksetMatrix)(SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_getRisksetMatrix p_getRisksetMatrix = NULL;
