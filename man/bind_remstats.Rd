@@ -7,7 +7,7 @@
 bind_remstats(...)
 }
 \arguments{
-\item{...}{Any number of \code{\link{remstats::remstats}} objects. All the 
+\item{...}{Any number of \code{\link{remstats}} objects. All the 
 \code{remstats} objects must have matching dimensions, except for the third 
 dimension.}
 }

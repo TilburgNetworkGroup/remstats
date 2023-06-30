@@ -3,7 +3,7 @@
 #' Function to bind any number of remstats objects into one while duplicated
 #' statistics in the combined object are removed.
 #' 
-#' @param ... Any number of \code{\link{remstats::remstats}} objects. All the 
+#' @param ... Any number of \code{\link{remstats}} objects. All the 
 #' \code{remstats} objects must have matching dimensions, except for the third 
 #' dimension.
 #' 

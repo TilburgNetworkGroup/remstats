@@ -1,6 +1,9 @@
 # remstats 3.1.1
 Date: 01-07-2023
 
+## remify
+Works with remify >= 3.1.0. 
+
 ## New features
 * `bind_remstats()`
 * Compute statistics for only the "active" dyads in the risk set (in combination with remify, see `remify::remify` `riskset` argument)
