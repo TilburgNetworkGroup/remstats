@@ -2725,7 +2725,7 @@ int getEffectNumber(std::string effect)
   }
   else
   {
-    std::cout << "Effect not found in the map." << std::endl;
+    Rcpp::Rcout << "Effect not found in the map." << std::endl;
   }
 
   return numericValue;
