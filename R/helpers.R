@@ -79,8 +79,14 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
 
   # Reduce risk set to "active" dyads only
   if (attr(reh, "riskset") == "active") {
+    # Get dyadInfo
+    dyad <- attr(rehActive, "dyad")
+    dyadIDactive <- as.vector(attr(rehActive, "dyadIDactive"))
+    dyadInfo <- data.frame(dyadIDactive, dyad)
+    dyadInfo <- unique(dyadInfo[order(dyadIDactive), ])
+
     # Select "active" dyads only
-    prepR <- prepR[unique(sort(dyads)), ]
+    prepR <- prepR[dyadInfo$dyad, ]
     full_dyad_id <- prepR[, 4] # cpp indexing!
     prepR[, 4] <- seq(0, nrow(prepR) - 1, 1)
     edgelist.reh[, 2] <- match(dyads - 1, full_dyad_id) - 1 # cpp indexing!
