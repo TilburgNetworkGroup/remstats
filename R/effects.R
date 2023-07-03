@@ -1080,7 +1080,6 @@ degreeDiff <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #'
 #' @inheritParams totaldegreeSender
 #'
-#' @aliases degree
 #' @seealso \code{\link{degreeDiff}}, \code{\link{degreeMax}} or
 #' \code{\link{totaldegreeDyad}} for other types of degree effects for
 #' undirected events.
@@ -1134,7 +1133,6 @@ degreeMin <- function(scaling = c("as.is", "prop", "std"),
 #'
 #' @inheritParams totaldegreeSender
 #'
-#' @aliases degree
 #' @seealso \code{\link{degreeDiff}}, \code{\link{degreeMin}} or
 #' \code{\link{totaldegreeDyad}} for other types of degree effects for
 #' undirected events.

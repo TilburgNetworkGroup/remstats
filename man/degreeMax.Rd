@@ -2,7 +2,6 @@
 % Please edit documentation in R/effects.R
 \name{degreeMax}
 \alias{degreeMax}
-\alias{degree}
 \title{degreeMax}
 \usage{
 degreeMax(scaling = c("as.is", "prop", "std"), consider_type = FALSE)

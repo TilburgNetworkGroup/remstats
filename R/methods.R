@@ -108,7 +108,7 @@ print.remstats <- function(x, ...) {
 #'
 #' Produce summaries of each statistic from a \code{\link{remstats}} object.
 #'
-#' @param x object of class \code{\link{remstats}}.
+#' @param object object of class \code{\link{remstats}}.
 #'
 #' @examples
 #' rehObject <- remify::remify(edgelist = history, model = "tie")

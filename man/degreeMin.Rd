@@ -2,7 +2,6 @@
 % Please edit documentation in R/effects.R
 \name{degreeMin}
 \alias{degreeMin}
-\alias{degree}
 \title{degreeMin}
 \usage{
 degreeMin(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
