@@ -855,7 +855,7 @@ arma::mat calc_degree_directed(int type,
       }
 
       // Actor's outdegree
-      if ((type == 1) || (type == 2) || (type == 5) || (type == 6))
+      if ((type == 3) || (type == 4) || (type == 5) || (type == 6))
       {
 
         // Get the dyad IDs for "actor" as sender
@@ -1971,6 +1971,18 @@ arma::mat calc_pshift(int type,
             stat(i, dyadIDs(m)) = 1.0;
           }
         }
+        if (!directed)
+        {
+          arma::vec dyadIDs2 = dyadIndices.slice(c).row(r).t();
+          dyadIDs2.shed_rows(indicesToRemove);
+          for (arma::uword m = 0; m < dyadIDs2.n_elem; ++m)
+          {
+            if (dyadIDs2(m) >= 0)
+            {
+              stat(i, dyadIDs2(m)) = 1.0;
+            }
+          }
+        }
       }
       else
       {
@@ -1984,6 +1996,18 @@ arma::mat calc_pshift(int type,
             if (dyadIDs(m) >= 0)
             {
               stat(i, dyadIDs(m)) = 1.0;
+            }
+          }
+          if (!directed)
+          {
+            arma::vec dyadIDs2 = dyadIndices.slice(k).row(r).t();
+            dyadIDs2.shed_rows(indicesToRemove);
+            for (arma::uword m = 0; m < dyadIDs2.n_elem; ++m)
+            {
+              if (dyadIDs2(m) >= 0)
+              {
+                stat(i, dyadIDs2(m)) = 1.0;
+              }
             }
           }
         }
@@ -2494,7 +2518,7 @@ arma::mat calc_recency(int type,
 
 // calc_tie_stats_exo
 arma::mat calc_tie_stats_exo(const arma::mat &covariates, const arma::mat &edgelist,
-                  const arma::mat &riskset, int start, int stop)
+                             const arma::mat &riskset, int start, int stop)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -2538,7 +2562,7 @@ arma::mat get_user_stat(const arma::mat &covariates, int start, int stop)
 
 // calc_event_stats_exo
 arma::mat calc_event_stats_exo(const arma::mat &covariates, const arma::mat &edgelist,
-                    const arma::mat &riskset, int start, int stop)
+                               const arma::mat &riskset, int start, int stop)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -2561,7 +2585,7 @@ arma::mat calc_event_stats_exo(const arma::mat &covariates, const arma::mat &edg
 }
 
 arma::mat calc_FEtype(const arma::mat &covariates,
-                     const arma::mat &edgelist, const arma::mat &riskset, int start, int stop)
+                      const arma::mat &edgelist, const arma::mat &riskset, int start, int stop)
 {
 
   // Slice the edgelist according to "start" and "stop"
@@ -3115,14 +3139,14 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     case 32:
       // Compute statistic
       stat = calc_FEtype(covariates[i], edgelist, riskset, start,
-                        stop);
+                         stop);
       break;
 
     // 33 event
     case 33:
       // Compute statistic
       stat = calc_event_stats_exo(covariates[i], edgelist, riskset, start,
-                       stop);
+                                  stop);
       break;
 
     // 34 recencyContinue
@@ -3164,7 +3188,7 @@ arma::cube compute_stats_tie(const arma::vec &effects,
     case 39:
       // Compute statistic
       stat = calc_tie_stats_exo(covariates[i], edgelist, riskset, start,
-                     stop);
+                                stop);
       // Standardize
       if (scaling(i) == 2)
       {
