@@ -1213,7 +1213,10 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
       // Set the values
       for (int dyadID : dyadIDs)
       {
-        stat.col(j) += adjmat.col(dyadID);
+        if (dyadID >= 0)
+        {
+          stat.col(j) += adjmat.col(dyadID);
+        }
       }
     }
   }
@@ -1230,8 +1233,11 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
       // Find the position of the reverse dyad
       IntegerVector dyadIDs = getDyadIDs(riskset, ac2, ac1, c, true); // IntegerVector of length 1
 
-      // Set the values
-      stat.col(j) = adjmat.col(dyadIDs[0]);
+      if (dyadIDs[0] >= 0)
+      {
+        // Set the values
+        stat.col(j) = adjmat.col(dyadIDs[0]);
+      }
     }
   }
 
