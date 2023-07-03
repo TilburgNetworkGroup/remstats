@@ -719,7 +719,6 @@ arma::mat calc_degree_directed(int type,
 
   if (consider_type)
   {
-
     // Initialize saving space
     arma::cube indeg(slice.n_rows, actors.n_elem, types.n_elem,
                      arma::fill::zeros);
@@ -751,7 +750,10 @@ arma::mat calc_degree_directed(int type,
           IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, types(c), directed);
           for (int dyadID : dyadIDs)
           {
-            indegType.col(actor) += adjmat.col(dyadID);
+            if (dyadID >= 0)
+            {
+              indegType.col(actor) += adjmat.col(dyadID);
+            }
           }
         }
 
@@ -763,7 +765,10 @@ arma::mat calc_degree_directed(int type,
           IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), directed);
           for (int dyadID : dyadIDs)
           {
-            outdegType.col(actor) += adjmat.col(dyadID);
+            if (dyadID >= 0)
+            {
+              outdegType.col(actor) += adjmat.col(dyadID);
+            }
           }
         }
 
@@ -775,7 +780,10 @@ arma::mat calc_degree_directed(int type,
           IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), false);
           for (int dyadID : dyadIDs)
           {
-            degType.col(actor) += adjmat.col(dyadID);
+            if (dyadID >= 0)
+            {
+              degType.col(actor) += adjmat.col(dyadID);
+            }
           }
         }
 
@@ -797,7 +805,10 @@ arma::mat calc_degree_directed(int type,
         {
           for (int save_dyadID : save_dyadIDs)
           {
-            stat.col(save_dyadID) = indegType.col(actor);
+            if (save_dyadID >= 0)
+            {
+              stat.col(save_dyadID) = indegType.col(actor);
+            }
           }
         }
 
@@ -805,7 +816,10 @@ arma::mat calc_degree_directed(int type,
         {
           for (int save_dyadID : save_dyadIDs)
           {
-            stat.col(save_dyadID) = outdegType.col(actor);
+            if (save_dyadID >= 0)
+            {
+              stat.col(save_dyadID) = outdegType.col(actor);
+            }
           }
         }
 
@@ -813,8 +827,11 @@ arma::mat calc_degree_directed(int type,
         {
           for (int save_dyadID : save_dyadIDs)
           {
-            stat.col(save_dyadID) = indegType.col(actor) +
-                                    outdegType.col(actor);
+            if (save_dyadID >= 0)
+            {
+              stat.col(save_dyadID) = indegType.col(actor) +
+                                      outdegType.col(actor);
+            }
           }
         }
 
@@ -822,7 +839,10 @@ arma::mat calc_degree_directed(int type,
         {
           for (int save_dyadID : save_dyadIDs)
           {
-            stat.col(save_dyadID) += degType.col(actor);
+            if (save_dyadID >= 0)
+            {
+              stat.col(save_dyadID) += degType.col(actor);
+            }
           }
         }
       }
@@ -850,7 +870,10 @@ arma::mat calc_degree_directed(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          indeg.col(actor) += adjmat.col(dyadID);
+          if (dyadID >= 0)
+          {
+            indeg.col(actor) += adjmat.col(dyadID);
+          }
         }
       }
 
@@ -862,7 +885,10 @@ arma::mat calc_degree_directed(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          outdeg.col(actor) += adjmat.col(dyadID);
+          if (dyadID >= 0)
+          {
+            outdeg.col(actor) += adjmat.col(dyadID);
+          }
         }
       }
 
@@ -873,7 +899,10 @@ arma::mat calc_degree_directed(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, false);
         for (int dyadID : dyadIDs)
         {
-          deg.col(actor) += adjmat.col(dyadID);
+          if (dyadID >= 0)
+          {
+            deg.col(actor) += adjmat.col(dyadID);
+          }
         }
       }
 
@@ -896,7 +925,10 @@ arma::mat calc_degree_directed(int type,
       {
         for (int save_dyadID : save_dyadIDs)
         {
-          stat.col(save_dyadID) = indeg.col(actor);
+          if (save_dyadID >= 0)
+          {
+            stat.col(save_dyadID) = indeg.col(actor);
+          }
         }
       }
 
@@ -904,7 +936,10 @@ arma::mat calc_degree_directed(int type,
       {
         for (int save_dyadID : save_dyadIDs)
         {
-          stat.col(save_dyadID) = outdeg.col(actor);
+          if (save_dyadID >= 0)
+          {
+            stat.col(save_dyadID) = outdeg.col(actor);
+          }
         }
       }
 
@@ -912,7 +947,10 @@ arma::mat calc_degree_directed(int type,
       {
         for (int save_dyadID : save_dyadIDs)
         {
-          stat.col(save_dyadID) += indeg.col(actor) + outdeg.col(actor);
+          if (save_dyadID >= 0)
+          {
+            stat.col(save_dyadID) += indeg.col(actor) + outdeg.col(actor);
+          }
         }
       }
 
@@ -920,7 +958,10 @@ arma::mat calc_degree_directed(int type,
       {
         for (int save_dyadID : save_dyadIDs)
         {
-          stat.col(save_dyadID) += deg.col(actor);
+          if (save_dyadID >= 0)
+          {
+            stat.col(save_dyadID) += deg.col(actor);
+          }
         }
       }
     }
@@ -1053,7 +1094,6 @@ arma::mat calc_degree_undirected(int type,
       // Dyad info
       int actor1 = riskset(d, 0);
       int actor2 = riskset(d, 1);
-      int event_type = riskset(d, 2);
 
       // Degree info
       arma::vec deg1 = deg.col(actor1);
