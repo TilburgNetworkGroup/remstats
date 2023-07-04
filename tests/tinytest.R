@@ -8,5 +8,7 @@ tinytest::test_package("remstats", testdir="tinytest")
 # Condition 3: Directed evens with types, tie-oriented model
 # Condition 4: Undirected events with types, tie-oriented model
 # Condition 5: Directed events, tie-oriented model with active risk set
+# Condition 6: Undirected events, tie-oriented model with active risk set
 # Condition 7: Directed evens with types, tie-oriented model with active risk set
+# Condition 8: Undirected events with types, tie-oriented model with active riskset
 # Condition 9: Actor-oriented model
