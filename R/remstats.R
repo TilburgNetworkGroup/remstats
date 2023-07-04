@@ -120,6 +120,8 @@
 #' risk set entries
 #' @param get_adjmat for a tie-oriented model, whether the adjmat computed by 
 #' remstats should be outputted as an attribute of the statistics.
+#' @param attributes deprecated, please use "attr_data" instead
+#' @param edgelist deprecated, please use "reh" instead
 #'
 #' @return \code{statistics } In case of the tie-oriented model, an array with
 #' the computed statistics, where rows refer to time points, columns refer to
@@ -127,7 +129,7 @@
 #' slices refer to statistics. In case of the actor-oriented model, list with
 #' in the first element the statistics for the sender activity rate step and in
 #' the second element the statistics for the receiver choice step, where rows
-#' refer to time points, columns refer to potential senders or recievers,
+#' refer to time points, columns refer to potential senders or receivers,
 #' respectively.
 #'
 #' @examples
@@ -157,7 +159,8 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
                      receiver_effects = NULL, attr_data = NULL, 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf,
-                     adjmat = NULL, get_adjmat = FALSE) {
+                     adjmat = NULL, get_adjmat = FALSE,
+                     attributes, edgelist) {
     if (!is.null(tie_effects) &
         (!is.null(sender_effects) | !is.null(receiver_effects))) {
         stop("Either provide effects for the tie-oriented model using `tie_effects` or effects for the actor-oriented model using `sender_effects` or `receiver_effects`, but not both.")
@@ -166,6 +169,26 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
     if (is.null(tie_effects) &
         (is.null(sender_effects) & is.null(receiver_effects))) {
         stop("Either provide effects for the tie-oriented model using `tie_effects` or effects for the actor-oriented model using `sender_effects` or `receiver_effects`.")
+    }
+
+    # Check if the deprecated argument "attributes" is used
+    if (!missing(attributes)) {
+            warning("use 'attr_data' instead of 'attributes'")
+            attr_data <- attributes
+    }
+
+    # Check if the deprecated "id" column is used in attr_data
+    if (!is.null(attr_data)) {
+        if (("id" %in% colnames(attr_data)) & !("name" %in% colnames(attr_data))) {
+        warning("use 'name' instead of 'id' in 'attr_data'")
+        colnames(attr_data)[which(colnames(attr_data) == "id")] <- "name"
+        }
+    }
+
+    # Check if the deprecated argument "edgelist" is used
+    if (!missing(edgelist)) {
+            warning("use 'reh' instead of 'edgelist'")
+            reh <- edgelist
     }
 
     if (!is.null(tie_effects)) {

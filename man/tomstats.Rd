@@ -13,7 +13,9 @@ tomstats(
   start = 1,
   stop = Inf,
   adjmat = NULL,
-  get_adjmat = FALSE
+  get_adjmat = FALSE,
+  attributes,
+  edgelist
 )
 }
 \arguments{
@@ -47,6 +49,10 @@ rows the time points and on the columns the risk set entries}
 
 \item{get_adjmat}{whether the adjmat computed by tomstats should be
 outputted as an attribute of the statistics.}
+
+\item{attributes}{deprecated, please use "attr_data" instead}
+
+\item{edgelist}{deprecated, please use "reh" instead}
 }
 \value{
 \code{statistics } array with the computed statistics, where rows
