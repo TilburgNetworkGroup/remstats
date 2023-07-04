@@ -73,7 +73,5 @@ Imports:
 LinkingTo: Rcpp, RcppArmadillo, remify, RcppProgress
 Suggests: 
     graphics,
-    testthat (>= 3.0.0),
     tinytest
 SystemRequirements: GNU make
-Config/testthat/edition: 3

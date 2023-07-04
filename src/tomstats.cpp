@@ -1421,139 +1421,99 @@ arma::mat computeTriadStatsTypesNotConsidered(
     const arma::vec &actors,
     const arma::vec &types,
     const arma::mat &riskset)
-{
-
-  // Initialize saving space
+ // Initialize saving space
   arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
 
-  // Pre-compute dyad indices
-  arma::cube dyadIndices(actors.n_elem, actors.n_elem, types.n_elem);
-  for (arma::uword i = 0; i < actors.n_elem; ++i)
+  // Loop over dyads in the risk set
+  for (arma::uword d = 0; d < riskset.n_rows; ++d)
   {
-    int actor1 = actors.at(i);
+    // Actors in the dyad
+    int i = riskset(d, 0);
+    int j = riskset(d, 1);
 
-    for (arma::uword j = 0; j < actors.n_elem; ++j)
+    // Saving space
+    arma::mat partners1(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
+    arma::mat partners2(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
+
+    // Loop over third actors
+    for (arma::uword k = 0; k < actors.n_elem; ++k)
     {
-
-      int actor2 = actors.at(j);
-
-      for (arma::uword c = 0; c < types.n_elem; ++c)
+      int h = actors.at(k);
+      if (h == i)
       {
-
-        int event_type = types.at(c);
-
-        if ((type == 5) | (type == 6))
-        {
-          int dyadID = getDyadIDs(riskset, actor1, actor2, event_type, false)[0];
-          dyadIndices(i, j, c) = dyadID;
-        }
-        else
-        {
-          int dyadID = getDyadIDs(riskset, actor1, actor2, event_type, true)[0];
-          dyadIndices(i, j, c) = dyadID;
-        }
+        continue;
       }
-    }
-  }
-
-  // Initialize colIndices1, colIndices2, dyads1 and dyads2 with their
-  // maximum required sizes
-  arma::uvec colIndices1(actors.n_elem);
-  arma::uvec colIndices2(actors.n_elem);
-  arma::vec dyads1(actors.n_elem);
-  arma::vec dyads2(actors.n_elem);
-
-  // Initialize minMatrix, and rowSums
-  arma::mat minMatrix(adjmat.n_rows, actors.n_elem);
-  arma::vec rowSums(adjmat.n_rows);
-
-  // Initialize keepIndices
-  arma::uvec keepIndices(actors.n_elem);
-
-  // For loop over dyads
-  for (arma::uword d = 0; d < adjmat.n_cols; ++d)
-  {
-    // Initialize selectedCols1, selectedCols2
-    arma::mat selectedCols1(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
-    arma::mat selectedCols2(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
-
-    // Sender i and receiver j
-    arma::uword i = riskset(d, 0);
-    arma::uword j = riskset(d, 1);
-
-    // For loop over event types
-    for (arma::uword c = 0; c < types.n_elem; ++c)
-    {
-      switch (type)
+      if (h == j)
       {
-      case 1:
-        // Get the indices for dyads with sender i
-        dyads1 = dyadIndices.slice(c).row(i).t();
-        // Get the indices for dyads with receiver j
-        dyads2 = dyadIndices.slice(c).col(j);
-        break;
-
-      case 2:
-        // Get the indices for dyads with sender j
-        dyads1 = dyadIndices.slice(c).row(j).t();
-        // Get the indices for dyads with receiver i
-        dyads2 = dyadIndices.slice(c).col(i);
-        break;
-
-      case 3:
-        // Get the indices for dyads with sender i
-        dyads1 = dyadIndices.slice(c).row(i).t();
-        // Get the indices for dyads with sender j
-        dyads2 = dyadIndices.slice(c).row(j).t();
-        break;
-
-      case 4:
-        // Get the indices for dyads with receiver i
-        dyads1 = dyadIndices.slice(c).col(i);
-        // Get the indices for dyads with receiver j
-        dyads2 = dyadIndices.slice(c).col(j);
-        break;
-
-      case 5:
-        // Get the indices for dyads with sender i
-        dyads1 = dyadIndices.slice(c).row(i).t();
-        // Get the indices for dyads with sender j
-        dyads2 = dyadIndices.slice(c).row(j).t();
-        break;
-
-      case 6:
-        // Get the indices for dyads with sender i
-        dyads1 = dyadIndices.slice(c).row(i).t();
-        // Get the indices for dyads with sender j
-        dyads2 = dyadIndices.slice(c).row(j).t();
-        break;
+        continue;
       }
 
-      // Remove any dyads not in the risk set
-      keepIndices = checkAndRemoveIndices(dyads1, dyads2, i, j);
+      Rcpp::IntegerVector dyadsID1;
+      Rcpp::IntegerVector dyadsID2;
 
-      // Loop over keepIndices
-      for (arma::uword k = 0; k < keepIndices.n_elem; ++k)
+      if (type == 1) // otp
       {
-        selectedCols1.col(keepIndices.at(k)) += adjmat.col(dyads1.at(keepIndices.at(k)));
-        selectedCols2.col(keepIndices.at(k)) += adjmat.col(dyads2.at(keepIndices.at(k)));
+        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, true);
+        dyadsID2 = getDyadIDs(riskset, h, j, NA_INTEGER, true);
+      }
+
+      if (type == 2) // itp
+      {
+        dyadsID1 = getDyadIDs(riskset, j, h, NA_INTEGER, true);
+        dyadsID2 = getDyadIDs(riskset, h, i, NA_INTEGER, true);
+      }
+
+      if (type == 3) // osp
+      {
+        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, true);
+        dyadsID2 = getDyadIDs(riskset, j, h, NA_INTEGER, true);
+      }
+
+      if (type == 4) // isp
+      {
+        dyadsID1 = getDyadIDs(riskset, h, i, NA_INTEGER, true);
+        dyadsID2 = getDyadIDs(riskset, h, j, NA_INTEGER, true);
+      }
+
+      if (type == 5) // sp
+      {
+        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, false);
+        dyadsID2 = getDyadIDs(riskset, j, h, NA_INTEGER, false);
+      }
+
+      if (type == 6) // spUnique
+      {
+        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, false);
+        dyadsID2 = getDyadIDs(riskset, j, h, NA_INTEGER, false);
+      }
+
+      for (int dyad1 : dyadsID1)
+      {
+        if (dyad1 >= 0)
+        {
+          partners1.col(k) += adjmat.col(dyad1);
+        }
+      }
+
+      for (int dyad2 : dyadsID2)
+      {
+        if (dyad2 >= 0)
+        {
+          partners2.col(k) += adjmat.col(dyad2);
+        }
       }
     }
 
     if (type == 6)
     {
-      // Convert elements in sumAcrossTypes1 to 1 if greater than 0
-      selectedCols1 = arma::conv_to<arma::mat>::from(selectedCols1 > 0);
-      // Convert elements in sumAcrossTypes2 to 1 if greater than 0
-      selectedCols2 = arma::conv_to<arma::mat>::from(selectedCols2 > 0);
+      // Convert elements in partners1 to 1 if greater than 0
+      partners1 = arma::conv_to<arma::mat>::from(partners1 > 0);
+      // Convert elements in partners2 to 1 if greater than 0
+      partners2 = arma::conv_to<arma::mat>::from(partners2 > 0);
     }
 
-    // Calculate the element-wise minimum
-    minMatrix = arma::min(selectedCols1, selectedCols2);
-
-    // Calculate the sum per time point
-    rowSums = arma::sum(minMatrix, 1);
-    stat.col(d) = rowSums;
+    arma::mat minMatrix = arma::min(partners1, partners2);
+    stat.col(d) = arma::sum(minMatrix, 1);
   }
   return stat;
 }
