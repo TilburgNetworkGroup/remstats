@@ -13,7 +13,9 @@ aomstats(
   memory_value = Inf,
   start = 1,
   stop = Inf,
-  display_progress = FALSE
+  display_progress = FALSE,
+  attributes,
+  edgelist
 )
 }
 \arguments{
@@ -49,6 +51,10 @@ event in the relational event history for which statistics muts be computed
 
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
+
+\item{attributes}{deprecated, please use "attr_data" instead}
+
+\item{edgelist}{deprecated, please use "reh" instead}
 }
 \value{
 \code{statistics  } List with in the first element the statistics

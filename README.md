@@ -44,7 +44,7 @@ statsObject <- remstats(reh = rehObject, tie_effects = effects)
 
 # Estimate model parameters
 fit <- remstimate::remstimate(reh = rehObject, stats = statsObject,
-	estimator = "MLE", timing = "interval")
+	method = "MLE", timing = "interval")
 summary(fit)
 
 ```

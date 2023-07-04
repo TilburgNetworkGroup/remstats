@@ -15,7 +15,9 @@ remstats(
   start = 1,
   stop = Inf,
   adjmat = NULL,
-  get_adjmat = FALSE
+  get_adjmat = FALSE,
+  attributes,
+  edgelist
 )
 }
 \arguments{
@@ -60,6 +62,10 @@ risk set entries}
 
 \item{get_adjmat}{for a tie-oriented model, whether the adjmat computed by 
 remstats should be outputted as an attribute of the statistics.}
+
+\item{attributes}{deprecated, please use "attr_data" instead}
+
+\item{edgelist}{deprecated, please use "reh" instead}
 }
 \value{
 \code{statistics } In case of the tie-oriented model, an array with
@@ -68,7 +74,7 @@ potential relational event (i.e., potential edges) in the risk set and
 slices refer to statistics. In case of the actor-oriented model, list with
 in the first element the statistics for the sender activity rate step and in
 the second element the statistics for the receiver choice step, where rows
-refer to time points, columns refer to potential senders or recievers,
+refer to time points, columns refer to potential senders or receivers,
 respectively.
 }
 \description{

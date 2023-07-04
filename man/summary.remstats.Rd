@@ -7,7 +7,7 @@
 \method{summary}{remstats}(object, ...)
 }
 \arguments{
-\item{x}{object of class \code{\link{remstats}}.}
+\item{object}{object of class \code{\link{remstats}}.}
 }
 \description{
 Produce summaries of each statistic from a \code{\link{remstats}} object.

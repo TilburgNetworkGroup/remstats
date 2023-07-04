@@ -721,7 +721,6 @@ arma::mat calc_degree_directed(int type,
 
   if (consider_type)
   {
-
     // Initialize saving space
     arma::cube indeg(slice.n_rows, actors.n_elem, types.n_elem,
                      arma::fill::zeros);
@@ -753,7 +752,10 @@ arma::mat calc_degree_directed(int type,
           IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, types(c), directed);
           for (int dyadID : dyadIDs)
           {
-            indegType.col(actor) += adjmat.col(dyadID);
+            if (dyadID >= 0)
+            {
+              indegType.col(actor) += adjmat.col(dyadID);
+            }
           }
         }
 
@@ -765,7 +767,10 @@ arma::mat calc_degree_directed(int type,
           IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), directed);
           for (int dyadID : dyadIDs)
           {
-            outdegType.col(actor) += adjmat.col(dyadID);
+            if (dyadID >= 0)
+            {
+              outdegType.col(actor) += adjmat.col(dyadID);
+            }
           }
         }
 
@@ -777,7 +782,10 @@ arma::mat calc_degree_directed(int type,
           IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), false);
           for (int dyadID : dyadIDs)
           {
-            degType.col(actor) += adjmat.col(dyadID);
+            if (dyadID >= 0)
+            {
+              degType.col(actor) += adjmat.col(dyadID);
+            }
           }
         }
 
@@ -799,7 +807,10 @@ arma::mat calc_degree_directed(int type,
         {
           for (int save_dyadID : save_dyadIDs)
           {
-            stat.col(save_dyadID) = indegType.col(actor);
+            if (save_dyadID >= 0)
+            {
+              stat.col(save_dyadID) = indegType.col(actor);
+            }
           }
         }
 
@@ -807,7 +818,10 @@ arma::mat calc_degree_directed(int type,
         {
           for (int save_dyadID : save_dyadIDs)
           {
-            stat.col(save_dyadID) = outdegType.col(actor);
+            if (save_dyadID >= 0)
+            {
+              stat.col(save_dyadID) = outdegType.col(actor);
+            }
           }
         }
 
@@ -815,8 +829,11 @@ arma::mat calc_degree_directed(int type,
         {
           for (int save_dyadID : save_dyadIDs)
           {
-            stat.col(save_dyadID) = indegType.col(actor) +
-                                    outdegType.col(actor);
+            if (save_dyadID >= 0)
+            {
+              stat.col(save_dyadID) = indegType.col(actor) +
+                                      outdegType.col(actor);
+            }
           }
         }
 
@@ -824,7 +841,10 @@ arma::mat calc_degree_directed(int type,
         {
           for (int save_dyadID : save_dyadIDs)
           {
-            stat.col(save_dyadID) += degType.col(actor);
+            if (save_dyadID >= 0)
+            {
+              stat.col(save_dyadID) += degType.col(actor);
+            }
           }
         }
       }
@@ -852,7 +872,10 @@ arma::mat calc_degree_directed(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          indeg.col(actor) += adjmat.col(dyadID);
+          if (dyadID >= 0)
+          {
+            indeg.col(actor) += adjmat.col(dyadID);
+          }
         }
       }
 
@@ -864,7 +887,10 @@ arma::mat calc_degree_directed(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          outdeg.col(actor) += adjmat.col(dyadID);
+          if (dyadID >= 0)
+          {
+            outdeg.col(actor) += adjmat.col(dyadID);
+          }
         }
       }
 
@@ -875,7 +901,10 @@ arma::mat calc_degree_directed(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, false);
         for (int dyadID : dyadIDs)
         {
-          deg.col(actor) += adjmat.col(dyadID);
+          if (dyadID >= 0)
+          {
+            deg.col(actor) += adjmat.col(dyadID);
+          }
         }
       }
 
@@ -898,7 +927,10 @@ arma::mat calc_degree_directed(int type,
       {
         for (int save_dyadID : save_dyadIDs)
         {
-          stat.col(save_dyadID) = indeg.col(actor);
+          if (save_dyadID >= 0)
+          {
+            stat.col(save_dyadID) = indeg.col(actor);
+          }
         }
       }
 
@@ -906,7 +938,10 @@ arma::mat calc_degree_directed(int type,
       {
         for (int save_dyadID : save_dyadIDs)
         {
-          stat.col(save_dyadID) = outdeg.col(actor);
+          if (save_dyadID >= 0)
+          {
+            stat.col(save_dyadID) = outdeg.col(actor);
+          }
         }
       }
 
@@ -914,7 +949,10 @@ arma::mat calc_degree_directed(int type,
       {
         for (int save_dyadID : save_dyadIDs)
         {
-          stat.col(save_dyadID) += indeg.col(actor) + outdeg.col(actor);
+          if (save_dyadID >= 0)
+          {
+            stat.col(save_dyadID) += indeg.col(actor) + outdeg.col(actor);
+          }
         }
       }
 
@@ -922,7 +960,10 @@ arma::mat calc_degree_directed(int type,
       {
         for (int save_dyadID : save_dyadIDs)
         {
-          stat.col(save_dyadID) += deg.col(actor);
+          if (save_dyadID >= 0)
+          {
+            stat.col(save_dyadID) += deg.col(actor);
+          }
         }
       }
     }
@@ -1208,7 +1249,10 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
       // Set the values
       for (int dyadID : dyadIDs)
       {
-        stat.col(j) += adjmat.col(dyadID);
+        if (dyadID >= 0)
+        {
+          stat.col(j) += adjmat.col(dyadID);
+        }
       }
     }
   }
@@ -1225,8 +1269,11 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
       // Find the position of the reverse dyad
       IntegerVector dyadIDs = getDyadIDs(riskset, ac2, ac1, c, true); // IntegerVector of length 1
 
-      // Set the values
-      stat.col(j) = adjmat.col(dyadIDs[0]);
+      if (dyadIDs[0] >= 0)
+      {
+        // Set the values
+        stat.col(j) = adjmat.col(dyadIDs[0]);
+      }
     }
   }
 
@@ -1404,6 +1451,17 @@ arma::mat computeTriadStatsNoTypes(int type,
   return stat;
 }
 
+// computeTriadStatsTypesNotConsidered
+//
+// Computes the triad statistics for the tie-oriented model with
+// types events, summing over event types (i.e., consider_type = false)
+//
+// type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp
+// adjmat: matrix (events x dyads)
+// start: integer, first event in the edgelist for which the statistic is
+// computed
+// stop: integer, last event in the edgelist for which the statistic is
+// computed
 // computeTriadStatsTypesNotConsidered
 //
 // Computes the triad statistics for the tie-oriented model with
@@ -1920,6 +1978,18 @@ arma::mat calc_pshift(int type,
             stat(i, dyadIDs(m)) = 1.0;
           }
         }
+        if (!directed)
+        {
+          arma::vec dyadIDs2 = dyadIndices.slice(c).row(r).t();
+          dyadIDs2.shed_rows(indicesToRemove);
+          for (arma::uword m = 0; m < dyadIDs2.n_elem; ++m)
+          {
+            if (dyadIDs2(m) >= 0)
+            {
+              stat(i, dyadIDs2(m)) = 1.0;
+            }
+          }
+        }
       }
       else
       {
@@ -1933,6 +2003,18 @@ arma::mat calc_pshift(int type,
             if (dyadIDs(m) >= 0)
             {
               stat(i, dyadIDs(m)) = 1.0;
+            }
+          }
+          if (!directed)
+          {
+            arma::vec dyadIDs2 = dyadIndices.slice(k).row(r).t();
+            dyadIDs2.shed_rows(indicesToRemove);
+            for (arma::uword m = 0; m < dyadIDs2.n_elem; ++m)
+            {
+              if (dyadIDs2(m) >= 0)
+              {
+                stat(i, dyadIDs2(m)) = 1.0;
+              }
             }
           }
         }
@@ -2214,7 +2296,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, s, r, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2226,7 +2311,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, s, NA_INTEGER, c, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       else
@@ -2234,7 +2322,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, s, NA_INTEGER, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2246,7 +2337,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, s, c, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       else
@@ -2254,7 +2348,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, s, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2266,7 +2363,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, r, NA_INTEGER, c, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       else
@@ -2274,7 +2374,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, r, NA_INTEGER, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2286,7 +2389,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, r, c, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       else
@@ -2294,7 +2400,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, r, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          lastActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            lastActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2342,7 +2451,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, s, r, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2354,7 +2466,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, s, NA_INTEGER, c, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       else
@@ -2362,7 +2477,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, s, NA_INTEGER, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2374,7 +2492,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, s, c, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       else
@@ -2382,7 +2503,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, s, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2394,7 +2518,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, r, NA_INTEGER, c, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       else
@@ -2402,7 +2529,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, r, NA_INTEGER, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       break;
@@ -2414,7 +2544,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, r, c, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       else
@@ -2422,7 +2555,10 @@ arma::mat calc_recency(int type,
         IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, r, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
-          updateActive(dyadID) = time;
+          if (dyadID >= 0)
+          {
+            updateActive(dyadID) = time;
+          }
         }
       }
       break;
