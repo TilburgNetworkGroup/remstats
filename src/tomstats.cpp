@@ -1491,62 +1491,101 @@ arma::mat computeTriadStatsTypesNotConsidered(
     const arma::mat &riskset)
 {
 
-    // Initialize saving space
-    arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
-    arma::mat partners1(adjmat.n_rows, actors.n_elem);
-    arma::mat partners2(adjmat.n_rows, actors.n_elem);
+  // Initialize saving space
+  arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
 
-    // Loop over dyads in the risk set
-    for (arma::uword d; d < riskset.n_rows; ++d)
+  // Loop over dyads in the risk set
+  for (arma::uword d = 0; d < riskset.n_rows; ++d)
+  {
+    // Actors in the dyad
+    int i = riskset(d, 0);
+    int j = riskset(d, 1);
+
+    // Saving space
+    arma::mat partners1(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
+    arma::mat partners2(adjmat.n_rows, actors.n_elem, arma::fill::zeros);
+
+    // Loop over third actors
+    for (arma::uword k = 0; k < actors.n_elem; ++k)
     {
-        // Actors in the dyad
-        int i = riskset(d, 0);
-        int j = riskset(d, 1);
+      int h = actors.at(k);
+      if (h == i)
+      {
+        continue;
+      }
+      if (h == j)
+      {
+        continue;
+      }
 
-        Rcpp::Rcout << i << std::endl;
-        Rcpp::Rcout << j << std::endl;
+      Rcpp::IntegerVector dyadsID1;
+      Rcpp::IntegerVector dyadsID2;
 
-        // Loop over third actors
-        for (arma::uword k; k < actors.n_elem; ++k)
+      if (type == 1) // otp
+      {
+        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, true);
+        dyadsID2 = getDyadIDs(riskset, h, j, NA_INTEGER, true);
+      }
+
+      if (type == 2) // itp
+      {
+        dyadsID1 = getDyadIDs(riskset, j, h, NA_INTEGER, true);
+        dyadsID2 = getDyadIDs(riskset, h, i, NA_INTEGER, true);
+      }
+
+      if (type == 3) // osp
+      {
+        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, true);
+        dyadsID2 = getDyadIDs(riskset, j, h, NA_INTEGER, true);
+      }
+
+      if (type == 4) // isp
+      {
+        dyadsID1 = getDyadIDs(riskset, h, i, NA_INTEGER, true);
+        dyadsID2 = getDyadIDs(riskset, h, j, NA_INTEGER, true);
+      }
+
+      if (type == 5) // sp
+      {
+        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, false);
+        dyadsID2 = getDyadIDs(riskset, j, h, NA_INTEGER, false);
+      }
+
+      if (type == 6) // spUnique
+      {
+        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, false);
+        dyadsID2 = getDyadIDs(riskset, j, h, NA_INTEGER, false);
+      }
+
+      for (int dyad1 : dyadsID1)
+      {
+        if (dyad1 >= 0)
         {
-            int h = actors.at(k);
-
-            Rcpp::IntegerVector dyadsID1;
-            Rcpp::IntegerVector dyadsID2;
-
-            if (type == 2)
-            {
-                dyadsID1 = getDyadIDs(riskset, j, h, NA_INTEGER, true);
-                dyadsID2 = getDyadIDs(riskset, h, i, NA_INTEGER, true);
-            }
-
-            Rcpp::Rcout << dyadsID1 << std::endl;
-            Rcpp::Rcout << dyadsID2 << std::endl;
-
-            for (int dyad1 : dyadsID1)
-            {
-                if (dyad1 >= 0)
-                {
-                    partners1.col(k) += adjmat.col(dyad1);
-                }
-            }
-
-            for (int dyad2 : dyadsID2)
-            {
-                if (dyad2 >= 0)
-                {
-                    partners2.col(k) += adjmat.col(dyad2);
-                }
-            }
-
-            Rcpp::Rcout << partners1 << std::endl;
-            Rcpp::Rcout << partners2 << std::endl;
+          partners1.col(k) += adjmat.col(dyad1);
         }
+      }
 
-        arma::mat minMatrix = arma::min(partners1, partners2);
-        stat.col(d) = arma::sum(minMatrix, 1); 
+      for (int dyad2 : dyadsID2)
+      {
+        if (dyad2 >= 0)
+        {
+          partners2.col(k) += adjmat.col(dyad2);
+        }
+      }
     }
-    return stat;
+
+    if (type == 6)
+    {
+      // Convert elements in partners1 to 1 if greater than 0
+      partners1 = arma::conv_to<arma::mat>::from(partners1 > 0);
+      // Convert elements in partners2 to 1 if greater than 0
+      partners2 = arma::conv_to<arma::mat>::from(partners2 > 0);
+    }
+
+    arma::mat minMatrix = arma::min(partners1, partners2);
+    stat.col(d) = arma::sum(minMatrix, 1);
+  }
+  return stat;
 }
 
 arma::mat computeTriadStatsTypesConsidered(
