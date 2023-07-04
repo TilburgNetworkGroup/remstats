@@ -433,10 +433,10 @@ arma::mat calc_actor_stats_exo(int type,
     {
       // Update if the time of the event is larger than the current
       // changetime
-      if (slice(m, 0) > changetimes(counter))
+      if (slice(m, 0) >= changetimes(counter))
       {
         // Update all changes in between
-        while ((counter < changetimes.n_elem) && (slice(m, 0) > changetimes(counter)))
+        while ((counter < changetimes.n_elem) && (slice(m, 0) >= changetimes(counter)))
         {
           // For loop over actors
           for (arma::uword k = 0; k < actors.n_elem; ++k)
@@ -598,11 +598,11 @@ arma::mat calc_dyad_stats_exo(int type,
     {
       // Update if the time of the event is larger than the current
       // changetime
-      if (slice(m, 0) > changetimes(counter))
+      if (slice(m, 0) >= changetimes(counter))
       {
         // Update all changes in between
         while ((counter < changetimes.n_elem) &&
-               (slice(m, 0) > changetimes(counter)))
+               (slice(m, 0) >= changetimes(counter)))
         {
 
           // For loop over dyads
@@ -1479,7 +1479,8 @@ arma::mat computeTriadStatsTypesNotConsidered(
     const arma::vec &actors,
     const arma::vec &types,
     const arma::mat &riskset)
- // Initialize saving space
+{
+  // Initialize saving space
   arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
 
   // Loop over dyads in the risk set
@@ -3167,9 +3168,12 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        if (consider_type(i)) {
+        if (consider_type(i))
+        {
           stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset);
-        } else {
+        }
+        else
+        {
           stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset);
         }
       }
@@ -3184,9 +3188,12 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        if (consider_type(i)) {
+        if (consider_type(i))
+        {
           stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset);
-        } else {
+        }
+        else
+        {
           stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset);
         }
       }
@@ -3201,9 +3208,12 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        if (consider_type(i)) {
+        if (consider_type(i))
+        {
           stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset);
-        } else {
+        }
+        else
+        {
           stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset);
         }
       }
@@ -3218,9 +3228,12 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        if (consider_type(i)) {
+        if (consider_type(i))
+        {
           stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset);
-        } else {
+        }
+        else
+        {
           stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset);
         }
       }
@@ -3235,9 +3248,12 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        if (consider_type(i)) {
+        if (consider_type(i))
+        {
           stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset);
-        } else {
+        }
+        else
+        {
           stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset);
         }
       }
@@ -3252,9 +3268,12 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       }
       else
       {
-        if (consider_type(i)) {
+        if (consider_type(i))
+        {
           stat = computeTriadStatsTypesConsidered(6, adjmat, actors, types, riskset);
-        } else {
+        }
+        else
+        {
           stat = computeTriadStatsTypesNotConsidered(6, adjmat, actors, types, riskset);
         }
       }

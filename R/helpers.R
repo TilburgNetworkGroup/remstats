@@ -402,6 +402,12 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
     dimnames(statistics)[[3]][event_effects] <- paste0("event", 1:sum(event_effects))
   }
 
+  # Add .type 
+  type_effects <- sapply(effects, function(x) isTRUE(x$consider_type))
+  if (any(type_effects)) {
+    dimnames(statistics)[[3]][type_effects] <- paste0(dimnames(statistics)[[3]][type_effects], ".type")
+  }
+
   # Add variable name to interaction statistics
   interaction_index <- which(effectNames == "interact")
   dimnames(statistics)[[3]][interaction_index] <- sapply(

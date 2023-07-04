@@ -131,8 +131,6 @@ receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     prep_exo("receive", variable, attr_data, scaling)
 }
 
-# TO DO: allow long input format (expand.grid) for x?
-# TO DO: time-varying tie effect?
 #' tie
 #'
 #' Specifies the statistic for a "tie" (or, "dyad") effect in the tie-oriented
@@ -175,7 +173,6 @@ receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("none", "std"))
 
     # Output
     list(
@@ -282,25 +279,9 @@ difference <- function(variable, attr_data = NULL,
                        scaling = c("none", "std"), absolute = TRUE) {
     # Match scaling
     scaling <- match.arg(scaling)
-    scaling <- ifelse(absolute, paste0(scaling, "_abs", scaling))
+    scaling <- ifelse(absolute, paste0(scaling, "_abs"))
     # Prep
     prep_exo("difference", variable, attr_data, scaling)
-    # Change scaling
-    temp <- out$scaling
-    if (temp == 1 & !absolute) {
-        out$scaling <- 1
-    }
-    if (temp == 1 & absolute) {
-        out$scaling <- 2
-    } # absolute values
-    if (temp == 2 & !absolute) {
-        out$scaling <- 3
-    } # standardized values
-    if (temp == 2 & absolute) {
-        out$scaling <- 4
-    } # std absolute values
-    # Output
-    return(out)
 }
 
 #' average
@@ -469,8 +450,7 @@ event <- function(x, variableName = NULL) {
     list(
         effect = "event",
         x = x,
-        variable = variableName,
-        scaling = 1
+        variable = variableName
     )
 }
 
@@ -501,11 +481,20 @@ event <- function(x, variableName = NULL) {
 #'
 #' @export
 FEtype <- function() {
-    # Output
-    list(
-        effect = "FEtype",
-        scaling = 1
-    )
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(FEtype))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "FEtype"
+	
+	return(call_args)
 }
 
 #' inertia
