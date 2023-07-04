@@ -104,18 +104,6 @@ RcppExport SEXP _remstats_compute_stats_choice(SEXP effectsSEXP, SEXP edgelistSE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// findMin
-arma::mat findMin(const arma::mat& partners1, const arma::mat& partners2);
-RcppExport SEXP _remstats_findMin(SEXP partners1SEXP, SEXP partners2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type partners1(partners1SEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type partners2(partners2SEXP);
-    rcpp_result_gen = Rcpp::wrap(findMin(partners1, partners2));
-    return rcpp_result_gen;
-END_RCPP
-}
 // getRisksetMatrix
 arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed);
 static SEXP _remstats_getRisksetMatrix_try(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP NSEXP, SEXP CSEXP, SEXP directedSEXP) {
@@ -279,7 +267,6 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
 static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_stats_rate", (DL_FUNC) &_remstats_compute_stats_rate, 12},
     {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 12},
-    {"_remstats_findMin", (DL_FUNC) &_remstats_findMin, 2},
     {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
     {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 7},
     {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 12},
