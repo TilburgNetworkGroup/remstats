@@ -81,6 +81,10 @@ NULL
 send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo("send", variable, attr_data, scaling)
 }
@@ -127,6 +131,10 @@ send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo("receive", variable, attr_data, scaling)
 }
@@ -173,6 +181,10 @@ receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
 
     # Output
     list(
@@ -279,6 +291,10 @@ difference <- function(variable, attr_data = NULL,
                        scaling = c("none", "std"), absolute = TRUE) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     scaling <- ifelse(absolute, paste0(scaling, "_abs"), scaling)
     # Prep
     prep_exo("difference", variable, attr_data, scaling)
@@ -328,6 +344,10 @@ difference <- function(variable, attr_data = NULL,
 average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)   
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo(effect = "average", variable = variable, attr_data = attr_data, scaling = scaling)
 }
@@ -370,6 +390,10 @@ average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo("minimum", variable, attr_data, scaling)
 }
@@ -412,6 +436,10 @@ minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 maximum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo("maximum", variable, attr_data, scaling)
 }
@@ -551,6 +579,10 @@ inertia <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "inertia"
@@ -610,6 +642,10 @@ reciprocity <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "reciprocity"
@@ -674,6 +710,10 @@ indegreeSender <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "indegreeSender"
@@ -730,6 +770,10 @@ indegreeReceiver <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "indegreeReceiver"
@@ -787,6 +831,10 @@ outdegreeSender <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "outdegreeSender"
@@ -843,6 +891,10 @@ outdegreeReceiver <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "outdegreeReceiver"
@@ -908,6 +960,10 @@ totaldegreeSender <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "totaldegreeSender"
@@ -965,6 +1021,10 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "totaldegreeReceiver"
@@ -1007,6 +1067,10 @@ totaldegreeDyad <- function(scaling = c("none", "prop", "std")) {
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "totaldegreeReceiver"
@@ -1056,6 +1120,10 @@ degreeDiff <- function(scaling = c("none", "std"), consider_type = FALSE) {
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "degreeDiff"
@@ -1110,6 +1178,10 @@ degreeMin <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "degreeMin"
@@ -1164,6 +1236,10 @@ degreeMax <- function(scaling = c("none", "prop", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
     # Add effect
     call_args$effect <- "degreeMax"
@@ -1227,6 +1303,10 @@ otp <- function(unique = FALSE, scaling = c("none", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 	call_args$scaling <- ifelse(unique, 
 	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
@@ -1289,6 +1369,10 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 	call_args$scaling <- ifelse(unique, 
 	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
@@ -1360,6 +1444,10 @@ osp <- function(unique = FALSE, scaling = c("none", "std"), consider_type = FALS
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 	call_args$scaling <- ifelse(unique, 
 	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
@@ -1423,6 +1511,10 @@ isp <- function(unique = FALSE, scaling = c("none", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 	call_args$scaling <- ifelse(unique, 
 	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
@@ -1480,6 +1572,10 @@ sp <- function(unique = TRUE, scaling = c("none", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 	call_args$scaling <- ifelse(unique, 
 	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
