@@ -219,6 +219,13 @@ arma::mat degree_aom(std::string type,
             stat.row(t) = stat.row(t) / sum(stat.row(t));
         }
         stat.replace(arma::datum::nan, 0);
+        // First row
+        if (start == 0)
+        {
+            arma::rowvec rep = arma::rowvec(stat.n_cols);
+            rep.fill(1.0 / actors.n_elem);
+            stat.row(0) = rep;
+        }
     }
     // Standardize
     if (scaling == "std")
@@ -302,11 +309,11 @@ arma::mat exo_actor_aom(const arma::mat &covariates,
         {
             // Update if the time of the event is larger than the current
             // changetime
-            if (edgelist(m + start, 0) > changetimes(counter))
+            if (edgelist(m + start, 0) >= changetimes(counter))
             {
                 // Update all changes in between
                 while ((counter < changetimes.n_elem) &&
-                       (edgelist(m + start, 0) > changetimes(counter)))
+                       (edgelist(m + start, 0) >= changetimes(counter)))
                 {
                     // For loop over actors
                     for (arma::uword j = 0; j < actors.n_elem; ++j)
@@ -600,70 +607,39 @@ arma::mat exo_dyad_aom(std::string type,
     if (type == "difference")
     {
         // Absolute scaling
-        if ((scaling == 2) || (scaling == 4))
+        if ((scaling == "none_abs") || (scaling == "std_abs"))
         {
             stat = abs(stat);
         }
-        // Standardization
-        if ((scaling == 3) || (scaling == 4))
-        {
-            // Iterate over events
-            for (int m = 0; m < (stop - start + 1); ++m)
-            {
-                int event = m + start;
-                arma::uword sender = edgelist(event, 1);
-
-                arma::rowvec statrow = stat.row(m);
-                arma::vec statrowMin = statrow(arma::find(actors != sender));
-
-                // For loop over receivers
-                for (arma::uword r = 0; r < actors.n_elem; ++r)
-                {
-                    if (sender == r)
-                    {
-                        stat(m, r) = 0;
-                    }
-                    else
-                    {
-                        stat(m, r) = (stat(m, r) - mean(statrowMin)) /
-                                     stddev(statrowMin);
-                    }
-                }
-
-                stat.replace(arma::datum::nan, 0);
-            }
-        }
     }
-    else
+
+    // Standardization
+    if ((scaling == "std") || (scaling == "std_abs"))
     {
-        // Standardization
-        if (scaling == 2)
+        // Iterate over events
+        for (int m = 0; m < (stop - start + 1); ++m)
         {
-            // Iterate over events
-            for (int m = 0; m < (stop - start + 1); ++m)
+            int event = m + start;
+            arma::uword sender = edgelist(event, 1);
+
+            arma::rowvec statrow = stat.row(m);
+            arma::vec statrowMin = statrow(arma::find(actors != sender));
+
+            // For loop over receivers
+            for (arma::uword r = 0; r < actors.n_elem; ++r)
             {
-                int event = m + start;
-                arma::uword sender = edgelist(event, 1);
-
-                arma::rowvec statrow = stat.row(m);
-                arma::vec statrowMin = statrow(arma::find(actors != sender));
-
-                // For loop over receivers
-                for (arma::uword r = 0; r < actors.n_elem; ++r)
+                if (sender == r)
                 {
-                    if (sender == r)
-                    {
-                        stat(m, r) = 0;
-                    }
-                    else
-                    {
-                        stat(m, r) = (stat(m, r) - mean(statrowMin)) /
-                                     stddev(statrowMin);
-                    }
+                    stat(m, r) = 0;
                 }
-
-                stat.replace(arma::datum::nan, 0);
+                else
+                {
+                    stat(m, r) = (stat(m, r) - mean(statrowMin)) /
+                                 stddev(statrowMin);
+                }
             }
+
+            stat.replace(arma::datum::nan, 0);
         }
     }
 
@@ -1070,7 +1046,7 @@ arma::mat reciprocity_aom(const arma::mat &edgelist,
     // equally likely to get a message
     if (scaling == "prop")
     {
-        arma::mat deg = degree_aom("in", edgelist, actors, weights, memory, memory_value, scaling = 1, start, stop, false);
+        arma::mat deg = degree_aom("in", edgelist, actors, weights, memory, memory_value, scaling = "none", start, stop, false);
 
         // Iterate over the sequence
         for (int m = 0; m < (stop - start + 1); ++m)
@@ -1721,6 +1697,13 @@ arma::cube compute_stats_rate(Rcpp::CharacterVector &effects,
                     stat.row(t) = stat.row(t) / sum(stat.row(t));
                 }
                 stat.replace(arma::datum::nan, 0);
+                // First row
+                if (start == 0)
+                {
+                    arma::rowvec rep = arma::rowvec(stat.n_cols);
+                    rep.fill(1.0 / actors.n_elem);
+                    stat.row(0) = rep;
+                }
             }
             break;
         // 4 out-degree
@@ -1735,6 +1718,13 @@ arma::cube compute_stats_rate(Rcpp::CharacterVector &effects,
                     stat.row(t) = stat.row(t) / sum(stat.row(t));
                 }
                 stat.replace(arma::datum::nan, 0);
+                // First row
+                if (start == 0)
+                {
+                    arma::rowvec rep = arma::rowvec(stat.n_cols);
+                    rep.fill(1.0 / actors.n_elem);
+                    stat.row(0) = rep;
+                }
             }
             break;
         // 5 total-degree
@@ -1749,6 +1739,13 @@ arma::cube compute_stats_rate(Rcpp::CharacterVector &effects,
                     stat.row(t) = stat.row(t) / (sum(stat.row(t)));
                 }
                 stat.replace(arma::datum::nan, 0);
+                // First row
+                if (start == 0)
+                {
+                    arma::rowvec rep = arma::rowvec(stat.n_cols);
+                    rep.fill(1.0 / actors.n_elem);
+                    stat.row(0) = rep;
+                }
             }
             break;
         // 6 recencySendSender

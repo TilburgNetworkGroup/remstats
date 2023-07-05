@@ -65,3 +65,21 @@ psABAY <- rbind(
   c(1, 1, 0)
 )
 expect_equal(stats[, , "psABAY"], psABAY)
+
+# test standardization
+std_effects <- ~
+  inertia(scaling = "std") + sp(scaling = "std") + spUnique(scaling = "std")
+std_stats <- remstats(reh, tie_effects = std_effects)
+
+sapply(2:dim(std_stats)[3], function(p) {
+  stat_name <- dimnames(std_stats)[[3]][p]
+  scaled_original <- t(apply(stats[, , stat_name], 1, scale))
+  scaled_original[which(apply(stats[, , stat_name], 1, sd) == 0), ] <-
+    rep(0, ncol(stats))
+  expect_equal(std_stats[, , stat_name], scaled_original)
+})
+
+# test proportional scaling
+prop_effects <- ~ inertia(scaling = "prop")
+expect_error(remstats(reh, tie_effects = prop_effects),
+  pattern = "not defined")

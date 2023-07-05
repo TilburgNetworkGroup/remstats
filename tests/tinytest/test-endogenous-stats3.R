@@ -504,3 +504,85 @@ rrankReceive.type <- rbind(
   c(0, 0, 1, 0, 1 / 2, 0, 1, 0, 0, 0, 0, 1)
 )
 expect_equal(stats[, , "rrankReceive.type"], rrankReceive.type)
+
+# test standardization
+std_effects <- ~
+  outdegreeSender(scaling = "std") + outdegreeReceiver(scaling = "std") +
+    indegreeSender(scaling = "std") + indegreeReceiver(scaling = "std") +
+    totaldegreeSender(scaling = "std") + totaldegreeReceiver(scaling = "std") +
+    inertia(scaling = "std") + reciprocity(scaling = "std") +
+    isp(scaling = "std") + itp(scaling = "std") +
+    osp(scaling = "std") + otp(scaling = "std") +
+    outdegreeSender(consider_type = TRUE, scaling = "std") +
+    outdegreeReceiver(consider_type = TRUE, scaling = "std") +
+    indegreeSender(consider_type = TRUE, scaling = "std") +
+    indegreeReceiver(consider_type = TRUE, scaling = "std") +
+    totaldegreeSender(consider_type = TRUE, scaling = "std") +
+    totaldegreeReceiver(consider_type = TRUE, scaling = "std") +
+    inertia(consider_type = TRUE, scaling = "std") +
+    reciprocity(consider_type = TRUE, scaling = "std") +
+    isp(consider_type = TRUE, scaling = "std") +
+    itp(consider_type = TRUE, scaling = "std") +
+    osp(consider_type = TRUE, scaling = "std") +
+    otp(consider_type = TRUE, scaling = "std")
+std_stats <- remstats(reh, tie_effects = std_effects)
+
+sapply(2:dim(std_stats)[3], function(p) {
+  stat_name <- dimnames(std_stats)[[3]][p]
+  scaled_original <- t(apply(stats[, , stat_name], 1, scale))
+  scaled_original[which(apply(stats[, , stat_name], 1, sd) == 0), ] <-
+    rep(0, ncol(stats))
+  expect_equal(std_stats[, , stat_name], scaled_original)
+})
+
+# test proportional scaling
+prop_effects <- ~
+  outdegreeSender(scaling = "prop") + outdegreeReceiver(scaling = "prop") +
+    indegreeSender(scaling = "prop") + indegreeReceiver(scaling = "prop") +
+    totaldegreeSender(scaling = "prop") +
+    totaldegreeReceiver(scaling = "prop") +
+    inertia(scaling = "prop") + reciprocity(scaling = "prop") +
+    outdegreeSender(consider_type = TRUE, scaling = "prop") +
+    outdegreeReceiver(consider_type = TRUE, scaling = "prop") +
+    indegreeSender(consider_type = TRUE, scaling = "prop") +
+    indegreeReceiver(consider_type = TRUE, scaling = "prop") +
+    totaldegreeSender(consider_type = TRUE, scaling = "prop") +
+    totaldegreeReceiver(consider_type = TRUE, scaling = "prop") +
+    inertia(consider_type = TRUE, scaling = "prop") +
+    reciprocity(consider_type = TRUE, scaling = "prop")
+prop_stats <- remstats(reh, tie_effects = prop_effects)
+
+sapply(c(2:5, 10:13), function(p) {
+  stat_name <- dimnames(prop_stats)[[3]][p]
+  scaled_original <- stats[, , stat_name] / (1:nrow(stats) - 1)
+  scaled_original[1, ] <- 1 / 3
+  expect_equal(prop_stats[, , stat_name], scaled_original)
+}) # in- and out-degree of the sender and receiver
+
+sapply(c(6:7, 14:15), function(p) {
+  stat_name <- dimnames(prop_stats)[[3]][p]
+  scaled_original <- stats[, , stat_name] / (2 * (1:nrow(stats) - 1))
+  scaled_original[1, ] <- 1 / 3
+  expect_equal(prop_stats[, , stat_name], scaled_original)
+}) # total degree of the sender and receiver
+
+# inertia
+prop_inertia <- stats[, , "inertia"] / stats[, , "outdegreeSender"]
+prop_inertia[stats[, , "outdegreeSender"] == 0] <- 1 / 2
+expect_equal(prop_stats[, , "inertia"], prop_inertia)
+
+# inertia.type
+prop_inertia.type <- stats[, , "inertia.type"] / stats[, , "outdegreeSender.type"]
+prop_inertia.type[stats[, , "outdegreeSender.type"] == 0] <- 1 / 2
+expect_equal(prop_stats[, , "inertia.type"], prop_inertia.type)
+
+# reciprocity
+prop_reciprocity <- stats[, , "reciprocity"] / stats[, , "indegreeSender"]
+prop_reciprocity[stats[, , "indegreeSender"] == 0] <- 1 / 2
+expect_equal(prop_stats[, , "reciprocity"], prop_reciprocity)
+
+# reciprocity.type
+prop_reciprocity.type <- stats[, , "reciprocity.type"] /
+  stats[, , "indegreeSender.type"]
+prop_reciprocity.type[stats[, , "indegreeSender.type"] == 0] <- 1 / 2
+expect_equal(prop_stats[, , "reciprocity.type"], prop_reciprocity.type)

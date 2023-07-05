@@ -8,6 +8,9 @@ Works with remify >= 3.1.0.
 ## Major changes
 * Naming of the interaction effects from `var1.x.var2` to `var1:var2`. 
 
+## Minor changes
+* Switch from `testthat` to `tinytest`.
+
 # remstats 3.1.1
 Date: 01-07-2023
 
