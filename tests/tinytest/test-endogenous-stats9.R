@@ -97,6 +97,26 @@ expect_equal(receiver_stats[, , "indegreeReceiver"], indegreeReceiver)
 totaldegreeReceiver <- indegreeReceiver + outdegreeReceiver
 expect_equal(receiver_stats[, , "totaldegreeReceiver"], totaldegreeReceiver)
 
+# inertia
+inertia <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 1, 0),
+  c(0, 0, 0),
+  c(1, 0, 0),
+  c(0, 0, 0)
+)
+expect_equal(receiver_stats[, , "inertia"], inertia)
+
+# reciprocity
+reciprocity <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0),
+  c(1, 0, 0),
+  c(1, 0, 0),
+  c(1, 1, 0)
+)
+expect_equal(receiver_stats[, , "reciprocity"], reciprocity)
+
 # itp
 itp <- rbind(
   matrix(0, ncol = nrow(actors)),
