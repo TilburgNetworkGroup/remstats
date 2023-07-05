@@ -1378,6 +1378,13 @@ arma::mat triad_aom(std::string type,
             p.increment();
         }
 
+        // Convert to adjmat if greater than 0
+        if ((scaling == "none_unique") || (scaling == "std_unique"))
+        {
+            // Convert elements in selectedCols1 to 1 if greater than 0
+            adjmat = arma::conv_to<arma::mat>::from(adjmat > 0);
+        }
+
         // Iterate over time points
         for (int i = 0; i < (stop - start + 1); ++i)
         {
@@ -1435,6 +1442,13 @@ arma::mat triad_aom(std::string type,
             int receiver = edgelist(event, 2);
             adjmat(sender, receiver) += weights(event);
 
+            // Convert to adjmat if greater than 0
+            if ((scaling == "none_unique") || (scaling == "std_unique"))
+            {
+                // Convert elements in selectedCols1 to 1 if greater than 0
+                adjmat = arma::conv_to<arma::mat>::from(adjmat > 0);
+            }
+
             p.increment();
         }
     }
@@ -1489,6 +1503,13 @@ arma::mat triad_aom(std::string type,
             arma::mat counts;
             arma::vec min_counts;
 
+            // Convert to adjmat if greater than 0
+            if ((scaling == "none_unique") || (scaling == "std_unique"))
+            {
+                // Convert elements in selectedCols1 to 1 if greater than 0
+                adjmat = arma::conv_to<arma::mat>::from(adjmat > 0);
+            }
+
             // For loop over receivers
             for (arma::uword r = 0; r < actors.n_elem; r++)
             {
@@ -1536,7 +1557,7 @@ arma::mat triad_aom(std::string type,
     }
 
     // Scaling
-    if (scaling == "std")
+    if ((scaling == "std") || (scaling == "std_unique"))
     {
         // Iterate over time points
         for (int i = 0; i < (stop - start + 1); ++i)

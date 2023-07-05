@@ -1323,7 +1323,8 @@ arma::uvec checkAndRemoveIndices(const arma::vec &vector1, const arma::vec &vect
 arma::mat computeTriadStatsNoTypes(int type,
                                    const arma::mat &adjmat,
                                    arma::vec actors,
-                                   const arma::mat &riskset)
+                                   const arma::mat &riskset,
+                                   Rcpp::String scaling)
 {
   // Initialize saving space
   arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
@@ -1412,13 +1413,6 @@ arma::mat computeTriadStatsNoTypes(int type,
       // Get the indices for dyads with sender j
       dyads2 = dyadIndices.row(j).t();
       break;
-
-    case 6:
-      // Get the indices for dyads with sender i
-      dyads1 = dyadIndices.row(i).t();
-      // Get the indices for dyads with sender j
-      dyads2 = dyadIndices.row(j).t();
-      break;
     }
 
     // Remove any dyads not in the risk set
@@ -1432,7 +1426,7 @@ arma::mat computeTriadStatsNoTypes(int type,
     colIndices2 = arma::conv_to<arma::uvec>::from(dyads2(keepIndices));
     selectedCols2 = adjmat.cols(colIndices2);
 
-    if (type == 6)
+    if ((scaling == "none_unique") || (scaling == "std_unique"))
     {
       // Convert elements in selectedCols1 to 1 if greater than 0
       selectedCols1 = arma::conv_to<arma::mat>::from(selectedCols1 > 0);
@@ -1478,7 +1472,8 @@ arma::mat computeTriadStatsTypesNotConsidered(
     const arma::mat &adjmat,
     const arma::vec &actors,
     const arma::vec &types,
-    const arma::mat &riskset)
+    const arma::mat &riskset,
+    Rcpp::String scaling)
 {
   // Initialize saving space
   arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
@@ -1540,12 +1535,6 @@ arma::mat computeTriadStatsTypesNotConsidered(
         dyadsID2 = getDyadIDs(riskset, j, h, NA_INTEGER, false);
       }
 
-      if (type == 6) // spUnique
-      {
-        dyadsID1 = getDyadIDs(riskset, i, h, NA_INTEGER, false);
-        dyadsID2 = getDyadIDs(riskset, j, h, NA_INTEGER, false);
-      }
-
       for (int dyad1 : dyadsID1)
       {
         if (dyad1 >= 0)
@@ -1563,7 +1552,7 @@ arma::mat computeTriadStatsTypesNotConsidered(
       }
     }
 
-    if (type == 6)
+    if ((scaling == "none_unique") || (scaling == "std_unique"))
     {
       // Convert elements in partners1 to 1 if greater than 0
       partners1 = arma::conv_to<arma::mat>::from(partners1 > 0);
@@ -1582,7 +1571,8 @@ arma::mat computeTriadStatsTypesConsidered(
     const arma::mat &adjmat,
     const arma::vec &actors,
     const arma::vec &types,
-    const arma::mat &riskset)
+    const arma::mat &riskset,
+    Rcpp::String scaling)
 {
 
   // Initialize saving space
@@ -1680,13 +1670,6 @@ arma::mat computeTriadStatsTypesConsidered(
       // Get the indices for dyads with sender j
       dyads2 = dyadIndices.slice(c).row(j).t();
       break;
-
-    case 6:
-      // Get the indices for dyads with sender i
-      dyads1 = dyadIndices.slice(c).row(i).t();
-      // Get the indices for dyads with sender j
-      dyads2 = dyadIndices.slice(c).row(j).t();
-      break;
     }
 
     // Remove any dyads not in the risk set
@@ -1699,7 +1682,7 @@ arma::mat computeTriadStatsTypesConsidered(
       selectedCols2.col(keepIndices.at(k)) = adjmat.col(dyads2.at(keepIndices.at(k)));
     }
 
-    if (type == 6)
+    if ((scaling == "none_unique") || (scaling == "std_unique"))
     {
       // Convert elements in sumAcrossTypes1 to 1 if greater than 0
       selectedCols1 = arma::conv_to<arma::mat>::from(selectedCols1 > 0);
@@ -3164,18 +3147,23 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset);
+        stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset, scaling(i));
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset, scaling(i));
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset, scaling(i));
         }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
       }
       break;
 
@@ -3184,18 +3172,23 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset);
+        stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset, scaling(i));
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset, scaling(i));
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset, scaling(i));
         }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
       }
       break;
 
@@ -3204,18 +3197,23 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset);
+        stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset, scaling(i));
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset, scaling(i));
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset, scaling(i));
         }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
       }
       break;
 
@@ -3224,18 +3222,23 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset);
+        stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset, scaling(i));
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset, scaling(i));
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset, scaling(i));
         }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
       }
       break;
 
@@ -3244,38 +3247,23 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset);
+        stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset, scaling(i));
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset, scaling(i));
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset);
+          stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset, scaling(i));
         }
       }
-      break;
-
-    // spUnique
-    case 136:
-      // Compute statistic
-      if (types.n_elem == 1)
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
       {
-        stat = computeTriadStatsNoTypes(6, adjmat, actors, riskset);
-      }
-      else
-      {
-        if (consider_type(i))
-        {
-          stat = computeTriadStatsTypesConsidered(6, adjmat, actors, types, riskset);
-        }
-        else
-        {
-          stat = computeTriadStatsTypesNotConsidered(6, adjmat, actors, types, riskset);
-        }
+        stat = standardize(stat);
       }
       break;
 

@@ -279,7 +279,7 @@ difference <- function(variable, attr_data = NULL,
                        scaling = c("none", "std"), absolute = TRUE) {
     # Match scaling
     scaling <- match.arg(scaling)
-    scaling <- ifelse(absolute, paste0(scaling, "_abs"))
+    scaling <- ifelse(absolute, paste0(scaling, "_abs"), scaling)
     # Prep
     prep_exo("difference", variable, attr_data, scaling)
 }
@@ -1227,6 +1227,8 @@ otp <- function(unique = FALSE, scaling = c("none", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
     # Add effect
     call_args$effect <- "otp"
@@ -1287,6 +1289,8 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
     # Add effect
     call_args$effect <- "itp"
@@ -1296,17 +1300,28 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 
 #' osp
 #'
-#' Specifies the statistic for an outgoing shared partners effect in the
-#' tie-oriented model or the receiver choice step of the actor-oriented model.
+#' Specifies the statistic for an outgoing shared partners effect.
 #'
 #' @details
-#' An outgoing shared partners effect refers to the tendency of dyads to
-#' interact if they have more past outgoing shared partners between them. The
-#' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the
-#' minimum of past \emph{(i,h)}, \emph{(j,h)} events, summed over all actors
-#' \emph{h}. Optionally, a scaling method can be set with \code{scaling}. Note
-#' that an 'osp' effect is only defined for directed events.
+#' The outgoing shared partners effect describes the propensity of dyads to 
+#' interact based on the number of past outgoing shared partners between them. 
+#' By default, the statistic at timepoint t for the dyad (i,j) is computed as 
+#' the sum of the minimum occurrences of past (i,h) and (j,h) events across all 
+#' actors h.
+#' 
+#' When the unique parameter is set to TRUE, a different approach is taken. 
+#' In this case, the statistic counts the number of actors h that contribute to 
+#' the creation of a new, distinct shared partner between actors i and j. 
+#' 
+#' Additionally, it is possible to specify a scaling method using the scaling 
+#' parameter.
+#' 
+#' Please note that the outgoing shared partners effect, 'osp', is exclusively 
+#' defined for directed events.
 #'
+#' @param unique A logical value indicating whether to sum the minimum of 
+#' events with third actors (FALSE, default) or the number of third actors that 
+#' create a new, unique shared partner (TRUE). See details for more information.
 #' @param scaling the method for scaling the triad statistic. Default is to not
 #' scale the statistic but keep the raw 'counts'. Alternatively,
 #' standardization of the raw counts per time point can be requested
@@ -1319,6 +1334,9 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 #' other types of triadic effects for directed relational events and
 #' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
 #' undirected relational events.
+#' 
+#' @references Butts, C. (2008). A relational event framework for social 
+#' action. Sociological Methodology.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1329,7 +1347,7 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-osp <- function(scaling = c("none", "std"), consider_type = FALSE) {
+osp <- function(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(totaldegreeReceiver))
 	
@@ -1342,6 +1360,8 @@ osp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
     # Add effect
     call_args$effect <- "osp"
@@ -1351,16 +1371,24 @@ osp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 
 #' isp
 #'
-#' Specifies the statistic for an incoming shared partners effect in the
-#' tie-oriented model or the receiver choice step of the actor-oriented model.
+#' Specifies the statistic for an incoming shared partners effect.
 #'
 #' @details
-#' An incoming shared partners effect refers to the tendency of dyads to
-#' interact if they have more past incoming shared partners between them. The
-#' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the
-#' minimum of past \emph{(h,i)}, \emph{(h,j)} events, summed over all actors
-#' \emph{h}. Optionally, a scaling method can be set with \code{scaling}. Note
-#' that an 'isp' effect is only defined for directed events.
+#' The incoming shared partners effect describes the propensity of dyads to 
+#' interact based on the number of past incoming shared partners between them. 
+#' By default, the statistic at timepoint t for the dyad (i,j) is computed as 
+#' the sum of the minimum occurrences of past (h,i) and (h,j) events across all 
+#' actors h.
+#' 
+#' When the unique parameter is set to TRUE, a different approach is taken. 
+#' In this case, the statistic counts the number of actors h that contribute to 
+#' the creation of a new, distinct shared partner between actors i and j. 
+#' 
+#' Additionally, it is possible to specify a scaling method using the scaling 
+#' parameter.
+#' 
+#' Please note that the incoming shared partners effect, 'isp', is exclusively 
+#' defined for directed events.
 #'
 #' @inheritParams osp
 #'
@@ -1368,6 +1396,9 @@ osp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 #' other types of triadic effects for directed relational events and
 #' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
 #' undirected relational events.
+#' 
+#' @references Butts, C. (2008). A relational event framework for social 
+#' action. Sociological Methodology.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1378,7 +1409,8 @@ osp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-isp <- function(scaling = c("none", "std"), consider_type = FALSE) {
+isp <- function(unique = FALSE, scaling = c("none", "std"), 
+  consider_type = FALSE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(totaldegreeReceiver))
 	
@@ -1391,6 +1423,8 @@ isp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
     # Add effect
     call_args$effect <- "isp"
@@ -1400,16 +1434,24 @@ isp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 
 #' sp
 #'
-#' Specifies the statistic for a shared partners effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a shared partners effect for undirected events.
 #'
 #' @details
-#' A shared partners effect refers to the tendency of dyads to interact if they
-#' have more past shared partners between them. The statistic at timepoint
-#' \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past undirected
-#' \emph{(i,h)}, \emph{(j,h)} events, summed over all actors \emph{h}.
-#' Optionally, a scaling method can be set with \code{scaling}. Note that the
-#' `shared partners' effect is only defined for undirected events.
+#' The shared partners effect describes the propensity of dyads to interact 
+#' based on the number of past shared partners between them. By default, the 
+#' statistic at timepoint t for the undirected dyad (i,j) is computed as 
+#' the sum of the minimum occurrences of past undirected (i,h) and undirected 
+#' (j,h) events across all actors h.
+#' 
+#' When the unique parameter is set to TRUE, a different approach is taken. 
+#' In this case, the statistic counts the number of actors h that contribute to 
+#' the creation of a new, distinct shared partner between actors i and j. 
+#' 
+#' Additionally, it is possible to specify a scaling method using the scaling 
+#' parameter.
+#' 
+#' Please note that the shared partners effect, 'sp', is exclusively defined 
+#' for undirected events.
 #'
 #' @inheritParams osp
 #'
@@ -1424,7 +1466,8 @@ isp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 #' remstats(tie_effects = effects, reh = reh_tie)
 #'
 #' @export
-sp <- function(scaling = c("none", "std"), consider_type = FALSE) {
+sp <- function(unique = TRUE, scaling = c("none", "std"), 
+  consider_type = FALSE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(totaldegreeReceiver))
 	
@@ -1437,6 +1480,8 @@ sp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 	
 	# Match scaling
 	call_args$scaling <- match.arg(scaling)
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
     # Add effect
     call_args$effect <- "sp"
@@ -1444,51 +1489,9 @@ sp <- function(scaling = c("none", "std"), consider_type = FALSE) {
 	return(call_args)
 }
 
-#' spUnique
-#'
-#' Specifies the statistic for a unique shared partners effect in the
-#' \code{effects} argument of \code{\link{tomstats}}.
-#'
-#' @details
-#' A unique shared partners effect refers to the tendency of dyads to interact
-#' if they have more past unique shared partners between them. The statistic at
-#' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of unique
-#' actors \emph{h} that both actors \emph{i} and \emph{j} interacted with in
-#' the past. Optionally, a scaling method can be set with \code{scaling}. Note
-#' that the `unique shared partners' effect is only defined for undirected
-#' events.
-#'
-#' @inheritParams osp
-#'
-#' @seealso \code{\link{sp}} for another type of triadic effect for
-#' undirected relational events and \code{\link{otp}}, \code{\link{itp}},
-#' \code{\link{osp}}, or \code{\link{isp}} for triadic effects for directed
-#' relational events.
-#'
-#' @examples
-#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
-#' effects <- ~ spUnique()
-#' remstats(tie_effects = effects, reh = reh_tie)
-#'
 #' @export
-spUnique <- function(scaling = c("none", "std"), consider_type = FALSE) {
-    call_args <- as.list(match.call()[-1])
-	defaults <- as.list(formals(totaldegreeReceiver))
-	
-	# Update call_args with default values
-	for (arg_name in names(defaults)) {
-		if (!(arg_name %in% names(call_args))) {
-			call_args[[arg_name]] <- defaults[[arg_name]]
-		}
-	}
-	
-	# Match scaling
-	call_args$scaling <- match.arg(scaling)
-
-    # Add effect
-    call_args$effect <- "spUnique"
-	
-	return(call_args)
+spUnique <- function() {
+    .Deprecated("sp")
 }
 
 #' ccp

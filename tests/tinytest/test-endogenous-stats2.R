@@ -9,7 +9,7 @@ edgelist <- data.frame(
 
 # Statistics
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE)
-effects <- ~ inertia() + sp() + spUnique() + psABAB() + psABAY()
+effects <- ~ inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
 stats <- remstats(reh, tie_effects = effects)
 riskset <- attr(stats, "riskset")
 
@@ -34,7 +34,7 @@ sp <- rbind(
   c(0, 0, 1),
   c(1, 1, 1)
 )
-expect_equal(stats[, , "sp"], sp)
+expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp")[1]], sp)
 
 # spUnique
 spUnique <- rbind(
@@ -44,7 +44,7 @@ spUnique <- rbind(
   c(0, 0, 1),
   c(1, 1, 1)
 )
-expect_equal(stats[, , "spUnique"], spUnique)
+expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp")[2]], spUnique)
 
 # psABAB
 psABAB <- rbind(
@@ -68,7 +68,7 @@ expect_equal(stats[, , "psABAY"], psABAY)
 
 # test standardization
 std_effects <- ~
-  inertia(scaling = "std") + sp(scaling = "std") + spUnique(scaling = "std")
+  inertia(scaling = "std") + sp(scaling = "std") 
 std_stats <- remstats(reh, tie_effects = std_effects)
 
 sapply(2:dim(std_stats)[3], function(p) {

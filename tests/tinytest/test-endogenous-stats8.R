@@ -13,9 +13,9 @@ event_types <- c(1, 1, 2, 2, 1)
 edgelist$type <- event_types
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
-effects <- ~ inertia() + sp() + spUnique() + psABAB() + psABAY() +
+effects <- ~ inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY() +
   inertia(consider_type = TRUE) +
-  sp(consider_type = TRUE) + spUnique(consider_type = TRUE) +
+  sp(consider_type = TRUE) + sp(unique = TRUE, consider_type = TRUE) +
   psABAB(consider_type = TRUE) + psABAY(consider_type = TRUE)
 stats <- remstats(reh, tie_effects = effects)
 riskset <- attr(stats, "riskset")
@@ -51,7 +51,7 @@ sp <- rbind(
   c(0, 0, 1, 0, 1),
   c(1, 1, 1, 1, 1)
 )
-expect_equal(stats[, , "sp"], sp)
+expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp")[1]], sp)
 
 # sp.type
 sp.type <- rbind(
@@ -61,7 +61,7 @@ sp.type <- rbind(
   c(0, 0, 1, 0, 0),
   c(0, 0, 1, 0, 0)
 )
-expect_equal(stats[, , "sp.type"], sp.type)
+expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp.type")[1]], sp.type)
 
 # spUnique
 spUnique <- rbind(
@@ -71,7 +71,7 @@ spUnique <- rbind(
   c(0, 0, 1, 0, 1),
   c(1, 1, 1, 1, 1)
 )
-expect_equal(stats[, , "spUnique"], spUnique)
+expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp")[2]], spUnique)
 
 # spUnique.type
 spUnique.type <- rbind(
@@ -81,7 +81,8 @@ spUnique.type <- rbind(
   c(0, 0, 1, 0, 0),
   c(0, 0, 1, 0, 0)
 )
-expect_equal(stats[, , "spUnique.type"], spUnique.type)
+expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp.type")[2]], 
+  spUnique.type)
 
 # psABAB
 psABAB <- rbind(

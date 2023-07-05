@@ -7,6 +7,7 @@ Works with remify >= 3.1.0.
 
 ## Major changes
 * Naming of the interaction effects from `var1.x.var2` to `var1:var2`. 
+* `spUnique` is deprecated. Instead `sp(unique = TRUE)` can be used. This is done to be consistent with the new `unique` argument in the directed triadic statistics. 
 
 ## Minor changes
 * Switch from `testthat` to `tinytest`.
