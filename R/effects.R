@@ -58,7 +58,7 @@ NULL
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -102,7 +102,7 @@ send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -205,7 +205,7 @@ tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -251,7 +251,7 @@ same <- function(variable, attr_data = NULL) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -303,7 +303,7 @@ difference <- function(variable, attr_data = NULL,
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -348,7 +348,7 @@ average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -390,7 +390,7 @@ minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the

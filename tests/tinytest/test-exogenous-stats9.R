@@ -91,3 +91,42 @@ same <- rbind(
   c(0, 0, 1)
 )
 expect_equal(receiver_stats[, , "same_x2"], same)
+
+# test standardization
+reh <- remify::remify(edgelist, model = "actor")
+std_sender_effects <- ~ send(variable = "x1", scaling = "std")
+std_receiver_effects <- ~ receive(variable = "x1", scaling = "std") + 
+  average(variable = "x1", scaling = "std") + 
+  difference(variable = "x1", scaling = "std")
+std_stats <- remstats(reh = reh,
+  sender_effects = std_sender_effects,
+  receiver_effects = std_receiver_effects, 
+  attr_data = info
+)
+std_sender_stats <- std_stats$sender_stats
+std_receiver_stats <- std_stats$receiver_stats
+
+sapply(2:dim(std_sender_stats)[3], function(p) {
+  stat_name <- dimnames(std_sender_stats)[[3]][p]
+  scaled_original <- t(apply(sender_stats[, , stat_name], 1, scale))
+  scaled_original[which(apply(sender_stats[, , stat_name], 1, sd) == 0), ] <-
+    rep(0, ncol(sender_stats))
+  expect_equal(std_sender_stats[, , stat_name], scaled_original)
+})
+
+sapply(2:dim(std_receiver_stats)[3], function(p) {
+  stat_name <- dimnames(std_receiver_stats)[[3]][p]
+  scaled_original <- t(sapply(1:nrow(edgelist), function(m) {
+    stat_row <- receiver_stats[m,, stat_name]
+    row_mean <- mean(stat_row[-edgelist[m,2]])
+    row_sd <- sd(stat_row[-edgelist[m,2]])
+    if(row_sd == 0) {
+      stat_row <- rep(0, ncol(receiver_stats))
+    }  else {
+      stat_row <- ((stat_row - row_mean) / row_sd)
+      stat_row[edgelist[m,2]] <- 0
+    }    
+    stat_row
+  }))
+  expect_equal(std_receiver_stats[, , stat_name], scaled_original)
+})

@@ -87,3 +87,19 @@ same <- rbind(
   c(1, 0, 0, 1, 0, 0)
 )
 expect_equal(stats[, , "same_x2"], same)
+
+# test standardization
+std_effects <- ~
+  average(variable = "x1", scaling = "std") + 
+  difference(variable = "x1", scaling = "std") + 
+  maximum(variable = "x1", scaling = "std") + 
+  minimum(variable = "x1", scaling = "std") 
+std_stats <- remstats(reh, tie_effects = std_effects, attr_data = info)
+
+sapply(2:dim(std_stats)[3], function(p) {
+  stat_name <- dimnames(std_stats)[[3]][p]
+  scaled_original <- t(apply(stats[,,stat_name], 1, scale))
+  scaled_original[which(apply(stats[,,stat_name], 1, sd) == 0),] <- 
+    rep(0, ncol(stats))
+  expect_equal(std_stats[,,stat_name], scaled_original)
+})
