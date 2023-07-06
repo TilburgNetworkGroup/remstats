@@ -136,6 +136,7 @@ aomstats <- function(reh,
   edgelist <- reh$edgelist
   actors <- attr(reh, "dictionary")$actors
   types <- attr(reh, "dictionary")$types
+  edgelist[,1] <- cumsum(reh$intereventTime)
 
   # Transform to cpp indexing!
   mat_edges <- as.matrix(edgelist)
