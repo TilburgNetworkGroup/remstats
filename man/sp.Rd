@@ -4,7 +4,7 @@
 \alias{sp}
 \title{sp}
 \usage{
-sp(unique = TRUE, scaling = c("none", "std"), consider_type = FALSE)
+sp(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{unique}{A logical value indicating whether to sum the minimum of 

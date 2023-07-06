@@ -1,5 +1,5 @@
 # remstats 3.1.2
-Date: TBD
+Date: 06-07-2023
 Works with remify >= 3.1.0. 
 
 ## New features
