@@ -1558,7 +1558,7 @@ isp <- function(unique = FALSE, scaling = c("none", "std"),
 #' remstats(tie_effects = effects, reh = reh_tie)
 #'
 #' @export
-sp <- function(unique = TRUE, scaling = c("none", "std"), 
+sp <- function(unique = FALSE, scaling = c("none", "std"), 
   consider_type = FALSE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(totaldegreeReceiver))

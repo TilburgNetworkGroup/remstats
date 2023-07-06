@@ -1,4 +1,4 @@
-# Condition 5: Directed events, tie-oriented model with active risk set
+# Condition 9: Actor-oriented model
 
 # Small edgelist
 edgelist <- data.frame(
@@ -25,83 +25,108 @@ info2 <- data.frame(
 info <- rbind(info, info2)
 
 # Statistics
-reh <- remify::remify(edgelist, model = "tie", riskset = "active")
-effects <- ~ send(variable = "x1") + receive(variable = "x1") + 
+reh <- remify::remify(edgelist, model = "actor")
+sender_effects <- ~ send(variable = "x1")
+receiver_effects <- ~ receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") + 
-  maximum(variable = "x1") + minimum(variable = "x1") +
   same(variable = "x2")  
-stats <- remstats(reh, tie_effects = effects, attr_data = info)
-riskset <- attr(stats, "riskset")
+stats <- remstats(reh = reh,
+  sender_effects = sender_effects,
+  receiver_effects = receiver_effects, 
+  attr_data = info
+)
+sender_stats <- stats$sender_stats
+receiver_stats <- stats$receiver_stats
+actors <- attr(reh, "dictionary")$actors
 
-# Baseline
-expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow(riskset)))
+# baseline
+expect_equal(sender_stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow(actors)))
 
 # send
 send <- rbind(
-  c(10, 10, 20, 20, 30),
-  c(10, 10, 20, 20, 30),
-  c(100, 100, 200, 200, 300),
-  c(100, 100, 200, 200, 300),
-  c(100, 100, 200, 200, 300)
+  c(10, 20, 30),
+  c(10, 20, 30),
+  c(100, 200, 300),
+  c(100, 200, 300),
+  c(100, 200, 300)
 )
-expect_equal(stats[, , "send_x1"], send)
+expect_equal(sender_stats[, , "send_x1"], send)
 
 # receive
 receive <- rbind(
-  c(20, 30, 10, 30, 20),
-  c(20, 30, 10, 30, 20),
-  c(200, 300, 100, 300, 200),
-  c(200, 300, 100, 300, 200),
-  c(200, 300, 100, 300, 200)
+  c(10, 20, 30),
+  c(10, 20, 30),
+  c(100, 200, 300),
+  c(100, 200, 300),
+  c(100, 200, 300)
 )
-expect_equal(stats[, , "receive_x1"], receive)
+expect_equal(receiver_stats[, , "receive_x1"], receive)
 
 # average
 average <- rbind(
-  c(15, 20, 15, 25, 25),
-  c(15, 20, 15, 25, 25),
-  c(150, 200, 150, 250, 250),
-  c(150, 200, 150, 250, 250),
-  c(150, 200, 150, 250, 250)
+  c(10, 15, 20),
+  c(10, 15, 20),
+  c(150, 200, 250),
+  c(150, 200, 250),
+  c(200, 250, 300)
 )
-expect_equal(stats[, , "average_x1"], average)
+expect_equal(receiver_stats[, , "average_x1"], average)
 
 # difference
 difference <- rbind(
-  c(10, 20, 10, 10, 10),
-  c(10, 20, 10, 10, 10),
-  c(100, 200, 100, 100, 100),
-  c(100, 200, 100, 100, 100),
-  c(100, 200, 100, 100, 100)
+  c(0, 10, 20),
+  c(0, 10, 20),
+  c(100, 0, 100),
+  c(100, 0, 100),
+  c(200, 100, 0)
 )
-expect_equal(stats[, , "difference_x1"], difference)
+expect_equal(receiver_stats[, , "difference_x1"], difference)
 
-# maximum 
-maximum <- rbind(
-  c(20, 30, 20, 30, 30),
-  c(20, 30, 20, 30, 30),
-  c(200, 300, 200, 300, 300),
-  c(200, 300, 200, 300, 300),
-  c(200, 300, 200, 300, 300)
-)
-expect_equal(stats[, , "maximum_x1"], maximum)
-
-# minimum
-minimum <- rbind(
-  c(10, 10, 10, 20, 20),
-  c(10, 10, 10, 20, 20),
-  c(100, 100, 100, 200, 200),
-  c(100, 100, 100, 200, 200),
-  c(100, 100, 100, 200, 200)
-)
-expect_equal(stats[, , "minimum_x1"], minimum)
-
-# same
+# same 
 same <- rbind(
-  c(0, 0, 0, 1, 1),
-  c(0, 0, 0, 1, 1),
-  c(1, 0, 1, 0, 0),
-  c(1, 0, 1, 0, 0),
-  c(1, 0, 1, 0, 0)
+  c(1, 0, 0),
+  c(1, 0, 0),
+  c(1, 1, 0),
+  c(1, 1, 0),
+  c(0, 0, 1)
 )
-expect_equal(stats[, , "same_x2"], same)
+expect_equal(receiver_stats[, , "same_x2"], same)
+
+# test standardization
+reh <- remify::remify(edgelist, model = "actor")
+std_sender_effects <- ~ send(variable = "x1", scaling = "std")
+std_receiver_effects <- ~ receive(variable = "x1", scaling = "std") + 
+  average(variable = "x1", scaling = "std") + 
+  difference(variable = "x1", scaling = "std")
+std_stats <- remstats(reh = reh,
+  sender_effects = std_sender_effects,
+  receiver_effects = std_receiver_effects, 
+  attr_data = info
+)
+std_sender_stats <- std_stats$sender_stats
+std_receiver_stats <- std_stats$receiver_stats
+
+sapply(2:dim(std_sender_stats)[3], function(p) {
+  stat_name <- dimnames(std_sender_stats)[[3]][p]
+  scaled_original <- t(apply(sender_stats[, , stat_name], 1, scale))
+  scaled_original[which(apply(sender_stats[, , stat_name], 1, sd) == 0), ] <-
+    rep(0, ncol(sender_stats))
+  expect_equal(std_sender_stats[, , stat_name], scaled_original)
+})
+
+sapply(2:dim(std_receiver_stats)[3], function(p) {
+  stat_name <- dimnames(std_receiver_stats)[[3]][p]
+  scaled_original <- t(sapply(1:nrow(edgelist), function(m) {
+    stat_row <- receiver_stats[m,, stat_name]
+    row_mean <- mean(stat_row[-edgelist[m,2]])
+    row_sd <- sd(stat_row[-edgelist[m,2]])
+    if(row_sd == 0) {
+      stat_row <- rep(0, ncol(receiver_stats))
+    }  else {
+      stat_row <- ((stat_row - row_mean) / row_sd)
+      stat_row[edgelist[m,2]] <- 0
+    }    
+    stat_row
+  }))
+  expect_equal(std_receiver_stats[, , stat_name], scaled_original)
+})

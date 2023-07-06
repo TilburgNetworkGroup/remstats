@@ -1,4 +1,4 @@
-# Condition 4: Undirected events with types, tie-oriented model
+# Condition 4: Undirected events with types, tie-oriented model with active riskset
 
 # Small edgelist
 edgelist <- data.frame(
@@ -11,7 +11,8 @@ event_types <- c(1, 1, 2, 2, 1)
 
 # Statistics
 edgelist$type <- event_types
-reh <- remify::remify(edgelist, model = "tie", directed = FALSE)
+reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
+  riskset = "active")
 effects <- ~ inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY() +
   inertia(consider_type = TRUE) +
   sp(consider_type = TRUE) + sp(unique = TRUE, consider_type = TRUE) +
@@ -25,108 +26,110 @@ expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow
 # inertia
 inertia <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(1, 0, 0, 1, 0, 0),
-  c(1, 1, 0, 1, 1, 0),
-  c(2, 1, 0, 2, 1, 0),
-  c(2, 1, 1, 2, 1, 1)
+  c(1, 0, 0, 1, 0),
+  c(1, 1, 0, 1, 0),
+  c(2, 1, 0, 2, 0),
+  c(2, 1, 1, 2, 1)
 )
 expect_equal(stats[, , "inertia"], inertia)
 
 # inertia.type
 inertia.type <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(1, 0, 0, 0, 0, 0),
-  c(1, 1, 0, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 0),
-  c(1, 1, 0, 1, 0, 1)
+  c(1, 0, 0, 0, 0),
+  c(1, 1, 0, 0, 0),
+  c(1, 1, 0, 1, 0),
+  c(1, 1, 0, 1, 1)
 )
 expect_equal(stats[, , "inertia.type"], inertia.type)
 
 # sp
 sp <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0, 0, 0),
-  c(0, 0, 1, 0, 0, 1),
-  c(0, 0, 1, 0, 0, 1),
-  c(1, 1, 1, 1, 1, 1)
+  c(0, 0, 0, 0, 0),
+  c(0, 0, 1, 0, 1),
+  c(0, 0, 1, 0, 1),
+  c(1, 1, 1, 1, 1)
 )
-expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp")[1]], sp)
+expect_equal(stats[, , "sp"], sp)
 
 # sp.type
 sp.type <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0, 0, 0),
-  c(0, 0, 1, 0, 0, 0),
-  c(0, 0, 1, 0, 0, 0),
-  c(0, 0, 1, 0, 1, 0)
+  c(0, 0, 0, 0, 0),
+  c(0, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 0)
 )
-expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp.type")[1]], sp.type)
+expect_equal(stats[, , "sp.type"], sp.type)
 
-# spUnique
-spUnique <- rbind(
+# sp.unique
+sp.unique <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0, 0, 0),
-  c(0, 0, 1, 0, 0, 1),
-  c(0, 0, 1, 0, 0, 1),
-  c(1, 1, 1, 1, 1, 1)
+  c(0, 0, 0, 0, 0),
+  c(0, 0, 1, 0, 1),
+  c(0, 0, 1, 0, 1),
+  c(1, 1, 1, 1, 1)
 )
-expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp")[2]], spUnique)
+expect_equal(stats[, , "sp.unique"], sp.unique)
 
-# spUnique.type
-spUnique.type <- rbind(
+# sp.unique.type
+sp.unique.type <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0, 0, 0),
-  c(0, 0, 1, 0, 0, 0),
-  c(0, 0, 1, 0, 0, 0),
-  c(0, 0, 1, 0, 1, 0)
+  c(0, 0, 0, 0, 0),
+  c(0, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 0)
 )
-expect_equal(stats[, , which(dimnames(stats)[[3]] == "sp.type")[2]], spUnique.type)
+expect_equal(stats[, , "sp.unique.type"], sp.unique.type)
 
 # psABAB
 psABAB <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(1, 0, 0, 1, 0, 0),
-  c(0, 1, 0, 0, 1, 0),
-  c(1, 0, 0, 1, 0, 0),
-  c(0, 0, 1, 0, 0, 1)
+  c(1, 0, 0, 1, 0),
+  c(0, 1, 0, 0, 0),
+  c(1, 0, 0, 1, 0),
+  c(0, 0, 1, 0, 1)
 )
 expect_equal(stats[, , "psABAB"], psABAB)
 
 # psABAB.type
 psABAB.type <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(1, 0, 0, 0, 0, 0),
-  c(0, 1, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 0),
-  c(0, 0, 0, 0, 0, 1)
+  c(1, 0, 0, 0, 0),
+  c(0, 1, 0, 0, 0),
+  c(0, 0, 0, 1, 0),
+  c(0, 0, 0, 0, 1)
 )
 expect_equal(stats[, , "psABAB.type"], psABAB.type)
 
 # psABAY
 psABAY <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 1, 1, 0, 1, 1),
-  c(1, 0, 1, 1, 0, 1),
-  c(0, 1, 1, 0, 1, 1),
-  c(1, 1, 0, 1, 1, 0)
+  c(0, 1, 1, 0, 1),
+  c(1, 0, 1, 1, 1),
+  c(0, 1, 1, 0, 1),
+  c(1, 1, 0, 1, 0)
 )
 expect_equal(stats[, , "psABAY"], psABAY)
 
 # psABAY.type
 psABAY.type <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 1, 1, 0, 0, 0),
-  c(1, 0, 1, 0, 0, 0),
-  c(0, 0, 0, 0, 1, 1),
-  c(0, 0, 0, 1, 1, 0)
+  c(0, 1, 1, 0, 0),
+  c(1, 0, 1, 0, 0),
+  c(0, 0, 0, 0, 1),
+  c(0, 0, 0, 1, 0)
 )
 expect_equal(stats[, , "psABAY.type"], psABAY.type)
 
 # test standardization
 std_effects <- ~
   inertia(scaling = "std") + sp(scaling = "std") + 
+  sp(scaling = "std", unique = TRUE) +
   inertia(consider_type = TRUE, scaling = "std") + 
-  sp(consider_type = TRUE, scaling = "std") 
+  sp(consider_type = TRUE, scaling = "std") +
+  sp(consider_type = TRUE, scaling = "std", unique = TRUE) 
 std_stats <- remstats(reh, tie_effects = std_effects)
 
 sapply(2:dim(std_stats)[3], function(p) {

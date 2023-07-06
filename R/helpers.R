@@ -402,6 +402,14 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
     dimnames(statistics)[[3]][event_effects] <- paste0("event", 1:sum(event_effects))
   }
 
+  # Add .unique 
+  unique_effects <- sapply(effects, function(x) {
+    ifelse("scaling" %in% names(x), isTRUE(grepl("unique", x$scaling)), FALSE)
+  })
+  if (any(unique_effects)) {
+    dimnames(statistics)[[3]][unique_effects] <- paste0(dimnames(statistics)[[3]][unique_effects], ".unique")
+  }
+
   # Add .type 
   type_effects <- sapply(effects, function(x) isTRUE(x$consider_type))
   if (any(type_effects)) {
