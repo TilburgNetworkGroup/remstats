@@ -57,7 +57,7 @@ bind_remstats <- function(...) {
     })
     combined_formula <- paste(processed_formulas, collapse = " + ")
     final_formula <- paste("~", combined_formula)
-    final_formula <- as.formula(final_formula)
+    final_formula <- stats::as.formula(final_formula)
 
     # Format output
     class(statistics) <- class(arg.list[[1]])

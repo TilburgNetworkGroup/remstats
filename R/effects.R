@@ -45,7 +45,7 @@ NULL
 #' \code{\link[base]{data.frame}} that contains the attribute, see
 #' 'Details.'
 #' @param scaling the method for scaling the statistic. Default is to not scale
-#' the statistic but keep it "as.is". Alternatively, standardization of the
+#' the statistic. Alternatively, standardization of the
 #' statistic per time point can be requested with "std".
 #'
 #' @details
@@ -58,7 +58,7 @@ NULL
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -78,9 +78,13 @@ NULL
 #' remstats(reh = reh_actor, sender_effects = effects, attr_data = info)
 #'
 #' @export
-send <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
+send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo("send", variable, attr_data, scaling)
 }
@@ -102,7 +106,7 @@ send <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -124,15 +128,17 @@ send <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
 #'
 #' @export
-receive <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
+receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo("receive", variable, attr_data, scaling)
 }
 
-# TO DO: allow long input format (expand.grid) for x?
-# TO DO: time-varying tie effect?
 #' tie
 #'
 #' Specifies the statistic for a "tie" (or, "dyad") effect in the tie-oriented
@@ -151,8 +157,8 @@ receive <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
 #' @param variableName optionally, a string indicating the variable name, used
 #' for the dimnames of the output statistics object
 #' @param scaling the method for scaling the statistic. Default is to not scale
-#' the statistic but keep it "as.is". Alternatively, standardization of the
-#' statistic per time point can be requested with "std".
+#' the statistic. Alternatively, standardization of the statistic per time 
+#' point can be requested with "std".
 #'
 #' @examples
 #' data(info, package = "remstats")
@@ -172,10 +178,13 @@ receive <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
 #'
 #' @export
-tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
+tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "std"))
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
 
     # Output
     list(
@@ -208,7 +217,7 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -232,7 +241,7 @@ tie <- function(x, variableName = NULL, scaling = c("as.is", "std")) {
 #' @export
 same <- function(variable, attr_data = NULL) {
     # Prep
-    prep_exo("same", variable, attr_data, "as.is")
+    prep_exo("same", variable, attr_data, "none")
 }
 
 #' difference
@@ -254,7 +263,7 @@ same <- function(variable, attr_data = NULL) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -279,27 +288,16 @@ same <- function(variable, attr_data = NULL) {
 #'
 #' @export
 difference <- function(variable, attr_data = NULL,
-                       scaling = c("as.is", "std"), absolute = TRUE) {
+                       scaling = c("none", "std"), absolute = TRUE) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
+    scaling <- ifelse(absolute, paste0(scaling, "_abs"), scaling)
     # Prep
-    out <- prep_exo("difference", variable, attr_data, scaling)
-    # Change scaling
-    temp <- out$scaling
-    if (temp == 1 & !absolute) {
-        out$scaling <- 1
-    }
-    if (temp == 1 & absolute) {
-        out$scaling <- 2
-    } # absolute values
-    if (temp == 2 & !absolute) {
-        out$scaling <- 3
-    } # standardized values
-    if (temp == 2 & absolute) {
-        out$scaling <- 4
-    } # std absolute values
-    # Output
-    return(out)
+    prep_exo("difference", variable, attr_data, scaling)
 }
 
 #' average
@@ -321,7 +319,7 @@ difference <- function(variable, attr_data = NULL,
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -343,9 +341,13 @@ difference <- function(variable, attr_data = NULL,
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
 #'
 #' @export
-average <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
+average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)   
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo(effect = "average", variable = variable, attr_data = attr_data, scaling = scaling)
 }
@@ -366,7 +368,7 @@ average <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -385,9 +387,13 @@ average <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
 #' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
 #'
 #' @export
-minimum <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
+minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo("minimum", variable, attr_data, scaling)
 }
@@ -408,7 +414,7 @@ minimum <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{id}: the actors' id}
+#'  \item{\code{name}: the actors' name}
 #'  \item{\code{time}: the time when the attribute values change (set to a
 #' column with only zero's if the attribute does not vary over time).}
 #'  \item{}{the third column contains the attribute that is called in the
@@ -427,9 +433,13 @@ minimum <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
 #' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
 #'
 #' @export
-maximum <- function(variable, attr_data = NULL, scaling = c("as.is", "std")) {
+maximum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
     # Match scaling
     scaling <- match.arg(scaling)
+	if(scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		scaling <- "none"
+	}
     # Prep
     prep_exo("maximum", variable, attr_data, scaling)
 }
@@ -468,8 +478,7 @@ event <- function(x, variableName = NULL) {
     list(
         effect = "event",
         x = x,
-        variable = variableName,
-        scaling = 1
+        variable = variableName
     )
 }
 
@@ -500,11 +509,20 @@ event <- function(x, variableName = NULL) {
 #'
 #' @export
 FEtype <- function() {
-    # Output
-    list(
-        effect = "FEtype",
-        scaling = 1
-    )
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(FEtype))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "FEtype"
+	
+	return(call_args)
 }
 
 #' inertia
@@ -530,7 +548,7 @@ FEtype <- function() {
 #' scaling method is only defined for directed events.
 #'
 #' @param scaling the method for scaling the inertia statistic. Default is to
-#' not scale the statistic but keep the raw counts 'as.is'. Alternatively, the
+#' not scale the statistic (scaling = "none"). Alternatively, the
 #' statistics can be scaled by specifying 'prop', in which raw counts are
 #' divided by the outdegree of the sender at time t (see 'details') or
 #' standardization of the raw counts per time point can be requested with 'std'.
@@ -547,24 +565,29 @@ FEtype <- function() {
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-inertia <- function(scaling = c("as.is", "prop", "std"),
+inertia <- function(scaling = c("none", "prop", "std"),
                     consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(inertia))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "inertia",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "inertia.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "inertia"
+	
+	return(call_args)
 }
 
 #' reciprocity
@@ -605,24 +628,29 @@ inertia <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-reciprocity <- function(scaling = c("as.is", "prop", "std"),
+reciprocity <- function(scaling = c("none", "prop", "std"),
                         consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(reciprocity))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "reciprocity",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "reciprocity.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "reciprocity"
+	
+	return(call_args)
 }
 
 #' indegreeSender
@@ -646,7 +674,7 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 #' where n refers to the number of actors.
 #'
 #' @param scaling the method for scaling the degree statistic. Default is
-#' to not scale the statistic but keep the raw counts 'as.is'. Alternatively,
+#' to not scale the statistic (scaling = "none"). Alternatively,
 #' scaling of the raw degree counts by the number of past events at time t can
 #' be requested with 'prop' or standardization of the raw degree counts per
 #' time point can be requested with 'std'.
@@ -668,24 +696,29 @@ reciprocity <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_actor, sender_effects = effects)
 #'
 #' @export
-indegreeSender <- function(scaling = c("as.is", "prop", "std"),
+indegreeSender <- function(scaling = c("none", "prop", "std"),
                            consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(indegreeSender))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "indegreeSender",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "indegreeSender.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "indegreeSender"
+	
+	return(call_args)
 }
 
 #' indegreeReceiver
@@ -723,24 +756,29 @@ indegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
+indegreeReceiver <- function(scaling = c("none", "prop", "std"),
                              consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(indegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "indegreeReceiver",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "indegreeReceiver.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "indegreeReceiver"
+	
+	return(call_args)
 }
 
 #' outdegreeSender
@@ -779,24 +817,29 @@ indegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_actor, sender_effects = effects)
 #'
 #' @export
-outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
+outdegreeSender <- function(scaling = c("none", "prop", "std"),
                             consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(outdegreeSender))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "outdegreeSender",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "outdegreeSender.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "outdegreeSender"
+	
+	return(call_args)
 }
 
 #' outdegreeReceiver
@@ -834,24 +877,29 @@ outdegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
+outdegreeReceiver <- function(scaling = c("none", "prop", "std"),
                               consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(outdegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "outdegreeReceiver",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "outdegreeReceiver.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "outdegreeReceiver"
+	
+	return(call_args)
 }
 
 #' totaldegreeSender
@@ -876,7 +924,7 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' set equal to 1/n, where n refers to the number of actors.
 #'
 #' @param scaling the method for scaling the degree statistic. Default is
-#' to not scale the statistic but keep the raw counts 'as.is'. Alternatively,
+#' to not scale the statistic (scaling = "none"). Alternatively,
 #' scaling of the raw degree counts by two times the number of past events at
 #' time t can be requested with 'prop' or standardization of the raw degree
 #' counts per time point can be requested with 'std'.
@@ -898,24 +946,29 @@ outdegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_actor, sender_effects = effects)
 #'
 #' @export
-totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
+totaldegreeSender <- function(scaling = c("none", "prop", "std"),
                               consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeSender))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "totaldegreeSender",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "totaldegreeSender.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "totaldegreeSender"
+	
+	return(call_args)
 }
 
 #' totaldegreeReceiver
@@ -954,24 +1007,29 @@ totaldegreeSender <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
+totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
                                 consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "totaldegreeReceiver",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "totaldegreeReceiver.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "totaldegreeReceiver"
+	
+	return(call_args)
 }
 
 #' totaldegreeDyad
@@ -996,16 +1054,28 @@ totaldegreeReceiver <- function(scaling = c("as.is", "prop", "std"),
 #' every actor is equally likely to be involved in an event and the statistic
 #' is set equal to 2/n, where n refers to the number of actors.
 #' @export
-totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+totaldegreeDyad <- function(scaling = c("none", "prop", "std")) {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    list(
-        effect = "totaldegreeDyad",
-        scaling = scaling
-    )
+    # Add effect
+    call_args$effect <- "totaldegreeReceiver"
+	
+	return(call_args)
 }
 
 #' degreeDiff
@@ -1014,9 +1084,8 @@ totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
 #' model.
 #'
 #' @param scaling the method for scaling the degree statistic. Default is to
-#' not scale the statistic but keep the raw degree difference `as.is`.
-#' Alternatively, scaling of the raw degree difference per time point can be
-#' requested with `std`.
+#' not scale the statistic (scaling = "none"). Alternatively, standardization 
+#' of the degree difference per time point can be requested with `std`.
 #' @inheritParams totaldegreeSender
 #'
 #' @details
@@ -1038,23 +1107,28 @@ totaldegreeDyad <- function(scaling = c("as.is", "prop", "std")) {
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-degreeDiff <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "std"))
+degreeDiff <- function(scaling = c("none", "std"), consider_type = FALSE) {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(degreeDiff))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "degreeDiff",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "degreeDiff.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "degreeDiff"
+	
+	return(call_args)
 }
 
 #' degreeMin
@@ -1090,24 +1164,29 @@ degreeDiff <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-degreeMin <- function(scaling = c("as.is", "prop", "std"),
+degreeMin <- function(scaling = c("none", "prop", "std"),
                       consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(degreeMin))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "degreeMin",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "degreeMin.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "degreeMin"
+	
+	return(call_args)
 }
 
 #' degreeMax
@@ -1143,52 +1222,63 @@ degreeMin <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-degreeMax <- function(scaling = c("as.is", "prop", "std"),
+degreeMax <- function(scaling = c("none", "prop", "std"),
                       consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "prop", "std"))
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(degreeMax))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "degreeMax",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "degreeMax.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "degreeMax"
+	
+	return(call_args)
 }
 
 #' otp
 #'
-#' Specifies the statistic for an outgoing two-path effect in the tie-oriented
-#' model or the receiver choice step of the actor-oriented model.
+#' Specifies the statistic for an outgoing two-path effect.
 #'
 #' @details
-#' An outgoing two-path effect refers to the tendency of dyads to interact if
-#' they have more past outgoing two-paths between them. The statistic at
-#' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past
-#' \emph{(i,h)}, \emph{(h,j)} events, summed over all actors \emph{h}.
-#' Optionally, a scaling method can be set with \code{scaling}. Note that an
-#' 'otp' effect is only defined for directed events.
+#' The outgoing two-path effect describes the propensity of dyads to interact 
+#' based on the number of past outgoing two-paths between them. By default, the 
+#' statistic at timepoint t for the dyad (i,j) is computed as the sum of the 
+#' minimum occurrences of past (i,h) and (h,j) events across all actors h.
+#' 
+#' When the unique parameter is set to TRUE, a different approach is taken. 
+#' In this case, the statistic counts the number of actors h that contribute to 
+#' the creation of a new, distinct two-path between actors i and j. 
+#' 
+#' Additionally, it is possible to specify a scaling method using the scaling 
+#' parameter.
+#' 
+#' Please note that the outgoing two-path effect, 'otp', is exclusively defined 
+#' for directed events.
 #'
-#' @param scaling the method for scaling the triad statistic. Default is to not
-#' scale the statistic but keep the raw counts 'as.is'. Alternatively,
-#' standardization of the raw counts per time point can be requested
-#' with 'std'.
-#' @param consider_type logical, indicates whether to count the two-paths
-#' separately for each event type (TRUE) or sum across different event
-#' types (FALSE, default).
+#' @param unique A logical value indicating whether to sum the minimum of events with third actors (FALSE, default) or the number of third actors that create a new, unique two-path (TRUE). See details for more information.
+#' @param scaling The method for scaling the triad statistic. The default value is "none", which means the statistic is not scaled. Alternatively, you can set it to "std" to request standardization of the raw counts per time point.
+#' @param consider_type A logical value indicating whether to count the two-paths separately for each event type (TRUE) or sum across different event types (FALSE, default).
 #'
 #' @aliases triad
 #' @seealso \code{\link{itp}}, \code{\link{osp}}, or \code{\link{isp}} for
 #' other types of triadic effects for directed relational events and
 #' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
 #' undirected relational events.
+#' 
+#' @references Butts, C. (2008). A relational event framework for social 
+#' action. Sociological Methodology.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1199,37 +1289,52 @@ degreeMax <- function(scaling = c("as.is", "prop", "std"),
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "std"))
+otp <- function(unique = FALSE, scaling = c("none", "std"), 
+                consider_type = FALSE) {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "otp",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "otp.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "otp"
+	
+	return(call_args)
 }
 
 #' itp
 #'
-#' Specifies the statistic for an incoming two-path effect in the tie-oriented
-#' model or the receiver choice step of the actor-oriented model.
+#' Specifies the statistic for an incoming two-path effect.
 #'
 #' @details
-#' An incomping two-path effect refers to the tendency of dyads to interact if
-#' they have more past incoming two-paths between them. The statistic at
-#' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past
-#' \emph{(j,h)}, \emph{(h,i)} events, summed over all actors \emph{h}.
-#' Optionally, a scaling method can be set with \code{scaling}. Note that an
-#' 'itp' effect is only defined for directed events.
+#' The incoming two-path effect describes the propensity of dyads to interact 
+#' based on the number of past incoming two-paths between them. By default, the 
+#' statistic at timepoint t for the dyad (i,j) is computed as the sum of the 
+#' minimum occurrences of past (j,h) and (h,i) events across all actors h.
+#' 
+#' When the unique parameter is set to TRUE, a different approach is taken. 
+#' In this case, the statistic counts the number of actors h that contribute to 
+#' the creation of a new, distinct two-path between actors i and j. 
+#' 
+#' Additionally, it is possible to specify a scaling method using the scaling 
+#' parameter.
+#' 
+#' Please note that the incoming two-path effect, 'itp', is exclusively defined 
+#' for directed events.
 #'
 #' @inheritParams otp
 #'
@@ -1237,6 +1342,9 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' other types of triadic effects for directed relational events and
 #' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
 #' undirected relational events.
+#' 
+#' @references Butts, C. (2008). A relational event framework for social 
+#' action. Sociological Methodology.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1247,38 +1355,57 @@ otp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "std"))
+itp <- function(unique = FALSE, scaling = c("none", "std"), 
+                consider_type = FALSE) {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "itp",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "itp.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "itp"
+	
+	return(call_args)
 }
 
 #' osp
 #'
-#' Specifies the statistic for an outgoing shared partners effect in the
-#' tie-oriented model or the receiver choice step of the actor-oriented model.
+#' Specifies the statistic for an outgoing shared partners effect.
 #'
 #' @details
-#' An outgoing shared partners effect refers to the tendency of dyads to
-#' interact if they have more past outgoing shared partners between them. The
-#' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the
-#' minimum of past \emph{(i,h)}, \emph{(j,h)} events, summed over all actors
-#' \emph{h}. Optionally, a scaling method can be set with \code{scaling}. Note
-#' that an 'osp' effect is only defined for directed events.
+#' The outgoing shared partners effect describes the propensity of dyads to 
+#' interact based on the number of past outgoing shared partners between them. 
+#' By default, the statistic at timepoint t for the dyad (i,j) is computed as 
+#' the sum of the minimum occurrences of past (i,h) and (j,h) events across all 
+#' actors h.
+#' 
+#' When the unique parameter is set to TRUE, a different approach is taken. 
+#' In this case, the statistic counts the number of actors h that contribute to 
+#' the creation of a new, distinct shared partner between actors i and j. 
+#' 
+#' Additionally, it is possible to specify a scaling method using the scaling 
+#' parameter.
+#' 
+#' Please note that the outgoing shared partners effect, 'osp', is exclusively 
+#' defined for directed events.
 #'
+#' @param unique A logical value indicating whether to sum the minimum of 
+#' events with third actors (FALSE, default) or the number of third actors that 
+#' create a new, unique shared partner (TRUE). See details for more information.
 #' @param scaling the method for scaling the triad statistic. Default is to not
 #' scale the statistic but keep the raw 'counts'. Alternatively,
 #' standardization of the raw counts per time point can be requested
@@ -1291,6 +1418,9 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' other types of triadic effects for directed relational events and
 #' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
 #' undirected relational events.
+#' 
+#' @references Butts, C. (2008). A relational event framework for social 
+#' action. Sociological Methodology.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1301,37 +1431,52 @@ itp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "std"))
+osp <- function(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE) {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "osp",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "osp.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "osp"
+	
+	return(call_args)
 }
 
 #' isp
 #'
-#' Specifies the statistic for an incoming shared partners effect in the
-#' tie-oriented model or the receiver choice step of the actor-oriented model.
+#' Specifies the statistic for an incoming shared partners effect.
 #'
 #' @details
-#' An incoming shared partners effect refers to the tendency of dyads to
-#' interact if they have more past incoming shared partners between them. The
-#' statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the
-#' minimum of past \emph{(h,i)}, \emph{(h,j)} events, summed over all actors
-#' \emph{h}. Optionally, a scaling method can be set with \code{scaling}. Note
-#' that an 'isp' effect is only defined for directed events.
+#' The incoming shared partners effect describes the propensity of dyads to 
+#' interact based on the number of past incoming shared partners between them. 
+#' By default, the statistic at timepoint t for the dyad (i,j) is computed as 
+#' the sum of the minimum occurrences of past (h,i) and (h,j) events across all 
+#' actors h.
+#' 
+#' When the unique parameter is set to TRUE, a different approach is taken. 
+#' In this case, the statistic counts the number of actors h that contribute to 
+#' the creation of a new, distinct shared partner between actors i and j. 
+#' 
+#' Additionally, it is possible to specify a scaling method using the scaling 
+#' parameter.
+#' 
+#' Please note that the incoming shared partners effect, 'isp', is exclusively 
+#' defined for directed events.
 #'
 #' @inheritParams osp
 #'
@@ -1339,6 +1484,9 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' other types of triadic effects for directed relational events and
 #' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
 #' undirected relational events.
+#' 
+#' @references Butts, C. (2008). A relational event framework for social 
+#' action. Sociological Methodology.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1349,37 +1497,53 @@ osp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "std"))
+isp <- function(unique = FALSE, scaling = c("none", "std"), 
+  consider_type = FALSE) {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "isp",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "isp.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "isp"
+	
+	return(call_args)
 }
 
 #' sp
 #'
-#' Specifies the statistic for a shared partners effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a shared partners effect for undirected events.
 #'
 #' @details
-#' A shared partners effect refers to the tendency of dyads to interact if they
-#' have more past shared partners between them. The statistic at timepoint
-#' \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past undirected
-#' \emph{(i,h)}, \emph{(j,h)} events, summed over all actors \emph{h}.
-#' Optionally, a scaling method can be set with \code{scaling}. Note that the
-#' `shared partners' effect is only defined for undirected events.
+#' The shared partners effect describes the propensity of dyads to interact 
+#' based on the number of past shared partners between them. By default, the 
+#' statistic at timepoint t for the undirected dyad (i,j) is computed as 
+#' the sum of the minimum occurrences of past undirected (i,h) and undirected 
+#' (j,h) events across all actors h.
+#' 
+#' When the unique parameter is set to TRUE, a different approach is taken. 
+#' In this case, the statistic counts the number of actors h that contribute to 
+#' the creation of a new, distinct shared partner between actors i and j. 
+#' 
+#' Additionally, it is possible to specify a scaling method using the scaling 
+#' parameter.
+#' 
+#' Please note that the shared partners effect, 'sp', is exclusively defined 
+#' for undirected events.
 #'
 #' @inheritParams osp
 #'
@@ -1394,69 +1558,36 @@ isp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
 #' remstats(tie_effects = effects, reh = reh_tie)
 #'
 #' @export
-sp <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "std"))
+sp <- function(unique = FALSE, scaling = c("none", "std"), 
+  consider_type = FALSE) {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(totaldegreeReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Match scaling
+	call_args$scaling <- match.arg(scaling)
+	if(call_args$scaling == "as.is") {
+		warning("use 'scaling' is 'none' instead of as.is'")
+		call_args$scaling <- "none"
+	}
+	call_args$scaling <- ifelse(unique, 
+	  paste0(call_args$scaling, "_unique"), call_args$scaling)
 
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "sp",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "sp.type",
-            scaling = scaling
-        )
-    }
+    # Add effect
+    call_args$effect <- "sp"
+	
+	return(call_args)
 }
 
-#' spUnique
-#'
-#' Specifies the statistic for a unique shared partners effect in the
-#' \code{effects} argument of \code{\link{tomstats}}.
-#'
-#' @details
-#' A unique shared partners effect refers to the tendency of dyads to interact
-#' if they have more past unique shared partners between them. The statistic at
-#' timepoint \emph{t} for dyad \emph{(i,j)} is equal to the number of unique
-#' actors \emph{h} that both actors \emph{i} and \emph{j} interacted with in
-#' the past. Optionally, a scaling method can be set with \code{scaling}. Note
-#' that the `unique shared partners' effect is only defined for undirected
-#' events.
-#'
-#' @inheritParams osp
-#'
-#' @seealso \code{\link{sp}} for another type of triadic effect for
-#' undirected relational events and \code{\link{otp}}, \code{\link{itp}},
-#' \code{\link{osp}}, or \code{\link{isp}} for triadic effects for directed
-#' relational events.
-#'
-#' @examples
-#' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
-#' effects <- ~ spUnique()
-#' remstats(tie_effects = effects, reh = reh_tie)
-#'
 #' @export
-spUnique <- function(scaling = c("as.is", "std"), consider_type = FALSE) {
-    # Match scaling
-    scaling <- match.arg(scaling)
-    scaling <- match(scaling, c("as.is", "std"))
-
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "spUnique",
-            scaling = scaling
-        )
-    } else {
-        list(
-            effect = "spUnique.type",
-            scaling = scaling
-        )
-    }
+spUnique <- function() {
+    .Deprecated("sp")
 }
 
 #' ccp
@@ -1472,8 +1603,7 @@ ccp <- function(duration) {
     # Output
     list(
         effect = "ccp",
-        x = duration,
-        scaling = 1
+        x = duration
     )
 }
 
@@ -1512,18 +1642,20 @@ ccp <- function(duration) {
 #'
 #' @export
 psABBA <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABBA",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABBA.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABBA))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Add effect
+    call_args$effect <- "psABBA"
+	
+	return(call_args)
 }
 
 #' psABBY
@@ -1559,18 +1691,20 @@ psABBA <- function(consider_type = FALSE) {
 #'
 #' @export
 psABBY <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABBY",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABBY.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABBY))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABBY"
+	
+	return(call_args)
 }
 
 #' psABXA
@@ -1606,18 +1740,20 @@ psABBY <- function(consider_type = FALSE) {
 #'
 #' @export
 psABXA <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABXA",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABXA.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABXA))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABXA"
+	
+	return(call_args)
 }
 
 #' psABXB
@@ -1653,18 +1789,20 @@ psABXA <- function(consider_type = FALSE) {
 #'
 #' @export
 psABXB <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABXB",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABXB.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABXB))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABXB"
+	
+	return(call_args)
 }
 
 #' psABXY
@@ -1699,18 +1837,20 @@ psABXB <- function(consider_type = FALSE) {
 #'
 #' @export
 psABXY <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABXY",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABXY.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABXY))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABXY"
+	
+	return(call_args)
 }
 
 #' psABAY
@@ -1746,18 +1886,20 @@ psABXY <- function(consider_type = FALSE) {
 #'
 #' @export
 psABAY <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABAY",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABAY.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABAY))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABAY"
+	
+	return(call_args)
 }
 
 #' psABAB
@@ -1791,18 +1933,20 @@ psABAY <- function(consider_type = FALSE) {
 #'
 #' @export
 psABAB <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "psABAB",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "psABAB.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABAB))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABAB"
+	
+	return(call_args)
 }
 
 
@@ -1837,18 +1981,20 @@ psABAB <- function(consider_type = FALSE) {
 #'
 #' @export
 rrankSend <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "rrankSend",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "rrankSend.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(rrankSend))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "rrankSend"
+	
+	return(call_args)
 }
 
 #' rrankReceive
@@ -1881,18 +2027,20 @@ rrankSend <- function(consider_type = FALSE) {
 #'
 #' @export
 rrankReceive <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "rrankReceive",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "rrankReceive.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(rrankReceive))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "rrankReceive"
+	
+	return(call_args)
 }
 
 
@@ -1927,18 +2075,20 @@ rrankReceive <- function(consider_type = FALSE) {
 #'
 #' @export
 recencySendSender <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencySendSender",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencySendSender.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencySendSender))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencySendSender"
+	
+	return(call_args)
 }
 
 #' recencySendReceiver
@@ -1970,18 +2120,20 @@ recencySendSender <- function(consider_type = FALSE) {
 #'
 #' @export
 recencySendReceiver <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencySendReceiver",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencySendReceiver.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencySendReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencySendReceiver"
+	
+	return(call_args)
 }
 
 #' recencyReceiveSender
@@ -2013,18 +2165,20 @@ recencySendReceiver <- function(consider_type = FALSE) {
 #'
 #' @export
 recencyReceiveSender <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencyReceiveSender",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencyReceiveSender.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencyReceiveSender))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencyReceiveSender"
+	
+	return(call_args)
 }
 
 #' recencyReceiveReceiver
@@ -2057,18 +2211,20 @@ recencyReceiveSender <- function(consider_type = FALSE) {
 #'
 #' @export
 recencyReceiveReceiver <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencyReceiveReceiver",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencyReceiveReceiver.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencyReceiveReceiver))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencyReceiveReceiver"
+	
+	return(call_args)
 }
 
 #' recencyContinue
@@ -2101,18 +2257,20 @@ recencyReceiveReceiver <- function(consider_type = FALSE) {
 #'
 #' @export
 recencyContinue <- function(consider_type = FALSE) {
-    # Output
-    if (!consider_type) {
-        list(
-            effect = "recencyContinue",
-            scaling = 1
-        )
-    } else {
-        list(
-            effect = "recencyContinue.type",
-            scaling = 1
-        )
-    }
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(recencyContinue))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "recencyContinue"
+	
+	return(call_args)
 }
 
 #' userStat

@@ -4,29 +4,33 @@
 \alias{itp}
 \title{itp}
 \usage{
-itp(scaling = c("as.is", "std"), consider_type = FALSE)
+itp(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE)
 }
 \arguments{
-\item{scaling}{the method for scaling the triad statistic. Default is to not
-scale the statistic but keep the raw counts 'as.is'. Alternatively,
-standardization of the raw counts per time point can be requested
-with 'std'.}
+\item{unique}{A logical value indicating whether to sum the minimum of events with third actors (FALSE, default) or the number of third actors that create a new, unique two-path (TRUE). See details for more information.}
 
-\item{consider_type}{logical, indicates whether to count the two-paths
-separately for each event type (TRUE) or sum across different event
-types (FALSE, default).}
+\item{scaling}{The method for scaling the triad statistic. The default value is "none", which means the statistic is not scaled. Alternatively, you can set it to "std" to request standardization of the raw counts per time point.}
+
+\item{consider_type}{A logical value indicating whether to count the two-paths separately for each event type (TRUE) or sum across different event types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an incoming two-path effect in the tie-oriented
-model or the receiver choice step of the actor-oriented model.
+Specifies the statistic for an incoming two-path effect.
 }
 \details{
-An incomping two-path effect refers to the tendency of dyads to interact if
-they have more past incoming two-paths between them. The statistic at
-timepoint \emph{t} for dyad \emph{(i,j)} is equal to the minimum of past
-\emph{(j,h)}, \emph{(h,i)} events, summed over all actors \emph{h}.
-Optionally, a scaling method can be set with \code{scaling}. Note that an
-'itp' effect is only defined for directed events.
+The incoming two-path effect describes the propensity of dyads to interact 
+based on the number of past incoming two-paths between them. By default, the 
+statistic at timepoint t for the dyad (i,j) is computed as the sum of the 
+minimum occurrences of past (j,h) and (h,i) events across all actors h.
+
+When the unique parameter is set to TRUE, a different approach is taken. 
+In this case, the statistic counts the number of actors h that contribute to 
+the creation of a new, distinct two-path between actors i and j. 
+
+Additionally, it is possible to specify a scaling method using the scaling 
+parameter.
+
+Please note that the incoming two-path effect, 'itp', is exclusively defined 
+for directed events.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie")
@@ -36,6 +40,10 @@ remstats(reh = reh_tie, tie_effects = effects)
 reh_actor <- remify::remify(history, model = "actor")
 remstats(reh = reh_actor, receiver_effects = effects)
 
+}
+\references{
+Butts, C. (2008). A relational event framework for social 
+action. Sociological Methodology.
 }
 \seealso{
 \code{\link{otp}}, \code{\link{osp}}, or \code{\link{isp}} for

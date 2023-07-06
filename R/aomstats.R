@@ -158,27 +158,7 @@ aomstats <- function(reh,
 
   # Match memory
   memory <- match.arg(memory)
-  if (memory == "full") {
-    memory_value <- Inf
-  }
-  if (memory == "window") {
-    if ((!(length(memory_value) == 1)) || (!is.numeric(memory_value))) {
-      stop("A 'memory_value' should be supplied when memory is 'window'")
-    }
-  }
-  if (memory == "decay") {
-    if ((!(length(memory_value) == 1)) || (!is.numeric(memory_value))) {
-      stop("A 'memory_value' should be supplied when memory is 'decay'")
-    }
-  }
-  if (memory == "interval") {
-    if ((!(length(memory_value) == 2)) || (!is.numeric(memory_value))) {
-      stop("Two 'memory_value' values should be supplied when memory is 'interval'")
-    }
-    if (memory_value[1] > memory_value[2]) {
-      stop("The first memory_value value should be lower than the second")
-    }
-  }
+  memory_value <- validate_memory(memory, memory_value)
 
   # Convert R start and stop indices to C++ (indexing starts at 0)
   if (start < 1) {
@@ -203,18 +183,10 @@ aomstats <- function(reh,
     # Prepare main sender_effects
     check_formula(rateFormula)
     sender_effects <- parse_formula(rateFormula, "rateEffects")
-    all_sender_effects <- c(
-      "baseline", "send", # 1,2
-      "indegreeSender", "outdegreeSender", "totaldegreeSender", # 3,4,5
-      "recencySendSender", "recencyReceiveSender", # 6, 7,
-      "interact"
-    ) # 99
-    sender_effectsN <- match(
-      sapply(sender_effects, function(x) x$effect),
-      all_sender_effects
-    )
+    sender_effectsNames <- sapply(sender_effects, function(x) x$effect)
+
     # Check correct specification effects
-    if (anyNA(sender_effectsN)) {
+    if (!all(sender_effectsNames %in% actor_effects(step = "sender"))) {
       stop(paste("Attempting to request effects that are not defined for the sender activity model"))
     }
 
@@ -223,13 +195,9 @@ aomstats <- function(reh,
       rateFormula, "rateEffects",
       sender_effects
     )
-    sender_effectsN <- append(
-      sender_effectsN,
-      rep(99, length(sender_effects_int)),
-      length(sender_effectsN)
-    )
+    sender_effectsNames <- append(sender_effectsNames, rep("interact", length(sender_effects_int)), length(sender_effectsNames))
     rate_interactions <- list()
-    rate_interactions[which(sender_effectsN == 99)] <- sender_effects_int
+    rate_interactions[which(sender_effectsNames == "interact")] <- sender_effects_int
 
     # Prepare sender_effects covariate information
     rateCovar <- lapply(sender_effects, function(x) {
@@ -284,39 +252,21 @@ aomstats <- function(reh,
     })
 
     # Prepare sender_effects scaling
-    rateScaling <- as.numeric(
-      sapply(sender_effects, function(x) x$scaling)
-    )
+    rateScaling <- sapply(sender_effects, function(x) {
+	    ifelse("scaling" %in% names(x), x$scaling, "none")
+    })
+    rateScaling <- append(rateScaling, rep("none", length(sender_effects_int)), length(rateScaling))
 
     # Compute the rate statistics
     rateStats <- compute_stats_rate(
-      sender_effectsN, mat_edges, actors[, 2], weights, rateCovar,
+      sender_effectsNames, mat_edges, actors[, 2], weights, rateCovar,
       rate_interactions, memory, memory_value, rateScaling, start, stop,
       display_progress
     )
 
-    # Dimnames statistics
-    dimnames(rateStats) <-
-      list(NULL, NULL, unlist(c(all_sender_effects[sender_effectsN])))
-
-    # Add variable name to exogenous rateStats
-    dimnames(rateStats)[[3]][which(sender_effectsN == 2)] <-
-      sapply(sender_effects[which(sender_effectsN == 2)], function(x) {
-        paste0(x$effect, "_", x$variable)
-      })
-
-    # Add variable name to interaction statistics
-    dimnames(rateStats)[[3]][which(sender_effectsN == 99)] <-
-      sapply(
-        rate_interactions[which(sender_effectsN == 99)],
-        function(x) {
-          paste0(
-            dimnames(rateStats)[[3]][as.numeric(x[1])],
-            ".x.",
-            dimnames(rateStats)[[3]][as.numeric(x[2])]
-          )
-        }
-      )
+    # Add variable names to the statistics dimnames
+    rateStats <- add_variable_names(rateStats, sender_effectsNames, 
+      sender_effects, rate_interactions)
   }
 
   # receiver_effects
@@ -325,26 +275,10 @@ aomstats <- function(reh,
     # Prepare main receiver_effects
     check_formula(choiceFormula)
     receiver_effects <- parse_formula(choiceFormula, "choiceEffects")
-    all_receiver_effects <- c(
-      "receive", "same", "difference", "average", # 1, 2, 3, 4
-      "tie", # 5
-      "inertia", "reciprocity", # 6, 7
-      "indegreeReceiver", "outdegreeReceiver", # 8, 9
-      "totaldegreeReceiver", # 10
-      "otp", "itp", "osp", "isp", # 11, 12, 13, 14
-      "rrankSend", "rrankReceive", # 15, 16
-      "recencySendReceiver", "recencyReceiveReceiver", # 17 #18
-      "recencyContinue", # 19
-      "interact"
-    ) # 99
-
-    receiver_effectsN <- match(sapply(
-      receiver_effects,
-      function(x) x$effect
-    ), all_receiver_effects)
+    receiver_effectsNames <- sapply(receiver_effects, function(x) x$effect)
 
     # Check correct specification effects
-    if (anyNA(receiver_effectsN)) {
+    if (!all(receiver_effectsNames %in% actor_effects(step = "receiver"))) {
       stop(paste("Attempting to request effects that are not defined for the receiver choice model"))
     }
 
@@ -353,13 +287,9 @@ aomstats <- function(reh,
       choiceFormula, "choiceEffects",
       receiver_effects
     )
-    receiver_effectsN <- append(
-      receiver_effectsN,
-      rep(99, length(receiver_effects_int)), length(receiver_effectsN)
-    )
+    receiver_effectsNames <- append(receiver_effectsNames, rep("interact", length(receiver_effects_int)), length(receiver_effectsNames))
     choice_interactions <- list()
-    choice_interactions[which(receiver_effectsN == 99)] <-
-      receiver_effects_int
+    choice_interactions[which(receiver_effectsNames == "interact")] <- receiver_effects_int
 
     # Prepare receiver_effects covariate information
     choiceCovar <- lapply(receiver_effects, function(x) {
@@ -416,67 +346,21 @@ aomstats <- function(reh,
     })
 
     # Prepare receiver_effects scaling
-    choiceScaling <- as.numeric(
-      sapply(receiver_effects, function(x) x$scaling)
-    )
+    choiceScaling <- sapply(receiver_effects, function(x) {
+	    ifelse("scaling" %in% names(x), x$scaling, "none")
+    })
+    choiceScaling <- append(choiceScaling, rep("none", length(receiver_effects_int)), length(choiceScaling))
 
     # Compute the choice statistics
     choiceStats <- compute_stats_choice(
-      receiver_effectsN, mat_edges, actors[, 2], weights, choiceCovar,
+      receiver_effectsNames, mat_edges, actors[, 2], weights, choiceCovar,
       choice_interactions, memory, memory_value, choiceScaling,
       start, stop, display_progress
     )
 
-    # Dimnames statistics
-    dimnames(choiceStats) <-
-      list(NULL, NULL, unlist(c(all_receiver_effects[receiver_effectsN])))
-
-    # Add variable name to exogenous choiceStats
-    dimnames(choiceStats)[[3]][which(receiver_effectsN %in% c(1:5))] <-
-      sapply(
-        receiver_effects[which(receiver_effectsN %in% c(1:5))],
-        function(x) {
-          if (!is.null(x$variable)) {
-            paste0(x$effect, "_", x$variable)
-          } else {
-            x$effect
-          }
-        }
-      )
-
-    # Add variable name to tie statistic
-    dimnames(choiceStats)[[3]][which(receiver_effectsN == 5)] <-
-      sapply(
-        receiver_effects[which(receiver_effectsN == 5)],
-        function(x) {
-          if (!is.null(x$variable)) {
-            paste0(x$variable)
-          } else {
-            x$effect
-          }
-        }
-      )
-
-    # Add counter to tie name
-    tie_effects <- grepl("tie", dimnames(choiceStats)[[3]])
-    if (sum(tie_effects) > 1) {
-      dimnames(choiceStats)[[3]][tie_effects] <-
-        paste0("tie", 1:sum(tie_effects))
-    }
-
-
-    # Add variable name to interaction statistics
-    dimnames(choiceStats)[[3]][which(receiver_effectsN == 99)] <-
-      sapply(
-        choice_interactions[which(receiver_effectsN == 99)],
-        function(x) {
-          paste0(
-            dimnames(choiceStats)[[3]][as.numeric(x[1])],
-            ".x.",
-            dimnames(choiceStats)[[3]][as.numeric(x[2])]
-          )
-        }
-      )
+    # Add variable names to the statistics dimnames
+    choiceStats <- add_variable_names(choiceStats, 
+      receiver_effectsNames, receiver_effects, choice_interactions)
   }
 
   # Output

@@ -4,9 +4,13 @@
 \alias{sp}
 \title{sp}
 \usage{
-sp(scaling = c("as.is", "std"), consider_type = FALSE)
+sp(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE)
 }
 \arguments{
+\item{unique}{A logical value indicating whether to sum the minimum of 
+events with third actors (FALSE, default) or the number of third actors that 
+create a new, unique shared partner (TRUE). See details for more information.}
+
 \item{scaling}{the method for scaling the triad statistic. Default is to not
 scale the statistic but keep the raw 'counts'. Alternatively,
 standardization of the raw counts per time point can be requested
@@ -17,16 +21,24 @@ separately for each event type (TRUE) or sum across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for a shared partners effect in the \code{effects}
-argument of \code{\link{tomstats}}.
+Specifies the statistic for a shared partners effect for undirected events.
 }
 \details{
-A shared partners effect refers to the tendency of dyads to interact if they
-have more past shared partners between them. The statistic at timepoint
-\emph{t} for dyad \emph{(i,j)} is equal to the minimum of past undirected
-\emph{(i,h)}, \emph{(j,h)} events, summed over all actors \emph{h}.
-Optionally, a scaling method can be set with \code{scaling}. Note that the
-`shared partners' effect is only defined for undirected events.
+The shared partners effect describes the propensity of dyads to interact 
+based on the number of past shared partners between them. By default, the 
+statistic at timepoint t for the undirected dyad (i,j) is computed as 
+the sum of the minimum occurrences of past undirected (i,h) and undirected 
+(j,h) events across all actors h.
+
+When the unique parameter is set to TRUE, a different approach is taken. 
+In this case, the statistic counts the number of actors h that contribute to 
+the creation of a new, distinct shared partner between actors i and j. 
+
+Additionally, it is possible to specify a scaling method using the scaling 
+parameter.
+
+Please note that the shared partners effect, 'sp', is exclusively defined 
+for undirected events.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie", directed = FALSE)

@@ -4,7 +4,7 @@
 \alias{receive}
 \title{receive}
 \usage{
-receive(variable, attr_data = NULL, scaling = c("as.is", "std"))
+receive(variable, attr_data = NULL, scaling = c("none", "std"))
 }
 \arguments{
 \item{variable}{string with the name of the column in the
@@ -15,7 +15,7 @@ receive(variable, attr_data = NULL, scaling = c("as.is", "std"))
 'Details.'}
 
 \item{scaling}{the method for scaling the statistic. Default is to not scale
-the statistic but keep it "as.is". Alternatively, standardization of the
+the statistic. Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 }
 \description{
@@ -34,7 +34,7 @@ The \code{attr_data} object should be constructed as a
 \code{\link[base]{data.frame}} where each row refers to the attribute value
 of actor \emph{i} at timepoint \emph{t}:
 \itemize{
- \item{\code{id}: the actors' id}
+ \item{\code{name}: the actors' name}
  \item{\code{time}: the time when the attribute values change (set to a
 column with only zero's if the attribute does not vary over time).}
  \item{}{the third column contains the attribute that is called in the

@@ -4,9 +4,13 @@
 \alias{isp}
 \title{isp}
 \usage{
-isp(scaling = c("as.is", "std"), consider_type = FALSE)
+isp(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE)
 }
 \arguments{
+\item{unique}{A logical value indicating whether to sum the minimum of 
+events with third actors (FALSE, default) or the number of third actors that 
+create a new, unique shared partner (TRUE). See details for more information.}
+
 \item{scaling}{the method for scaling the triad statistic. Default is to not
 scale the statistic but keep the raw 'counts'. Alternatively,
 standardization of the raw counts per time point can be requested
@@ -17,16 +21,24 @@ separately for each event type (TRUE) or sum across different event
 types (FALSE, default).}
 }
 \description{
-Specifies the statistic for an incoming shared partners effect in the
-tie-oriented model or the receiver choice step of the actor-oriented model.
+Specifies the statistic for an incoming shared partners effect.
 }
 \details{
-An incoming shared partners effect refers to the tendency of dyads to
-interact if they have more past incoming shared partners between them. The
-statistic at timepoint \emph{t} for dyad \emph{(i,j)} is equal to the
-minimum of past \emph{(h,i)}, \emph{(h,j)} events, summed over all actors
-\emph{h}. Optionally, a scaling method can be set with \code{scaling}. Note
-that an 'isp' effect is only defined for directed events.
+The incoming shared partners effect describes the propensity of dyads to 
+interact based on the number of past incoming shared partners between them. 
+By default, the statistic at timepoint t for the dyad (i,j) is computed as 
+the sum of the minimum occurrences of past (h,i) and (h,j) events across all 
+actors h.
+
+When the unique parameter is set to TRUE, a different approach is taken. 
+In this case, the statistic counts the number of actors h that contribute to 
+the creation of a new, distinct shared partner between actors i and j. 
+
+Additionally, it is possible to specify a scaling method using the scaling 
+parameter.
+
+Please note that the incoming shared partners effect, 'isp', is exclusively 
+defined for directed events.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie")
@@ -36,6 +48,10 @@ remstats(reh = reh_tie, tie_effects = effects)
 reh_actor <- remify::remify(history, model = "actor")
 remstats(reh = reh_actor, receiver_effects = effects)
 
+}
+\references{
+Butts, C. (2008). A relational event framework for social 
+action. Sociological Methodology.
 }
 \seealso{
 \code{\link{otp}}, \code{\link{itp}}, or \code{\link{osp}} for

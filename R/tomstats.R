@@ -143,9 +143,8 @@ tomstats <- function(effects, reh, attr_data = NULL,
     start = start, stop = stop)
 
   form <- inputs$form
-  all_effects <- inputs$all_effects
   effects <- inputs$effects
-  effectsN <- inputs$effectsN
+  effectNames <- inputs$effectNames
   edgelist <- inputs$edgelist
   actors <- inputs$actor
   types <- inputs$types
@@ -153,33 +152,30 @@ tomstats <- function(effects, reh, attr_data = NULL,
   memory <- inputs$memory
   memory_value <- inputs$memory_value
   scaling <- inputs$scaling
+  consider_type <- inputs$consider_type
   covar <- inputs$covar
   interactions <- inputs$interactions
   start <- inputs$start
   stop <- inputs$stop
 
   # Compute the adjacency matrix
-  if (any(effectsN %in% c(10:23, 40:45, 52:59, 67:70, 72, 76:77))) {
-    if (is.null(adjmat)) {
-      adjmat <- compute_adjmat(
-        edgelist, nrow(prepR), attr(reh, "directed"), 
-        memory, memory_value, start, stop
-      )
-    }
+  if(any(effectNames %in% tie_effects(endogenous = TRUE))) {
+    adjmat <- compute_adjmat(edgelist, nrow(prepR), attr(reh, "directed"), 
+    memory, memory_value, start, stop)
   } else {
     if (is.null(adjmat)) {
       adjmat <- matrix()
     }
-  }
+  }  
 
   # Compute statistics
-  statistics <- compute_stats_tie(
-    effectsN, edgelist, adjmat, actors[, 2],
-    types[, 2], prepR, scaling, covar, interactions, start, stop, attr(reh, "directed")
+  statistics <- compute_stats_tie(effectNames, edgelist, adjmat, actors[, 2], 
+    types[, 2], prepR, scaling, consider_type, covar, interactions, start, 
+    stop, attr(reh, "directed")
   )
 
   # Add variable names to the statistics dimnames
-  statistics <- add_variable_names(statistics, all_effects, effectsN, effects, 
+  statistics <- add_variable_names(statistics, effectNames, effects, 
     interactions)
   
   # Modify riskset output 

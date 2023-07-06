@@ -4,11 +4,11 @@
 \alias{inertia}
 \title{inertia}
 \usage{
-inertia(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
+inertia(scaling = c("none", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{scaling}{the method for scaling the inertia statistic. Default is to
-not scale the statistic but keep the raw counts 'as.is'. Alternatively, the
+not scale the statistic (scaling = "none"). Alternatively, the
 statistics can be scaled by specifying 'prop', in which raw counts are
 divided by the outdegree of the sender at time t (see 'details') or
 standardization of the raw counts per time point can be requested with 'std'.}

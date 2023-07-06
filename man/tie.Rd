@@ -4,7 +4,7 @@
 \alias{tie}
 \title{tie}
 \usage{
-tie(x, variableName = NULL, scaling = c("as.is", "std"))
+tie(x, variableName = NULL, scaling = c("none", "std"))
 }
 \arguments{
 \item{x}{a matrix with attribute information, rows and columns should refer
@@ -14,8 +14,8 @@ to actors in the edgelist}
 for the dimnames of the output statistics object}
 
 \item{scaling}{the method for scaling the statistic. Default is to not scale
-the statistic but keep it "as.is". Alternatively, standardization of the
-statistic per time point can be requested with "std".}
+the statistic. Alternatively, standardization of the statistic per time 
+point can be requested with "std".}
 }
 \description{
 Specifies the statistic for a "tie" (or, "dyad") effect in the tie-oriented

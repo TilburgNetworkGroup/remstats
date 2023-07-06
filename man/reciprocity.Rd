@@ -4,7 +4,7 @@
 \alias{reciprocity}
 \title{reciprocity}
 \usage{
-reciprocity(scaling = c("as.is", "prop", "std"), consider_type = FALSE)
+reciprocity(scaling = c("none", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{scaling}{the method for scaling the reciprocity statistic. Default is

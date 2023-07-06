@@ -1,3 +1,17 @@
+# remstats 3.1.2
+Date: 06-07-2023
+Works with remify >= 3.1.0. 
+
+## New features
+* `unique` argument in triadic statistics 
+
+## Major changes
+* Naming of the interaction effects from `var1.x.var2` to `var1:var2`. 
+* `spUnique` is deprecated. Instead `sp(unique = TRUE)` can be used. This is done to be consistent with the new `unique` argument in the directed triadic statistics. 
+
+## Minor changes
+* Switch from `testthat` to `tinytest`.
+
 # remstats 3.1.1
 Date: 01-07-2023
 
