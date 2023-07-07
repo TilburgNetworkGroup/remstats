@@ -1056,7 +1056,7 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' @export
 totaldegreeDyad <- function(scaling = c("none", "prop", "std")) {
     call_args <- as.list(match.call()[-1])
-	defaults <- as.list(formals(totaldegreeReceiver))
+	defaults <- as.list(formals(totaldegreeDyad))
 	
 	# Update call_args with default values
 	for (arg_name in names(defaults)) {
@@ -1073,7 +1073,7 @@ totaldegreeDyad <- function(scaling = c("none", "prop", "std")) {
 	}
 
     # Add effect
-    call_args$effect <- "totaldegreeReceiver"
+    call_args$effect <- "totaldegreeDyad"
 	
 	return(call_args)
 }

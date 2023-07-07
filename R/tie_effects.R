@@ -83,7 +83,7 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
         "sp", "spUnique", "degreeMin", "degreeMax", "ccp", "degreeDiff"
       ))]
     } else if (!directed) {
-      # Filter out effects that are not defined for directed events
+      # Filter out effects that are not defined for undirected events
       effects <- effects[!(effects %in% c(
         "send", "receive", "reciprocity", "indegreeSender",
         "indegreeReceiver", "outdegreeSender", "outdegreeReceiver",
