@@ -2056,165 +2056,190 @@ arma::rowvec rankR(arma::rowvec x, int N)
 // consider_type: boolean indicating whether to compute the inertia per
 // event type (true) or sum across types (false)
 arma::mat calc_rrank(int type, const arma::mat &edgelist,
-                     const arma::mat &riskset, arma::uword N, arma::uword C, int start,
-                     int stop, bool consider_type)
+                     const arma::mat &riskset, arma::uword N, arma::uword C, int start, int stop, bool consider_type)
 {
 
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat ESlice = edgelist.rows(start, stop);
+    // Slice the edgelist according to "start" and "stop"
+    arma::mat ESlice = edgelist.rows(start, stop);
 
-  // Saving space
-  arma::mat stat(ESlice.n_rows, riskset.n_rows, arma::fill::zeros);
-
-  if (!consider_type)
-  {
-    // Initialize lastTime array
-    arma::cube lastTime(N, N, ESlice.n_rows, arma::fill::zeros);
-    if (start > 0)
-    {
-      arma::mat past = edgelist.rows(0, start - 1);
-      for (arma::uword i = 0; i < past.n_rows; ++i)
-      {
-        // rrankSend: to whom the sender has most recently send events
-        // (most recent times)
-        int d = past(i, 1);
-        if (type == 1)
-        {
-          lastTime(riskset(d, 0), riskset(d, 1), 0) = past(i, 0);
-        }
-        // rrankReceive: from whom the sender has most recently
-        // received events (most recent times)
-        if (type == 2)
-        {
-          lastTime(riskset(d, 1), riskset(d, 0), 0) = past(i, 0);
-        }
-      }
-    }
-
-    // Fill lastTime for every event in the sequence
-    for (arma::uword i = 0; i < (ESlice.n_rows - 1); ++i)
-    {
-      // Update slice
-      lastTime.slice(i + 1) = lastTime.slice(i);
-      // rrankSend: to whom the sender has most recently send events
-      // (most recent times)
-      int d = ESlice(i, 1);
-      if (type == 1)
-      {
-        lastTime(riskset(d, 0), riskset(d, 1), i + 1) = ESlice(i, 0);
-      }
-      // rrankReceive: from whom the sender has most recently received
-      // events (most recent times)
-      if (type == 2)
-      {
-        lastTime(riskset(d, 1), riskset(d, 0), i + 1) = ESlice(i, 0);
-      }
-    }
-
-    // Compute ranks based on lastTime
-    arma::cube ranks(N, N, ESlice.n_rows, arma::fill::zeros);
-    for (arma::uword i = 0; i < ESlice.n_rows; ++i)
-    {
-      arma::mat lastTimeS = lastTime.slice(i);
-      arma::mat ranksS = ranks.slice(i);
-      for (arma::uword j = 0; j < N; ++j)
-      {
-        ranksS.row(j) = rankR(lastTimeS.row(j), N);
-      }
-      ranks.slice(i) = ranksS;
-    }
-
-    // Statistics value
-    arma::cube values = 1 / ranks;
-    values.replace(arma::datum::inf, 0);
-
-    // Transform to statistics matrix
-    for (arma::uword i = 0; i < riskset.n_rows; ++i)
-    {
-      stat.col(i) = arma::vectorise(values.tube(riskset(i, 0), riskset(i, 1)));
-    }
-  }
-  else
-  {
-    // Initialize lastTime array
-    arma::cube lastTime(N, N * C, ESlice.n_rows, arma::fill::zeros);
-    if (start > 0)
-    {
-      arma::mat past = edgelist.rows(0, start - 1);
-      for (arma::uword i = 0; i < past.n_rows; ++i)
-      {
-        int d = past(i, 1);
-        // rrankSend: to whom the sender has most recently send events
-        // of this type (most recent times)
-        if (type == 1)
-        {
-          lastTime(riskset(d, 0), riskset(d, 1) + riskset(d, 2) * N, 0) =
-              past(i, 0);
-        }
-        // rrankReceive: from whom the sender has most recently
-        // received events of this type (most recent times)
-        if (type == 2)
-        {
-          lastTime(riskset(d, 1), riskset(d, 0) + riskset(d, 2) * N, 0) =
-              past(i, 0);
-        }
-      }
-    }
-
-    // Fill lastTime for every event in the sequence
-    for (arma::uword i = 0; i < (ESlice.n_rows - 1); ++i)
-    {
-      // Update slice
-      lastTime.slice(i + 1) = lastTime.slice(i);
-      // rrankSend: to whom the sender has most recently send events
-      // of this type (most recent times)
-      int d = ESlice(i, 1);
-      if (type == 1)
-      {
-        lastTime(riskset(d, 0), riskset(d, 1) + riskset(d, 2) * N, i + 1) =
-            ESlice(i, 0);
-      }
-      // rrankReceive: from whom the sender has most recently received
-      // of this type events (most recent times)
-      if (type == 2)
-      {
-        lastTime(riskset(d, 1), riskset(d, 0) + riskset(d, 2) * N, i + 1) =
-            ESlice(i, 0);
-      }
-    }
-
-    // Compute ranks based on lastTime
     // Saving space
-    arma::cube ranks(N, N * C, ESlice.n_rows, arma::fill::zeros);
-    // For loop over timepoints
-    for (arma::uword i = 0; i < ESlice.n_rows; ++i)
+    arma::mat stat(ESlice.n_rows, riskset.n_rows, arma::fill::zeros);
+
+    if (!consider_type)
     {
-      // Slice at the current timepoint
-      arma::mat lastTimeS = lastTime.slice(i);
-      arma::mat ranksS = ranks.slice(i);
-      // For loop over senders
-      for (arma::uword j = 0; j < N; ++j)
-      {
-        // Compute ranks
-        ranksS.row(j) = rankR(lastTimeS.row(j), N * C);
-      }
-      // Save ranks
-      ranks.slice(i) = ranksS;
+        // Initialize lastTime array
+        arma::mat lastTime(N, N);
+        if (start > 0)
+        {
+            // Select the past
+            arma::mat past = edgelist.rows(0, start - 1);
+
+            for (arma::uword i = 0; i < past.n_rows; ++i)
+            {
+                // rrankSend: to whom the sender has most recently send events
+                // (most recent times)
+                int d = past(i, 1);
+                if (type == 1)
+                {
+                    lastTime(riskset(d, 0), riskset(d, 1)) = past(i, 0);
+                }
+                // rrankReceive: from whom the sender has most recently
+                // received events (most recent times)
+                if (type == 2)
+                {
+                    lastTime(riskset(d, 1), riskset(d, 0)) = past(i, 0);
+                }
+            }
+        }
+
+        // For loop over time points
+        for (arma::uword i = 0; i < ESlice.n_rows; ++i)
+        {
+            // Compute ranks based on lastTime
+            arma::mat ranks(N, N, arma::fill::zeros);
+            // Loop over senders
+            for (arma::uword j = 0; j < N; ++j)
+            {
+                ranks.row(j) = rankR(lastTime.row(j), N);
+            }
+
+            // Statistics value
+            arma::mat values = 1 / ranks;
+            values.replace(arma::datum::inf, 0);
+
+            // Transform to statistics matrix
+            if (i > 0)
+            {
+                if (edgelist(start + i, 0) > edgelist(start + i - 1, 0))
+                {
+                    // Update
+                    for (arma::uword j = 0; j < riskset.n_rows; ++j)
+                    {
+                        stat(i, j) = values(riskset(j, 0), riskset(j, 1));
+                    }
+                }
+                else
+                {
+                    // Do not update
+                    stat.row(i) = stat.row(i - 1);
+                }
+            }
+            else
+            {
+                // Update
+                for (arma::uword j = 0; j < riskset.n_rows; ++j)
+                {
+                    stat(i, j) = values(riskset(j, 0), riskset(j, 1));
+                }
+            }
+
+            // Update lastTime
+            // rrankSend: to whom the sender has most recently send events
+            // (most recent times)
+            int d = ESlice(i, 1);
+            if (type == 1)
+            {
+                lastTime(riskset(d, 0), riskset(d, 1)) = ESlice(i, 0);
+            }
+            // rrankReceive: from whom the sender has most recently
+            // received events (most recent times)
+            if (type == 2)
+            {
+                lastTime(riskset(d, 1), riskset(d, 0)) = ESlice(i, 0);
+            }
+        }
+    }
+    else
+    {
+        // Initialize lastTime array
+        arma::cube lastTime(N, N, C);
+        if (start > 0)
+        {
+            // Select the past
+            arma::mat past = edgelist.rows(0, start - 1);
+
+            for (arma::uword i = 0; i < past.n_rows; ++i)
+            {
+                // rrankSend: to whom the sender has most recently send events
+                // (most recent times)
+                int d = past(i, 1);
+                if (type == 1)
+                {
+                    lastTime(riskset(d, 0), riskset(d, 1), riskset(d, 2)) = past(i, 0);
+                }
+                // rrankReceive: from whom the sender has most recently
+                // received events (most recent times)
+                if (type == 2)
+                {
+                    lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = past(i, 0);
+                }
+            }
+        }
+
+        // For loop over time points
+        for (arma::uword i = 0; i < ESlice.n_rows; ++i)
+        {
+            // Compute ranks based on lastTime
+            arma::cube ranks(N, N, C, arma::fill::zeros);
+
+            // Loop over event types
+            for (arma::uword k = 0; k < C; ++k)
+            {
+                // Loop over senders
+                for (arma::uword j = 0; j < N; ++j)
+                {
+                    ranks.slice(k).row(j) = rankR(lastTime.slice(k).row(j), N);
+                }
+            }
+
+            // Statistics value
+            arma::cube values = 1 / ranks;
+            values.replace(arma::datum::inf, 0);
+
+            // Transform to statistics matrix
+            if (i > 0)
+            {
+                if (edgelist(start + i, 0) > edgelist(start + i - 1, 0))
+                {
+                    // Update
+                    for (arma::uword j = 0; j < riskset.n_rows; ++j)
+                    {
+                        stat(i, j) = values(riskset(j, 0), riskset(j, 1), riskset(j, 2));
+                    }
+                }
+                else
+                {
+                    // Do not update
+                    stat.row(i) = stat.row(i - 1);
+                }
+            }
+            else
+            {
+                // Update
+                for (arma::uword j = 0; j < riskset.n_rows; ++j)
+                {
+                    stat(i, j) = values(riskset(j, 0), riskset(j, 1), riskset(j,2));
+                }
+            }
+
+            // Update lastTime
+            // rrankSend: to whom the sender has most recently send events
+            // (most recent times)
+            int d = ESlice(i, 1);
+            if (type == 1)
+            {
+                lastTime(riskset(d, 0), riskset(d, 1), riskset(d, 2)) = ESlice(i, 0);
+            }
+            // rrankReceive: from whom the sender has most recently
+            // received events (most recent times)
+            if (type == 2)
+            {
+                lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = ESlice(i, 0);
+            }
+        }
     }
 
-    // Statistics value
-    arma::cube values = 1 / ranks;
-    values.replace(arma::datum::inf, 0);
-
-    // Transform to statistics matrix
-    for (arma::uword i = 0; i < riskset.n_rows; ++i)
-    {
-      stat.col(i) = arma::vectorise(
-          values.tube(riskset(i, 0), riskset(i, 1) + riskset(i, 2) * N));
-    }
-  }
-
-  return stat;
+    return stat;
 }
 
 // calc_recency
