@@ -27,15 +27,19 @@ info <- rbind(info, info2)
 # Tie info
 X <<- matrix(1:16, nrow = 4)
 X <<- Matrix::forceSymmetric(X, "L")
-diag(X) <<- 0
 X <<- as.matrix(X)
+diag(X) <- 0
+
+# Event info
+setting <<- c("a", "b", "b", "a", "a")
 
 # Statistics
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
 effects <- ~ average(variable = "x1") + difference(variable = "x1") + 
   maximum(variable = "x1") + minimum(variable = "x1") +
-  same(variable = "x2") + tie(x = X, variableName = "X")
+  same(variable = "x2") + tie(x = X, variableName = "X") +
+  event(x = setting, variableName = "setting")
 stats <- remstats(reh, tie_effects = effects, attr_data = info)
 riskset <- attr(stats, "riskset")
 
@@ -101,6 +105,16 @@ tie <- rbind(
   c(2, 3, 7, 8)
 )
 expect_equal(stats[, , "tie_X"], tie)
+
+# event
+event <- rbind(
+  rep(0, 4),
+  rep(1, 4),
+  rep(1, 4),
+  rep(0, 4),
+  rep(0, 4)
+)
+expect_equal(stats[, , "event_setting"], event)
 
 # test standardization
 std_effects <- ~
