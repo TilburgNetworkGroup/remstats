@@ -2,9 +2,9 @@
 
 # Small edgelist
 edgelist <- data.frame(
-  time = 1:5,
-  actor1 = c(1, 1, 2, 2, 3),
-  actor2 = c(2, 3, 1, 4, 2)
+  time = 1:10,
+  actor1 = c(1, 2, 1, 2, 3, 4, 2, 2, 2, 4),
+  actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 )
 
 # Statistics
@@ -20,50 +20,75 @@ expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow
 # inertia
 inertia <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(1, 0, 0, 0),
-  c(1, 1, 0, 0),
-  c(2, 1, 0, 0),
-  c(2, 1, 0, 1)
+  c(0, 1, 0, 0, 0, 0),
+  c(1, 1, 0, 0, 0, 0),
+  c(1, 2, 0, 0, 0, 0),
+  c(1, 2, 0, 1, 0, 0),
+  c(1, 2, 0, 2, 0, 0),
+  c(1, 2, 0, 2, 0, 1),
+  c(2, 2, 0, 2, 0, 1),
+  c(2, 2, 0, 3, 0, 1),
+  c(2, 2, 0, 3, 1, 1)
 )
 expect_equal(stats[, , "inertia"], inertia)
 
 # sp
 sp <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0),
-  c(0, 0, 1, 0),
-  c(0, 0, 1, 0),
-  c(0, 0, 1, 0)
+  c(0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(1, 1, 0, 1, 0, 0),
+  c(2, 1, 0, 1, 0, 0),
+  c(2, 1, 1, 1, 1, 0),
+  c(2, 2, 1, 2, 1, 0),
+  c(2, 2, 1, 2, 1, 0),
+  c(2, 2, 2, 3, 1, 1)
 )
 expect_equal(stats[, , "sp"], sp)
 
 # sp.unique
 sp.unique <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0),
-  c(0, 0, 1, 0),
-  c(0, 0, 1, 0),
-  c(0, 0, 1, 0)
+  c(0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(1, 1, 0, 1, 0, 0),
+  c(1, 1, 0, 1, 0, 0),
+  c(1, 1, 1, 1, 1, 0),
+  c(1, 1, 1, 1, 1, 0),
+  c(1, 1, 1, 1, 1, 0),
+  c(1, 1, 2, 2, 1, 1)
 )
 expect_equal(stats[, , "sp.unique"], sp.unique)
 
 # psABAB
 psABAB <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(1, 0, 0, 0),
-  c(0, 1, 0, 0),
-  c(1, 0, 0, 0),
-  c(0, 0, 0, 1)
+  c(0, 1, 0, 0, 0, 0),
+  c(1, 0, 0, 0, 0, 0),
+  c(0, 1, 0, 0, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 0, 0, 1),
+  c(1, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 0, 1, 0)
 )
 expect_equal(stats[, , "psABAB"], psABAB)
 
 # psABAY
 psABAY <- rbind(
   matrix(0, ncol = nrow(riskset)),
-  c(0, 1, 1, 1),
-  c(1, 0, 1, 0),
-  c(0, 1, 1, 1),
-  c(1, 0, 1, 0)
+  c(1, 0, 1, 1, 0, 1),
+  c(0, 1, 1, 1, 1, 0),
+  c(1, 0, 1, 1, 0, 1),
+  c(1, 1, 0, 0, 1, 1),
+  c(1, 1, 0, 0, 1, 1),
+  c(0, 1, 1, 1, 1, 0),
+  c(0, 1, 1, 1, 1, 0),
+  c(1, 1, 0, 0, 1, 1),
+  c(1, 0, 1, 1, 0, 1)
 )
 expect_equal(stats[, , "psABAY"], psABAY)
 
