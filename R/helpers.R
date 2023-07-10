@@ -528,8 +528,8 @@ parse_formula <- function(formula, type, ordinal = FALSE) {
   var <- attr(ft, "variables")
   var <- as.list(var)[-1]
 
-  effects <- lapply(var, function(x) {
-    eval(x)
+  effects <- lapply(var, function(y) {
+    eval(y)
   })
 
   if (type == "rem" & !ordinal & attr(ft, "intercept") == 1) {
@@ -623,7 +623,10 @@ parse_tie <- function(List, reh) {
 
   # Error message in the case of missing rownames
   if (is.null(rownames(x)) | is.null(colnames(x))) {
-    stop("Name rows and columns of 'x' in tie() with the respective actors in the network")
+    if(nrow(x) != nrow(dictionary) | ncol(x) != nrow(dictionary)) {
+      stop("Rows and columns of 'x' in tie() should match number of actors in the network")
+    }
+    rownames(x) <- colnames(x) <- dictionary[,1]
   }
 
   # Error message in the case of missing actors
@@ -774,7 +777,7 @@ process_covariate <- function(effects, attr_data, actors, edgelist, reh,
 
       as.matrix(dat)
     } else if (effect %in% c("tie", "event", "FEtype", "ccp")) {
-      if (effect == "tie" && !is.null(x$variable)) {
+      if (effect == "tie") {
         parse_tie(x, reh)
       } else if (effect == "event") {
         if (length(x$x) != nrow(edgelist)) {

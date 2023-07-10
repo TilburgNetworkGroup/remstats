@@ -141,16 +141,14 @@ receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 
 #' tie
 #'
-#' Specifies the statistic for a "tie" (or, "dyad") effect in the tie-oriented
-#' model or the receiver choice step of the actor-oriented model. A "tie"
-#' effect refers to an exogenous dyad attribute that affects dyad
-#' \emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s
-#' probability of being chosen as a receiver for the event send by the active
-#' sender \emph{i} (actor-oriented model).
+#' Specifies the statistic for a "tie" (or, "dyad") effect. 
 #'
 #' @details
-#' The statistic is equal to the value of the exogenous attribute for
-#' dyad \emph{(i,j)} in matrix \code{x}.
+#' The "tie" effect refers to an exogenous dyad attribute that affects dyad
+#' \emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s
+#' probability of being chosen as a receiver for the event send by the active
+#' sender \emph{i} (actor-oriented model). The statistic is equal to the value 
+#' of the exogenous attribute for dyad \emph{(i,j)} in matrix \code{x}.
 #'
 #' @param x a matrix with attribute information, rows and columns should refer
 #' to actors in the edgelist

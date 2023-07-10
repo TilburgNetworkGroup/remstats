@@ -24,12 +24,16 @@ info2 <- data.frame(
 
 info <- rbind(info, info2)
 
+# Tie info
+X <<- matrix(1:9, 3, 3)
+diag(X) <<- 0
+
 # Statistics
 reh <- remify::remify(edgelist, model = "actor")
 sender_effects <- ~ send(variable = "x1")
 receiver_effects <- ~ receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") + 
-  same(variable = "x2")  
+  same(variable = "x2") + tie(x = X, variableName = "X") 
 stats <- remstats(reh = reh,
   sender_effects = sender_effects,
   receiver_effects = receiver_effects, 
@@ -92,12 +96,23 @@ same <- rbind(
 )
 expect_equal(receiver_stats[, , "same_x2"], same)
 
+# tie
+tie <- rbind(
+  c(0, 4, 7),
+  c(0, 4, 7),
+  c(2, 0, 8),
+  c(2, 0, 8),
+  c(3, 6, 0)
+)
+expect_equal(receiver_stats[, , "tie_X"], tie)
+
 # test standardization
 reh <- remify::remify(edgelist, model = "actor")
 std_sender_effects <- ~ send(variable = "x1", scaling = "std")
 std_receiver_effects <- ~ receive(variable = "x1", scaling = "std") + 
   average(variable = "x1", scaling = "std") + 
-  difference(variable = "x1", scaling = "std")
+  difference(variable = "x1", scaling = "std") +
+  tie(x = X, variableName = "X", scaling = "std")
 std_stats <- remstats(reh = reh,
   sender_effects = std_sender_effects,
   receiver_effects = std_receiver_effects, 
