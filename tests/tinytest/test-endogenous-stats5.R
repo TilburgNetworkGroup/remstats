@@ -2,9 +2,9 @@
 
 # Small edgelist
 edgelist <- data.frame(
-  time = 1:5,
-  actor1 = c(1, 1, 2, 2, 3),
-  actor2 = c(2, 3, 1, 3, 2)
+  time = 1:10,
+  actor1 = c(1, 2, 1, 2, 3, 4, 2, 2, 2, 4),
+  actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 )
 
 # Statistics
@@ -16,6 +16,8 @@ receiver_effects <- ~
   indegreeReceiver() + outdegreeReceiver() + totaldegreeReceiver() +
     inertia() + reciprocity() +
     isp() + itp() + osp() + otp() +
+    isp(unique = TRUE) + itp(unique = TRUE) + 
+    osp(unique = TRUE) + otp(unique = TRUE) +
     recencyContinue() + recencySendReceiver() + recencyReceiveReceiver() +
     rrankSend() + rrankReceive()
 stats <- remstats(reh,
@@ -32,20 +34,30 @@ expect_equal(sender_stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol
 # outdegreeSender
 outdegreeSender <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(1, 0, 0),
-  c(2, 0, 0),
-  c(2, 1, 0),
-  c(2, 2, 0)
+  c(1, 0, 0, 0),
+  c(1, 1, 0, 0),
+  c(2, 1, 0, 0),
+  c(2, 2, 0, 0),
+  c(2, 2, 1, 0),
+  c(2, 2, 1, 1),
+  c(2, 3, 1, 1),
+  c(2, 4, 1, 1),
+  c(2, 5, 1, 1)
 )
 expect_equal(sender_stats[, , "outdegreeSender"], outdegreeSender)
 
 # indegreeSender
 indegreeSender <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 1, 0),
-  c(0, 1, 1),
-  c(1, 1, 1),
-  c(1, 1, 2)
+  c(0, 0, 1, 0),
+  c(1, 0, 1, 0),
+  c(1, 0, 2, 0),
+  c(1, 0, 3, 0),
+  c(1, 1, 3, 0),
+  c(1, 1, 4, 0),
+  c(2, 1, 4, 0),
+  c(2, 1, 5, 0),
+  c(2, 1, 5, 1)
 )
 expect_equal(sender_stats[, , "indegreeSender"], indegreeSender)
 
@@ -56,40 +68,60 @@ expect_equal(sender_stats[, , "totaldegreeSender"], totaldegreeSender)
 # recencySendSender
 recencySendSender <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(1 / 2, 0, 0),
-  c(1 / 2, 0, 0),
-  c(1 / 3, 1 / 2, 0),
-  c(1 / 4, 1 / 2, 0)
+  c(1/2, 0.0, 0.0, 0.0),
+  c(1/3, 1/2, 0.0, 0.0),
+  c(1/2, 1/3, 0.0, 0.0),
+  c(1/3, 1/2, 0.0, 0.0),
+  c(1/4, 1/3, 1/2, 0.0),
+  c(1/5, 1/4, 1/3, 1/2),
+  c(1/6, 1/2, 1/4, 1/3),
+  c(1/7, 1/2, 1/5, 1/4),
+  c(1/8, 1/2, 1/6, 1/5)
 )
 expect_equal(sender_stats[, , "recencySendSender"], recencySendSender)
 
 # recencyReceiveSender
 recencyReceiveSender <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 1 / 2, 0),
-  c(0, 1 / 3, 1 / 2),
-  c(1 / 2, 1 / 4, 1 / 3),
-  c(1 / 3, 1 / 5, 1 / 2)
+  c(0.0, 0.0, 1/2, 0.0),
+  c(1/2, 0.0, 1/3, 0.0),
+  c(1/3, 0.0, 1/2, 0.0),
+  c(1/4, 0.0, 1/2, 0.0),
+  c(1/5, 1/2, 1/3, 0.0),
+  c(1/6, 1/3, 1/2, 0.0),
+  c(1/2, 1/4, 1/3, 0.0),
+  c(1/3, 1/5, 1/2, 0.0),
+  c(1/4, 1/6, 1/3, 1/2)
 )
 expect_equal(sender_stats[, , "recencyReceiveSender"], recencyReceiveSender)
 
 # outdegreeReceiver
 outdegreeReceiver <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(1, 0, 0),
-  c(2, 0, 0),
-  c(2, 1, 0),
-  c(2, 2, 0)
+  c(1, 0, 0, 0),
+  c(1, 1, 0, 0),
+  c(2, 1, 0, 0),
+  c(2, 2, 0, 0),
+  c(2, 2, 1, 0),
+  c(2, 2, 1, 1),
+  c(2, 3, 1, 1),
+  c(2, 4, 1, 1),
+  c(2, 5, 1, 1)
 )
 expect_equal(receiver_stats[, , "outdegreeReceiver"], outdegreeReceiver)
 
 # indegreeReceiver
 indegreeReceiver <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 1, 0),
-  c(0, 1, 1),
-  c(1, 1, 1),
-  c(1, 1, 2)
+  c(0, 0, 1, 0),
+  c(1, 0, 1, 0),
+  c(1, 0, 2, 0),
+  c(1, 0, 3, 0),
+  c(1, 1, 3, 0),
+  c(1, 1, 4, 0),
+  c(2, 1, 4, 0),
+  c(2, 1, 5, 0),
+  c(2, 1, 5, 1)
 )
 expect_equal(receiver_stats[, , "indegreeReceiver"], indegreeReceiver)
 
@@ -100,110 +132,225 @@ expect_equal(receiver_stats[, , "totaldegreeReceiver"], totaldegreeReceiver)
 # inertia
 inertia <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 1, 0),
-  c(0, 0, 0),
-  c(1, 0, 0),
-  c(0, 0, 0)
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(1, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 1, 0),
+  c(2, 0, 1, 0),
+  c(2, 0, 2, 0),
+  c(0, 0, 1, 0)
 )
 expect_equal(receiver_stats[, , "inertia"], inertia)
 
 # reciprocity
 reciprocity <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 0, 0),
-  c(1, 0, 0),
-  c(1, 0, 0),
-  c(1, 1, 0)
+  c(0, 0, 0, 0),
+  c(0, 1, 0, 0),
+  c(0, 0, 0, 0),
+  c(2, 1, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 1, 0),
+  c(0, 1, 0, 0)
 )
 expect_equal(receiver_stats[, , "reciprocity"], reciprocity)
 
 # itp
 itp <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 0, 0),
-  c(0, 0, 0),
-  c(0, 0, 0),
-  c(1, 1, 0)
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 1, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 0, 1),
+  c(1, 0, 0, 1),
+  c(1, 0, 0, 1),
+  c(0, 0, 1, 0)
 )
 expect_equal(receiver_stats[, , "itp"], itp)
+
+# itp.unique
+itp.unique <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 1, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 0, 1),
+  c(1, 0, 0, 1),
+  c(1, 0, 0, 1),
+  c(0, 0, 1, 0)
+)
+expect_equal(receiver_stats[, , "itp.unique"], itp.unique)
 
 # otp
 otp <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 0, 0),
-  c(0, 0, 0),
-  c(0, 0, 1),
-  c(0, 0, 0)
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 2, 0),
+  c(0, 0, 2, 0),
+  c(0, 1, 0, 0)
 )
 expect_equal(receiver_stats[, , "otp"], otp)
+
+# otp.unique
+otp.unique <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 1, 0),
+  c(0, 1, 0, 0)
+)
+expect_equal(receiver_stats[, , "otp.unique"], otp.unique)
 
 # isp
 isp <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 0, 0),
-  c(0, 0, 1),
-  c(0, 0, 1),
-  c(1, 1, 0)
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 1, 0)
 )
 expect_equal(receiver_stats[, , "isp"], isp)
+
+# isp.unique
+isp.unique <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 1, 0)
+)
+expect_equal(receiver_stats[, , "isp.unique"], isp.unique)
 
 # osp
 osp <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 0, 0),
-  c(0, 0, 0),
-  c(0, 0, 0),
-  c(0, 0, 0)
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 0, 1),
+  c(1, 0, 0, 1),
+  c(2, 0, 0, 1),
+  c(1, 1, 0, 0)
 )
 expect_equal(receiver_stats[, , "osp"], osp)
+
+# osp.unique
+osp.unique <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 0, 1),
+  c(1, 0, 0, 1),
+  c(1, 0, 0, 1),
+  c(1, 1, 0, 0)
+)
+expect_equal(receiver_stats[, , "osp.unique"], osp.unique)
 
 # recencyContinue
 recencyContinue <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 1 / 2, 0),
-  c(0, 0, 0),
-  c(1 / 2, 0, 0),
-  c(0, 0, 0)
+  c(0.0, 0.0, 0.0, 0.0),
+  c(0.0, 0.0, 1/3, 0.0),
+  c(1/3, 0.0, 0.0, 0.0),
+  c(0.0, 0.0, 0.0, 0.0),
+  c(0.0, 0.0, 0.0, 0.0),
+  c(1/6, 0.0, 1/4, 0.0),
+  c(1/2, 0.0, 1/5, 0.0),
+  c(1/3, 0.0, 1/2, 0.0),
+  c(0.0, 0.0, 1/5, 0.0)
 )
 expect_equal(receiver_stats[, , "recencyContinue"], recencyContinue)
 
 # recencySendReceiver
 recencySendReceiver <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(1 / 2, 0, 0),
-  c(1 / 2, 0, 0),
-  c(1 / 3, 1 / 2, 0),
-  c(1 / 4, 1 / 2, 0)
+  c(1/2, 0.0, 0.0, 0.0),
+  c(1/3, 1/2, 0.0, 0.0),
+  c(1/2, 1/3, 0.0, 0.0),
+  c(1/3, 1/2, 0.0, 0.0),
+  c(1/4, 1/3, 1/2, 0.0),
+  c(1/5, 1/4, 1/3, 1/2),
+  c(1/6, 1/2, 1/4, 1/3),
+  c(1/7, 1/2, 1/5, 1/4),
+  c(1/8, 1/2, 1/6, 1/5)
 )
 expect_equal(receiver_stats[, , "recencySendReceiver"], recencySendReceiver)
 
 # recencyReceiveReceiver
 recencyReceiveReceiver <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 1 / 2, 0),
-  c(0, 1 / 3, 1 / 2),
-  c(1 / 2, 1 / 4, 1 / 3),
-  c(1 / 3, 1 / 5, 1 / 2)
+  c(0.0, 0.0, 1/2, 0.0),
+  c(1/2, 0.0, 1/3, 0.0),
+  c(1/3, 0.0, 1/2, 0.0),
+  c(1/4, 0.0, 1/2, 0.0),
+  c(1/5, 1/2, 1/3, 0.0),
+  c(1/6, 1/3, 1/2, 0.0),
+  c(1/2, 1/4, 1/3, 0.0),
+  c(1/3, 1/5, 1/2, 0.0),
+  c(1/4, 1/6, 1/3, 1/2)
 )
 expect_equal(receiver_stats[, , "recencyReceiveReceiver"], recencyReceiveReceiver)
 
 # rrankSend
 rrankSend <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 1, 0),
-  c(0, 0, 0),
-  c(1, 0, 0),
-  c(0, 0, 0)
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(1, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1/2, 0, 1, 0),
+  c(1, 0, 1/2, 0),
+  c(1/2, 0, 1, 0),
+  c(0, 0, 1, 0)
 )
 expect_equal(receiver_stats[, , "rrankSend"], rrankSend)
 
 # rrankReceive
 rrankReceive <- rbind(
   matrix(0, ncol = nrow(actors)),
-  c(0, 0, 0),
-  c(1, 0, 0),
-  c(1, 0, 0),
-  c(1 / 2, 1, 0)
+  c(0, 0, 0, 0),
+  c(0, 1, 0, 0),
+  c(0, 0, 0, 0),
+  c(1/2, 1, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 1, 0),
+  c(0, 1, 0, 0)
 )
 expect_equal(receiver_stats[, , "rrankReceive"], rrankReceive)
 
@@ -216,7 +363,9 @@ std_receiver_effects <- ~
     totaldegreeReceiver(scaling = "std") +
     inertia(scaling = "std") + reciprocity(scaling = "std") +
     isp(scaling = "std") + itp(scaling = "std") + 
-    osp(scaling = "std") + otp(scaling = "std") 
+    osp(scaling = "std") + otp(scaling = "std") +
+    isp(unique = TRUE, scaling = "std") + itp(unique = TRUE, scaling = "std") + 
+    osp(unique = TRUE, scaling = "std") + otp(unique = TRUE, scaling = "std") 
 std_stats <- remstats(reh,
   sender_effects = std_sender_effects,
   receiver_effects = std_receiver_effects
