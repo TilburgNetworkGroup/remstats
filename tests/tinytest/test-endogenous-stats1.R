@@ -13,6 +13,7 @@ effects <- ~
   outdegreeSender() + outdegreeReceiver() +
     indegreeSender() + indegreeReceiver() +
     totaldegreeSender() + totaldegreeReceiver() +
+		totaldegreeDyad() +
     inertia() + reciprocity() +
     isp() + itp() + osp() + otp() +
     isp(unique = TRUE) + itp(unique = TRUE) +
@@ -96,6 +97,21 @@ expect_equal(stats[, , "totaldegreeSender"], totaldegreeSender)
 # totaldegreeReceiver
 totaldegreeReceiver <- indegreeReceiver + outdegreeReceiver
 expect_equal(stats[, , "totaldegreeReceiver"], totaldegreeReceiver)
+
+# totaldegreeDyad
+# totaldegreeDyad <- rbind(
+# 	matrix(0, ncol = nrow(riskset)),
+# 	c(1, 1, 1, 0, 1, 1, 1),
+# 	c(2, 2, 2, 1, 2, 2, 1),
+# 	c(3, 3, 3, 1, 3, 3, 2),
+# 	c(4, 4, 4, 2, 4, 3, 3),
+# 	c(5, 5, 5, 3, 5, 4, 4),
+# 	c(6, 5, 6, 4, 6, 5, 5),
+# 	c(7, 6, 7, 5, 7, 5, 5),
+# 	c(8, 7, 8, 6, 8, 6, 6),
+# 	c(8, 8, 9, 7, 9, 7, 7)
+# )
+# expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
 
 # inertia
 inertia <- rbind(

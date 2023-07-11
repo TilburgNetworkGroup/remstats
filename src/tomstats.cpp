@@ -898,7 +898,7 @@ arma::mat calc_degree_directed(int type,
       if (type == 7)
       {
         // Get the dyad IDs for "actor"
-        IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, false);
+        IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, directed);
         for (int dyadID : dyadIDs)
         {
           if (dyadID >= 0)
@@ -2059,187 +2059,187 @@ arma::mat calc_rrank(int type, const arma::mat &edgelist,
                      const arma::mat &riskset, arma::uword N, arma::uword C, int start, int stop, bool consider_type)
 {
 
-    // Slice the edgelist according to "start" and "stop"
-    arma::mat ESlice = edgelist.rows(start, stop);
+  // Slice the edgelist according to "start" and "stop"
+  arma::mat ESlice = edgelist.rows(start, stop);
 
-    // Saving space
-    arma::mat stat(ESlice.n_rows, riskset.n_rows, arma::fill::zeros);
+  // Saving space
+  arma::mat stat(ESlice.n_rows, riskset.n_rows, arma::fill::zeros);
 
-    if (!consider_type)
+  if (!consider_type)
+  {
+    // Initialize lastTime array
+    arma::mat lastTime(N, N);
+    if (start > 0)
     {
-        // Initialize lastTime array
-        arma::mat lastTime(N, N);
-        if (start > 0)
+      // Select the past
+      arma::mat past = edgelist.rows(0, start - 1);
+
+      for (arma::uword i = 0; i < past.n_rows; ++i)
+      {
+        // rrankSend: to whom the sender has most recently send events
+        // (most recent times)
+        int d = past(i, 1);
+        if (type == 1)
         {
-            // Select the past
-            arma::mat past = edgelist.rows(0, start - 1);
-
-            for (arma::uword i = 0; i < past.n_rows; ++i)
-            {
-                // rrankSend: to whom the sender has most recently send events
-                // (most recent times)
-                int d = past(i, 1);
-                if (type == 1)
-                {
-                    lastTime(riskset(d, 0), riskset(d, 1)) = past(i, 0);
-                }
-                // rrankReceive: from whom the sender has most recently
-                // received events (most recent times)
-                if (type == 2)
-                {
-                    lastTime(riskset(d, 1), riskset(d, 0)) = past(i, 0);
-                }
-            }
+          lastTime(riskset(d, 0), riskset(d, 1)) = past(i, 0);
         }
-
-        // For loop over time points
-        for (arma::uword i = 0; i < ESlice.n_rows; ++i)
+        // rrankReceive: from whom the sender has most recently
+        // received events (most recent times)
+        if (type == 2)
         {
-            // Compute ranks based on lastTime
-            arma::mat ranks(N, N, arma::fill::zeros);
-            // Loop over senders
-            for (arma::uword j = 0; j < N; ++j)
-            {
-                ranks.row(j) = rankR(lastTime.row(j), N);
-            }
-
-            // Statistics value
-            arma::mat values = 1 / ranks;
-            values.replace(arma::datum::inf, 0);
-
-            // Transform to statistics matrix
-            if (i > 0)
-            {
-                if (edgelist(start + i, 0) > edgelist(start + i - 1, 0))
-                {
-                    // Update
-                    for (arma::uword j = 0; j < riskset.n_rows; ++j)
-                    {
-                        stat(i, j) = values(riskset(j, 0), riskset(j, 1));
-                    }
-                }
-                else
-                {
-                    // Do not update
-                    stat.row(i) = stat.row(i - 1);
-                }
-            }
-            else
-            {
-                // Update
-                for (arma::uword j = 0; j < riskset.n_rows; ++j)
-                {
-                    stat(i, j) = values(riskset(j, 0), riskset(j, 1));
-                }
-            }
-
-            // Update lastTime
-            // rrankSend: to whom the sender has most recently send events
-            // (most recent times)
-            int d = ESlice(i, 1);
-            if (type == 1)
-            {
-                lastTime(riskset(d, 0), riskset(d, 1)) = ESlice(i, 0);
-            }
-            // rrankReceive: from whom the sender has most recently
-            // received events (most recent times)
-            if (type == 2)
-            {
-                lastTime(riskset(d, 1), riskset(d, 0)) = ESlice(i, 0);
-            }
+          lastTime(riskset(d, 1), riskset(d, 0)) = past(i, 0);
         }
-    }
-    else
-    {
-        // Initialize lastTime array
-        arma::cube lastTime(N, N, C);
-        if (start > 0)
-        {
-            // Select the past
-            arma::mat past = edgelist.rows(0, start - 1);
-
-            for (arma::uword i = 0; i < past.n_rows; ++i)
-            {
-                // rrankSend: to whom the sender has most recently send events
-                // (most recent times)
-                int d = past(i, 1);
-                if (type == 1)
-                {
-                    lastTime(riskset(d, 0), riskset(d, 1), riskset(d, 2)) = past(i, 0);
-                }
-                // rrankReceive: from whom the sender has most recently
-                // received events (most recent times)
-                if (type == 2)
-                {
-                    lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = past(i, 0);
-                }
-            }
-        }
-
-        // For loop over time points
-        for (arma::uword i = 0; i < ESlice.n_rows; ++i)
-        {
-            // Compute ranks based on lastTime
-            arma::cube ranks(N, N, C, arma::fill::zeros);
-
-            // Loop over event types
-            for (arma::uword k = 0; k < C; ++k)
-            {
-                // Loop over senders
-                for (arma::uword j = 0; j < N; ++j)
-                {
-                    ranks.slice(k).row(j) = rankR(lastTime.slice(k).row(j), N);
-                }
-            }
-
-            // Statistics value
-            arma::cube values = 1 / ranks;
-            values.replace(arma::datum::inf, 0);
-
-            // Transform to statistics matrix
-            if (i > 0)
-            {
-                if (edgelist(start + i, 0) > edgelist(start + i - 1, 0))
-                {
-                    // Update
-                    for (arma::uword j = 0; j < riskset.n_rows; ++j)
-                    {
-                        stat(i, j) = values(riskset(j, 0), riskset(j, 1), riskset(j, 2));
-                    }
-                }
-                else
-                {
-                    // Do not update
-                    stat.row(i) = stat.row(i - 1);
-                }
-            }
-            else
-            {
-                // Update
-                for (arma::uword j = 0; j < riskset.n_rows; ++j)
-                {
-                    stat(i, j) = values(riskset(j, 0), riskset(j, 1), riskset(j,2));
-                }
-            }
-
-            // Update lastTime
-            // rrankSend: to whom the sender has most recently send events
-            // (most recent times)
-            int d = ESlice(i, 1);
-            if (type == 1)
-            {
-                lastTime(riskset(d, 0), riskset(d, 1), riskset(d, 2)) = ESlice(i, 0);
-            }
-            // rrankReceive: from whom the sender has most recently
-            // received events (most recent times)
-            if (type == 2)
-            {
-                lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = ESlice(i, 0);
-            }
-        }
+      }
     }
 
-    return stat;
+    // For loop over time points
+    for (arma::uword i = 0; i < ESlice.n_rows; ++i)
+    {
+      // Compute ranks based on lastTime
+      arma::mat ranks(N, N, arma::fill::zeros);
+      // Loop over senders
+      for (arma::uword j = 0; j < N; ++j)
+      {
+        ranks.row(j) = rankR(lastTime.row(j), N);
+      }
+
+      // Statistics value
+      arma::mat values = 1 / ranks;
+      values.replace(arma::datum::inf, 0);
+
+      // Transform to statistics matrix
+      if (i > 0)
+      {
+        if (edgelist(start + i, 0) > edgelist(start + i - 1, 0))
+        {
+          // Update
+          for (arma::uword j = 0; j < riskset.n_rows; ++j)
+          {
+            stat(i, j) = values(riskset(j, 0), riskset(j, 1));
+          }
+        }
+        else
+        {
+          // Do not update
+          stat.row(i) = stat.row(i - 1);
+        }
+      }
+      else
+      {
+        // Update
+        for (arma::uword j = 0; j < riskset.n_rows; ++j)
+        {
+          stat(i, j) = values(riskset(j, 0), riskset(j, 1));
+        }
+      }
+
+      // Update lastTime
+      // rrankSend: to whom the sender has most recently send events
+      // (most recent times)
+      int d = ESlice(i, 1);
+      if (type == 1)
+      {
+        lastTime(riskset(d, 0), riskset(d, 1)) = ESlice(i, 0);
+      }
+      // rrankReceive: from whom the sender has most recently
+      // received events (most recent times)
+      if (type == 2)
+      {
+        lastTime(riskset(d, 1), riskset(d, 0)) = ESlice(i, 0);
+      }
+    }
+  }
+  else
+  {
+    // Initialize lastTime array
+    arma::cube lastTime(N, N, C);
+    if (start > 0)
+    {
+      // Select the past
+      arma::mat past = edgelist.rows(0, start - 1);
+
+      for (arma::uword i = 0; i < past.n_rows; ++i)
+      {
+        // rrankSend: to whom the sender has most recently send events
+        // (most recent times)
+        int d = past(i, 1);
+        if (type == 1)
+        {
+          lastTime(riskset(d, 0), riskset(d, 1), riskset(d, 2)) = past(i, 0);
+        }
+        // rrankReceive: from whom the sender has most recently
+        // received events (most recent times)
+        if (type == 2)
+        {
+          lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = past(i, 0);
+        }
+      }
+    }
+
+    // For loop over time points
+    for (arma::uword i = 0; i < ESlice.n_rows; ++i)
+    {
+      // Compute ranks based on lastTime
+      arma::cube ranks(N, N, C, arma::fill::zeros);
+
+      // Loop over event types
+      for (arma::uword k = 0; k < C; ++k)
+      {
+        // Loop over senders
+        for (arma::uword j = 0; j < N; ++j)
+        {
+          ranks.slice(k).row(j) = rankR(lastTime.slice(k).row(j), N);
+        }
+      }
+
+      // Statistics value
+      arma::cube values = 1 / ranks;
+      values.replace(arma::datum::inf, 0);
+
+      // Transform to statistics matrix
+      if (i > 0)
+      {
+        if (edgelist(start + i, 0) > edgelist(start + i - 1, 0))
+        {
+          // Update
+          for (arma::uword j = 0; j < riskset.n_rows; ++j)
+          {
+            stat(i, j) = values(riskset(j, 0), riskset(j, 1), riskset(j, 2));
+          }
+        }
+        else
+        {
+          // Do not update
+          stat.row(i) = stat.row(i - 1);
+        }
+      }
+      else
+      {
+        // Update
+        for (arma::uword j = 0; j < riskset.n_rows; ++j)
+        {
+          stat(i, j) = values(riskset(j, 0), riskset(j, 1), riskset(j, 2));
+        }
+      }
+
+      // Update lastTime
+      // rrankSend: to whom the sender has most recently send events
+      // (most recent times)
+      int d = ESlice(i, 1);
+      if (type == 1)
+      {
+        lastTime(riskset(d, 0), riskset(d, 1), riskset(d, 2)) = ESlice(i, 0);
+      }
+      // rrankReceive: from whom the sender has most recently
+      // received events (most recent times)
+      if (type == 2)
+      {
+        lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = ESlice(i, 0);
+      }
+    }
+  }
+
+  return stat;
 }
 
 // calc_recency
@@ -3131,284 +3131,298 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       {
         for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
-          stat.row(t) = stat.row(t) / (sum(adjmat.row(t)));
+          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
         }
         stat.replace(arma::datum::nan, 0);
-      }
-      break;
-
-    // degreeMax
-    case 119:
-      // Compute statistic
-      stat = calc_degree_undirected(2, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, consider_type(i));
-      // Divide by the number/weight of past events
-      if (scaling(i) == "prop")
-      {
-        for (arma::uword t = 0; t < stat.n_rows; ++t)
+        // First row
+        if (start == 0)
         {
-          stat.row(t) = stat.row(t) / (sum(adjmat.row(t)));
-        }
-        stat.replace(arma::datum::nan, 0);
-      }
-      break;
-
-    // degreeDiff
-    case 120:
-      // Compute statistic
-      stat = calc_degree_undirected(3, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, consider_type(i));
-      break;
-
-    // ccp
-    case 121:
-      // Compute statistic
-      stat = current_common_partners(edgelist, riskset,
-                                     actors, covariates[i], start, stop);
-      break;
-
-    // otp
-    case 131:
-      // Compute statistic
-      if (types.n_elem == 1)
-      {
-        stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset, scaling(i));
-      }
-      else
-      {
-        if (consider_type(i))
-        {
-          stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset, scaling(i));
-        }
-        else
-        {
-          stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset, scaling(i));
+          arma::rowvec rep = arma::rowvec(stat.n_cols,
+                                          arma::fill::value(1.0 / actors.n_elem));
+          stat.row(0) = rep;
         }
       }
-      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-      if (scaling(i) == "std_unique")
-      {
-        stat = standardize(stat);
-      }
-      break;
+        break;
 
-    // itp
-    case 132:
-      // Compute statistic
-      if (types.n_elem == 1)
-      {
-        stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset, scaling(i));
-      }
-      else
-      {
-        if (consider_type(i))
+      // degreeMax
+      case 119:
+        // Compute statistic
+        stat = calc_degree_undirected(2, edgelist, riskset, adjmat, actors,
+                                      types, start, stop, consider_type(i));
+        // Divide by the number/weight of past events
+        if (scaling(i) == "prop")
         {
-          stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset, scaling(i));
+          for (arma::uword t = 0; t < stat.n_rows; ++t)
+          {
+            stat.row(t) = stat.row(t) / sum(adjmat.row(t));
+          }
+          stat.replace(arma::datum::nan, 0);
+          // First row
+          if (start == 0)
+          {
+            arma::rowvec rep = arma::rowvec(stat.n_cols,
+                                            arma::fill::value(1.0 / actors.n_elem));
+            stat.row(0) = rep;
+          }
         }
-        else
+          break;
+
+        // degreeDiff
+        case 120:
+          // Compute statistic
+          stat = calc_degree_undirected(3, edgelist, riskset, adjmat, actors,
+                                        types, start, stop, consider_type(i));
+          break;
+
+        // ccp
+        case 121:
+          // Compute statistic
+          stat = current_common_partners(edgelist, riskset,
+                                         actors, covariates[i], start, stop);
+          break;
+
+        // otp
+        case 131:
+          // Compute statistic
+          if (types.n_elem == 1)
+          {
+            stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset, scaling(i));
+          }
+          else
+          {
+            if (consider_type(i))
+            {
+              stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset, scaling(i));
+            }
+            else
+            {
+              stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset, scaling(i));
+            }
+          }
+          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+          if (scaling(i) == "std_unique")
+          {
+            stat = standardize(stat);
+          }
+          break;
+
+        // itp
+        case 132:
+          // Compute statistic
+          if (types.n_elem == 1)
+          {
+            stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset, scaling(i));
+          }
+          else
+          {
+            if (consider_type(i))
+            {
+              stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset, scaling(i));
+            }
+            else
+            {
+              stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset, scaling(i));
+            }
+          }
+          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+          if (scaling(i) == "std_unique")
+          {
+            stat = standardize(stat);
+          }
+          break;
+
+        // osp
+        case 133:
+          // Compute statistic
+          if (types.n_elem == 1)
+          {
+            stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset, scaling(i));
+          }
+          else
+          {
+            if (consider_type(i))
+            {
+              stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset, scaling(i));
+            }
+            else
+            {
+              stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset, scaling(i));
+            }
+          }
+          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+          if (scaling(i) == "std_unique")
+          {
+            stat = standardize(stat);
+          }
+          break;
+
+        // isp
+        case 134:
+          // Compute statistic
+          if (types.n_elem == 1)
+          {
+            stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset, scaling(i));
+          }
+          else
+          {
+            if (consider_type(i))
+            {
+              stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset, scaling(i));
+            }
+            else
+            {
+              stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset, scaling(i));
+            }
+          }
+          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+          if (scaling(i) == "std_unique")
+          {
+            stat = standardize(stat);
+          }
+          break;
+
+        // sp
+        case 135:
+          // Compute statistic
+          if (types.n_elem == 1)
+          {
+            stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset, scaling(i));
+          }
+          else
+          {
+            if (consider_type(i))
+            {
+              stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset, scaling(i));
+            }
+            else
+            {
+              stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset, scaling(i));
+            }
+          }
+          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+          if (scaling(i) == "std_unique")
+          {
+            stat = standardize(stat);
+          }
+          break;
+
+        // psABBA
+        case 141:
+          // Compute statistic
+          stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+          break;
+
+        // psABBY
+        case 142:
+          // Compute statistic
+          stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+          break;
+
+        // psABXA
+        case 143:
+          // Compute statistic
+          stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+          break;
+
+        // psABXB
+        case 144:
+          // Compute statistic
+          stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+          break;
+
+        // psABXY
+        case 145:
+          // Compute statistic
+          stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+          break;
+
+        // psABAY
+        case 146:
+          // Compute statistic
+          stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+          break;
+
+        // 74 psABAB
+        case 147:
+          // Compute statistic
+          stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+          break;
+
+        // rrankSend
+        case 151:
+          // Compute statistic
+          stat = calc_rrank(1, edgelist, riskset, actors.n_elem,
+                            types.n_elem, start, stop, consider_type(i));
+          break;
+
+        // rrankReceive
+        case 152:
+          // Compute statistic
+          stat = calc_rrank(2, edgelist, riskset, actors.n_elem,
+                            types.n_elem, start, stop, consider_type(i));
+          break;
+
+        // recencyContinue
+        case 161:
+          // Compute statistic
+          stat = calc_recency(1, edgelist, riskset, actors.n_elem,
+                              types.n_elem, start, stop, consider_type(i), directed);
+          break;
+
+        // recencySendSender
+        case 162:
+          // Compute statistic
+          stat = calc_recency(2, edgelist, riskset, actors.n_elem,
+                              types.n_elem, start, stop, consider_type(i), directed);
+          break;
+
+        // recencySendReceiver
+        case 163:
+          // Compute statistic
+          stat = calc_recency(3, edgelist, riskset, actors.n_elem,
+                              types.n_elem, start, stop, consider_type(i), directed);
+          break;
+
+        // recencyReceiveSender
+        case 164:
+          // Compute statistic
+          stat = calc_recency(4, edgelist, riskset, actors.n_elem,
+                              types.n_elem, start, stop, consider_type(i), directed);
+          break;
+
+        // recencyReceiveReceiver
+        case 165:
+          // Compute statistic
+          stat = calc_recency(5, edgelist, riskset, actors.n_elem,
+                              types.n_elem, start, stop, consider_type(i), directed);
+          break;
+
+        // userStat
+        case 888:
+          stat = get_user_stat(covariates[i], start, stop);
+          break;
+
+        // interact
+        case 999:
+          // Get the indices of the statistics slices (+1) with the
+          // statistics for which an interaction needs to be computed.
+          arma::vec x = interactions[i];
+          int main1 = x(0);
+          int main2 = x(1);
+          // Element-wise multiplication
+          stat = stats.slice(main1 - 1) % stats.slice(main2 - 1);
+          break;
+        }
+
+        // Standardize
+        if (scaling(i) == "std")
         {
-          stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset, scaling(i));
+          stat = standardize(stat);
         }
+
+        // Save statistic
+        stats.slice(i) = stat;
       }
-      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-      if (scaling(i) == "std_unique")
-      {
-        stat = standardize(stat);
-      }
-      break;
 
-    // osp
-    case 133:
-      // Compute statistic
-      if (types.n_elem == 1)
-      {
-        stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset, scaling(i));
-      }
-      else
-      {
-        if (consider_type(i))
-        {
-          stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset, scaling(i));
-        }
-        else
-        {
-          stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset, scaling(i));
-        }
-      }
-      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-      if (scaling(i) == "std_unique")
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // isp
-    case 134:
-      // Compute statistic
-      if (types.n_elem == 1)
-      {
-        stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset, scaling(i));
-      }
-      else
-      {
-        if (consider_type(i))
-        {
-          stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset, scaling(i));
-        }
-        else
-        {
-          stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset, scaling(i));
-        }
-      }
-      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-      if (scaling(i) == "std_unique")
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // sp
-    case 135:
-      // Compute statistic
-      if (types.n_elem == 1)
-      {
-        stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset, scaling(i));
-      }
-      else
-      {
-        if (consider_type(i))
-        {
-          stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset, scaling(i));
-        }
-        else
-        {
-          stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset, scaling(i));
-        }
-      }
-      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-      if (scaling(i) == "std_unique")
-      {
-        stat = standardize(stat);
-      }
-      break;
-
-    // psABBA
-    case 141:
-      // Compute statistic
-      stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-      break;
-
-    // psABBY
-    case 142:
-      // Compute statistic
-      stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-      break;
-
-    // psABXA
-    case 143:
-      // Compute statistic
-      stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-      break;
-
-    // psABXB
-    case 144:
-      // Compute statistic
-      stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-      break;
-
-    // psABXY
-    case 145:
-      // Compute statistic
-      stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-      break;
-
-    // psABAY
-    case 146:
-      // Compute statistic
-      stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-      break;
-
-    // 74 psABAB
-    case 147:
-      // Compute statistic
-      stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-      break;
-
-    // rrankSend
-    case 151:
-      // Compute statistic
-      stat = calc_rrank(1, edgelist, riskset, actors.n_elem,
-                        types.n_elem, start, stop, consider_type(i));
-      break;
-
-    // rrankReceive
-    case 152:
-      // Compute statistic
-      stat = calc_rrank(2, edgelist, riskset, actors.n_elem,
-                        types.n_elem, start, stop, consider_type(i));
-      break;
-
-    // recencyContinue
-    case 161:
-      // Compute statistic
-      stat = calc_recency(1, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
-      break;
-
-    // recencySendSender
-    case 162:
-      // Compute statistic
-      stat = calc_recency(2, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
-      break;
-
-    // recencySendReceiver
-    case 163:
-      // Compute statistic
-      stat = calc_recency(3, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
-      break;
-
-    // recencyReceiveSender
-    case 164:
-      // Compute statistic
-      stat = calc_recency(4, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
-      break;
-
-    // recencyReceiveReceiver
-    case 165:
-      // Compute statistic
-      stat = calc_recency(5, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
-      break;
-
-    // userStat
-    case 888:
-      stat = get_user_stat(covariates[i], start, stop);
-      break;
-
-    // interact
-    case 999:
-      // Get the indices of the statistics slices (+1) with the
-      // statistics for which an interaction needs to be computed.
-      arma::vec x = interactions[i];
-      int main1 = x(0);
-      int main2 = x(1);
-      // Element-wise multiplication
-      stat = stats.slice(main1 - 1) % stats.slice(main2 - 1);
-      break;
+      return stats;
     }
-
-    // Standardize
-    if (scaling(i) == "std")
-    {
-      stat = standardize(stat);
-    }
-
-    // Save statistic
-    stats.slice(i) = stat;
-  }
-
-  return stats;
-}

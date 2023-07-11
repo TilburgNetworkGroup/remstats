@@ -10,12 +10,47 @@ edgelist <- data.frame(
 # Statistics
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
-effects <- ~ inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
+effects <- ~ degreeDiff() + degreeMin() + degreeMax() +
+  inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
 stats <- remstats(reh, tie_effects = effects)
 riskset <- attr(stats, "riskset")
 
 # baseline
 expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow(riskset)))
+
+# degreeMin
+degreeMin <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 1, 0, 0, 0, 0),
+  c(1, 1, 0, 1, 0, 0),
+  c(1, 2, 0, 1, 0, 0),
+  c(2, 3, 0, 2, 0, 0),
+  c(3, 3, 0, 3, 0, 0),
+  c(3, 3, 1, 3, 1, 1),
+  c(4, 4, 1, 4, 1, 1),
+  c(4, 4, 1, 5, 1, 1),
+  c(4, 4, 2, 6, 2, 2)
+)
+expect_equal(stats[, , "degreeMin"], degreeMin)
+
+# degreeMax
+degreeMax <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 1, 1, 1, 0, 1),
+  c(2, 2, 2, 1, 1, 1),
+  c(3, 3, 3, 2, 1, 2),
+  c(3, 3, 3, 3, 2, 3),
+  c(3, 4, 3, 4, 3, 4),
+  c(3, 5, 3, 5, 3, 5),
+  c(4, 5, 4, 5, 4, 5),
+  c(5, 6, 4, 6, 5, 6),
+  c(6, 6, 4, 6, 6, 6)
+)
+expect_equal(stats[, , "degreeMax"], degreeMax)
+
+# degreeDiff
+degreeDiff <- degreeMax - degreeMin
+expect_equal(stats[, , "degreeDiff"], degreeDiff)
 
 # inertia
 inertia <- rbind(
@@ -94,6 +129,8 @@ expect_equal(stats[, , "psABAY"], psABAY)
 
 # test standardization
 std_effects <- ~
+  degreeMin(scaling = "std") + degreeMax(scaling = "std") +
+  degreeDiff(scaling = "std") +
   inertia(scaling = "std") + sp(scaling = "std") + 
   sp(scaling = "std", unique = TRUE)
 std_stats <- remstats(reh, tie_effects = std_effects)
@@ -110,3 +147,13 @@ sapply(2:dim(std_stats)[3], function(p) {
 prop_effects <- ~ inertia(scaling = "prop")
 expect_error(remstats(reh, tie_effects = prop_effects),
   pattern = "not defined")
+
+prop_effects <- ~ degreeMin(scaling = "prop") + degreeMax(scaling = "prop")
+prop_stats <- remstats(reh, tie_effects = prop_effects)
+
+sapply(2:dim(prop_stats)[3], function(p) {
+  stat_name <- dimnames(prop_stats)[[3]][p]
+  scaled_original <- stats[,,stat_name] / (1:nrow(stats)-1)
+  scaled_original[1,] <- 1/4
+  expect_equal(prop_stats[,,stat_name], scaled_original)
+})
