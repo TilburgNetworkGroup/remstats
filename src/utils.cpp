@@ -60,13 +60,13 @@ arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
 
     // Get the first array to determine the dimensions
     arma::cube first_array = array_list[0];
-    int n_rows = first_array.n_rows;
-    int n_cols = first_array.n_cols;
-    int n_slices = first_array.n_slices;
+    arma::uword n_rows = first_array.n_rows;
+    arma::uword n_cols = first_array.n_cols;
+    arma::uword n_slices = first_array.n_slices;
 
     if (along == 1) {
         // Calculate the total number of rows
-        int total_rows = 0;
+        arma::uword total_rows = 0;
         
         for (int i = 0; i < array_list.size(); i++) {
             arma::cube current_array = array_list[i];
@@ -83,7 +83,7 @@ arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
 
     } else if (along == 2) {
         // Calculate the total number of columns
-        int total_cols = 0;
+        arma::uword total_cols = 0;
         
         for (int i = 0; i < array_list.size(); i++) {
             arma::cube current_array = array_list[i];
@@ -100,7 +100,7 @@ arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
 
     } else if (along == 3) {
         // Calculate the total number of slices
-        int total_slices = 0;
+        arma::uword total_slices = 0;
         
         for (int i = 0; i < array_list.size(); i++) {
             arma::cube current_array = array_list[i];
@@ -121,11 +121,11 @@ arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
 
     if (along == 1) {
         // Copy data from each array in the list
-        int current_row = 0;
+        arma::uword current_row = 0;
         
         for (int i = 0; i < array_list.size(); i++) {
             arma::cube current_array = array_list[i];
-            int current_rows = current_array.n_rows;
+            arma::uword current_rows = current_array.n_rows;
             
             // Copy data to combined array
             combined_array.subcube(current_row, 0, 0, current_row + current_rows - 1, n_cols - 1, n_slices - 1) = current_array;
@@ -135,11 +135,11 @@ arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
 
     } else if (along == 2) {
         // Copy data from each array in the list
-        int current_col = 0;
+        arma::uword current_col = 0;
         
         for (int i = 0; i < array_list.size(); i++) {
             arma::cube current_array = array_list[i];
-            int current_cols = current_array.n_cols;
+            arma::uword current_cols = current_array.n_cols;
             
             // Copy data to combined array
             combined_array.subcube(0, current_col, 0, n_rows - 1, current_col + current_cols - 1, n_slices - 1) = current_array;
@@ -149,11 +149,11 @@ arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
 
     } else if (along == 3) {
         // Copy data from each array in the list
-        int current_slice = 0;
+        arma::uword current_slice = 0;
             
         for (int i = 0; i < array_list.size(); i++) {
             arma::cube current_array = array_list[i];
-            int current_slices = current_array.n_slices;
+            arma::uword current_slices = current_array.n_slices;
                 
             // Copy data to combined array
             combined_array.slices(current_slice, current_slice + current_slices - 1) = current_array;
