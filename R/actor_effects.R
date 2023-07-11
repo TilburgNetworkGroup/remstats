@@ -55,7 +55,8 @@ actor_effects <- function(step = NULL) {
             "outdegreeSender",
             "totaldegreeSender",
             "recencySendSender",
-            "recencyReceiveSender"
+            "recencyReceiveSender",
+            "userStat"
         ),
         receiver = c(
             "receive",
@@ -76,7 +77,8 @@ actor_effects <- function(step = NULL) {
             "rrankReceive",
             "recencySendReceiver",
             "recencyReceiveReceiver",
-            "recencyContinue"
+            "recencyContinue",
+            "userStat"
         )
     )
 

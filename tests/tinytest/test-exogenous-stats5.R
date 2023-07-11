@@ -28,12 +28,17 @@ info <- rbind(info, info2)
 X <<- matrix(1:9, 3, 3)
 diag(X) <<- 0
 
+# UserStat
+Y <<- matrix(1:15, nrow = 5, ncol = 3)
+
 # Statistics
 reh <- remify::remify(edgelist, model = "actor")
-sender_effects <- ~ send(variable = "x1")
+sender_effects <- ~ send(variable = "x1") +
+  userStat(x = Y, variableName = "Y")
 receiver_effects <- ~ receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") + 
-  same(variable = "x2") + tie(x = X, variableName = "X") 
+  same(variable = "x2") + tie(x = X, variableName = "X") +
+  userStat(x = Y, variableName = "Y")
 stats <- remstats(reh = reh,
   sender_effects = sender_effects,
   receiver_effects = receiver_effects, 
@@ -105,6 +110,10 @@ tie <- rbind(
   c(3, 6, 0)
 )
 expect_equal(receiver_stats[, , "tie_X"], tie)
+
+# userStat
+expect_equal(sender_stats[, , "userStat_Y"], Y)
+expect_equal(receiver_stats[, , "userStat_Y"], Y)
 
 # test standardization
 reh <- remify::remify(edgelist, model = "actor")

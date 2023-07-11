@@ -123,3 +123,15 @@ expect_warning(
     pattern = "deprecated"
 )
 
+x <<- c(1, 1, NA)
+expect_error(
+    event(x), 
+    pattern = "missing values"
+)
+
+Y <<- matrix(1:15, nrow = 5, ncol = 3)
+Y[1,1] <- NA
+expect_warning(
+    userStat(Y), 
+    pattern = "missing values"
+)

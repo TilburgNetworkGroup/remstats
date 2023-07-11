@@ -41,6 +41,10 @@ Endogenous statistics:
  \item \code{\link{outdegreeReceiver}()}
  \item \code{\link{totaldegreeSender}()}
  \item \code{\link{totaldegreeReceiver}()}
+ \item \code{\link{totaldegreeDyad}()}
+ \item \code{\link{degreeMin}()}
+ \item \code{\link{degreeMax}()}
+ \item \code{\link{degreeDiff}()}
  \item \code{\link{inertia}()}
  \item \code{\link{reciprocity}()}
  \item \code{\link{otp}()}

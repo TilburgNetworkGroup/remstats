@@ -32,6 +32,10 @@
 #'  \item \code{\link{outdegreeReceiver}()}
 #'  \item \code{\link{totaldegreeSender}()}
 #'  \item \code{\link{totaldegreeReceiver}()}
+#'  \item \code{\link{totaldegreeDyad}()}
+#'  \item \code{\link{degreeMin}()}
+#'  \item \code{\link{degreeMax}()}
+#'  \item \code{\link{degreeDiff}()}
 #'  \item \code{\link{inertia}()}
 #'  \item \code{\link{reciprocity}()}
 #'  \item \code{\link{otp}()}
@@ -63,18 +67,8 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
   # Name all effects
   effects <- sort(all_tie_effects())
 
-  # Remove .type effects
-  effects <- sub("\\.type$", "", effects)
-  effects <- effects[!duplicated(effects)]
-
-  # Filter out 'removed'
-  effects <- effects[effects != "removed"]
-
   # Filter out 'interact'
   effects <- effects[effects != "interact"]
-  
-  # Filter out 'cpp' (temporarily?)
-  effects <- effects[effects != "ccp"]
 
   if (!is.null(directed)) {
     if (directed) {
@@ -107,7 +101,7 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
       # Filter out endogenous effects
       effects <- effects[!(effects %in% c(
         "indegreeSender", "indegreeReceiver", "outdegreeSender",
-        "outdegreeReceiver", "totaldegreeSender", "totaldegreeReceiver",
+        "outdegreeReceiver", "totaldegreeSender", "totaldegreeReceiver", "ccp",
         "totaldegreeDyad", "degreeDiff", "degreeMin", "degreeMax",
         "inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp",
         "spUnique", "psABBA", "psABBY", "psABXA", "psABXB", "psABXY",

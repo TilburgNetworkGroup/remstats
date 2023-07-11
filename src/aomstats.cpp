@@ -1630,6 +1630,13 @@ arma::mat scale(arma::mat stat)
     return stat;
 }
 
+// get_user_stat
+arma::mat get_user_stat2(const arma::mat &covariates, int start, int stop)
+{
+  arma::mat stat = covariates.rows(start, stop);
+  return (stat);
+}
+
 int getRateEffectNumber(std::string effect)
 {
 
@@ -1647,6 +1654,9 @@ int getRateEffectNumber(std::string effect)
     effectsMap["totaldegreeSender"] = 5;
     effectsMap["recencySendSender"] = 6;
     effectsMap["recencyReceiveSender"] = 7;
+
+    // userStat
+    effectsMap["userStat"] = 888;
 
     // interaction effects
     effectsMap["interact"] = 999;
@@ -1781,6 +1791,10 @@ arma::cube compute_stats_rate(Rcpp::CharacterVector &effects,
             stat = recency_aom("Receive", edgelist, actors, start, stop,
                                display_progress);
             break;
+        // userStat
+        case 888:
+            stat = get_user_stat2(covariates[i], start, stop);
+            break;
         // 999 interact
         case 999:
             // Get the indices of the statistics slices (+1) with the
@@ -1833,6 +1847,9 @@ int getChoiceEffectNumber(std::string effect)
     effectsMap["recencySendReceiver"] = 17;
     effectsMap["recencyReceiveReceiver"] = 18;
     effectsMap["recencyContinue"] = 19;
+
+    // userStat
+    effectsMap["userStat"] = 888;
 
     // interaction effects
     effectsMap["interact"] = 999;
@@ -1988,6 +2005,10 @@ arma::cube compute_stats_choice(Rcpp::CharacterVector &effects,
         case 19:
             stat = recency_aom("Continue", edgelist, actors, start, stop,
                                display_progress);
+            break;
+        // userStat
+        case 888:
+            stat = get_user_stat2(covariates[i], start, stop);
             break;
         // 99 interact
         case 999:

@@ -251,6 +251,16 @@ aomstats <- function(reh,
           dat <- dat[!is.na(dat$name), ]
         }
         as.matrix(dat)
+      } else if(x$effect == "userStat") {
+        if (NROW(x$x) != nrow(edgelist)) {
+          stop("Number of rows of matrix 'x' in userStat() does not match number of events in edgelist")
+        }
+
+        if (NCOL(x$x) != nrow(actors)) {
+          stop("Number of columns of matrix 'x' in userStat() does not match number of actors")
+        }
+
+        as.matrix(x$x)
       } else {
         matrix()
       }
@@ -345,6 +355,16 @@ aomstats <- function(reh,
         as.matrix(dat)
       } else if (x$effect == "tie") {
         parse_tie(x, reh)
+      } else if(x$effect == "userStat") {
+        if (NROW(x$x) != nrow(edgelist)) {
+          stop("Number of rows of matrix 'x' in userStat() does not match number of events in edgelist")
+        }
+
+        if (NCOL(x$x) != nrow(actors)) {
+          stop("Number of columns of matrix 'x' in userStat() does not match number of actors")
+        }
+
+        as.matrix(x$x)
       } else {
         matrix()
       }

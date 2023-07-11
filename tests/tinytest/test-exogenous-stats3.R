@@ -33,6 +33,9 @@ diag(X) <- 0
 # Event info
 setting <<- c("a", "b", "b", "a", "a")
 
+# UserStat
+Y <<- matrix(1:25, nrow = 5, ncol = 5)
+
 # Statistics
 edgelist$type <- event_types
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
@@ -40,7 +43,8 @@ effects <- ~ send(variable = "x1") + receive(variable = "x1") +
   average(variable = "x1") + difference(variable = "x1") + 
   maximum(variable = "x1") + minimum(variable = "x1") +
   same(variable = "x2") + tie(x = X, variableName = "X") +
-  event(x = setting, variableName = "setting")
+  event(x = setting, variableName = "setting") +
+  userStat(x = Y, variableName = "Y")
 stats <- remstats(reh, tie_effects = effects, attr_data = info)
 riskset <- attr(stats, "riskset")
 
@@ -136,6 +140,9 @@ event <- rbind(
   rep(0, 5)
 )
 expect_equal(stats[, , "event_setting"], event)
+
+# userStat
+expect_equal(stats[, , "userStat_Y"], Y)
 
 # test standardization
 std_effects <- ~
