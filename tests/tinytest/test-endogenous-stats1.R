@@ -99,19 +99,8 @@ totaldegreeReceiver <- indegreeReceiver + outdegreeReceiver
 expect_equal(stats[, , "totaldegreeReceiver"], totaldegreeReceiver)
 
 # totaldegreeDyad
-# totaldegreeDyad <- rbind(
-# 	matrix(0, ncol = nrow(riskset)),
-# 	c(1, 1, 1, 0, 1, 1, 1),
-# 	c(2, 2, 2, 1, 2, 2, 1),
-# 	c(3, 3, 3, 1, 3, 3, 2),
-# 	c(4, 4, 4, 2, 4, 3, 3),
-# 	c(5, 5, 5, 3, 5, 4, 4),
-# 	c(6, 5, 6, 4, 6, 5, 5),
-# 	c(7, 6, 7, 5, 7, 5, 5),
-# 	c(8, 7, 8, 6, 8, 6, 6),
-# 	c(8, 8, 9, 7, 9, 7, 7)
-# )
-# expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
+totaldegreeDyad <- totaldegreeSender + totaldegreeReceiver
+expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
 
 # inertia
 inertia <- rbind(
@@ -448,6 +437,7 @@ std_effects <- ~
   outdegreeSender(scaling = "std") + outdegreeReceiver(scaling = "std") +
     indegreeSender(scaling = "std") + indegreeReceiver(scaling = "std") +
     totaldegreeSender(scaling = "std") + totaldegreeReceiver(scaling = "std") +
+    totaldegreeDyad(scaling = "std") +
     inertia(scaling = "std") + reciprocity(scaling = "std") +
     isp(scaling = "std") + itp(scaling = "std") + 
     osp(scaling = "std") + otp(scaling = "std") +
@@ -465,11 +455,15 @@ sapply(2:dim(std_stats)[3], function(p) {
 
 # test proportional scaling
 prop_effects <- ~ 
-  outdegreeSender(scaling = "prop") + outdegreeReceiver(scaling = "prop") +
-    indegreeSender(scaling = "prop") + indegreeReceiver(scaling = "prop") +
+  outdegreeSender(scaling = "prop") + 
+    outdegreeReceiver(scaling = "prop") +
+    indegreeSender(scaling = "prop") + 
+    indegreeReceiver(scaling = "prop") +
     totaldegreeSender(scaling = "prop") + 
-    totaldegreeReceiver(scaling = "prop") +
-    inertia(scaling = "prop") + reciprocity(scaling = "prop") 
+    totaldegreeReceiver(scaling = "prop") + 
+    totaldegreeDyad(scaling = "prop") +
+    inertia(scaling = "prop") + 
+    reciprocity(scaling = "prop") 
 prop_stats <- remstats(reh, tie_effects = prop_effects)
 
 sapply(2:5, function(p) {
@@ -485,6 +479,11 @@ sapply(6:7, function(p) {
   scaled_original[1,] <- 1/4
   expect_equal(prop_stats[,,stat_name], scaled_original)
 }) # total degree of the sender and receiver
+
+# totaldegreeDyad
+prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
+prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 2/4
+expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)
 
 # inertia
 prop_inertia <- stats[,,"inertia"] / stats[,,"outdegreeSender"]

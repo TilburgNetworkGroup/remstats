@@ -13,10 +13,11 @@ event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 edgelist$type <- event_types
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
-effects <- ~ degreeDiff() + degreeMin() + degreeMax() + 
+effects <- ~ degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
   inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY() +
   inertia(consider_type = TRUE) + degreeDiff(consider_type = TRUE) + 
   degreeMin(consider_type = TRUE) + degreeMax(consider_type = TRUE) +
+  totaldegreeDyad(consider_type = TRUE) +
   sp(consider_type = TRUE) + sp(unique = TRUE, consider_type = TRUE) +
   psABAB(consider_type = TRUE) + psABAY(consider_type = TRUE)
 stats <- remstats(reh, tie_effects = effects)
@@ -92,6 +93,36 @@ expect_equal(stats[, , "degreeDiff"], degreeDiff)
 # degreeDiff.type
 degreeDiff.type <- degreeMax.type - degreeMin.type
 expect_equal(stats[, , "degreeDiff.type"], degreeDiff.type)
+
+# totaldegreeDyad
+totaldegreeDyad <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 2, 1, 1, 0, 1, 2, 1, 1),
+  c(3, 3, 2, 2, 1, 3, 3, 2, 1),
+  c(4, 5, 3, 3, 1, 4, 5, 3, 2),
+  c(5, 6, 3, 5, 2, 5, 6, 5, 3),
+  c(6, 7, 3, 7, 3, 6, 7, 7, 4),
+  c(6, 8, 4, 8, 4, 6, 8, 8, 6),
+  c(8, 9, 5, 9, 5, 8, 9, 9, 6),
+  c(9, 10, 5, 11, 6, 9, 10, 11, 7),
+  c(10, 10, 6, 12, 8, 10, 10, 12, 8)
+)
+expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
+
+# totaldegreeDyad.type
+totaldegreeDyad.type <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 2, 1, 1, 0, 0, 0, 0, 0),
+  c(3, 3, 2, 2, 1, 0, 0, 0, 0),
+  c(3, 3, 2, 2, 1, 1, 2, 1, 1),
+  c(3, 3, 2, 2, 1, 2, 3, 3, 2),
+  c(4, 4, 2, 4, 2, 2, 3, 3, 2),
+  c(4, 4, 2, 4, 2, 2, 4, 4, 4),
+  c(4, 4, 2, 4, 2, 4, 5, 5, 4),
+  c(5, 5, 2, 6, 3, 4, 5, 5, 4),
+  c(6, 5, 3, 7, 5, 4, 5, 5, 4)
+)
+expect_equal(stats[, , "totaldegreeDyad.type"], totaldegreeDyad.type)
 
 # inertia
 inertia <- rbind(
@@ -246,11 +277,13 @@ expect_equal(stats[, , "psABAY.type"], psABAY.type)
 # test standardization
 std_effects <- ~
   degreeMin(scaling = "std") + degreeMax(scaling = "std") +
-  degreeDiff(scaling = "std") + inertia(scaling = "std") + 
+  degreeDiff(scaling = "std") + totaldegreeDyad(scaling = "std") +
+  inertia(scaling = "std") + 
   sp(scaling = "std") + sp(scaling = "std", unique = TRUE) +
   degreeMin(consider_type = TRUE, scaling = "std") + 
   degreeMax(consider_type = TRUE, scaling = "std") +
   degreeDiff(consider_type = TRUE, scaling = "std") +
+  totaldegreeDyad(consider_type = TRUE, scaling = "std") +
   inertia(consider_type = TRUE, scaling = "std") + 
   sp(consider_type = TRUE, scaling = "std") +
   sp(consider_type = TRUE, scaling = "std", unique = TRUE) 
@@ -270,13 +303,27 @@ prop_effects <- ~ inertia(scaling = "prop") +
 expect_error(remstats(reh, tie_effects = prop_effects),
   pattern = "not defined")
 
-prop_effects <- ~ degreeMin(consider_type = TRUE, scaling = "prop") + 
-  degreeMax(consider_type = TRUE, scaling = "prop")
+prop_effects <- ~ degreeMin(scaling = "prop") + 
+  degreeMax(scaling = "prop") +
+  totaldegreeDyad(scaling = "prop") +
+  degreeMin(consider_type = TRUE, scaling = "prop") + 
+  degreeMax(consider_type = TRUE, scaling = "prop") +
+  totaldegreeDyad(consider_type = TRUE, scaling = "prop")
 prop_stats <- remstats(reh, tie_effects = prop_effects)
 
-sapply(2:dim(prop_stats)[3], function(p) {
+sapply(c(2:3, 5:6), function(p) {
   stat_name <- dimnames(prop_stats)[[3]][p]
   scaled_original <- stats[,,stat_name] / (1:nrow(stats)-1)
   scaled_original[1,] <- 1/4
   expect_equal(prop_stats[,,stat_name], scaled_original)
 })
+
+# totaldegreeDyad
+prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
+prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 2/4
+expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)
+
+# totaldegreeDyad.type
+prop_totaldegreeDyad.type <- stats[,,"totaldegreeDyad.type"] / (2*(1:nrow(stats)-1))
+prop_totaldegreeDyad.type[1,] <- prop_totaldegreeDyad.type[1,] <- 2/4
+expect_equal(prop_stats[,,"totaldegreeDyad.type"], prop_totaldegreeDyad.type)

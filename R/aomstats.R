@@ -73,9 +73,13 @@
 #' the statistics for only the 5th event in the relational event sequence,
 #' based on the history that consists of events 1-4.
 #'
-#' @return \code{statistics  } List with in the first element the statistics
-#' for the sender activity rate step and in the second element the statistics
-#' for the receiver choice step
+#' @return An object of class 'aomstats'. List with in the first element the statistics for the sender activity rate step and in the second element the statistics for the receiver choice step. The 'aomstats' object has the 
+#' following attributes: 
+#'   \describe{
+#'     \item{\code{model}}{Type of model that is estimated.}
+#'     \item{\code{formula}}{Model formula(s), obtained from the formula(s) inputted to 'sender_effects' and/or 'receiver_effects'.}
+#'     \item{\code{actors}}{The set of actors used to construct the statistics, obtained from the remify object inputted to 'reh'.}
+#'   }
 #'
 #' @examples
 #' library(remstats)
@@ -369,5 +373,6 @@ aomstats <- function(reh,
   class(out) <- c("aomstats", "remstats")
   attr(out, "model") <- "actor"
   attr(out, "formula") <- list(rate = rateFormula, choice = choiceFormula)
+  attr(out, "actors") <- actors
   out
 }

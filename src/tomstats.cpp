@@ -690,7 +690,6 @@ arma::mat calc_dyad_stats_exo(int type,
         4 for outdegreeReceiver,
         5 for totaldegreeSender,
         6 for totaldegreeReceiver,
-        7 for totaldegreeDyad.
      - edgelist: A matrix with the observed relational event history. Rows refer to the observed relational events. The first column refers to the time, the second column to the events, and the third column to the event weight.
       - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
      - actors: A vector with the actors that can potentially interact.
@@ -749,7 +748,7 @@ arma::mat calc_degree_directed(int type,
         {
 
           // Get the dyad IDs for "actor" as receiver and type "c"
-          IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, types(c), directed);
+          IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, types(c), true);
           for (int dyadID : dyadIDs)
           {
             if (dyadID >= 0)
@@ -764,7 +763,7 @@ arma::mat calc_degree_directed(int type,
         {
 
           // Get the dyad IDs for "actor" as sender and type "c"
-          IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), directed);
+          IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), true);
           for (int dyadID : dyadIDs)
           {
             if (dyadID >= 0)
@@ -774,33 +773,18 @@ arma::mat calc_degree_directed(int type,
           }
         }
 
-        // Dyad's degree
-        if (type == 7)
-        {
-
-          // Get the dyad IDs for "actor"
-          IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), false);
-          for (int dyadID : dyadIDs)
-          {
-            if (dyadID >= 0)
-            {
-              degType.col(actor) += adjmat.col(dyadID);
-            }
-          }
-        }
-
         // Save in the correct place
         IntegerVector save_dyadIDs = 0;
-        if ((type == 1) || (type == 3) || (type == 5) || (type == 7))
+        if ((type == 1) || (type == 3) || (type == 5))
         {
           // Get the dyad IDs for "actor" as sender and type "c"
-          save_dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), directed);
+          save_dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), true);
         }
 
         if ((type == 2) || (type == 4) || (type == 6))
         {
           // Get the dyad IDs for "actor" as receiver and type "c"
-          save_dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, types(c), directed);
+          save_dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, types(c), true);
         }
 
         if ((type == 1) || (type == 2))
@@ -825,7 +809,7 @@ arma::mat calc_degree_directed(int type,
           }
         }
 
-        if ((type == 5) || (type == 6) || (type == 7))
+        if ((type == 5) || (type == 6))
         {
           for (int save_dyadID : save_dyadIDs)
           {
@@ -833,17 +817,6 @@ arma::mat calc_degree_directed(int type,
             {
               stat.col(save_dyadID) = indegType.col(actor) +
                                       outdegType.col(actor);
-            }
-          }
-        }
-
-        if (type == 7)
-        {
-          for (int save_dyadID : save_dyadIDs)
-          {
-            if (save_dyadID >= 0)
-            {
-              stat.col(save_dyadID) += degType.col(actor);
             }
           }
         }
@@ -855,7 +828,6 @@ arma::mat calc_degree_directed(int type,
     // Initialize saving space
     arma::mat indeg(slice.n_rows, actors.n_elem, arma::fill::zeros);
     arma::mat outdeg(slice.n_rows, actors.n_elem, arma::fill::zeros);
-    arma::mat deg(slice.n_rows, actors.n_elem, arma::fill::zeros);
 
     // For loop over actors
     for (arma::uword k = 0; k < actors.n_elem; k++)
@@ -869,7 +841,7 @@ arma::mat calc_degree_directed(int type,
       {
 
         // Get the dyad IDs for "actor" as receiver
-        IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, directed);
+        IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, true);
         for (int dyadID : dyadIDs)
         {
           if (dyadID >= 0)
@@ -884,7 +856,7 @@ arma::mat calc_degree_directed(int type,
       {
 
         // Get the dyad IDs for "actor" as sender
-        IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, directed);
+        IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, true);
         for (int dyadID : dyadIDs)
         {
           if (dyadID >= 0)
@@ -894,33 +866,19 @@ arma::mat calc_degree_directed(int type,
         }
       }
 
-      // Actor's degree
-      if (type == 7)
-      {
-        // Get the dyad IDs for "actor"
-        IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, directed);
-        for (int dyadID : dyadIDs)
-        {
-          if (dyadID >= 0)
-          {
-            deg.col(actor) += adjmat.col(dyadID);
-          }
-        }
-      }
-
       // Save in the correct place
       IntegerVector save_dyadIDs = 0;
 
-      if ((type == 1) || (type == 3) || (type == 5) || (type == 7))
+      if ((type == 1) || (type == 3) || (type == 5))
       {
         // Get the dyad IDs for "actor" as sender
-        save_dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, directed);
+        save_dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, true);
       }
 
       if ((type == 2) || (type == 4) || (type == 6))
       {
         // Get the dyad IDs for "actor" as receiver and type "c"
-        save_dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, directed);
+        save_dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, true);
       }
 
       if ((type == 1) | (type == 2))
@@ -952,17 +910,6 @@ arma::mat calc_degree_directed(int type,
           if (save_dyadID >= 0)
           {
             stat.col(save_dyadID) += indeg.col(actor) + outdeg.col(actor);
-          }
-        }
-      }
-
-      if (type == 7)
-      {
-        for (int save_dyadID : save_dyadIDs)
-        {
-          if (save_dyadID >= 0)
-          {
-            stat.col(save_dyadID) += deg.col(actor);
           }
         }
       }
@@ -3102,7 +3049,10 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // totaldegreeDyad
     case 117:
       // Compute statistic
-      stat = calc_degree_directed(7, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), directed);
+      stat = calc_degree_directed(5, edgelist, riskset, adjmat, actors, types,
+                                  start, stop, consider_type(i), directed) +
+             calc_degree_directed(6, edgelist, riskset, adjmat, actors, types,
+                                  start, stop, consider_type(i), directed);
       // Divide by two times the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -3142,287 +3092,287 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
           stat.row(0) = rep;
         }
       }
-        break;
+      break;
 
-      // degreeMax
-      case 119:
-        // Compute statistic
-        stat = calc_degree_undirected(2, edgelist, riskset, adjmat, actors,
-                                      types, start, stop, consider_type(i));
-        // Divide by the number/weight of past events
-        if (scaling(i) == "prop")
+    // degreeMax
+    case 119:
+      // Compute statistic
+      stat = calc_degree_undirected(2, edgelist, riskset, adjmat, actors,
+                                    types, start, stop, consider_type(i));
+      // Divide by the number/weight of past events
+      if (scaling(i) == "prop")
+      {
+        for (arma::uword t = 0; t < stat.n_rows; ++t)
         {
-          for (arma::uword t = 0; t < stat.n_rows; ++t)
-          {
-            stat.row(t) = stat.row(t) / sum(adjmat.row(t));
-          }
-          stat.replace(arma::datum::nan, 0);
-          // First row
-          if (start == 0)
-          {
-            arma::rowvec rep = arma::rowvec(stat.n_cols,
-                                            arma::fill::value(1.0 / actors.n_elem));
-            stat.row(0) = rep;
-          }
+          stat.row(t) = stat.row(t) / sum(adjmat.row(t));
         }
-          break;
-
-        // degreeDiff
-        case 120:
-          // Compute statistic
-          stat = calc_degree_undirected(3, edgelist, riskset, adjmat, actors,
-                                        types, start, stop, consider_type(i));
-          break;
-
-        // ccp
-        case 121:
-          // Compute statistic
-          stat = current_common_partners(edgelist, riskset,
-                                         actors, covariates[i], start, stop);
-          break;
-
-        // otp
-        case 131:
-          // Compute statistic
-          if (types.n_elem == 1)
-          {
-            stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset, scaling(i));
-          }
-          else
-          {
-            if (consider_type(i))
-            {
-              stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset, scaling(i));
-            }
-            else
-            {
-              stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset, scaling(i));
-            }
-          }
-          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-          if (scaling(i) == "std_unique")
-          {
-            stat = standardize(stat);
-          }
-          break;
-
-        // itp
-        case 132:
-          // Compute statistic
-          if (types.n_elem == 1)
-          {
-            stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset, scaling(i));
-          }
-          else
-          {
-            if (consider_type(i))
-            {
-              stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset, scaling(i));
-            }
-            else
-            {
-              stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset, scaling(i));
-            }
-          }
-          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-          if (scaling(i) == "std_unique")
-          {
-            stat = standardize(stat);
-          }
-          break;
-
-        // osp
-        case 133:
-          // Compute statistic
-          if (types.n_elem == 1)
-          {
-            stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset, scaling(i));
-          }
-          else
-          {
-            if (consider_type(i))
-            {
-              stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset, scaling(i));
-            }
-            else
-            {
-              stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset, scaling(i));
-            }
-          }
-          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-          if (scaling(i) == "std_unique")
-          {
-            stat = standardize(stat);
-          }
-          break;
-
-        // isp
-        case 134:
-          // Compute statistic
-          if (types.n_elem == 1)
-          {
-            stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset, scaling(i));
-          }
-          else
-          {
-            if (consider_type(i))
-            {
-              stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset, scaling(i));
-            }
-            else
-            {
-              stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset, scaling(i));
-            }
-          }
-          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-          if (scaling(i) == "std_unique")
-          {
-            stat = standardize(stat);
-          }
-          break;
-
-        // sp
-        case 135:
-          // Compute statistic
-          if (types.n_elem == 1)
-          {
-            stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset, scaling(i));
-          }
-          else
-          {
-            if (consider_type(i))
-            {
-              stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset, scaling(i));
-            }
-            else
-            {
-              stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset, scaling(i));
-            }
-          }
-          // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
-          if (scaling(i) == "std_unique")
-          {
-            stat = standardize(stat);
-          }
-          break;
-
-        // psABBA
-        case 141:
-          // Compute statistic
-          stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-          break;
-
-        // psABBY
-        case 142:
-          // Compute statistic
-          stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-          break;
-
-        // psABXA
-        case 143:
-          // Compute statistic
-          stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-          break;
-
-        // psABXB
-        case 144:
-          // Compute statistic
-          stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-          break;
-
-        // psABXY
-        case 145:
-          // Compute statistic
-          stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-          break;
-
-        // psABAY
-        case 146:
-          // Compute statistic
-          stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-          break;
-
-        // 74 psABAB
-        case 147:
-          // Compute statistic
-          stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
-          break;
-
-        // rrankSend
-        case 151:
-          // Compute statistic
-          stat = calc_rrank(1, edgelist, riskset, actors.n_elem,
-                            types.n_elem, start, stop, consider_type(i));
-          break;
-
-        // rrankReceive
-        case 152:
-          // Compute statistic
-          stat = calc_rrank(2, edgelist, riskset, actors.n_elem,
-                            types.n_elem, start, stop, consider_type(i));
-          break;
-
-        // recencyContinue
-        case 161:
-          // Compute statistic
-          stat = calc_recency(1, edgelist, riskset, actors.n_elem,
-                              types.n_elem, start, stop, consider_type(i), directed);
-          break;
-
-        // recencySendSender
-        case 162:
-          // Compute statistic
-          stat = calc_recency(2, edgelist, riskset, actors.n_elem,
-                              types.n_elem, start, stop, consider_type(i), directed);
-          break;
-
-        // recencySendReceiver
-        case 163:
-          // Compute statistic
-          stat = calc_recency(3, edgelist, riskset, actors.n_elem,
-                              types.n_elem, start, stop, consider_type(i), directed);
-          break;
-
-        // recencyReceiveSender
-        case 164:
-          // Compute statistic
-          stat = calc_recency(4, edgelist, riskset, actors.n_elem,
-                              types.n_elem, start, stop, consider_type(i), directed);
-          break;
-
-        // recencyReceiveReceiver
-        case 165:
-          // Compute statistic
-          stat = calc_recency(5, edgelist, riskset, actors.n_elem,
-                              types.n_elem, start, stop, consider_type(i), directed);
-          break;
-
-        // userStat
-        case 888:
-          stat = get_user_stat(covariates[i], start, stop);
-          break;
-
-        // interact
-        case 999:
-          // Get the indices of the statistics slices (+1) with the
-          // statistics for which an interaction needs to be computed.
-          arma::vec x = interactions[i];
-          int main1 = x(0);
-          int main2 = x(1);
-          // Element-wise multiplication
-          stat = stats.slice(main1 - 1) % stats.slice(main2 - 1);
-          break;
-        }
-
-        // Standardize
-        if (scaling(i) == "std")
+        stat.replace(arma::datum::nan, 0);
+        // First row
+        if (start == 0)
         {
-          stat = standardize(stat);
+          arma::rowvec rep = arma::rowvec(stat.n_cols,
+                                          arma::fill::value(1.0 / actors.n_elem));
+          stat.row(0) = rep;
         }
-
-        // Save statistic
-        stats.slice(i) = stat;
       }
+      break;
 
-      return stats;
+    // degreeDiff
+    case 120:
+      // Compute statistic
+      stat = calc_degree_undirected(3, edgelist, riskset, adjmat, actors,
+                                    types, start, stop, consider_type(i));
+      break;
+
+    // ccp
+    case 121:
+      // Compute statistic
+      stat = current_common_partners(edgelist, riskset,
+                                     actors, covariates[i], start, stop);
+      break;
+
+    // otp
+    case 131:
+      // Compute statistic
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset, scaling(i));
+      }
+      else
+      {
+        if (consider_type(i))
+        {
+          stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset, scaling(i));
+        }
+        else
+        {
+          stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset, scaling(i));
+        }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
+      }
+      break;
+
+    // itp
+    case 132:
+      // Compute statistic
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset, scaling(i));
+      }
+      else
+      {
+        if (consider_type(i))
+        {
+          stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset, scaling(i));
+        }
+        else
+        {
+          stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset, scaling(i));
+        }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
+      }
+      break;
+
+    // osp
+    case 133:
+      // Compute statistic
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset, scaling(i));
+      }
+      else
+      {
+        if (consider_type(i))
+        {
+          stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset, scaling(i));
+        }
+        else
+        {
+          stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset, scaling(i));
+        }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
+      }
+      break;
+
+    // isp
+    case 134:
+      // Compute statistic
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset, scaling(i));
+      }
+      else
+      {
+        if (consider_type(i))
+        {
+          stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset, scaling(i));
+        }
+        else
+        {
+          stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset, scaling(i));
+        }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
+      }
+      break;
+
+    // sp
+    case 135:
+      // Compute statistic
+      if (types.n_elem == 1)
+      {
+        stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset, scaling(i));
+      }
+      else
+      {
+        if (consider_type(i))
+        {
+          stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset, scaling(i));
+        }
+        else
+        {
+          stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset, scaling(i));
+        }
+      }
+      // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
+      if (scaling(i) == "std_unique")
+      {
+        stat = standardize(stat);
+      }
+      break;
+
+    // psABBA
+    case 141:
+      // Compute statistic
+      stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      break;
+
+    // psABBY
+    case 142:
+      // Compute statistic
+      stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      break;
+
+    // psABXA
+    case 143:
+      // Compute statistic
+      stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      break;
+
+    // psABXB
+    case 144:
+      // Compute statistic
+      stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      break;
+
+    // psABXY
+    case 145:
+      // Compute statistic
+      stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      break;
+
+    // psABAY
+    case 146:
+      // Compute statistic
+      stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      break;
+
+    // 74 psABAB
+    case 147:
+      // Compute statistic
+      stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      break;
+
+    // rrankSend
+    case 151:
+      // Compute statistic
+      stat = calc_rrank(1, edgelist, riskset, actors.n_elem,
+                        types.n_elem, start, stop, consider_type(i));
+      break;
+
+    // rrankReceive
+    case 152:
+      // Compute statistic
+      stat = calc_rrank(2, edgelist, riskset, actors.n_elem,
+                        types.n_elem, start, stop, consider_type(i));
+      break;
+
+    // recencyContinue
+    case 161:
+      // Compute statistic
+      stat = calc_recency(1, edgelist, riskset, actors.n_elem,
+                          types.n_elem, start, stop, consider_type(i), directed);
+      break;
+
+    // recencySendSender
+    case 162:
+      // Compute statistic
+      stat = calc_recency(2, edgelist, riskset, actors.n_elem,
+                          types.n_elem, start, stop, consider_type(i), directed);
+      break;
+
+    // recencySendReceiver
+    case 163:
+      // Compute statistic
+      stat = calc_recency(3, edgelist, riskset, actors.n_elem,
+                          types.n_elem, start, stop, consider_type(i), directed);
+      break;
+
+    // recencyReceiveSender
+    case 164:
+      // Compute statistic
+      stat = calc_recency(4, edgelist, riskset, actors.n_elem,
+                          types.n_elem, start, stop, consider_type(i), directed);
+      break;
+
+    // recencyReceiveReceiver
+    case 165:
+      // Compute statistic
+      stat = calc_recency(5, edgelist, riskset, actors.n_elem,
+                          types.n_elem, start, stop, consider_type(i), directed);
+      break;
+
+    // userStat
+    case 888:
+      stat = get_user_stat(covariates[i], start, stop);
+      break;
+
+    // interact
+    case 999:
+      // Get the indices of the statistics slices (+1) with the
+      // statistics for which an interaction needs to be computed.
+      arma::vec x = interactions[i];
+      int main1 = x(0);
+      int main2 = x(1);
+      // Element-wise multiplication
+      stat = stats.slice(main1 - 1) % stats.slice(main2 - 1);
+      break;
     }
+
+    // Standardize
+    if (scaling(i) == "std")
+    {
+      stat = standardize(stat);
+    }
+
+    // Save statistic
+    stats.slice(i) = stat;
+  }
+
+  return stats;
+}

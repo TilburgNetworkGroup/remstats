@@ -4,7 +4,7 @@
 \alias{totaldegreeDyad}
 \title{totaldegreeDyad}
 \usage{
-totaldegreeDyad(scaling = c("none", "prop", "std"))
+totaldegreeDyad(scaling = c("none", "prop", "std"), consider_type = FALSE)
 }
 \arguments{
 \item{scaling}{the method for scaling the degree statistic. Default is
@@ -12,23 +12,35 @@ to not scale the statistic (scaling = "none"). Alternatively,
 scaling of the raw degree counts by two times the number of past events at
 time t can be requested with 'prop' or standardization of the raw degree
 counts per time point can be requested with 'std'.}
+
+\item{consider_type}{logical, indicates whether to count the degrees
+separately for each event type (TRUE) or sum degrees across different event
+types (FALSE, default).}
 }
 \description{
-Specifies the statistic for a `totaldegreeDyad` effect in the tie-oriented
-model.
+Specifies the statistic for a `totaldegreeDyad` effect.
 }
 \details{
-A totaldegreeDyad effect refers to the tendency for dyads to increase their
-interaction rate if the total degree of the two actors in the pair
+The totaldegreeDyad effect describes the tendency for dyads to increase their
+interaction rate when the total degree of the two actors in the pair
 increases. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is
-equal to the sum of the event before timepoint \emph{t} that involved at
-least one actor of the pair \emph{(i,j)}.
+computed by summing the degrees of the actors in the pair \emph{(i,j)}.
 
-Optionally, a scaling method can be set with \code{scaling}. By scaling the
-degree count by the total number of past events times two (i.e., use
-\code{prop}), the statistic refers to the fraction of past events times two
-that at least one actor in the pair was involved in. In this case, at the
-first timepoint - when no events did previously occur - it is assumed that
-every actor is equally likely to be involved in an event and the statistic
-is set equal to 2/n, where n refers to the number of actors.
+Optionally, a scaling method can be applied using the \code{scaling} 
+argument. When using the "prop" scaling method, the degree count is divided 
+by the total number of past events times two. This scaling transforms the 
+statistic in a fraction, representing the proportion of past events times 
+two in which at least one actor in the dyad was involved. In the case of the 
+first timepoint, where no events have occurred previously, it assumes that 
+each actor is equally likely to be involved in an event. In this scenario, 
+the statistic is set to 2 divied by the number of actors \emph{n}.
+
+The totaldegreeDyad effect is defined for the tie-oriented model, both for 
+directed and undirected events.
+}
+\examples{
+reh_tie <- remify::remify(history, model = "tie")
+effects <- ~ totaldegreeDyad()
+remstats(reh = reh_tie, tie_effects = effects)
+
 }

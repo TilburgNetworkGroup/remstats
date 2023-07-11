@@ -55,9 +55,16 @@ outputted as an attribute of the statistics.}
 \item{edgelist}{deprecated, please use "reh" instead}
 }
 \value{
-\code{statistics } array with the computed statistics, where rows
-refer to time points, columns refer to potential relational event (i.e.,
-potential edges) in the risk set and slices refer to statistics
+An object of class 'tomstats'. Array with the computed statistics, 
+where rows refer to time points, columns refer to potential relational event 
+(i.e., potential edges) in the risk set and slices refer to statistics. The 
+'tomstats' object has the following attributes: 
+  \describe{
+    \item{\code{model}}{Type of model that is estimated.}
+    \item{\code{formula}}{Model formula, obtained from the formula inputted to 'tie_effects'.}
+    \item{\code{riskset}}{The risk set used to construct the statistics.}
+    \item{\code{adjmat}}{[Optional], if "get_adjmat = TRUE", the matrix with the accumulated event weights for each time point (on the rows) and each dyad (in the columns).}
+  }
 }
 \description{
 Computes statistics for modeling relational event history data

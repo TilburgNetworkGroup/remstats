@@ -16,6 +16,7 @@ effects <- ~
   outdegreeSender() + outdegreeReceiver() +
     indegreeSender() + indegreeReceiver() +
     totaldegreeSender() + totaldegreeReceiver() +
+    totaldegreeDyad() +
     inertia() + reciprocity() +
     isp() + itp() + osp() + otp() +
     isp(unique = TRUE) + itp(unique = TRUE) + 
@@ -32,6 +33,7 @@ effects <- ~
     indegreeReceiver(consider_type = TRUE) +
     totaldegreeSender(consider_type = TRUE) +
     totaldegreeReceiver(consider_type = TRUE) +
+    totaldegreeDyad(consider_type = TRUE) +
     inertia(consider_type = TRUE) + reciprocity(consider_type = TRUE) +
     isp(consider_type = TRUE) + itp(consider_type = TRUE) +
     osp(consider_type = TRUE) + otp(consider_type = TRUE) +
@@ -190,6 +192,14 @@ expect_equal(stats[, , "totaldegreeReceiver"], totaldegreeReceiver)
 # totaldegreeReceiver.type
 totaldegreeReceiver.type <- indegreeReceiver.type + outdegreeReceiver.type
 expect_equal(stats[, , "totaldegreeReceiver.type"], totaldegreeReceiver.type)
+
+# totaldegreeDyad
+totaldegreeDyad <- totaldegreeSender + totaldegreeReceiver
+expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
+
+# totaldegreeDyad.type
+totaldegreeDyad.type <- totaldegreeSender.type + totaldegreeReceiver.type
+expect_equal(stats[, , "totaldegreeDyad.type"], totaldegreeDyad.type)
 
 # inertia
 inertia <- rbind(
@@ -856,6 +866,7 @@ std_effects <- ~
   outdegreeSender(scaling = "std") + outdegreeReceiver(scaling = "std") +
     indegreeSender(scaling = "std") + indegreeReceiver(scaling = "std") +
     totaldegreeSender(scaling = "std") + totaldegreeReceiver(scaling = "std") +
+    totaldegreeDyad(scaling = "std") +
     inertia(scaling = "std") + reciprocity(scaling = "std") +
     isp(scaling = "std") + itp(scaling = "std") +
     osp(scaling = "std") + otp(scaling = "std") +
@@ -867,6 +878,7 @@ std_effects <- ~
     indegreeReceiver(consider_type = TRUE, scaling = "std") +
     totaldegreeSender(consider_type = TRUE, scaling = "std") +
     totaldegreeReceiver(consider_type = TRUE, scaling = "std") +
+    totaldegreeDyad(consider_type = TRUE, scaling = "std") +
     inertia(consider_type = TRUE, scaling = "std") +
     reciprocity(consider_type = TRUE, scaling = "std") +
     isp(consider_type = TRUE, scaling = "std") +
@@ -893,6 +905,7 @@ prop_effects <- ~
     indegreeSender(scaling = "prop") + indegreeReceiver(scaling = "prop") +
     totaldegreeSender(scaling = "prop") +
     totaldegreeReceiver(scaling = "prop") +
+    totaldegreeDyad(scaling = "prop") +
     inertia(scaling = "prop") + reciprocity(scaling = "prop") +
     outdegreeSender(consider_type = TRUE, scaling = "prop") +
     outdegreeReceiver(consider_type = TRUE, scaling = "prop") +
@@ -900,23 +913,34 @@ prop_effects <- ~
     indegreeReceiver(consider_type = TRUE, scaling = "prop") +
     totaldegreeSender(consider_type = TRUE, scaling = "prop") +
     totaldegreeReceiver(consider_type = TRUE, scaling = "prop") +
+    totaldegreeDyad(consider_type = TRUE, scaling = "prop") +
     inertia(consider_type = TRUE, scaling = "prop") +
     reciprocity(consider_type = TRUE, scaling = "prop")
 prop_stats <- remstats(reh, tie_effects = prop_effects)
 
-sapply(c(2:5, 10:13), function(p) {
+sapply(c(2:5, 11:14), function(p) {
   stat_name <- dimnames(prop_stats)[[3]][p]
   scaled_original <- stats[, , stat_name] / (1:nrow(stats) - 1)
   scaled_original[1, ] <- 1 / 4
   expect_equal(prop_stats[, , stat_name], scaled_original)
 }) # in- and out-degree of the sender and receiver
 
-sapply(c(6:7, 14:15), function(p) {
+sapply(c(6:7, 15:16), function(p) {
   stat_name <- dimnames(prop_stats)[[3]][p]
   scaled_original <- stats[, , stat_name] / (2 * (1:nrow(stats) - 1))
   scaled_original[1, ] <- 1 / 4
   expect_equal(prop_stats[, , stat_name], scaled_original)
 }) # total degree of the sender and receiver
+
+# totaldegreeDyad
+prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
+prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 2/4
+expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)
+
+# totaldegreeDyad.type
+prop_totaldegreeDyad.type <- stats[,,"totaldegreeDyad.type"] / (2*(1:nrow(stats)-1))
+prop_totaldegreeDyad.type[1,] <- prop_totaldegreeDyad.type[1,] <- 2/4
+expect_equal(prop_stats[,,"totaldegreeDyad.type"], prop_totaldegreeDyad.type)
 
 # inertia
 prop_inertia <- stats[, , "inertia"] / stats[, , "outdegreeSender"]

@@ -10,7 +10,7 @@ edgelist <- data.frame(
 # Statistics
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
-effects <- ~ degreeDiff() + degreeMin() + degreeMax() +
+effects <- ~ degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
   inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
 stats <- remstats(reh, tie_effects = effects)
 riskset <- attr(stats, "riskset")
@@ -51,6 +51,21 @@ expect_equal(stats[, , "degreeMax"], degreeMax)
 # degreeDiff
 degreeDiff <- degreeMax - degreeMin
 expect_equal(stats[, , "degreeDiff"], degreeDiff)
+
+# totaldegreeDyad
+totaldegreeDyad <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 2, 1, 1, 0, 1),
+  c(3, 3, 2, 2, 1, 1),
+  c(4, 5, 3, 3, 1, 2),
+  c(5, 6, 3, 5, 2, 3),
+  c(6, 7, 3, 7, 3, 4),
+  c(6, 8, 4, 8, 4, 6),
+  c(8, 9, 5, 9, 5, 6),
+  c(9, 10, 5, 11, 6, 7),
+  c(10, 10, 6, 12, 8, 8)
+)
+expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
 
 # inertia
 inertia <- rbind(
@@ -130,7 +145,7 @@ expect_equal(stats[, , "psABAY"], psABAY)
 # test standardization
 std_effects <- ~
   degreeMin(scaling = "std") + degreeMax(scaling = "std") +
-  degreeDiff(scaling = "std") +
+  degreeDiff(scaling = "std") + totaldegreeDyad(scaling = "std") +
   inertia(scaling = "std") + sp(scaling = "std") + 
   sp(scaling = "std", unique = TRUE)
 std_stats <- remstats(reh, tie_effects = std_effects)
@@ -148,12 +163,18 @@ prop_effects <- ~ inertia(scaling = "prop")
 expect_error(remstats(reh, tie_effects = prop_effects),
   pattern = "not defined")
 
-prop_effects <- ~ degreeMin(scaling = "prop") + degreeMax(scaling = "prop")
+prop_effects <- ~ degreeMin(scaling = "prop") + degreeMax(scaling = "prop") + 
+  totaldegreeDyad(scaling = "prop") 
 prop_stats <- remstats(reh, tie_effects = prop_effects)
 
-sapply(2:dim(prop_stats)[3], function(p) {
+sapply(2:3, function(p) {
   stat_name <- dimnames(prop_stats)[[3]][p]
   scaled_original <- stats[,,stat_name] / (1:nrow(stats)-1)
   scaled_original[1,] <- 1/4
   expect_equal(prop_stats[,,stat_name], scaled_original)
-})
+}) # degreeMin and degreeMax
+
+# totaldegreeDyad
+prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
+prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 2/4
+expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)

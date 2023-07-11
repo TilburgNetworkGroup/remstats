@@ -57,9 +57,13 @@ endogenous statistics be shown (TRUE) or not (FALSE)?}
 \item{edgelist}{deprecated, please use "reh" instead}
 }
 \value{
-\code{statistics  } List with in the first element the statistics
-for the sender activity rate step and in the second element the statistics
-for the receiver choice step
+An object of class 'aomstats'. List with in the first element the statistics for the sender activity rate step and in the second element the statistics for the receiver choice step. The 'aomstats' object has the 
+following attributes: 
+  \describe{
+    \item{\code{model}}{Type of model that is estimated.}
+    \item{\code{formula}}{Model formula(s), obtained from the formula(s) inputted to 'sender_effects' and/or 'receiver_effects'.}
+    \item{\code{actors}}{The set of actors used to construct the statistics, obtained from the remify object inputted to 'reh'.}
+  }
 }
 \description{
 Computes statistics for the sender activity rate step and receiver choice

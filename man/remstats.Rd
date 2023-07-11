@@ -68,14 +68,22 @@ remstats should be outputted as an attribute of the statistics.}
 \item{edgelist}{deprecated, please use "reh" instead}
 }
 \value{
-\code{statistics } In case of the tie-oriented model, an array with
-the computed statistics, where rows refer to time points, columns refer to
-potential relational event (i.e., potential edges) in the risk set and
-slices refer to statistics. In case of the actor-oriented model, list with
-in the first element the statistics for the sender activity rate step and in
-the second element the statistics for the receiver choice step, where rows
-refer to time points, columns refer to potential senders or receivers,
-respectively.
+An object of class 'remstats'. In case of the 
+tie-oriented model, an array with the computed statistics, where rows refer 
+to time points, columns refer to potential relational event (i.e., potential 
+edges) in the risk set and slices refer to statistics. In case of the 
+actor-oriented model, list with in the first element the statistics for the 
+sender activity rate step and in the second element the statistics for the 
+receiver choice step, where rows refer to time points, columns refer to 
+potential senders or receivers, respectively. The 'remstats' object has the 
+following attributes: 
+  \describe{
+    \item{\code{model}}{Type of model that is estimated, obtained from the remify object inputted to 'reh'.}
+    \item{\code{formula}}{Model formula, obtained from the formula inputted to 'tie_effects', 'sender_effects' and/or 'receiver_effects', depending on the model.}
+    \item{\code{riskset}}{For the tie-oriented model, the risk set used to construct the statistics.}
+    \item{\code{actors}}{For the actor-oriented model, the set of actors used to construct the statistics, obtained from the remify object inputted to 'reh'.}
+    \item{\code{adjmat}}{[Optional], for the tie-oriented model, if "get_adjmat = TRUE", the matrix with the accumulated event weights for each time point (on the rows) and each dyad (in the columns).}
+  }
 }
 \description{
 Computes statistics for modeling relational events with a tie-oriented
