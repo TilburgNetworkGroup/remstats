@@ -13,7 +13,8 @@ event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 edgelist$type <- event_types
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
-effects <- ~ degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
+effects <- ~ FEtype() + 
+  degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
   inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY() +
   inertia(consider_type = TRUE) + degreeDiff(consider_type = TRUE) + 
   degreeMin(consider_type = TRUE) + degreeMax(consider_type = TRUE) +
@@ -25,6 +26,11 @@ riskset <- attr(stats, "riskset")
 
 # baseline
 expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow(riskset)))
+
+# FEtype
+FEtype <- cbind(matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)), 
+	matrix(1, nrow = nrow(edgelist), ncol = sum(riskset$type == 2)))
+expect_equal(stats[, , "FEtype"], FEtype)
 
 # degreeMin
 degreeMin <- rbind(

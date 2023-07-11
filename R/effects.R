@@ -514,15 +514,7 @@ event <- function(x, variableName = NULL) {
 #'
 #' @export
 FEtype <- function() {
-    call_args <- as.list(match.call()[-1])
-	defaults <- as.list(formals(FEtype))
-	
-	# Update call_args with default values
-	for (arg_name in names(defaults)) {
-		if (!(arg_name %in% names(call_args))) {
-			call_args[[arg_name]] <- defaults[[arg_name]]
-		}
-	}
+	call_args <- as.list(formals(FEtype))
 
     # Add effect
     call_args$effect <- "FEtype"

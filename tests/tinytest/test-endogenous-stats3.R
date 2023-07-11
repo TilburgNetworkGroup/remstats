@@ -13,7 +13,8 @@ event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 edgelist$type <- event_types
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 effects <- ~
-  outdegreeSender() + outdegreeReceiver() +
+  FEtype() + 
+    outdegreeSender() + outdegreeReceiver() +
     indegreeSender() + indegreeReceiver() +
     totaldegreeSender() + totaldegreeReceiver() +
     totaldegreeDyad() +
@@ -56,6 +57,11 @@ riskset <- attr(stats, "riskset")
 
 # Baseline
 expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow(riskset)))
+
+# FEtype
+FEtype <- cbind(matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)), 
+	matrix(1, nrow = nrow(edgelist), ncol = sum(riskset$type == 2)))
+expect_equal(stats[, , "FEtype"], FEtype)
 
 # outdegreeSender
 outdegreeSender <- rbind(
