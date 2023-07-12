@@ -169,15 +169,6 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
                      memory_value = NA, start = 1, stop = Inf,
                      adjmat = NULL, get_adjmat = FALSE,
                      attributes, edgelist) {
-    if (!is.null(tie_effects) &
-        (!is.null(sender_effects) | !is.null(receiver_effects))) {
-        stop("Either provide effects for the tie-oriented model using `tie_effects` or effects for the actor-oriented model using `sender_effects` or `receiver_effects`, but not both.")
-    }
-
-    if (is.null(tie_effects) &
-        (is.null(sender_effects) & is.null(receiver_effects))) {
-        stop("Either provide effects for the tie-oriented model using `tie_effects` or effects for the actor-oriented model using `sender_effects` or `receiver_effects`.")
-    }
 
     # Check if the deprecated argument "attributes" is used
     if (!missing(attributes)) {
@@ -199,7 +190,7 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
             reh <- edgelist
     }
 
-    if (!is.null(tie_effects)) {
+    if (attr(reh, "model") == "tie") {
         out <- tomstats(
             effects = tie_effects, reh = reh,
             attr_data = attr_data, memory = memory,
@@ -208,10 +199,7 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
         )
     }
 
-    if (!is.null(sender_effects) | !is.null(receiver_effects)) {
-        if (!attr(reh, "directed")) {
-            stop("Undirected events are not defined for the actor-oriented model.")
-        }
+    if (attr(reh, "model") == "actor") {
         out <- aomstats(
             reh = reh, sender_effects = sender_effects,
             receiver_effects = receiver_effects,

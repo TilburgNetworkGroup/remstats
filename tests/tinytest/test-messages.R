@@ -1,3 +1,4 @@
+# from effects.R
 expect_warning(
     indegreeSender(scaling = "as.is"),
     pattern = "use 'scaling' is 'none'"
@@ -134,4 +135,37 @@ Y[1,1] <- NA
 expect_warning(
     userStat(Y), 
     pattern = "missing values"
+)
+
+# from remstats.R
+edgelist <- data.frame(
+  time = 1:5,
+  actor1 = c(1, 1, 2, 2, 3),
+  actor2 = c(2, 3, 1, 3, 2)
+)
+
+info <- data.frame(
+  name = 1:3,
+  time = rep(0, 3),
+  x1 = c(10, 20, 30),
+  x2 = c(0, 1, 1)
+)
+
+reh <- remify::remify(edgelist, model = "tie")
+
+expect_warning(
+    remstats(reh = reh, tie_effects = ~ 1, attributes = info),
+    pattern = "use 'attr_data'"
+)
+
+colnames(info)[1] <- "id"
+
+expect_warning(
+    remstats(reh = reh, tie_effects = ~ 1, attributes = info),
+    pattern = "use 'name'"
+)
+
+expect_warning(
+    remstats(edgelist = reh, tie_effects = ~ 1),
+    pattern = "use 'reh'"
 )
