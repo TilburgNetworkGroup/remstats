@@ -139,7 +139,6 @@ aomstats <- function(reh,
   # Extract relevant elements from the prepared remify::remify object
   edgelist <- reh$edgelist
   actors <- attr(reh, "dictionary")$actors
-  types <- attr(reh, "dictionary")$types
   edgelist[,1] <- cumsum(reh$intereventTime)
 
   # Transform to cpp indexing!
@@ -156,21 +155,16 @@ aomstats <- function(reh,
     weights <- edgelist$weight
   }
 
-  # Check for event types
-  if (!is.null(types)) {
-    stop("Multiple event types are not yet defined for the actor-oriented model.")
-  }
-
   # Match memory
   memory <- match.arg(memory)
   memory_value <- validate_memory(memory, memory_value)
 
   # Convert R start and stop indices to C++ (indexing starts at 0)
   if (start < 1) {
-    stop("start should be set to 1 or larger.")
+    stop("The 'start' value should be set to 1 or a larger number.")
   }
   if (stop < start) {
-    stop("stop cannot be smaller than start.")
+    stop("The 'stop' value cannot be smaller than the 'start' value.")
   }
   start <- start - 1
   if (stop == Inf) {

@@ -190,6 +190,11 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
             reh <- edgelist
     }
 
+    # Check the reh
+    if (!("remify" %in% class(reh))) {
+        stop("Expected a 'reh' object of class remify")
+    }
+
     if (attr(reh, "model") == "tie") {
         out <- tomstats(
             effects = tie_effects, reh = reh,
