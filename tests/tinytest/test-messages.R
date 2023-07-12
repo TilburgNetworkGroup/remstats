@@ -1,4 +1,4 @@
-# from effects.R
+# effects.R ----------------------------------------------------------
 expect_warning(
     indegreeSender(scaling = "as.is"),
     pattern = "use 'scaling' is 'none'"
@@ -137,7 +137,7 @@ expect_warning(
     pattern = "missing values"
 )
 
-# from remstats.R
+# remstats.R ----------------------------------------------------------
 edgelist <- data.frame(
   time = 1:5,
   actor1 = c(1, 1, 2, 2, 3),
@@ -177,7 +177,78 @@ expect_error(
     pattern = "object of class remify"
 )
 
-# from attr_data in tomstats
+# tomstats.R ----------------------------------------------------------
+edgelist <- data.frame(
+  time = 1:5,
+  actor1 = c(1, 1, 2, 2, 3),
+  actor2 = c(2, 3, 1, 3, 2)
+)
+
+info <- data.frame(
+  name = 1:3,
+  time = rep(0, 3),
+  x1 = c(10, 20, 30),
+  x2 = c(0, 1, 1)
+)
+
+reh <- remify::remify(edgelist, model = "tie")
+
+expect_warning(
+    tomstats(reh = reh, effects = ~ 1, attributes = info),
+    pattern = "use 'attr_data'"
+)
+
+colnames(info)[1] <- "id"
+
+expect_warning(
+    tomstats(reh = reh, effects = ~ 1, attributes = info),
+    pattern = "use 'name'"
+)
+
+colnames(info)[1] <- "name"
+
+expect_warning(
+    tomstats(edgelist = reh, effects = ~ 1),
+    pattern = "use 'reh'"
+)
+
+expect_error(
+    tomstats(reh = edgelist, effects = ~ 1),
+    pattern = "object of class remify"
+)
+
+reh <- remify::remify(edgelist, model = "actor")
+
+expect_error(
+    tomstats(reh = reh, effects = ~ 1),
+    pattern = "model argument"
+)
+
+reh <- remify::remify(edgelist, model = "tie")
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ 1, start = 0),
+    pattern = "1 or a larger"
+)
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ 1, start = 5, stop = 3),
+    pattern = "cannot be smaller"
+)
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ sp()),
+    pattern = "directed events"
+)
+
+reh <- remify::remify(edgelist, model = "tie", directed = FALSE)
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ outdegreeReceiver()),
+    pattern = "undirected events"
+)
+
+# process_covariate -----------------------------------------------------
 reh <- remify::remify(edgelist, model = "tie")
 
 expect_error(
@@ -225,7 +296,15 @@ expect_warning(
     pattern = "not in the risk set"
 )
 
-# from userStat in tomstats
+# Event info
+setting <<- c("a", "b", "b", "a")
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ event(x = setting)),
+    pattern = "number of events"
+)
+
+# userStat
 Y <<- matrix(1:15, nrow = 5, ncol = 3)
 
 expect_error(
@@ -234,11 +313,90 @@ expect_error(
 )
 
 expect_error(
-    remstats(reh = reh, tie_effects = ~ userStat(Y[1:4, ])),
-    pattern = "number of events"
+    remstats(reh = reh, tie_effects = ~ userStat(Y[, 1:2])),
+    pattern = "number of dyads"
 )
 
-# from aomstats.R
+# parse_tie ---------------------------------------------------------------
+X <<- matrix(1:9, 3, 3)
+diag(X) <- 0
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ tie(x = X[1:2, ]),
+    pattern = "number of actors")
+)
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ tie(x = X[, 1:2]),
+    pattern = "number of actors")
+)
+
+reh <- remify::remify(edgelist, model = "tie", directed = FALSE)
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ tie(x = X),
+    pattern = "symmetric")
+)
+
+reh <- remify::remify(edgelist, model = "tie")
+
+X[1,1] <- NA
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ tie(x = X),
+    pattern = "missing values")
+)
+
+# validate_memory -------------------------------------------------------
+reh <- remify::remify(edgelist, model = "tie")
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ inertia(), memory = "window"),
+    pattern = "memory_value"
+)
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ inertia(), memory = "decay"),
+    pattern = "memory_value"
+)
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ inertia(), memory = "interval", 
+        memory_value = 1),
+    pattern = "memory_value"
+)
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ inertia(), memory = "interval", 
+        memory_value = c(5,2)),
+    pattern = "memory_value"
+)
+
+reh <- remify::remify(edgelist, model = "actor")
+
+expect_error(
+    remstats(reh = reh, receiver_effects = ~ inertia(), memory = "window"),
+    pattern = "memory_value"
+)
+
+expect_error(
+    remstats(reh = reh, receiver_effects = ~ inertia(), memory = "decay"),
+    pattern = "memory_value"
+)
+
+expect_error(
+    remstats(reh = reh, receiver_effects = ~ inertia(), memory = "interval", 
+        memory_value = 1),
+    pattern = "memory_value"
+)
+
+expect_error(
+    remstats(reh = reh, receiver_effects = ~ inertia(), memory = "interval", 
+        memory_value = c(5,2)),
+    pattern = "memory_value"
+)
+
+# aomstats.R ------------------------------------------------
 edgelist <- data.frame(
   time = 1:5,
   actor1 = c(1, 1, 2, 2, 3),
@@ -307,7 +465,6 @@ expect_error(
     pattern = "not defined"
 )
 
-# from attr_data in aomstats
 reh <- remify::remify(edgelist, model = "actor")
 
 expect_error(
@@ -391,7 +548,6 @@ expect_warning(
     pattern = "not in the risk set"
 )
 
-# from userStat aomstats
 Y <<- matrix(1:15, nrow = 5, ncol = 3)
 
 expect_error(
@@ -412,4 +568,24 @@ expect_error(
 expect_error(
     remstats(reh = reh, receiver_effects = ~ userStat(Y[, 1:2])),
     pattern = "number of actors"
+)
+
+# check_formula ------------------------------------------------------------
+reh <- remify::remify(edgelist, model = "actor")
+
+expect_error(
+    remstats(reh = reh, sender_effects = ~ outdegreeSender),
+    pattern = "functions"
+)
+
+expect_error(
+    remstats(reh = reh, receiver_effects = ~ inertia),
+    pattern = "functions"
+)
+
+reh <- remify::remify(edgelist, model = "tie")
+
+expect_error(
+    remstats(reh = reh, tie_effects = ~ inertia),
+    pattern = "functions"
 )

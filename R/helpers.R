@@ -99,10 +99,10 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
 
   # Convert R start and stop indices to C++ (indexing starts at 0)
   if (start < 1) {
-    stop("start should be set to 1 or larger.")
+    stop("The 'start' value should be set to 1 or a larger number.")
   }
   if (stop < start) {
-    stop("stop cannot be smaller than start.")
+    stop("The 'stop' value cannot be smaller than the 'start' value.")
   }
   start <- start - 1
   if (stop == Inf) {
