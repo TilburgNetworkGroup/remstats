@@ -126,22 +126,22 @@ tomstats <- function(effects, reh, attr_data = NULL,
 
   # Check if the deprecated argument "attributes" is used
   if (!missing(attributes)) {
-        warning("use 'attr_data' instead of 'attributes'")
-        attr_data <- attributes
+    warning("use 'attr_data' instead of 'attributes'")
+    attr_data <- attributes
   }
 
   # Check if the deprecated "id" column is used in attr_data
-    if (!is.null(attr_data)) {
-        if (("id" %in% colnames(attr_data)) & !("name" %in% colnames(attr_data))) {
-        warning("use 'name' instead of 'id' in 'attr_data'")
-        colnames(attr_data)[which(colnames(attr_data) == "id")] <- "name"
-        }
+  if (!is.null(attr_data)) {
+    if (("id" %in% colnames(attr_data)) & !("name" %in% colnames(attr_data))) {
+      warning("use 'name' instead of 'id' in 'attr_data'")
+      colnames(attr_data)[which(colnames(attr_data) == "id")] <- "name"
     }
+  }
 
   # Check if the deprecated argument "edgelist" is used
   if (!missing(edgelist)) {
-        warning("use 'reh' instead of 'edgelist'")
-        reh <- edgelist
+    warning("use 'reh' instead of 'edgelist'")
+    reh <- edgelist
   }
 
   # Prepare all required inputs

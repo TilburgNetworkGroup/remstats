@@ -317,6 +317,44 @@ expect_error(
     pattern = "number of dyads"
 )
 
+# prep_exo ---------------------------------------------------------------
+expect_error(
+    send(variable = "x1", attr_data = attributes),
+    pattern = "Cannot find"
+)
+
+expect_error(
+    send(variable = 1, attr_data = info),
+    pattern = "should be a string"
+)
+
+expect_error(
+    send(variable = "x3", attr_data = info),
+    pattern = "'x3' not in attr_data"
+)
+
+expect_error(
+    send(variable = "x1", attr_data = info[,-2]),
+    pattern = "time variable is missing"
+)
+
+info$time[1] <- NA
+
+expect_error(
+    send(variable = "x1", attr_data = info),
+    pattern = "missing values"
+)
+
+info$time[1] <- 0
+info$x1[1] <- NA
+
+expect_warning(
+    send(variable = "x1", attr_data = info),
+    pattern = "Missing values"
+)
+
+info$x1[1] <- 10
+
 # parse_tie ---------------------------------------------------------------
 X <<- matrix(1:9, 3, 3)
 diag(X) <- 0

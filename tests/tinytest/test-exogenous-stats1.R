@@ -37,7 +37,7 @@ Y <<- matrix(1:25, nrow = 5, ncol = 5)
 # Statistics
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 effects <- ~ send(variable = "x1") + receive(variable = "x1") + 
-  average(variable = "x1") + difference(variable = "x1") + 
+  average(variable = "x1") + difference(variable = "x1") +
   maximum(variable = "x1") + minimum(variable = "x1") +
   same(variable = "x2") + tie(x = X, variableName = "X") +
   event(x = setting, variableName = "setting") +
@@ -140,6 +140,40 @@ expect_equal(stats[, , "event_setting"], event)
 
 # userStat
 expect_equal(stats[, , "userStat_Y"], Y)
+
+# test attr_data in variable functions
+info3 <<- info[, 1:3]
+info2 <<- info[, c(1, 2, 4)]
+
+effects2 <- ~ send(variable = "x1", attr_data = info3) + 
+receive(variable = "x1", attr_data = info3) + 
+  average(variable = "x1", attr_data = info3) + 
+  difference(variable = "x1", attr_data = info3) + 
+  maximum(variable = "x1", attr_data = info3) + 
+  minimum(variable = "x1", attr_data = info3) +
+  same(variable = "x2", attr_data = info2) 
+stats2 <- remstats(reh, tie_effects = effects2)
+
+expect_equal(stats2[, , "send_x1"], send)
+expect_equal(stats2[, , "receive_x1"], receive)
+expect_equal(stats2[, , "average_x1"], average)
+expect_equal(stats2[, , "difference_x1"], difference)
+expect_equal(stats2[, , "maximum_x1"], maximum)
+expect_equal(stats2[, , "minimum_x1"], minimum)
+expect_equal(stats2[, , "same_x2"], same)
+
+# test difference absolute = FALSE
+effects3 <- ~ difference(variable = "x1", absolute = FALSE)
+stats3 <- remstats(reh, tie_effects = effects3, attr_data = info)
+
+difference <- rbind(
+  c(-10, -20, 10, -10, 10),
+  c(-10, -20, 10, -10, 10),
+  c(-100, -200, 100, -100, 100),
+  c(-100, -200, 100, -100, 100),
+  c(-100, -200, 100, -100, 100)
+)
+expect_equal(stats3[, , "difference_x1"], difference)
 
 # test standardization
 std_effects <- ~
