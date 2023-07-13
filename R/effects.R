@@ -1651,6 +1651,10 @@ sp <- function(unique = FALSE, scaling = c("none", "std"),
 	return(call_args)
 }
 
+#' spUnique
+#' 
+#' Deprecated. Use \code{\link{sp}}.
+#' 
 #' @export
 spUnique <- function() {
     .Deprecated("sp")

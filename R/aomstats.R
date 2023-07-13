@@ -5,8 +5,6 @@
 #' 2017).
 #'
 #' @inheritParams remstats
-#' @param display_progress should a progress bar for the computation of the
-#' endogenous statistics be shown (TRUE) or not (FALSE)?
 #'
 #' @section Effects:
 #' The statistics to be computed are defined symbolically and should be

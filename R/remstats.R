@@ -115,6 +115,8 @@
 #' @param stop an optional integer value, specifying the index of the last
 #' event in the relational event history for which statistics muts be computed
 #' (see 'Details')
+#' @param display_progress should a progress bar for the computation of the
+#' endogenous statistics be shown (TRUE) or not (FALSE)?
 #' @param adjmat optionally, for a tie-oriented model a previously computed 
 #' adjacency matrix with on the rows the time points and on the columns the 
 #' risk set entries
@@ -167,6 +169,7 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
                      receiver_effects = NULL, attr_data = NULL, 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf,
+                     display_progress = FALSE,
                      adjmat = NULL, get_adjmat = FALSE,
                      attributes, edgelist) {
 
@@ -200,7 +203,8 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
             effects = tie_effects, reh = reh,
             attr_data = attr_data, memory = memory,
             memory_value = memory_value, start = start,
-            stop = stop, adjmat = adjmat, get_adjmat = get_adjmat
+            stop = stop, display_progress= display_progress, 
+            adjmat = adjmat, get_adjmat = get_adjmat
         )
     }
 
@@ -210,7 +214,7 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
             receiver_effects = receiver_effects,
             attr_data = attr_data, memory = memory,
             memory_value = memory_value, start = start,
-            stop = stop
+            stop = stop, display_progress = display_progress
         )
     }
 

@@ -71,7 +71,7 @@
 #' @export
 tie_effects <- function(directed = NULL, endogenous = NULL) {
   # Name all effects
-  effects <- sort(all_tie_effects())
+  effects <- all_tie_effects()
 
   # Filter out 'interact'
   effects <- effects[effects != "interact"]

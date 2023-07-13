@@ -95,10 +95,10 @@
 #' computation time but the user should be absolutely sure the adjacency matrix
 #' is accurate.
 #'
-#' @return An object of class 'tomstats'. Array with the computed statistics, 
-#' where rows refer to time points, columns refer to potential relational event 
-#' (i.e., potential edges) in the risk set and slices refer to statistics. The 
-#' 'tomstats' object has the following attributes: 
+#' @return An object of class 'tomstats'. Array with the computed statistics,
+#' where rows refer to time points, columns refer to potential relational event
+#' (i.e., potential edges) in the risk set and slices refer to statistics. The
+#' 'tomstats' object has the following attributes:
 #'   \describe{
 #'     \item{\code{model}}{Type of model that is estimated.}
 #'     \item{\code{formula}}{Model formula, obtained from the formula inputted to 'tie_effects'.}
@@ -119,11 +119,10 @@
 #' @export
 tomstats <- function(effects, reh, attr_data = NULL,
                      memory = c("full", "window", "decay", "interval"),
-                     memory_value = NA, start = 1, stop = Inf, adjmat = NULL,
-                     get_adjmat = FALSE, attributes, edgelist) {
-
-  
-
+                     memory_value = NA, start = 1, stop = Inf, 
+                     display_progress = FALSE, 
+                     adjmat = NULL, get_adjmat = FALSE,
+                     attributes, edgelist) {
   # Check if the deprecated argument "attributes" is used
   if (!missing(attributes)) {
     warning("use 'attr_data' instead of 'attributes'")
@@ -145,9 +144,11 @@ tomstats <- function(effects, reh, attr_data = NULL,
   }
 
   # Prepare all required inputs
-  inputs <- prepare_tomstats(effects = effects, reh = reh, 
-    attr_data = attr_data, memory = memory, memory_value = memory_value, 
-    start = start, stop = stop)
+  inputs <- prepare_tomstats(
+    effects = effects, reh = reh,
+    attr_data = attr_data, memory = memory, memory_value = memory_value,
+    start = start, stop = stop
+  )
 
   form <- inputs$form
   effects <- inputs$effects
@@ -166,26 +167,31 @@ tomstats <- function(effects, reh, attr_data = NULL,
   stop <- inputs$stop
 
   # Compute the adjacency matrix
-  if(any(effectNames %in% tie_effects(endogenous = TRUE))) {
-    adjmat <- compute_adjmat(edgelist, nrow(prepR), attr(reh, "directed"), 
-    memory, memory_value, start, stop)
-  } else {
-    if (is.null(adjmat)) {
+  if (is.null(adjmat)) {
+    if (any(grepl("degree", effectNames)) | any(effectNames %in% c("inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp"))) {
+      adjmat <- compute_adjmat(
+        edgelist, nrow(prepR), attr(reh, "directed"),
+        memory, memory_value, start, stop, display_progress
+      )
+    } else {
       adjmat <- matrix()
     }
-  }  
+  }
 
   # Compute statistics
-  statistics <- compute_stats_tie(effectNames, edgelist, adjmat, actors[, 2], 
-    types[, 2], prepR, scaling, consider_type, covar, interactions, start, 
-    stop, attr(reh, "directed")
+  statistics <- compute_stats_tie(
+    effectNames, edgelist, adjmat, actors[, 2],
+    types[, 2], prepR, scaling, consider_type, covar, interactions, start,
+    stop, attr(reh, "directed"), display_progress
   )
 
   # Add variable names to the statistics dimnames
-  statistics <- add_variable_names(statistics, effectNames, effects, 
-    interactions)
-  
-  # Modify riskset output 
+  statistics <- add_variable_names(
+    statistics, effectNames, effects,
+    interactions
+  )
+
+  # Modify riskset output
   riskset <- modify_riskset(prepR, reh, actors, types)
 
   # Format output

@@ -12,6 +12,7 @@ tomstats(
   memory_value = NA,
   start = 1,
   stop = Inf,
+  display_progress = FALSE,
   adjmat = NULL,
   get_adjmat = FALSE,
   attributes,
@@ -44,6 +45,9 @@ event in the relational event history for which statistics must be computed
 event in the relational event history for which statistics muts be computed
 (see 'Details')}
 
+\item{display_progress}{should a progress bar for the computation of the
+endogenous statistics be shown (TRUE) or not (FALSE)?}
+
 \item{adjmat}{optionally, a previously computed adjacency matrix with on the
 rows the time points and on the columns the risk set entries}
 
@@ -55,10 +59,10 @@ outputted as an attribute of the statistics.}
 \item{edgelist}{deprecated, please use "reh" instead}
 }
 \value{
-An object of class 'tomstats'. Array with the computed statistics, 
-where rows refer to time points, columns refer to potential relational event 
-(i.e., potential edges) in the risk set and slices refer to statistics. The 
-'tomstats' object has the following attributes: 
+An object of class 'tomstats'. Array with the computed statistics,
+where rows refer to time points, columns refer to potential relational event
+(i.e., potential edges) in the risk set and slices refer to statistics. The
+'tomstats' object has the following attributes:
   \describe{
     \item{\code{model}}{Type of model that is estimated.}
     \item{\code{formula}}{Model formula, obtained from the formula inputted to 'tie_effects'.}

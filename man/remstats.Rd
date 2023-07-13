@@ -14,6 +14,7 @@ remstats(
   memory_value = NA,
   start = 1,
   stop = Inf,
+  display_progress = FALSE,
   adjmat = NULL,
   get_adjmat = FALSE,
   attributes,
@@ -55,6 +56,9 @@ event in the relational event history for which statistics must be computed
 \item{stop}{an optional integer value, specifying the index of the last
 event in the relational event history for which statistics muts be computed
 (see 'Details')}
+
+\item{display_progress}{should a progress bar for the computation of the
+endogenous statistics be shown (TRUE) or not (FALSE)?}
 
 \item{adjmat}{optionally, for a tie-oriented model a previously computed 
 adjacency matrix with on the rows the time points and on the columns the 

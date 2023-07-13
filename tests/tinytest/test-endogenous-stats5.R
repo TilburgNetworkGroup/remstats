@@ -1,4 +1,4 @@
-# Condition 9: Actor-oriented model
+# Condition 5: Actor-oriented model
 
 # Small edgelist
 edgelist <- data.frame(

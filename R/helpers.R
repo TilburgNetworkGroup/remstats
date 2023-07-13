@@ -783,7 +783,7 @@ process_covariate <- function(effects, attr_data, actors, edgelist, reh,
           stop("Length of vector 'x' in event() does not match number of events in edgelist")
         }
         if(!is.numeric(x$x)) {
-          x$x <- (as.numeric(factor(setting)) - 1)
+          x$x <- (as.numeric(factor(x$x)) - 1)
         }
         as.matrix(x$x)
       } else if (effect == "FEtype") {

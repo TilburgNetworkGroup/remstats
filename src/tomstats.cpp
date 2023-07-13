@@ -227,8 +227,13 @@ arma::mat standardize(arma::mat stat)
 // [[Rcpp::export]]
 arma::mat compute_adjmat(const arma::mat &edgelist, int D, bool directed,
                          Rcpp::String memory, arma::vec memory_value, int start,
-                         int stop)
+                         int stop, bool display_progress)
 {
+  // Progress update
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Preparing to calculate statistics: calculating adjmat" << std::endl;
+  }
 
   // Slice the edgelist according to "start" and "stop"
   arma::mat slice = edgelist.rows(start, stop);
@@ -239,6 +244,9 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int D, bool directed,
   // Full memory
   if (memory == "full")
   {
+    // Progress bar
+    Progress p(stop, display_progress);
+
     // (1) Initialize adjacency matrix
     // Select the past
     double time = slice(0, 0);
@@ -250,6 +258,8 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int D, bool directed,
     {
       // Add event weight to adjacency matrix
       adjmat(0, past(j, 1)) += past(j, 2);
+
+      p.increment();
     }
 
     // (2) For loop over timepoints
@@ -259,12 +269,17 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int D, bool directed,
       adjmat.row(i) = adjmat.row(i - 1);
       // Add event weight previous event to adjacency matrix
       adjmat(i, slice(i - 1, 1)) += slice(i - 1, 2);
+
+      p.increment();
     }
   }
 
   // Windowed memory
   if (memory == "window")
   {
+    // Progress bar
+    Progress p(slice.n_rows, display_progress);
+
     // For loop over timepoints
     for (arma::uword i = 1; i < slice.n_rows; ++i)
     {
@@ -282,12 +297,17 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int D, bool directed,
         // Add event weight to adjacency matrix
         adjmat(i, past(j, 1)) += past(j, 2);
       }
+
+      p.increment();
     }
   }
 
   // Interval memory
   if (memory == "interval")
   {
+    // Progress bar
+    Progress p(slice.n_rows, display_progress);
+
     // For loop over timepoints
     for (arma::uword i = 1; i < slice.n_rows; ++i)
     {
@@ -305,12 +325,17 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int D, bool directed,
         // Add event weight to adjacency matrix
         adjmat(i, past(j, 1)) += past(j, 2);
       }
+
+      p.increment();
     }
   }
 
   // Exponential decay memory
   if (memory == "decay")
   {
+    // Progress bar
+    Progress p(slice.n_rows, display_progress);
+
     // For loop over timepoints
     for (arma::uword i = 0; i < slice.n_rows; ++i)
     {
@@ -336,6 +361,8 @@ arma::mat compute_adjmat(const arma::mat &edgelist, int D, bool directed,
         // Add weight to adjacency matrix
         adjmat(i, past(j, 1)) += we;
       }
+
+      p.increment();
     }
   }
 
@@ -491,24 +518,28 @@ arma::mat calc_actor_stats_exo(int type,
   return stat;
 }
 
-// calc_dyad_stats_exo
-//
-// Function to compute the dyadic exogenous statistics 'same', 'difference',
-// 'average', 'minimum', and 'maximum' in the tie-oriented model.
-//
-// Parameters:
-//   - type: An integer indicating the type of statistic to compute.
-//           1 = same, 2 = difference, 3 = average, 4 = minimum, 5 = maximum
-//   - covariates: A matrix with covariate values. Each row represents an observation and contains three columns: actor ID, time, and covariate value.
-//   - edgelist: A matrix with the observed relational event history. Each row represents an
-//               observed event and contains three columns: time, event, and event weight.
-//   - riskset: A matrix representing the riskset data. Each row contains information about a dyad:
-//              actor1, actor2, type, and event.
-//   - start: An integer indicating the first event in the edgelist for which the statistic is computed.
-//   - stop: An integer indicating the last event in the edgelist for which the statistic is computed.
-//
-// Returns:
-//   A matrix with the dyadic exogenous statistics. Rows correspond to time points, and columns correspond to dyads.
+/* calc_dyad_stats_exo
+
+  Function to compute the dyadic exogenous statistics 'same', 'difference',
+  'average', 'minimum', and 'maximum' in the tie-oriented model.
+
+  Parameters:
+    - type: An integer indicating the type of statistic to compute.
+        1 = same,
+        2 = difference,
+        3 = average,
+        4 = minimum,
+        5 = maximum
+    - covariates: A matrix with covariate values. Each row represents an
+    observation and contains three columns: actor ID, time, and covariate value.
+    - edgelist: A matrix with the observed relational event history. Each row represents an observed event and contains three columns: time, event, and event weight.
+    - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actor1, actor2, type, and event.
+    - start: An integer indicating the first event in the edgelist for which the statistic is computed.
+    - stop: An integer indicating the last event in the edgelist for which the statistic is computed.
+
+  Returns:
+    A matrix with the dyadic exogenous statistics. Rows correspond to time points, and columns correspond to dyads.
+*/
 arma::mat calc_dyad_stats_exo(int type,
                               const arma::mat &covariates,
                               const arma::mat &edgelist,
@@ -683,25 +714,27 @@ arma::mat calc_dyad_stats_exo(int type,
    Description: Computes degree statistics for the tie-oriented model.
 
    Parameters:
-     - type: An integer indicating the type of statistic to compute.
+    - type: An integer indicating the type of statistic to compute.
         1 for indegreeSender,
         2 for indegreeReceiver,
         3 for outdegreeSender,
         4 for outdegreeReceiver,
         5 for totaldegreeSender,
         6 for totaldegreeReceiver,
-     - edgelist: A matrix with the observed relational event history. Rows refer to the observed relational events. The first column refers to the time, the second column to the events, and the third column to the event weight.
-      - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
-     - actors: A vector with the actors that can potentially interact.
-     - types: A vector with the types of events.
-     - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
-     - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
+    - adjmat: A matrix with the accumulated event weights. Rows refer to the time points and columns to the dyads in the risk set.
+    - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
+    - actors: A vector with the actors that can potentially interact.
+    - types: A vector with the types of events.
+    - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
+    - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
+    - consider_type: A boolean value indicating whether to separately calculate inertia per event type (true) or disregard event types (false).
+    - scaling: A string with the type of scaling that has to be applied.
+    - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
 
    Returns:
      A matrix with the degree statistics. Rows refer to the time points, and columns refer to the actors.
 */
-arma::mat calc_degree_directed(int type,
-                               const arma::mat &edgelist,
+arma::mat calc_degree_directed(std::string type,
                                const arma::mat &riskset,
                                const arma::mat &adjmat,
                                const arma::vec &actors,
@@ -709,23 +742,30 @@ arma::mat calc_degree_directed(int type,
                                int start,
                                int stop,
                                bool consider_type,
-                               bool directed)
+                               bool directed,
+                               bool display_progress)
 {
 
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
+  // Progress update
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating " << type << " statistic" << std::endl;
+  }
 
   // Initialize saving space
-  arma::mat stat(slice.n_rows, adjmat.n_cols, arma::fill::zeros);
+  arma::mat stat(stop - start + 1, adjmat.n_cols, arma::fill::zeros);
 
   if (consider_type)
   {
+    // Progress bar
+    Progress p(types.n_elem * actors.n_elem, display_progress);
+
     // Initialize saving space
-    arma::cube indeg(slice.n_rows, actors.n_elem, types.n_elem,
+    arma::cube indeg(stat.n_rows, actors.n_elem, types.n_elem,
                      arma::fill::zeros);
-    arma::cube outdeg(slice.n_rows, actors.n_elem, types.n_elem,
+    arma::cube outdeg(stat.n_rows, actors.n_elem, types.n_elem,
                       arma::fill::zeros);
-    arma::cube deg(slice.n_rows, actors.n_elem, types.n_elem,
+    arma::cube deg(stat.n_rows, actors.n_elem, types.n_elem,
                    arma::fill::zeros);
 
     // For loop over event types
@@ -744,7 +784,7 @@ arma::mat calc_degree_directed(int type,
         int actor = actors(k);
 
         // Actor's indegree
-        if ((type == 1) || (type == 2) || (type == 5) || (type == 6))
+        if ((type == "indegreeSender") || (type == "indegreeReceiver") || (type == "totaldegreeSender") || (type == "totaldegreeReceiver"))
         {
 
           // Get the dyad IDs for "actor" as receiver and type "c"
@@ -759,7 +799,7 @@ arma::mat calc_degree_directed(int type,
         }
 
         // Actor's outdegree
-        if ((type == 3) || (type == 4) || (type == 5) || (type == 6))
+        if ((type == "outdegreeSender") || (type == "outdegreeReceiver") || (type == "totaldegreeSender") || (type == "totaldegreeReceiver"))
         {
 
           // Get the dyad IDs for "actor" as sender and type "c"
@@ -775,19 +815,19 @@ arma::mat calc_degree_directed(int type,
 
         // Save in the correct place
         IntegerVector save_dyadIDs = 0;
-        if ((type == 1) || (type == 3) || (type == 5))
+        if ((type == "indegreeSender") || (type == "outdegreeSender") || (type == "totaldegreeSender"))
         {
           // Get the dyad IDs for "actor" as sender and type "c"
           save_dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, types(c), true);
         }
 
-        if ((type == 2) || (type == 4) || (type == 6))
+        if ((type == "indegreeReceiver") || (type == "outdegreeReceiver") || (type == "totaldegreeReceiver"))
         {
           // Get the dyad IDs for "actor" as receiver and type "c"
           save_dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, types(c), true);
         }
 
-        if ((type == 1) || (type == 2))
+        if ((type == "indegreeSender") || (type == "indegreeReceiver"))
         {
           for (int save_dyadID : save_dyadIDs)
           {
@@ -798,7 +838,7 @@ arma::mat calc_degree_directed(int type,
           }
         }
 
-        if ((type == 3) || (type == 4))
+        if ((type == "outdegreeSender") || (type == "outdegreeReceiver"))
         {
           for (int save_dyadID : save_dyadIDs)
           {
@@ -809,7 +849,7 @@ arma::mat calc_degree_directed(int type,
           }
         }
 
-        if ((type == 5) || (type == 6))
+        if ((type == "totaldegreeSender") || (type == "totaldegreeReceiver"))
         {
           for (int save_dyadID : save_dyadIDs)
           {
@@ -820,14 +860,20 @@ arma::mat calc_degree_directed(int type,
             }
           }
         }
+
+        p.increment();
       }
     }
   }
   else
   {
+
+    // Progress bar
+    Progress p(actors.n_elem, display_progress);
+
     // Initialize saving space
-    arma::mat indeg(slice.n_rows, actors.n_elem, arma::fill::zeros);
-    arma::mat outdeg(slice.n_rows, actors.n_elem, arma::fill::zeros);
+    arma::mat indeg(stat.n_rows, actors.n_elem, arma::fill::zeros);
+    arma::mat outdeg(stat.n_rows, actors.n_elem, arma::fill::zeros);
 
     // For loop over actors
     for (arma::uword k = 0; k < actors.n_elem; k++)
@@ -837,7 +883,7 @@ arma::mat calc_degree_directed(int type,
       int actor = actors(k);
 
       // Actor's indegree
-      if ((type == 1) || (type == 2) || (type == 5) || (type == 6))
+      if ((type == "indegreeSender") || (type == "indegreeReceiver") || (type == "totaldegreeSender") || (type == "totaldegreeReceiver"))
       {
 
         // Get the dyad IDs for "actor" as receiver
@@ -852,7 +898,7 @@ arma::mat calc_degree_directed(int type,
       }
 
       // Actor's outdegree
-      if ((type == 3) || (type == 4) || (type == 5) || (type == 6))
+      if ((type == "outdegreeSender") || (type == "outdegreeReceiver") || (type == "totaldegreeSender") || (type == "totaldegreeReceiver"))
       {
 
         // Get the dyad IDs for "actor" as sender
@@ -869,19 +915,19 @@ arma::mat calc_degree_directed(int type,
       // Save in the correct place
       IntegerVector save_dyadIDs = 0;
 
-      if ((type == 1) || (type == 3) || (type == 5))
+      if ((type == "indegreeSender") || (type == "outdegreeSender") || (type == "totaldegreeSender"))
       {
         // Get the dyad IDs for "actor" as sender
         save_dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, true);
       }
 
-      if ((type == 2) || (type == 4) || (type == 6))
+      if ((type == "indegreeReceiver") || (type == "outdegreeReceiver") || (type == "totaldegreeReceiver"))
       {
         // Get the dyad IDs for "actor" as receiver and type "c"
         save_dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, true);
       }
 
-      if ((type == 1) | (type == 2))
+      if ((type == "indegreeSender") | (type == "indegreeReceiver"))
       {
         for (int save_dyadID : save_dyadIDs)
         {
@@ -892,7 +938,7 @@ arma::mat calc_degree_directed(int type,
         }
       }
 
-      if ((type == 3) | (type == 4))
+      if ((type == "outdegreeSender") | (type == "outdegreeReceiver"))
       {
         for (int save_dyadID : save_dyadIDs)
         {
@@ -903,7 +949,7 @@ arma::mat calc_degree_directed(int type,
         }
       }
 
-      if ((type == 5) || (type == 6))
+      if ((type == "totaldegreeSender") || (type == "totaldegreeReceiver"))
       {
         for (int save_dyadID : save_dyadIDs)
         {
@@ -913,6 +959,8 @@ arma::mat calc_degree_directed(int type,
           }
         }
       }
+
+      p.increment();
     }
   }
 
@@ -926,42 +974,65 @@ arma::mat calc_degree_directed(int type,
    Description: Computes degree statistics for the tie-oriented model with undirected events.
 
    Parameters:
-     - type: An integer indicating the type of statistic to compute.
+    - type: An integer indicating the type of statistic to compute.
         1 for degreeMin,
         2 for degreeMax,
-        3 for degreeDiff,
-     - edgelist: A matrix with the observed relational event history. Rows refer to the observed relational events. The first column refers to the time, the second column to the events, and the third column to the event weight.
-      - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
-     - actors: A vector with the actors that can potentially interact.
-     - types: A vector with the types of events.
-     - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
-     - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
+        3 for degreeDiff,.
+    - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
+    - adjmat: A matrix with the accumulated event weights. Rows refer to the time points and columns to the dyads in the risk set.
+    - actors: A vector with the actors that can potentially interact.
+    - types: A vector with the types of events.
+    - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
+    - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
 
    Returns:
-     A matrix with the degree statistics. Rows refer to the time points, and columns refer to the actors.
+    A matrix with the degree statistics. Rows refer to the time points, and columns refer to the dyads in the risk set.
 */
 arma::mat calc_degree_undirected(int type,
-                                 const arma::mat &edgelist,
                                  const arma::mat &riskset,
                                  const arma::mat &adjmat,
                                  const arma::vec &actors,
                                  const arma::vec &types,
                                  int start,
                                  int stop,
-                                 bool consider_type)
+                                 bool consider_type,
+                                 bool display_progress)
 {
 
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
+  // Progress update
+  std::string type_name;
+  switch (type)
+  {
+  case 1:
+    type_name = "degreeMin";
+    break;
+
+  case 2:
+    type_name = "degreeMax";
+    break;
+
+  case 3:
+    type_name = "degreeDiff";
+    break;
+  }
+
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating " << type_name << " statistic" << std::endl;
+  }
 
   // Initialize saving space
-  arma::mat stat(slice.n_rows, adjmat.n_cols, arma::fill::zeros);
+  arma::mat stat(stop - start + 1, adjmat.n_cols, arma::fill::zeros);
 
   // Consider event type?
   if (consider_type)
   {
+    // Progress bar
+    Progress p((types.n_elem * actors.n_elem) + riskset.n_rows,
+               display_progress);
+
     // Initialize saving space
-    arma::cube deg(slice.n_rows, actors.n_elem, types.n_elem, arma::fill::zeros);
+    arma::cube deg(stop - start + 1, actors.n_elem, types.n_elem, arma::fill::zeros);
 
     // For loop over event types
     for (arma::uword c = 0; c < types.n_elem; ++c)
@@ -982,6 +1053,8 @@ arma::mat calc_degree_undirected(int type,
         {
           degType.col(actor) += adjmat.col(dyadID);
         }
+
+        p.increment();
       }
 
       deg.slice(c) = degType;
@@ -1014,12 +1087,17 @@ arma::mat calc_degree_undirected(int type,
         stat.col(d) = abs(deg1 - deg2);
         break;
       }
+
+      p.increment();
     }
   }
   else
   {
+    // Progress bar
+    Progress p(actors.n_elem + riskset.n_rows, display_progress);
+
     // Initialize saving space
-    arma::mat deg(slice.n_rows, actors.n_elem, arma::fill::zeros);
+    arma::mat deg(stop - start + 1, actors.n_elem, arma::fill::zeros);
 
     // (1) Step 1: Compute the degree
     // For loop over actors k
@@ -1034,6 +1112,8 @@ arma::mat calc_degree_undirected(int type,
       {
         deg.col(actor) += adjmat.col(dyadID);
       }
+
+      p.increment();
     }
 
     // (2) Step 2: Save the degree in the correct place
@@ -1062,6 +1142,8 @@ arma::mat calc_degree_undirected(int type,
         stat.col(d) = abs(deg1 - deg2);
         break;
       }
+
+      p.increment();
     }
   }
 
@@ -1069,24 +1151,27 @@ arma::mat calc_degree_undirected(int type,
   return stat;
 }
 
-// calc_inertia
-//
-// Computes the statistic for an inertia effect in the tie-oriented model.
-//
-// edgelist: matrix (time, event, weight)
-// adjmat: matrix (events x dyads)
-// riskset: matrix, (actor1, actor2, type, event)
-// N: integer, number of actors
-// directed: boolean, whether events are directed or undirected
-// types: vector, type ids
-// start: integer, first event in the edgelist for which the statistic is
-// computed
-// stop: integer, last event in the edgelist for which the statistic is
-// computed
-// consider_type: boolean indicating whether to compute the inertia per
-// event type (true) or sum across types (false)
-arma::mat calc_inertia(const arma::mat &edgelist,
-                       const arma::mat &adjmat,
+/*
+  Function: calc_inertia
+
+  Description: Computes the inertia statistic in the tie-oriented model.
+
+  Parameters:
+  - adjmat: A matrix with the accumulated event weights. Rows refer to the time points and columns to the dyads in the risk set.
+  - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
+  - actors: A vector with the actors that can potentially interact.
+  - types: A vector with the types of events.
+  - directed: A boolean value indicating whether the events are directed (true) or undirected (false).
+  - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
+  - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
+  - consider_type: A boolean value indicating whether to separately calculate inertia per event type (true) or disregard event types (false).
+  - scaling: A string with the type of scaling that has to be applied.
+  - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
+
+  Returns:
+    A matrix with the inertia statistic. Rows refer to the time points, and columns refer to the dyads in the risk set.
+*/
+arma::mat calc_inertia(const arma::mat &adjmat,
                        const arma::mat &riskset,
                        const arma::vec &actors,
                        const arma::vec &types,
@@ -1094,14 +1179,17 @@ arma::mat calc_inertia(const arma::mat &edgelist,
                        int start,
                        int stop,
                        bool consider_type,
-                       Rcpp::String scaling)
+                       Rcpp::String scaling,
+                       bool display_progress)
 {
-
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
+  // Progress update
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating inertia statistic" << std::endl;
+  }
 
   // Initialize saving space
-  arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+  arma::mat stat(stop - start + 1, riskset.n_rows, arma::fill::zeros);
 
   if (!consider_type)
   {
@@ -1109,10 +1197,15 @@ arma::mat calc_inertia(const arma::mat &edgelist,
     // statistic
     if (types.n_elem == 1)
     {
+      Progress p(1, display_progress);
       stat = adjmat;
+      p.increment();
     }
     else
     {
+      // Progress bar
+      Progress p(riskset.n_rows, display_progress);
+
       // For loop over dyads
       for (arma::uword d = 0; d < riskset.n_rows; ++d)
       {
@@ -1127,12 +1220,16 @@ arma::mat calc_inertia(const arma::mat &edgelist,
         {
           stat.col(d) += adjmat.col(dyadID);
         }
+
+        p.increment();
       }
     }
   }
   else
   {
+    Progress p(1, display_progress);
     stat = adjmat;
+    p.increment();
   }
 
   // Scale by the outdegree of the sender >> the fraction of messages i sent to
@@ -1140,7 +1237,7 @@ arma::mat calc_inertia(const arma::mat &edgelist,
   // likely to get a message
   if ((scaling == "prop") & (directed))
   {
-    arma::mat deg = calc_degree_directed(3, edgelist, riskset, adjmat, actors, types, start, stop, consider_type, true);
+    arma::mat deg = calc_degree_directed("outdegreeSender", riskset, adjmat, actors, types, start, stop, consider_type, true, false);
     stat = stat / deg;
     double rep = 1.0 / (actors.n_elem - 1.0);
     stat.replace(arma::datum::nan, rep);
@@ -1150,40 +1247,50 @@ arma::mat calc_inertia(const arma::mat &edgelist,
   return stat;
 }
 
-// calc_reciprocity
-//
-// Computes the statistic for a reciprocity effect in the tie-oriented model.
-//
-// edgelist: matrix (time, event, weight)
-// adjmat: matrix (events x dyads)
-// riskset: matrix, (actor1, actor2, type, event)
-// N: integer, number of actors
-// types: vector, type ids
-// start: integer, first event in the edgelist for which the statistic is
-// computed
-// stop: integer, last event in the edgelist for which the statistic is
-// computed
-// consider_type: boolean indicating whether to compute the degree per
-// event type (true) or sum across types (false)
-arma::mat calc_reciprocity(const arma::mat &edgelist,
-                           const arma::mat &adjmat,
+/*
+  Function: calc_reciprocity
+
+  Description: Computes the reciprocity statistic in the tie-oriented model.
+
+  Parameters:
+  - adjmat: A matrix with the accumulated event weights. Rows refer to the time points and columns to the dyads in the risk set.
+  - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
+  - actors: A vector with the actors that can potentially interact.
+  - types: A vector with the types of events.
+  - directed: A boolean value indicating whether the events are directed (true) or undirected (false).
+  - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
+  - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
+  - consider_type: A boolean value indicating whether to separately calculate inertia per event type (true) or disregard event types (false).
+  - scaling: A string with the type of scaling that has to be applied.
+  - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
+
+  Returns:
+    A matrix with the reciprocity statistic. Rows refer to the time points, and columns refer to the dyads in the risk set.
+*/
+arma::mat calc_reciprocity(const arma::mat &adjmat,
                            const arma::mat &riskset,
                            const arma::vec &actors,
                            const arma::vec &types,
                            int start,
                            int stop,
                            bool consider_type,
-                           Rcpp::String scaling)
+                           Rcpp::String scaling,
+                           bool display_progress)
 {
-
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
+  // Progress update
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating reciprocity statistic" << std::endl;
+  }
 
   // Initialize saving space
-  arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+  arma::mat stat(stop - start + 1, riskset.n_rows, arma::fill::zeros);
 
   if (!consider_type)
   {
+    // Progress bar
+    Progress p(riskset.n_rows, display_progress);
+
     // For loop over dyads
     for (arma::uword j = 0; j < riskset.n_rows; j++)
     {
@@ -1201,10 +1308,15 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
           stat.col(j) += adjmat.col(dyadID);
         }
       }
+
+      p.increment();
     }
   }
   else
   {
+    // Progress bar
+    Progress p(riskset.n_rows, display_progress);
+
     // For loop over dyads
     for (arma::uword j = 0; j < riskset.n_rows; j++)
     {
@@ -1222,6 +1334,8 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
         stat.col(j) = adjmat.col(dyadIDs[0]);
       }
     }
+
+    p.increment();
   }
 
   // Scale by the indegree of the sender >> the fraction of messages i received
@@ -1229,7 +1343,7 @@ arma::mat calc_reciprocity(const arma::mat &edgelist,
   // equally likely to get a message
   if (scaling == "prop")
   {
-    arma::mat deg = calc_degree_directed(1, edgelist, riskset, adjmat, actors, types, start, stop, consider_type, true);
+    arma::mat deg = calc_degree_directed("indegreeSender", riskset, adjmat, actors, types, start, stop, consider_type, true, false);
     stat = stat / deg;
     double rep = 1.0 / (actors.n_elem - 1.0);
     stat.replace(arma::datum::nan, rep);
@@ -1256,23 +1370,64 @@ arma::uvec checkAndRemoveIndices(const arma::vec &vector1, const arma::vec &vect
   return result;
 }
 
-// computeTriadStatsNoTypes
-//
-// Computes the triad statistics for the tie-oriented model with directed
-// dyadic events
-//
-// type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp, 5 = sp, 6 = unique sp
-// adjmat: matrix (events x dyads)
-// start: integer, first event in the edgelist for which the statistic is
-// computed
-// stop: integer, last event in the edgelist for which the statistic is
-// computed
+/*
+  Function: computeTriadStatsNoTypes
+
+  Description: Computes the triad statistics in the tie-oriented model for events without types.
+
+  Parameters:
+  - type: An integer indicating the type of statistic to compute.
+        1 for otp,
+        2 for itp,
+        3 for osp,
+        4 for isp,
+        5 for sp
+  - adjmat: A matrix with the accumulated event weights. Rows refer to the time points and columns to the dyads in the risk set.
+  - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
+  - actors: A vector with the actors that can potentially interact.
+  - scaling: A string with the type of scaling that has to be applied.
+  - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
+
+  Returns:
+    A matrix with the calculated triad statistic. Rows refer to the time points, and columns refer to the dyads in the risk set.
+*/
 arma::mat computeTriadStatsNoTypes(int type,
                                    const arma::mat &adjmat,
                                    arma::vec actors,
                                    const arma::mat &riskset,
-                                   Rcpp::String scaling)
+                                   Rcpp::String scaling,
+                                   bool display_progress)
 {
+  // Progress update
+  std::string type_name;
+  switch (type)
+  {
+  case 1:
+    type_name = "otp";
+    break;
+
+  case 2:
+    type_name = "itp";
+    break;
+
+  case 3:
+    type_name = "osp";
+    break;
+
+  case 4:
+    type_name = "isp";
+    break;
+
+  case 5:
+    type_name = "sp";
+    break;
+  }
+
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating " << type_name << " statistic" << std::endl;
+  }
+
   // Initialize saving space
   arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
 
@@ -1316,6 +1471,9 @@ arma::mat computeTriadStatsNoTypes(int type,
 
   // Initialize keepIndices
   arma::uvec keepIndices(actors.n_elem);
+
+  // Progress bar
+  Progress p(adjmat.n_cols, display_progress);
 
   // For loop over dyads
   for (arma::uword d = 0; d < adjmat.n_cols; ++d)
@@ -1387,43 +1545,79 @@ arma::mat computeTriadStatsNoTypes(int type,
     // Calculate the sum per time point
     arma::vec rowSums = arma::sum(minMatrix, 1);
     stat.col(d) = rowSums;
+
+    p.increment();
   }
 
   return stat;
 }
 
-// computeTriadStatsTypesNotConsidered
-//
-// Computes the triad statistics for the tie-oriented model with
-// types events, summing over event types (i.e., consider_type = false)
-//
-// type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp
-// adjmat: matrix (events x dyads)
-// start: integer, first event in the edgelist for which the statistic is
-// computed
-// stop: integer, last event in the edgelist for which the statistic is
-// computed
-// computeTriadStatsTypesNotConsidered
-//
-// Computes the triad statistics for the tie-oriented model with
-// types events, summing over event types (i.e., consider_type = false)
-//
-// type: integer, 1 = otp, 2 = itp, 3 = osp, 4 = isp
-// adjmat: matrix (events x dyads)
-// start: integer, first event in the edgelist for which the statistic is
-// computed
-// stop: integer, last event in the edgelist for which the statistic is
-// computed
+/*
+  Function: computeTriadStatsTypesNotConsidered
+
+  Description: Computes the triad statistics in the tie-oriented model for events with types that are not considered.
+
+  Parameters:
+  - type: An integer indicating the type of statistic to compute.
+        1 for otp,
+        2 for itp,
+        3 for osp,
+        4 for isp,
+        5 for sp
+  - adjmat: A matrix with the accumulated event weights. Rows refer to the time points and columns to the dyads in the risk set.
+  - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
+  - actors: A vector with the actors that can potentially interact.
+  - types: A vector with the types of events.
+  - scaling: A string with the type of scaling that has to be applied.
+  - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
+
+  Returns:
+    A matrix with the calculated triad statistic. Rows refer to the time points, and columns refer to the dyads in the risk set.
+*/
 arma::mat computeTriadStatsTypesNotConsidered(
     int type,
     const arma::mat &adjmat,
     const arma::vec &actors,
     const arma::vec &types,
     const arma::mat &riskset,
-    Rcpp::String scaling)
+    Rcpp::String scaling,
+    bool display_progress)
 {
+  // Progress update
+  std::string type_name;
+  switch (type)
+  {
+  case 1:
+    type_name = "otp";
+    break;
+
+  case 2:
+    type_name = "itp";
+    break;
+
+  case 3:
+    type_name = "osp";
+    break;
+
+  case 4:
+    type_name = "isp";
+    break;
+
+  case 5:
+    type_name = "sp";
+    break;
+  }
+
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating " << type_name << " statistic" << std::endl;
+  }
+
   // Initialize saving space
   arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
+
+  // Progress bar
+  Progress p(riskset.n_rows, display_progress);
 
   // Loop over dyads in the risk set
   for (arma::uword d = 0; d < riskset.n_rows; ++d)
@@ -1509,18 +1703,75 @@ arma::mat computeTriadStatsTypesNotConsidered(
 
     arma::mat minMatrix = arma::min(partners1, partners2);
     stat.col(d) = arma::sum(minMatrix, 1);
+
+    p.increment();
   }
   return stat;
 }
 
+/*
+  Function: computeTriadStatsTypesConsidered
+
+  Description: Computes the triad statistics in the tie-oriented model for events with types that are considered.
+
+  Parameters:
+  - type: An integer indicating the type of statistic to compute.
+        1 for otp,
+        2 for itp,
+        3 for osp,
+        4 for isp,
+        5 for sp
+  - adjmat: A matrix with the accumulated event weights. Rows refer to the time points and columns to the dyads in the risk set.
+  - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
+  - actors: A vector with the actors that can potentially interact.
+  - types: A vector with the types of events.
+  - scaling: A string with the type of scaling that has to be applied.
+  - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
+
+  Returns:
+    A matrix with the calculated triad statistic. Rows refer to the time points, and columns refer to the dyads in the risk set.
+*/
 arma::mat computeTriadStatsTypesConsidered(
     int type,
     const arma::mat &adjmat,
     const arma::vec &actors,
     const arma::vec &types,
     const arma::mat &riskset,
-    Rcpp::String scaling)
+    Rcpp::String scaling,
+    bool display_progress)
 {
+  // Progress update
+  std::string type_name;
+  switch (type)
+  {
+  case 1:
+    type_name = "otp";
+    break;
+
+  case 2:
+    type_name = "itp";
+    break;
+
+  case 3:
+    type_name = "osp";
+    break;
+
+  case 4:
+    type_name = "isp";
+    break;
+
+  case 5:
+    type_name = "sp";
+    break;
+  }
+
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating " << type_name << " statistic" << std::endl;
+  }
+
+  // Progress bar
+  Progress p(adjmat.n_cols, display_progress);
 
   // Initialize saving space
   arma::mat stat(adjmat.n_rows, adjmat.n_cols, arma::fill::zeros);
@@ -1643,30 +1894,40 @@ arma::mat computeTriadStatsTypesConsidered(
     // Calculate the sum per time point
     rowSums = arma::sum(minMatrix, 1);
     stat.col(d) = rowSums;
+
+    p.increment();
   }
 
   return stat;
 }
 
-// calc_pshift
-//
-// Computes statistic for a p-shift effect (AB-BA, AB-BY, AB-XA, AB-XB, AB-XY,
-// AB-AY, AB-AB)
-//
-// *param [type] integer value that indicates the type of p-shift effect
-// (1 = AB-BA, 2 = AB-BY, 3 = AB-XA, 4 = AB-XB, 5 = AB-XY, 6 = AB-AY, 7 = AB-AB)
-// *param [edgelist] matrix with the observed relational event history. Rows
-// refers to the observed relational events. The first column refers to the
-// time, the second column to the events and the third column to the event
-// weight.
-// *param [D] integer value; the number of events in the risk set
-// *param [directed] boolean value: are events directed (1) or undirected (0)?
-// *param [start] integer number indicating the first row in the edgelist for
-// which statistics have to be computed.
-// *param [stop] integer number indicating the last row in the edgelist for
-// which statistics have to be computed.
-// *param [consider_type] boolean indicating whether to compute the pshift per
-// event type (true) or across types (false)
+/*
+   Function: calc_pshift
+
+   Description: Computes p-shift statistics for the tie-oriented model.
+
+   Parameters:
+    - type: An integer indicating the type of statistic to compute.
+        1 for AB-BA,
+        2 for AB-BY,
+        3 for AB-XA,
+        4 for AB-XB,
+        5 for AB-XY,
+        6 for AB-AY,
+        7 for AB-AB
+    - edgelist: A matrix with the observed relational event history. Each row represents an observed event and contains three columns: time, event, and event weight.
+    - riskset: A matrix representing the riskset data. Each row contains information about a dyad: actors involved, type and dyad ID.
+    - actors: A vector with the actors that can potentially interact.
+    - types: A vector with the types of events.
+    - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
+    - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
+    - consider_type: A boolean value indicating whether to separately calculate p-shifts per event type (true) or disregard event types (false).
+    - scaling: A string with the type of scaling that has to be applied.
+    - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
+
+   Returns:
+     A matrix with the p-shift statistics. Rows refer to the time points, and columns refer to the actors.
+*/
 arma::mat calc_pshift(int type,
                       const arma::mat &edgelist,
                       const arma::mat &riskset,
@@ -1675,14 +1936,51 @@ arma::mat calc_pshift(int type,
                       bool directed,
                       int start,
                       int stop,
-                      bool consider_type)
+                      bool consider_type,
+                      bool display_progress)
 {
+  // Progress update
+  if (display_progress)
+  {
+    std::string type_name;
+    switch (type)
+    {
+    case 1:
+      type_name = "AB-BA";
+      break;
 
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
+    case 2:
+      type_name = "AB-BY";
+      break;
+
+    case 3:
+      type_name = "AB-XA";
+      break;
+
+    case 4:
+      type_name = "AB-XB";
+      break;
+
+    case 5:
+      type_name = "AB-XY";
+      break;
+
+    case 6:
+      type_name = "AB-AY";
+      break;
+
+    case 7:
+      type_name = "AB-AB";
+      break;
+    }
+    Rcpp::Rcout << "Calculating pshift " << type_name << " statistic" << std::endl;
+  }
+
+  // Progress bar
+  Progress p(stop - start + 1, display_progress);
 
   // Initialize saving space
-  arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+  arma::mat stat(stop - start + 1, riskset.n_rows, arma::fill::zeros);
 
   // Pre-compute dyad indices
   arma::cube dyadIndices(actors.n_elem, actors.n_elem, types.n_elem);
@@ -1706,7 +2004,7 @@ arma::mat calc_pshift(int type,
   }
 
   // For loop over events
-  for (arma::uword i = 0; i < slice.n_rows; ++i)
+  for (arma::uword i = 0; i < stat.n_rows; ++i)
   {
     // Position of the current event in the full edgelist
     int current = start + i;
@@ -1972,6 +2270,8 @@ arma::mat calc_pshift(int type,
       }
       break;
     }
+
+    p.increment();
   }
 
   // Output the computed stat
@@ -2003,17 +2303,25 @@ arma::rowvec rankR(arma::rowvec x, int N)
 // consider_type: boolean indicating whether to compute the inertia per
 // event type (true) or sum across types (false)
 arma::mat calc_rrank(int type, const arma::mat &edgelist,
-                     const arma::mat &riskset, arma::uword N, arma::uword C, int start, int stop, bool consider_type)
+                     const arma::mat &riskset, arma::uword N, arma::uword C, int start, int stop, bool consider_type, bool display_progress)
 {
-
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat ESlice = edgelist.rows(start, stop);
-
+  if (display_progress)
+  {
+    if(type == 1) {
+      Rcpp::Rcout << "Calculating rrankSend statistic" << std::endl;
+    } else if(type == 2) {
+      Rcpp::Rcout << "Calculating rrankReceive statistic" << std::endl;
+    }
+  }
+  
   // Saving space
-  arma::mat stat(ESlice.n_rows, riskset.n_rows, arma::fill::zeros);
+  arma::mat stat(stop - start + 1, riskset.n_rows, arma::fill::zeros);
 
   if (!consider_type)
   {
+    // Progress bar
+    Progress p(stop, display_progress);
+
     // Initialize lastTime array
     arma::mat lastTime(N, N);
     if (start > 0)
@@ -2037,10 +2345,12 @@ arma::mat calc_rrank(int type, const arma::mat &edgelist,
           lastTime(riskset(d, 1), riskset(d, 0)) = past(i, 0);
         }
       }
+
+      p.increment();
     }
 
     // For loop over time points
-    for (arma::uword i = 0; i < ESlice.n_rows; ++i)
+    for (arma::uword i = 0; i < stat.n_rows; ++i)
     {
       // Compute ranks based on lastTime
       arma::mat ranks(N, N, arma::fill::zeros);
@@ -2083,21 +2393,26 @@ arma::mat calc_rrank(int type, const arma::mat &edgelist,
       // Update lastTime
       // rrankSend: to whom the sender has most recently send events
       // (most recent times)
-      int d = ESlice(i, 1);
+      int d = edgelist(start + i, 1);
       if (type == 1)
       {
-        lastTime(riskset(d, 0), riskset(d, 1)) = ESlice(i, 0);
+        lastTime(riskset(d, 0), riskset(d, 1)) = edgelist(start + i, 0);
       }
       // rrankReceive: from whom the sender has most recently
       // received events (most recent times)
       if (type == 2)
       {
-        lastTime(riskset(d, 1), riskset(d, 0)) = ESlice(i, 0);
+        lastTime(riskset(d, 1), riskset(d, 0)) = edgelist(start + i, 0);
       }
+
+      p.increment();
     }
   }
   else
   {
+    // Progress bar
+    Progress p(stop, display_progress);
+
     // Initialize lastTime array
     arma::cube lastTime(N, N, C);
     if (start > 0)
@@ -2121,10 +2436,12 @@ arma::mat calc_rrank(int type, const arma::mat &edgelist,
           lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = past(i, 0);
         }
       }
+
+      p.increment();
     }
 
     // For loop over time points
-    for (arma::uword i = 0; i < ESlice.n_rows; ++i)
+    for (arma::uword i = 0; i < stat.n_rows; ++i)
     {
       // Compute ranks based on lastTime
       arma::cube ranks(N, N, C, arma::fill::zeros);
@@ -2172,17 +2489,19 @@ arma::mat calc_rrank(int type, const arma::mat &edgelist,
       // Update lastTime
       // rrankSend: to whom the sender has most recently send events
       // (most recent times)
-      int d = ESlice(i, 1);
+      int d = edgelist(start + i, 1);
       if (type == 1)
       {
-        lastTime(riskset(d, 0), riskset(d, 1), riskset(d, 2)) = ESlice(i, 0);
+        lastTime(riskset(d, 0), riskset(d, 1), riskset(d, 2)) = edgelist(start + i, 0);
       }
       // rrankReceive: from whom the sender has most recently
       // received events (most recent times)
       if (type == 2)
       {
-        lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = ESlice(i, 0);
+        lastTime(riskset(d, 1), riskset(d, 0), riskset(d, 2)) = edgelist(start + i, 0);
       }
+
+      p.increment();
     }
   }
 
@@ -2215,8 +2534,40 @@ arma::mat calc_recency(int type,
                        int start,
                        int stop,
                        bool consider_type,
-                       bool directed)
+                       bool directed,
+                       bool display_progress)
 {
+  // Progress update
+  if (display_progress)
+  {
+    std::string type_name;
+    switch (type)
+    {
+    case 1:
+      type_name = "recencyContinue";
+      break;
+
+    case 2:
+      type_name = "recencySendSender";
+      break;
+
+    case 3:
+      type_name = "recencySendReceiver";
+      break;
+
+    case 4:
+      type_name = "recencyReceiveSender";
+      break;
+
+    case 5:
+      type_name = "recencyReceiveReceiver";
+      break;
+    }
+    Rcpp::Rcout << "Calculating " << type_name << " statistic" << std::endl;
+  }
+
+  // Progress bar
+  Progress p(stop - start + 1, display_progress);
 
   // Initialize vector with times the dyads were last active
   arma::vec lastActive(riskset.n_rows);
@@ -2364,6 +2715,8 @@ arma::mat calc_recency(int type,
       }
       break;
     }
+
+    p.increment();
   }
 
   // Initialize statistic
@@ -2528,6 +2881,8 @@ arma::mat calc_recency(int type,
         lastActive = updateActive;
       }
     }
+
+    p.increment();
   }
 
   return stat;
@@ -2793,7 +3148,8 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
                              Rcpp::LogicalVector &consider_type,
                              const Rcpp::List &covariates,
                              const Rcpp::List &interactions,
-                             int start, int stop, bool directed)
+                             int start, int stop, bool directed,
+                             bool display_progress)
 {
 
   // Initialize saving space
@@ -2900,21 +3256,21 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // inertia
     case 101:
       // Compute statistic
-      stat = calc_inertia(edgelist, adjmat, riskset, actors, types, directed,
-                          start, stop, consider_type(i), scaling(i));
+      stat = calc_inertia(adjmat, riskset, actors, types, directed, start,
+                          stop, consider_type(i), scaling(i), display_progress);
       break;
 
     // reciprocity
     case 102:
       // Compute statistic
-      stat = calc_reciprocity(edgelist, adjmat, riskset, actors, types, start,
-                              stop, consider_type(i), scaling(i));
+      stat = calc_reciprocity(adjmat, riskset, actors, types, start, stop,
+                              consider_type(i), scaling(i), display_progress);
       break;
 
     // indegreeSender
     case 111:
       // Compute statistic
-      stat = calc_degree_directed(1, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
+      stat = calc_degree_directed("indegreeSender", riskset, adjmat, actors, types, start, stop, consider_type(i), true, display_progress);
       // Divide by the number/weight of past events >> the fraction of messages
       // received by the sender. If no messages have been exchanged yet, then
       // all actors are equally likely to send a message.
@@ -2938,7 +3294,7 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // indegreeReceiver
     case 112:
       // Compute statistic
-      stat = calc_degree_directed(2, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
+      stat = calc_degree_directed("indegreeReceiver", riskset, adjmat, actors, types, start, stop, consider_type(i), true, display_progress);
       // Divide by the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -2960,7 +3316,7 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // outdegreeSender
     case 113:
       // Compute statistic
-      stat = calc_degree_directed(3, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
+      stat = calc_degree_directed("outdegreeSender", riskset, adjmat, actors, types, start, stop, consider_type(i), true, display_progress);
       // Divide by the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -2982,7 +3338,7 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // outdegreeReceiver
     case 114:
       // Compute statistic
-      stat = calc_degree_directed(4, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
+      stat = calc_degree_directed("outdegreeReceiver", riskset, adjmat, actors, types, start, stop, consider_type(i), true, display_progress);
       // Divide by the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -3004,7 +3360,7 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // totaldegreeSender
     case 115:
       // Compute statistic
-      stat = calc_degree_directed(5, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
+      stat = calc_degree_directed("totaldegreeSender", riskset, adjmat, actors, types, start, stop, consider_type(i), true, display_progress);
       // Divide by two times the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -3026,7 +3382,7 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // totaldegreeReceiver
     case 116:
       // Compute statistic
-      stat = calc_degree_directed(6, edgelist, riskset, adjmat, actors, types, start, stop, consider_type(i), true);
+      stat = calc_degree_directed("totaldegreeReceiver", riskset, adjmat, actors, types, start, stop, consider_type(i), true, display_progress);
       // Divide by two times the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -3048,10 +3404,8 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // totaldegreeDyad
     case 117:
       // Compute statistic
-      stat = calc_degree_directed(5, edgelist, riskset, adjmat, actors, types,
-                                  start, stop, consider_type(i), directed) +
-             calc_degree_directed(6, edgelist, riskset, adjmat, actors, types,
-                                  start, stop, consider_type(i), directed);
+      stat = calc_degree_directed("totaldegreeSender", riskset, adjmat, actors, types, start, stop, consider_type(i), directed, false) +
+             calc_degree_directed("totaldegreeReceiver", riskset, adjmat, actors, types, start, stop, consider_type(i), directed, false);
       // Divide by two times the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -3073,8 +3427,8 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // degreeMin
     case 118:
       // Compute statistic
-      stat = calc_degree_undirected(1, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, consider_type(i));
+      stat = calc_degree_undirected(1, riskset, adjmat, actors, types,
+                                    start, stop, consider_type(i), display_progress);
       // Divide by the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -3096,8 +3450,8 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // degreeMax
     case 119:
       // Compute statistic
-      stat = calc_degree_undirected(2, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, consider_type(i));
+      stat = calc_degree_undirected(2, riskset, adjmat, actors, types,
+                                    start, stop, consider_type(i), display_progress);
       // Divide by the number/weight of past events
       if (scaling(i) == "prop")
       {
@@ -3119,8 +3473,8 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // degreeDiff
     case 120:
       // Compute statistic
-      stat = calc_degree_undirected(3, edgelist, riskset, adjmat, actors,
-                                    types, start, stop, consider_type(i));
+      stat = calc_degree_undirected(3, riskset, adjmat, actors, types,
+                                    start, stop, consider_type(i), display_progress);
       break;
 
     // ccp
@@ -3135,17 +3489,17 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset, scaling(i));
+        stat = computeTriadStatsNoTypes(1, adjmat, actors, riskset, scaling(i), display_progress);
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesConsidered(1, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesNotConsidered(1, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
       }
       // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
@@ -3160,17 +3514,17 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset, scaling(i));
+        stat = computeTriadStatsNoTypes(2, adjmat, actors, riskset, scaling(i), display_progress);
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesConsidered(2, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesNotConsidered(2, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
       }
       // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
@@ -3185,17 +3539,17 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset, scaling(i));
+        stat = computeTriadStatsNoTypes(3, adjmat, actors, riskset, scaling(i), display_progress);
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesConsidered(3, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesNotConsidered(3, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
       }
       // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
@@ -3210,17 +3564,17 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset, scaling(i));
+        stat = computeTriadStatsNoTypes(4, adjmat, actors, riskset, scaling(i), display_progress);
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesConsidered(4, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesNotConsidered(4, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
       }
       // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
@@ -3235,17 +3589,17 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
       // Compute statistic
       if (types.n_elem == 1)
       {
-        stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset, scaling(i));
+        stat = computeTriadStatsNoTypes(5, adjmat, actors, riskset, scaling(i), display_progress);
       }
       else
       {
         if (consider_type(i))
         {
-          stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesConsidered(5, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
         else
         {
-          stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset, scaling(i));
+          stat = computeTriadStatsTypesNotConsidered(5, adjmat, actors, types, riskset, scaling(i), display_progress);
         }
       }
       // Standardize (note: if scaling == "std" the stat will be scaled at the end of the switch statement)
@@ -3258,92 +3612,92 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // psABBA
     case 141:
       // Compute statistic
-      stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      stat = calc_pshift(1, edgelist, riskset, actors, types, directed, start, stop, consider_type(i), display_progress);
       break;
 
     // psABBY
     case 142:
       // Compute statistic
-      stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      stat = calc_pshift(2, edgelist, riskset, actors, types, directed, start, stop, consider_type(i), display_progress);
       break;
 
     // psABXA
     case 143:
       // Compute statistic
-      stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      stat = calc_pshift(3, edgelist, riskset, actors, types, directed, start, stop, consider_type(i), display_progress);
       break;
 
     // psABXB
     case 144:
       // Compute statistic
-      stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      stat = calc_pshift(4, edgelist, riskset, actors, types, directed, start, stop, consider_type(i), display_progress);
       break;
 
     // psABXY
     case 145:
       // Compute statistic
-      stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      stat = calc_pshift(5, edgelist, riskset, actors, types, directed, start, stop, consider_type(i), display_progress);
       break;
 
     // psABAY
     case 146:
       // Compute statistic
-      stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      stat = calc_pshift(6, edgelist, riskset, actors, types, directed, start, stop, consider_type(i), display_progress);
       break;
 
     // 74 psABAB
     case 147:
       // Compute statistic
-      stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, consider_type(i));
+      stat = calc_pshift(7, edgelist, riskset, actors, types, directed, start, stop, consider_type(i), display_progress);
       break;
 
     // rrankSend
     case 151:
       // Compute statistic
       stat = calc_rrank(1, edgelist, riskset, actors.n_elem,
-                        types.n_elem, start, stop, consider_type(i));
+                        types.n_elem, start, stop, consider_type(i), display_progress);
       break;
 
     // rrankReceive
     case 152:
       // Compute statistic
       stat = calc_rrank(2, edgelist, riskset, actors.n_elem,
-                        types.n_elem, start, stop, consider_type(i));
+                        types.n_elem, start, stop, consider_type(i), display_progress);
       break;
 
     // recencyContinue
     case 161:
       // Compute statistic
       stat = calc_recency(1, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
+                          types.n_elem, start, stop, consider_type(i), directed, display_progress);
       break;
 
     // recencySendSender
     case 162:
       // Compute statistic
       stat = calc_recency(2, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
+                          types.n_elem, start, stop, consider_type(i), directed, display_progress);
       break;
 
     // recencySendReceiver
     case 163:
       // Compute statistic
       stat = calc_recency(3, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
+                          types.n_elem, start, stop, consider_type(i), directed, display_progress);
       break;
 
     // recencyReceiveSender
     case 164:
       // Compute statistic
       stat = calc_recency(4, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
+                          types.n_elem, start, stop, consider_type(i), directed, display_progress);
       break;
 
     // recencyReceiveReceiver
     case 165:
       // Compute statistic
       stat = calc_recency(5, edgelist, riskset, actors.n_elem,
-                          types.n_elem, start, stop, consider_type(i), directed);
+                          types.n_elem, start, stop, consider_type(i), directed, display_progress);
       break;
 
     // userStat

@@ -6,6 +6,10 @@
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
 #include <progress_bar.hpp>
+#include <iostream>
+#include <map>
+
+using namespace Rcpp;
 
 // degree
 //

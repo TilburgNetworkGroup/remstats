@@ -27,13 +27,15 @@ expect_equal(attr(combined_stats, "formula"), as.formula("~ inertia() + otp()"))
 expect_equal(attr(combined_stats, "riskset"), attr(rs1, "riskset"))
 
 # Check adjmat attribute
-expect_equal(attr(combined_stats, "adjmat"), attr(rs1, "adjmat")) 
+expect_equal(attr(combined_stats, "adjmat"), attr(rs1, "adjmat"))
 
 # Check statistics
-expected_stats <- abind::abind(rs1, rs2[, , 2], along = 3)
-attributes(combined_stats) <- NULL
-attributes(expected_stats) <- NULL
-expect_true(identical(expected_stats, combined_stats))
+if (at_home()) {
+  expected_stats <- abind::abind(rs1, rs2[, , 2], along = 3)
+  attributes(combined_stats) <- NULL
+  attributes(expected_stats) <- NULL
+  expect_true(identical(expected_stats, combined_stats))
+}
 
 # Check different remstats objects
 reh_actor <- remify::remify(edgelist, model = "actor", actors = 1:6)

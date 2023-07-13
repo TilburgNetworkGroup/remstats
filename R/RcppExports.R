@@ -13,12 +13,12 @@ getRisksetMatrix <- function(actorID, typeID, N, C, directed) {
     .Call(`_remstats_getRisksetMatrix`, actorID, typeID, N, C, directed)
 }
 
-compute_adjmat <- function(edgelist, D, directed, memory, memory_value, start, stop) {
-    .Call(`_remstats_compute_adjmat`, edgelist, D, directed, memory, memory_value, start, stop)
+compute_adjmat <- function(edgelist, D, directed, memory, memory_value, start, stop, display_progress) {
+    .Call(`_remstats_compute_adjmat`, edgelist, D, directed, memory, memory_value, start, stop, display_progress)
 }
 
-compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed) {
-    .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed)
+compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed, display_progress) {
+    .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed, display_progress)
 }
 
 combine_arrays <- function(array_list, along) {

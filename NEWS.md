@@ -1,3 +1,10 @@
+# remstats 3.1.3
+Date: 13-07-2023
+Works with remify >= 3.1.0. 
+
+## New features
+* `display_progress` argument for the tie-oriented model.
+
 # remstats 3.1.2
 Date: 06-07-2023
 Works with remify >= 3.1.0. 

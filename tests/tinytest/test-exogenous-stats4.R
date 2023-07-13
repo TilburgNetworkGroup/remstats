@@ -28,9 +28,7 @@ info <- rbind(info, info2)
 
 # Tie info
 X <<- matrix(1:9, nrow = 3)
-X <<- Matrix::forceSymmetric(X, "L")
-X <<- as.matrix(X)
-diag(X) <- 0
+X <<- X %*% t(X) 
 
 # Event info
 setting <<- c("a", "b", "b", "a", "a")
@@ -104,11 +102,11 @@ expect_equal(stats[, , "same_x2"], same)
 
 # tie
 tie <- rbind(
-  c(2, 3, 6, 2, 6),
-  c(2, 3, 6, 2, 6),
-  c(2, 3, 6, 2, 6),
-  c(2, 3, 6, 2, 6),
-  c(2, 3, 6, 2, 6)
+  c(78, 90, 108, 78, 108),
+  c(78, 90, 108, 78, 108),
+  c(78, 90, 108, 78, 108),
+  c(78, 90, 108, 78, 108),
+  c(78, 90, 108, 78, 108)
 )
 expect_equal(stats[, , "tie_X"], tie)
 
