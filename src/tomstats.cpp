@@ -2743,7 +2743,6 @@ int getEffectNumber(std::string effect)
   effectsMap["osp"] = 133;
   effectsMap["isp"] = 134;
   effectsMap["sp"] = 135;
-  effectsMap["spUnique"] = 136;
 
   effectsMap["psABBA"] = 141;
   effectsMap["psABBY"] = 142;

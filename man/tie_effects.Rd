@@ -7,18 +7,24 @@
 tie_effects(directed = NULL, endogenous = NULL)
 }
 \arguments{
-\item{directed}{outputs all statistics in the tie-oriented model for
-directed events if true, or all statistics in the tie-oriented model for
-undirected events if false.}
+\item{directed}{logical value. The function outputs all statistics in the 
+tie-oriented model for directed events if true, or all statistics in the 
+tie-oriented model for undirected events if false.}
 
-\item{endogenous}{outputs all endogenous statistics in the tie-oriented
-model if true, or all exogenous statistics if false}
+\item{endogenous}{logical value. The function outputs all endogenous 
+statistics in the tie-oriented model if true, or all exogenous statistics if 
+false}
 }
 \description{
 Overview of statistics in the tie-oriented model, see Details.
 }
 \details{
 Overview of statistics in the tie-oriented model.
+
+Baseline:
+\itemize{
+ \item \code{\link{baseline}}
+}
 
 Exogenous statistics:
 \itemize{
@@ -31,6 +37,7 @@ Exogenous statistics:
  \item \code{\link{minimum}()}
  \item \code{\link{maximum}()}
  \item \code{\link{event}()}
+ \item \code{\link{userStat}()}
 }
 
 Endogenous statistics:
@@ -52,7 +59,7 @@ Endogenous statistics:
  \item \code{\link{osp}()}
  \item \code{\link{isp}()}
  \item \code{\link{sp}()}
- \item \code{\link{spUnique}()}
+ \item \code{\link{ccp}()}
  \item \code{\link{psABBA}()}
  \item \code{\link{psABBY}()}
  \item \code{\link{psABXA}()}
@@ -68,6 +75,5 @@ Endogenous statistics:
  \item \code{\link{recencyReceiveReceiver}()}
  \item \code{\link{recencyContinue}()}
  \item \code{\link{FEtype}()}
- \item \code{\link{userStat}()}
 }
 }

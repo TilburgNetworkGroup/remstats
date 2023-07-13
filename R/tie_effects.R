@@ -2,14 +2,20 @@
 #'
 #' Overview of statistics in the tie-oriented model, see Details.
 #'
-#' @param directed outputs all statistics in the tie-oriented model for
-#' directed events if true, or all statistics in the tie-oriented model for
-#' undirected events if false.
-#' @param endogenous outputs all endogenous statistics in the tie-oriented
-#' model if true, or all exogenous statistics if false
+#' @param directed logical value. The function outputs all statistics in the 
+#' tie-oriented model for directed events if true, or all statistics in the 
+#' tie-oriented model for undirected events if false.
+#' @param endogenous logical value. The function outputs all endogenous 
+#' statistics in the tie-oriented model if true, or all exogenous statistics if 
+#' false
 #'
 #' @details
 #' Overview of statistics in the tie-oriented model.
+#' 
+#' Baseline:
+#' \itemize{
+#'  \item \code{\link{baseline}}
+#' }
 #'
 #' Exogenous statistics:
 #' \itemize{
@@ -22,6 +28,7 @@
 #'  \item \code{\link{minimum}()}
 #'  \item \code{\link{maximum}()}
 #'  \item \code{\link{event}()}
+#'  \item \code{\link{userStat}()}
 #' }
 #'
 #' Endogenous statistics:
@@ -43,7 +50,7 @@
 #'  \item \code{\link{osp}()}
 #'  \item \code{\link{isp}()}
 #'  \item \code{\link{sp}()}
-#'  \item \code{\link{spUnique}()}
+#'  \item \code{\link{ccp}()}
 #'  \item \code{\link{psABBA}()}
 #'  \item \code{\link{psABBY}()}
 #'  \item \code{\link{psABXA}()}
@@ -59,7 +66,6 @@
 #'  \item \code{\link{recencyReceiveReceiver}()}
 #'  \item \code{\link{recencyContinue}()}
 #'  \item \code{\link{FEtype}()}
-#'  \item \code{\link{userStat}()}
 #' }
 #'
 #' @export
@@ -74,7 +80,7 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
     if (directed) {
       # Filter out effects that are not defined for directed events
       effects <- effects[!(effects %in% c(
-        "sp", "spUnique", "degreeMin", "degreeMax", "ccp", "degreeDiff"
+        "sp", "degreeMin", "degreeMax", "ccp", "degreeDiff"
       ))]
     } else if (!directed) {
       # Filter out effects that are not defined for undirected events
@@ -95,7 +101,7 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
       # Filter out exogenous effects
       effects <- effects[!(effects %in% c(
         "send", "receive", "tie", "same", "difference", "average",
-        "minimum", "maximum", "event", "FEtype", "userStat"
+        "minimum", "maximum", "event", "userStat"
       ))]
     } else if (!endogenous) {
       # Filter out endogenous effects
@@ -104,10 +110,10 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
         "outdegreeReceiver", "totaldegreeSender", "totaldegreeReceiver", "ccp",
         "totaldegreeDyad", "degreeDiff", "degreeMin", "degreeMax",
         "inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp",
-        "spUnique", "psABBA", "psABBY", "psABXA", "psABXB", "psABXY",
+        "psABBA", "psABBY", "psABXA", "psABXB", "psABXY",
         "psABAY", "psABAB", "rrankSend", "rrankReceive",
         "recencySendSender", "recencySendReceiver", "recencyReceiveSender",
-        "recencyReceiveReceiver", "recencyContinue"
+        "recencyReceiveReceiver", "recencyContinue", "FEtype"
       ))]
     }
   }

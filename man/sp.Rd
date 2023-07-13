@@ -47,8 +47,6 @@ remstats(tie_effects = effects, reh = reh_tie)
 
 }
 \seealso{
-\code{\link{spUnique}} for another type of triadic effect for
-undirected relational events and \code{\link{otp}}, \code{\link{itp}},
-\code{\link{osp}}, or \code{\link{isp}} for triadic effects for directed
-relational events.
+\code{\link{otp}}, \code{\link{itp}}, \code{\link{osp}}, or 
+\code{\link{isp}} for triadic effects for directed relational events.
 }

@@ -56,6 +56,5 @@ action. Sociological Methodology.
 \seealso{
 \code{\link{otp}}, \code{\link{itp}}, or \code{\link{osp}} for
 other types of triadic effects for directed relational events and
-\code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
-undirected relational events.
+\code{\link{sp}} for triadic effects for undirected relational events.
 }

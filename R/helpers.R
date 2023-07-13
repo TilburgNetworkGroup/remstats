@@ -320,7 +320,6 @@ all_tie_effects <- function() {
     "osp", 
     "isp", 
     "sp", 
-    "spUnique", 
 
     "psABBA", 
     "psABBY", 

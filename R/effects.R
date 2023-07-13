@@ -1336,8 +1336,7 @@ degreeMax <- function(scaling = c("none", "prop", "std"),
 #' @aliases triad
 #' @seealso \code{\link{itp}}, \code{\link{osp}}, or \code{\link{isp}} for
 #' other types of triadic effects for directed relational events and
-#' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
-#' undirected relational events.
+#' \code{\link{sp}} for triadic effects for undirected relational events.
 #' 
 #' @references Butts, C. (2008). A relational event framework for social 
 #' action. Sociological Methodology.
@@ -1404,8 +1403,7 @@ otp <- function(unique = FALSE, scaling = c("none", "std"),
 #'
 #' @seealso \code{\link{otp}}, \code{\link{osp}}, or \code{\link{isp}} for
 #' other types of triadic effects for directed relational events and
-#' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
-#' undirected relational events.
+#' \code{\link{sp}} for triadic effects for undirected relational events.
 #' 
 #' @references Butts, C. (2008). A relational event framework for social 
 #' action. Sociological Methodology.
@@ -1482,8 +1480,7 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 #'
 #' @seealso \code{\link{otp}}, \code{\link{itp}}, or \code{\link{isp}} for
 #' other types of triadic effects for directed relational events and
-#' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
-#' undirected relational events.
+#' \code{\link{sp}} for triadic effects for undirected relational events.
 #' 
 #' @references Butts, C. (2008). A relational event framework for social 
 #' action. Sociological Methodology.
@@ -1550,8 +1547,7 @@ osp <- function(unique = FALSE, scaling = c("none", "std"), consider_type = FALS
 #'
 #' @seealso \code{\link{otp}}, \code{\link{itp}}, or \code{\link{osp}} for
 #' other types of triadic effects for directed relational events and
-#' \code{\link{sp}} or \code{\link{spUnique}} for triadic effects for
-#' undirected relational events.
+#' \code{\link{sp}} for triadic effects for undirected relational events.
 #' 
 #' @references Butts, C. (2008). A relational event framework for social 
 #' action. Sociological Methodology.
@@ -1617,10 +1613,8 @@ isp <- function(unique = FALSE, scaling = c("none", "std"),
 #'
 #' @inheritParams osp
 #'
-#' @seealso \code{\link{spUnique}} for another type of triadic effect for
-#' undirected relational events and \code{\link{otp}}, \code{\link{itp}},
-#' \code{\link{osp}}, or \code{\link{isp}} for triadic effects for directed
-#' relational events.
+#' @seealso \code{\link{otp}}, \code{\link{itp}}, \code{\link{osp}}, or 
+#' \code{\link{isp}} for triadic effects for directed relational events.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
