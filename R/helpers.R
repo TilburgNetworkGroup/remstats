@@ -63,7 +63,11 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   }
 
   # Prepare the edgelist "evls"-style
-  edgelist.reh$time <- cumsum(reh$intereventTime)
+  if(attr(reh, "ordinal")) {
+    edgelist.reh$time <- 1:nrow(edgelist.reh)
+  } else {
+    edgelist.reh$time <- cumsum(reh$intereventTime)
+  }
   edgelist.reh <- matrix(cbind(edgelist.reh$time, dyads, weight),
     ncol = 3, byrow = FALSE
   )

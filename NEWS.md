@@ -1,3 +1,10 @@
+# remstats 3.1.4
+Date: 28-08-2023
+Works with remify >= 3.1.0. 
+
+## Bug fixes 
+* `remstats()` now works for ordinal event sequences.
+
 # remstats 3.1.3
 Date: 13-07-2023
 Works with remify >= 3.1.0. 

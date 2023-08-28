@@ -203,7 +203,7 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
             effects = tie_effects, reh = reh,
             attr_data = attr_data, memory = memory,
             memory_value = memory_value, start = start,
-            stop = stop, display_progress= display_progress, 
+            stop = stop, display_progress = display_progress, 
             adjmat = adjmat, get_adjmat = get_adjmat
         )
     }
