@@ -35,6 +35,32 @@ bind_remstats <- function(...) {
     if (!all(sapply(arg.list, function(x) class(x)[1] == firstclass))) {
         stop(paste0("All objects should be of class ", firstclass))
     }
+    
+    # check model for very careless users
+    firstmdl <- attr(arg.list[[1]], "model") 
+    stopifnot("Remstats objects with differing model types cannot be combined" = 
+    						all(sapply(arg.list, function(x) isTRUE(all.equal(firstmdl, attr(x, "model"))))))
+    
+    # check ordinal for very careless users
+    firstord <- attr(arg.list[[1]], "ordinal") 
+    stopifnot("Remstats objects with differing ordinal argument cannot be combined" = 
+    						all(sapply(arg.list, function(x) isTRUE(all.equal(firstord, attr(x, "ordinal"))))))
+    
+    # Check risk set
+    tmp.list <- arg.list
+    firstrs <- attr(tmp.list[[1]], "riskset")
+    tmp.list[[1]] <- NULL
+    stopifnot("Risk sets of the remstats objects are not equal. This may be due to differing riskset arguments or directions" = 
+    						all(sapply(tmp.list, function(x) isTRUE(all.equal(firstrs, attr(x, "riskset"))))))
+    
+    # Combine statistics
+    statistics <- combine_arrays(arg.list, along = 3)
+    
+    # Names of the statistics
+    stat_names <- lapply(arg.list, function(x) dimnames(x)[[3]])
+    stat_names <- do.call(c, stat_names)
+    stat_names <- stat_names[!duplicated(stat_names)]
+    dimnames(statistics) <- list(NULL, NULL, stat_names)
 
     if (firstclass == "tomstats") {
         # Check risk set
