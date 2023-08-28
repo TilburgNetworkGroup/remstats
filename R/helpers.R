@@ -485,6 +485,10 @@ prep_exo <- function(effect, variable, attr_data, scaling) {
     if (anyNA(attr_data$time)) {
       stop("time variable in attr_data cannot have missing values")
     }
+  	
+  	if (!("name" %in% names(attr_data))) {
+  		stop("The column containing the actors should be named 'name'")
+  	}
 
     # Collect the information in a data.frame
     dat <- data.frame(
@@ -736,6 +740,9 @@ process_covariate <- function(effects, attr_data, actors, edgelist, reh,
         }
         if (anyNA(attr_data$time)) {
           stop("time variable in attr_data cannot have missing values")
+        }
+        if (!("name" %in% names(attr_data))) {
+        	stop("The column in attr_data containing the actors should be named 'name'")
         }
 
         dat <- data.frame(
