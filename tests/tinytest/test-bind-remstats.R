@@ -1,10 +1,12 @@
 # Create example remstats objects
+# ----------------------------------
 edgelist <- data.frame(
   time = c(1:4),
   actor1 = sample(1:3, 4, replace = T),
   actor2 = sample(4:6, 4, replace = T)
 )
 
+# Check for the tie-oriented model
 reh <- remify::remify(edgelist, model = "tie", actors = 1:6)
 
 # Create example remstats objects
@@ -42,3 +44,28 @@ reh_actor <- remify::remify(edgelist, model = "actor", actors = 1:6)
 rs3 <- remstats(reh = reh, tie_effects = ~ inertia())
 rs4 <- remstats(reh = reh_actor, receiver_effects = ~ otp())
 expect_error(bind_remstats(rs3, rs4), "All objects should be of class")
+
+# Check for the actor-oriented model
+# ----------------------------------
+reh <- remify::remify(edgelist, model = "actor", actors = 1:6)
+
+# Create example remstats objects
+rs1 <- remstats(reh = reh, receiver_effects = ~ inertia())
+rs2 <- remstats(reh = reh, receiver_effects = ~ otp())
+
+# Combine remstats objects
+expect_silent(combined_stats <- bind_remstats(rs1, rs2))
+
+# Create example remstats objects
+rs3 <- remstats(reh = reh, receiver_effects = ~ inertia())
+rs4 <- remstats(reh = reh, sender_effects = ~ indegreeSender())
+
+# Combine remstats objects
+expect_silent(combined_stats <- bind_remstats(rs3, rs4))
+
+# Create example remstats objects
+rs5 <- remstats(reh = reh, sender_effects = ~ outdegreeSender())
+rs6 <- remstats(reh = reh, sender_effects = ~ indegreeSender())
+
+# Combine remstats objects
+expect_silent(combined_stats <- bind_remstats(rs5, rs6))
