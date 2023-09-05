@@ -15,7 +15,8 @@ info <- data.frame(
 reh <- remify::remify(edgelist, model = "tie", actors = 1:6)
 
 # Create example remstats objects
-rs1 <- remstats(reh = reh, tie_effects = ~ inertia() + send("x1", info) + otp())
+rs1 <- remstats(reh = reh, 
+  tie_effects = ~ inertia() + send("x1", info) + otp(), attr_data = info)
 rs2 <- remstats(reh = reh, tie_effects = ~ outdegreeSender() + reciprocity())
 rs3 <- remstats(reh = reh, tie_effects = ~ receive("x1", info))
 
