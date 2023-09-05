@@ -1,11 +1,12 @@
 #' Combine two or more remstats objects
 #'
 #' Function to bind any number of remstats objects into one while duplicated
-#' statistics in the combined object are removed.
+#' statistics in the combined object are removed based on their name.
 #'
 #' @param ... Any number of \code{\link{remstats}} objects. All the
 #' \code{remstats} objects must have matching dimensions, except for the third
-#' dimension.
+#' dimension. Note that duplicated statistics in the combined object are 
+#' removed based on their name.
 #'
 #' @return \code{statistics } array with the combined statistics, where rows
 #' refer to time points, columns refer to potential relational event (i.e.,
