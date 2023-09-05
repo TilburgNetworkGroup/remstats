@@ -153,7 +153,7 @@ bind_remstats <- function(...) {
             }
 
             # Save
-            statistics$receiver_stats <- rate_statistics
+            statistics$sender_stats <- rate_statistics
 
             # Combine formula
             # form.list <- sapply(arg.list, function(x) attr(x, "formula")$rate)
