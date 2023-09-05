@@ -1,3 +1,10 @@
+# remstats 3.1.5
+Date: 05-09-2023
+Works with remify >= 3.1.0. 
+
+## Bug fixes
+* `bind_remstats()` now works for the actor-oriented model
+
 # remstats 3.1.4
 Date: 28-08-2023
 Works with remify >= 3.1.0. 

@@ -21,8 +21,8 @@ compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset,
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed, display_progress)
 }
 
-combine_arrays <- function(array_list, along) {
-    .Call(`_remstats_combine_arrays`, array_list, along)
+combine_stats <- function(array_list, keep_list) {
+    .Call(`_remstats_combine_stats`, array_list, keep_list)
 }
 
 # Register entry points for exported C++ functions

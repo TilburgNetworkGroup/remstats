@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 // Function to remove duplicate slices from a three-dimensional array
-arma::cube remove_duplicate_slices(const arma::cube& input_array) {
+/*arma::cube remove_duplicate_slices(const arma::cube& input_array) {
     int n_slices = input_array.n_slices;
     int n_rows = input_array.n_rows;
     int n_cols = input_array.n_cols;
@@ -41,13 +41,12 @@ arma::cube remove_duplicate_slices(const arma::cube& input_array) {
     }
 
     return output_array;
-}
+}*/
 
 
 // Function to combine statistic arrays. The function is set up to combine 
 // along any dimension (1, 2, or 3). 
-//[[Rcpp::export]]
-arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
+/*arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
     // Check if the list is empty
     if (array_list.size() == 0) {
         Rcpp::stop("Input list is empty.");
@@ -166,6 +165,64 @@ arma::cube combine_arrays(const Rcpp::List& array_list, int along) {
     // Remove duplicate slices
     combined_array = remove_duplicate_slices(combined_array);
        
+    return combined_array;      
+}*/
+
+
+// Function to combine statistic arrays. 
+// *array_list: list with 3-dimensional statistics arrays 
+// *keep_list: list with R (!) indices of the slices to keep per array
+// [[Rcpp::export]]
+arma::cube combine_stats(const Rcpp::List& array_list, 
+    const Rcpp::List& keep_list) {
+    // Check if the list is empty
+    if (array_list.size() == 0) {
+        Rcpp::stop("Input list is empty.");
+    }
+
+    // Get the first array to determine the dimensions
+    arma::cube first_array = array_list[0];
+    arma::uword n_rows = first_array.n_rows;
+    arma::uword n_cols = first_array.n_cols;
+    arma::uword n_slices = first_array.n_slices;
+
+    // Calculate the total number of slices
+    arma::uword total_slices = 0;
+        
+    for (int i = 0; i < keep_list.size(); i++) {  
+        arma::vec current_keep = keep_list[i];                      
+        total_slices += current_keep.n_elem;
+    }
+
+    n_slices = total_slices;
+    
+    // Create the combined array
+    arma::cube combined_array(n_rows, n_cols, n_slices);
+    
+    // Copy data from each array in the list
+    arma::uword current_slice = 0;
+            
+    for (int i = 0; i < array_list.size(); i++) {
+        arma::cube current_array = array_list[i];
+
+        // Check if dimensions match
+        if (current_array.n_rows != n_rows || current_array.n_cols != n_cols) {
+            Rcpp::stop("Arrays must have the same number of rows and columns.");
+        }
+
+        // Keep slices
+        arma::vec current_keep = keep_list[i];
+        current_keep = current_keep - 1;
+        arma::uvec cku = arma::conv_to<arma::uvec>::from(current_keep); 
+        arma::cube keep_array = current_array.slices(cku);
+                
+        // Copy data to combined array
+        arma::uword current_slices = keep_array.n_slices;
+        combined_array.slices(current_slice, current_slice + current_slices - 1) = keep_array;
+                
+        current_slice += current_slices;
+    }
+    
     return combined_array;      
 }
 

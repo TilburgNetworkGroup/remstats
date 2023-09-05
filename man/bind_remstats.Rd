@@ -7,9 +7,10 @@
 bind_remstats(...)
 }
 \arguments{
-\item{...}{Any number of \code{\link{remstats}} objects. All the 
-\code{remstats} objects must have matching dimensions, except for the third 
-dimension.}
+\item{...}{Any number of \code{\link{remstats}} objects. All the
+\code{remstats} objects must have matching dimensions, except for the third
+dimension. Note that duplicated statistics in the combined object are 
+removed based on their name.}
 }
 \value{
 \code{statistics } array with the combined statistics, where rows
@@ -18,7 +19,7 @@ potential edges) in the risk set and slices refer to statistics
 }
 \description{
 Function to bind any number of remstats objects into one while duplicated
-statistics in the combined object are removed.
+statistics in the combined object are removed based on their name.
 }
 \examples{
 library(remstats)
