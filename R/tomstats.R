@@ -188,7 +188,7 @@ tomstats <- function(effects, reh, attr_data = NULL,
   # Add variable names to the statistics dimnames
   statistics <- add_variable_names(
     statistics, effectNames, effects,
-    interactions
+    interactions, scaling
   )
 
   # Modify riskset output

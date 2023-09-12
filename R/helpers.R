@@ -371,7 +371,7 @@ all_tie_effects <- function() {
 #   statistics, all_effects, effectsN, effects,
 #   interactions
 # )
-add_variable_names <- function(statistics, effectNames, effects, interactions) {
+add_variable_names <- function(statistics, effectNames, effects, interactions, scaling) {
   # Helper function to add variable name to effect
   add_variable_name <- function(effect, variable) {
     if (!is.null(variable)) {
@@ -419,6 +419,9 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
   if (any(type_effects)) {
     dimnames(statistics)[[3]][type_effects] <- paste0(dimnames(statistics)[[3]][type_effects], ".type")
   }
+  
+  # now add the scaling, leave out the baseline, do this before the interactions since they have no scaling
+  dimnames(statistics)[[3]][-1] <- paste0(dimnames(statistics)[[3]][-1], "(", scaling[-1], ")")
 
   # Add variable name to interaction statistics
   interaction_index <- which(effectNames == "interact")
