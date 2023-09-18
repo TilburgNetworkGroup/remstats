@@ -420,8 +420,6 @@ add_variable_names <- function(statistics, effectNames, effects, interactions, s
     dimnames(statistics)[[3]][type_effects] <- paste0(dimnames(statistics)[[3]][type_effects], ".type")
   }
   
-  # now add the scaling, leave out the baseline, do this before the interactions since they have no scaling
-  dimnames(statistics)[[3]][-1] <- paste0(dimnames(statistics)[[3]][-1], "(", scaling[-1], ")")
 
   # Add variable name to interaction statistics
   interaction_index <- which(effectNames == "interact")
@@ -435,7 +433,15 @@ add_variable_names <- function(statistics, effectNames, effects, interactions, s
       )
     }
   )
+  
+  # now add the scaling, leave out the baseline, do this before the interactions since they have no scaling
+  dimnamesForJasp <- dimnames(statistics)[[3]][-1]
+  # somehow unique is duplicated after the scaling
+  scaling <- gsub("_unique", "", scaling)
+  scaling <- gsub("_", ".", scaling, fixed = TRUE)
+  dimnamesForJasp <- paste0(dimnamesForJasp, ".", scaling[-1])
 
+  attr(statistics, "jaspnames") <- dimnamesForJasp
   statistics # Return the modified statistics object
 }
 
