@@ -428,7 +428,9 @@ arma::mat calc_actor_stats_exo(int type,
       IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, true);
       for (int dyadID : dyadIDs)
       {
-        stat(0, dyadID) = value;
+        if (dyadID >= 0) {
+          stat(0, dyadID) = value;
+        }
       }
     }
 
@@ -438,7 +440,9 @@ arma::mat calc_actor_stats_exo(int type,
       IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, true);
       for (int dyadID : dyadIDs)
       {
-        stat(0, dyadID) = value;
+        if (dyadID >= 0) {
+          stat(0, dyadID) = value;
+        }
       }
     }
   }
@@ -488,7 +492,9 @@ arma::mat calc_actor_stats_exo(int type,
                 IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, true);
                 for (int dyadID : dyadIDs)
                 {
-                  thisrow(dyadID) = value;
+                  if (dyadID >= 0) {
+                    thisrow(dyadID) = value;
+                  }
                 }
               }
 
@@ -498,7 +504,9 @@ arma::mat calc_actor_stats_exo(int type,
                 IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, true);
                 for (int dyadID : dyadIDs)
                 {
-                  thisrow(dyadID) = value;
+                  if (dyadID >= 0) {
+                    thisrow(dyadID) = value;
+                  }
                 }
               }
             }
