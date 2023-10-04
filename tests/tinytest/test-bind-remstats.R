@@ -5,20 +5,14 @@ edgelist <- data.frame(
   actor2 = sample(4:6, 4, replace = T)
 )
 
-info <- data.frame(
-  name = 1:6,
-  time = rep(0, 6),
-  x1 = seq(10, 60, 10)
-)
-
 # --- Check for the tie-oriented model
 reh <- remify::remify(edgelist, model = "tie", actors = 1:6)
 
 # Create example remstats objects
 rs1 <- remstats(reh = reh, 
-  tie_effects = ~ inertia() + send("x1", info) + otp(), attr_data = info)
+  tie_effects = ~ inertia() + reciprocity() + otp())
 rs2 <- remstats(reh = reh, tie_effects = ~ outdegreeSender() + reciprocity())
-rs3 <- remstats(reh = reh, tie_effects = ~ receive("x1", info))
+rs3 <- remstats(reh = reh, tie_effects = ~ reciprocity())
 
 # Combine remstats objects
 expect_warning(combined_stats <- bind_remstats(rs1, rs2, rs3))
@@ -58,7 +52,7 @@ reh <- remify::remify(edgelist, model = "actor", actors = 1:6)
 
 # Create example remstats objects
 rs1 <- remstats(reh = reh, 
-  receiver_effects = ~ inertia() + receive("x1", info) + otp())
+  receiver_effects = ~ inertia() + reciprocity() + otp())
 rs2 <- remstats(reh = reh, 
   receiver_effects = ~ reciprocity() + itp())
 rs3 <- remstats(reh = reh, 
@@ -79,7 +73,7 @@ if (at_home()) {
 
 # Create example remstats objects
 rs4 <- remstats(reh = reh, 
-  sender_effects = ~ outdegreeSender() + send("x1", info) + recencySendSender())
+  sender_effects = ~ outdegreeSender() + recencySendSender())
 rs5 <- remstats(reh = reh, 
   sender_effects = ~ indegreeSender() + recencyReceiveSender())
 rs6 <- remstats(reh = reh,
@@ -100,8 +94,8 @@ expect_warning(combined_stats <- bind_remstats(rs4, rs5, rs6))
 
 # Create example remstats objects
 rs7 <- remstats(reh = reh, 
-  receiver_effects = ~ inertia() + receive("x1", info) + otp(),
-  sender_effects = ~ outdegreeSender() + send("x1", info) + recencySendSender())
+  receiver_effects = ~ inertia() + reciprocity() + otp(),
+  sender_effects = ~ outdegreeSender() + recencySendSender())
 rs8 <- remstats(reh = reh, 
   receiver_effects = ~ reciprocity() + itp(),
   sender_effects = ~ indegreeSender() + recencyReceiveSender())

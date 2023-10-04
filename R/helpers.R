@@ -136,6 +136,9 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
   # Prepare fixed effects
   if (any(effectNames == "FEtype")) {
     C <- nrow(types)
+    if(C < 2) {
+      stop("FEtype() is not defined when the number of event types is smaller than 2.")
+    }
     FEeffects <- lapply(2:C, function(c) {
       x <- list()
       x$effect <- "FEtype"
