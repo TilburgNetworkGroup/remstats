@@ -61,7 +61,7 @@ expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow
 # FEtype
 FEtype <- cbind(matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)), 
 	matrix(1, nrow = nrow(edgelist), ncol = sum(riskset$type == 2)))
-expect_equal(stats[, , "FEtype"], FEtype)
+expect_equal(stats[, , "FEtype_2"], FEtype)
 
 # outdegreeSender
 outdegreeSender <- rbind(

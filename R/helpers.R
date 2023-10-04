@@ -150,6 +150,7 @@ prepare_tomstats <- function(effects, reh, attr_data = NULL,
 
     pos <- which(effectNames == "FEtype")
     effects <- append(effects[-pos], FEeffects, pos - 1)
+    effectNames <- append(effectNames[-pos], rep("FEtype", C-1), pos - 1)
   }
 
   # Prepare interaction effects
@@ -407,6 +408,15 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
   event_effects <- grepl("event", dimnames(statistics)[[3]])
   if (sum(event_effects) > 1) {
     dimnames(statistics)[[3]][event_effects] <- paste0("event", 1:sum(event_effects))
+  }
+
+  # Add the type to FEtype name
+  FEtype_effects <- grep("FEtype", dimnames(statistics)[[3]])
+  if (sum(FEtype_effects) > 1) {
+    dimnames(statistics)[[3]][FEtype_effects] <- paste0("FEtype_", unlist(
+      sapply(effects, function(x) {
+      x$typeName
+    })))
   }
 
   # Add .unique 
