@@ -823,3 +823,227 @@ process_covariate <- function(effects, attr_data, actors, edgelist, reh,
     }
   })
 }
+
+validate_aomstats_arguments <- function(attr_data = attr_data, reh = reh) {
+	# Check if the deprecated "id" column is used in attr_data
+	if (!is.null(attr_data) & "id" %in% colnames(attr_data) & !("name" %in% colnames(attr_data))) {
+		colnames(attr_data) <- ifelse(colnames(attr_data) == "id", "name", colnames(attr_data))
+		warning("Use 'name' instead of 'id' in 'attr_data'")
+	}
+	
+	# Check the reh class
+	if (!inherits(reh, "remify")) {
+		stop("Invalid argument: 'reh' must be a remify object.")
+	}
+	
+	model <- attr(reh, "model")
+	# Check the reh model
+	if (is.null(model) || model != "actor") {
+		stop("Invalid argument: 'reh' object should be prepared with the model argument set to 'actor' if effects for the actor-oriented model are computed.")
+	}
+	
+	return(attr_data)
+}
+
+prepare_aomstats_edgelist <- function(reh) {
+	# Extract the edgelist
+	edgelist <- reh$edgelist
+	
+	# Create the time variable
+	edgelist[,1] <- cumsum(reh$intereventTime)
+	
+	# Transform to cpp indexing 
+	edgelist <- as.matrix(edgelist)
+	edgelist[, 2] <- edgelist[, 2] - 1
+	edgelist[, 3] <- edgelist[, 3] - 1
+	
+	return(edgelist)
+}
+
+prepare_aomstats_actors <- function(reh) {
+	actors <- attr(reh, "dictionary")$actors
+	actors$actorID <- actors$actorID - 1
+	return(actors)
+}
+
+prepare_aomstats_event_weights <- function(edgelist) {
+	if (!("weight" %in% colnames(edgelist))) {
+		weights <- rep(1, nrow(edgelist))
+	} else {
+		weights <- edgelist[,"weight"]
+	}
+	return(weights)
+}
+
+prepare_aomstats_subset <- function(start, stop, edgelist) {
+	# Convert R start and stop indices to C++ (indexing starts at 0)
+	if (start < 1) {
+		stop("The 'start' value should be set to 1 or a larger number.")
+	}
+	if (stop < start) {
+		stop("The 'stop' value cannot be smaller than the 'start' value.")
+	}
+	start <- start - 1
+	if (stop == Inf) {
+		stop <- nrow(edgelist)
+	}
+	stop <- stop - 1
+	
+	list(start = start, stop = stop)
+}
+
+prepare_sender_effects <- function(sender_formula) {
+	check_formula(sender_formula)
+	sender_effects <- parse_formula(sender_formula, "rateEffects")
+	sender_effects_names <- sapply(sender_effects, function(x) x$effect)
+	
+	# Check correct specification effects
+	if (!all(sender_effects_names %in% actor_effects(step = "sender"))) {
+		stop(paste("Invalid effect: Attempting to request effects that are not defined for the sender activity model"))
+	}
+	
+	# Prepare interaction sender_effects
+	sender_effects_int <- parse_int(
+		sender_formula, "rateEffects",
+		sender_effects
+	)
+	sender_effects_names <- append(sender_effects_names, rep("interact", length(sender_effects_int)), length(sender_effects_names))
+	sender_interactions <- list()
+	sender_interactions[which(sender_effects_names == "interact")] <- sender_effects_int
+	
+	# Output
+	list(
+		sender_effects = sender_effects,
+		sender_effects_names = sender_effects_names, 
+		sender_interactions = sender_interactions
+	)
+}
+
+prepare_aomstats_scaling <- function(effects, interactions) {
+	scaling <- sapply(effects, function(x) {
+		ifelse("scaling" %in% names(x), x$scaling, "none")
+	})
+	scaling <- append(scaling, rep("none", sum(!(sapply(interactions, is.null)))), length(scaling))
+	scaling
+}
+
+prepare_receiver_effects <- function(receiver_formula) {
+	check_formula(receiver_formula)
+	receiver_effects <- parse_formula(receiver_formula, "choiceEffects")
+	receiver_effects_names <- sapply(receiver_effects, function(x) x$effect)
+	
+	# Check correct specification effects
+	if (!all(receiver_effects_names %in% actor_effects(step = "receiver"))) {
+		stop(paste("Invalid effect: Attempting to request effects that are not defined for the receiver choice model"))
+	}
+	
+	# Prepare interaction receiver_effects
+	receiver_effects_int <- parse_int(
+		receiver_formula, "choiceEffects",
+		receiver_effects
+	)
+	receiver_effects_names <- append(receiver_effects_names, rep("interact", length(receiver_effects_int)), length(receiver_effects_names))
+	receiver_interactions <- list()
+	receiver_interactions[which(receiver_effects_names == "interact")] <- receiver_effects_int
+	
+	# Output
+	list(
+		receiver_effects = receiver_effects,
+		receiver_effects_names = receiver_effects_names, 
+		receiver_interactions = receiver_interactions	
+	)
+}
+
+# Actor-oriented model: covariates ----------------------------------------
+validate_attr_data <- function(attr_data, x) {
+	# Check if the variable name is in the attr_data object
+	if (!(x$variable %in% colnames(attr_data))) {
+		stop(paste0("Variable '", x$variable, "' not in attr_data object for the '", x$effect, "' effect."))
+	}
+	# Check if the time variable is available
+	if (!("time" %in% colnames(attr_data))) {
+		stop(paste0("time variable is missing in attr_data object"))
+	}
+	if (anyNA(attr_data$time)) {
+		stop("time variable in attr_data cannot have missing values")
+	}	
+	return(attr_data)
+}
+
+prepare_covariate_data <- function(attr_data, x, actors) {
+	dat <- data.frame(
+		name = attr_data$name,
+		time = attr_data$time,
+		x = attr_data[, x$variable]
+	)
+	dat$name <- actors[match(dat$name, actors[, 1]), 2]
+	colnames(dat)[3] <- x$variable
+  dat
+}
+
+validate_covariate_data <- function(dat, x, actors) {
+	# Warning for missing values
+	if (anyNA(dat)) {
+		warning(paste0("Missing values in the attr_data object for the '", x$effect, "' effect can cause unexpected behavior."))
+	}
+	# Check if all actors are in the attr_data
+	if (!all(actors[, 2] %in% dat$name)) {
+		stop("Missing actors in the attr_data object.")
+	}
+	# Check for actors in the attr_data object that are not in the
+	# risk set
+	if (any(is.na(dat$name))) {
+		warning(paste0("attr_data contain actors that are not in the risk set. These are not included in the computation of the statistics."))
+		dat <- dat[!is.na(dat$name), ]
+	}
+	as.matrix(dat)
+}
+
+validate_user_stat <- function(x, edgelist, actors) {
+	if (NROW(x) != nrow(edgelist)) {
+		stop("Number of rows of matrix 'x' in userStat() does not match the number of events in edgelist")
+	}
+	if (NCOL(x) != nrow(actors)) {
+		stop("Number of columns of matrix 'x' in userStat() does not match the number of actors")
+	}
+	as.matrix(x)
+}
+
+validate_covariates <- function(x, attr_data, actors, edgelist, reh) {
+	if (x$effect %in% c("send", "receive", "same", "difference", "average")) {
+		if(is.null(x$x)) {
+			attr_data <- validate_attr_data(attr_data, x)
+			dat <- prepare_covariate_data(attr_data, x, actors)
+			validate_covariate_data(dat, x, actors)
+		} else {
+			dat <- x$x
+			dat$name <- actors[match(dat$name, actors[, 1]), 2]
+		  validate_covariate_data(dat, x, actors)
+		}
+	} else if (x$effect == "tie") {
+		parse_tie(x, reh)
+	} else if(x$effect == "userStat") {
+		validate_user_stat(x$x, edgelist, actors)
+	} else {
+		matrix()
+	}
+}
+
+prepare_sender_covariates <- function(sender_effects, attr_data, actors, edgelist) {
+	sender_covar <- lapply(sender_effects, function(x) {
+		validate_covariates(x, attr_data, actors, edgelist, reh)
+	})
+	sender_covar
+}
+
+prepare_receiver_covariates <- function(receiver_effects, attr_data, actors, 
+  edgelist, reh) {
+	
+  receiver_covar <- lapply(receiver_effects, function(x) {
+    validate_covariates(x, attr_data, actors, edgelist, reh)
+  })
+	
+  return(receiver_covar)
+}
+
+

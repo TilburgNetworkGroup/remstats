@@ -1637,8 +1637,368 @@ arma::mat scale(arma::mat stat)
 // get_user_stat
 arma::mat get_user_stat2(const arma::mat &covariates, int start, int stop)
 {
-  arma::mat stat = covariates.rows(start, stop);
-  return (stat);
+    arma::mat stat = covariates.rows(start, stop);
+    return (stat);
+}
+
+/*
+   Function: calc_pshift_sender
+
+   Description: Computes p-shift statistics for the sender step in the actor-oriented model
+
+   Parameters:
+    - type: An integer indicating the type of statistic to compute.
+        1 for AB-A,
+        2 for AB-B,
+        3 for AB-X,
+    - edgelist: A matrix with the observed relational event history. Each row represents an observed event and contains four columns: time, sender, receiver, weight
+    - actors: A vector with the actors that can potentially interact.
+    - memory: String with the type of memory effect. The default is to consider the "full" memory. Further, only the "interval" memory has an effect, since this statistic only considers the event that occurred last.
+    - memory_value: Numeric vector indicating the start and end of the memory interval.
+    - start: An integer indicating the first row in the edgelist for which the statistic must be computed.
+    - stop: An integer indicating the last row in the edgelist for which statistic must be computed.
+    - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
+
+   Returns:
+     A matrix with the p-shift statistic. Rows refer to the time points, and columns refer to the actors.
+*/
+arma::mat calc_pshift_sender(int type,
+                             const arma::mat &edgelist,
+                             const arma::vec &actors,
+                             std::string memory,
+                             arma::vec memory_value,
+                             int start,
+                             int stop,
+                             bool display_progress)
+{
+    // Progress update
+    if (display_progress)
+    {
+        // Define the statistic names
+        Rcpp::CharacterVector statisticNames = Rcpp::CharacterVector::create("psABA", "psABB", "psABX");
+
+        // Check if the 'type' variable is within valid range
+        if (type >= 1 && type <= statisticNames.size())
+        {
+            Rcpp::Rcout << "Computing " << statisticNames[type - 1] << " statistic" << std::endl;
+        }
+        else
+        {
+            Rcpp::Rcerr << "Invalid type value. Please provide a valid type." << std::endl;
+        }
+    }
+
+    // Progress bar
+    Progress p(stop - start + 1, display_progress);
+
+    // Initialize statistic
+    arma::mat stat((stop - start + 1), actors.n_elem);
+    if (type == 1 || type == 2)
+    {
+        stat.zeros();
+    }
+    else if (type == 3)
+    {
+        stat.ones();
+    }
+
+    int actor = 0;
+    int value = 1;
+    if(type == 3) {
+        value = 0;
+    }
+
+    if (start > 0)
+    {
+
+        bool update = true;
+
+        if (memory == "interval")
+        {
+            // Did the last event occur within the interval?
+            double current_time = edgelist(start, 0);
+            double last_time = edgelist(start - 1, 0);
+            update = (last_time > (current_time - memory_value(1))) && (last_time < (current_time - memory_value(0)));
+        }
+
+        if (update)
+        {
+            if (type == 1 || type == 3)
+            {
+                actor = edgelist(start - 1, 1); // sender
+                stat(0, actor) = value;
+            }
+            if (type == 2 || type == 3)
+            {
+                actor = edgelist(start - 1, 2); // receiver
+                stat(0, actor) = value;
+            }
+        }
+
+        p.increment();
+    }
+
+    // Iterate over time points
+    for (int i = start; i < (stop - start); ++i)
+    {
+
+        if (memory == "interval")
+        {
+            bool update = true;
+            // Does the current event occur within the interval of the next?
+            double new_time = edgelist(i + 1, 0);
+            double current_time = edgelist(i, 0);
+            update = (current_time > (new_time - memory_value(1))) && (current_time < (new_time - memory_value(0)));
+
+            if (!update)
+            {
+                p.increment();
+                continue;
+            }
+        }
+
+        if (type == 1 || type == 3)
+        {
+            actor = edgelist(i, 1); // sender
+            stat(i + 1, actor) = value;
+        }
+        if (type == 2 || type == 3)
+        {
+            actor = edgelist(i, 2); // receiver
+            stat(i + 1, actor) = value;
+        }
+        p.increment();
+    }
+
+    return stat;
+}
+
+/*
+   Function: calc_pshift_receiver
+   Description: Computes p-shift statistics for the receiver step in the actor-oriented model
+
+   Parameters:
+    - type: An integer indicating the type of statistic to compute.
+        1 for AB-AB,
+        2 for AB-BA,
+        3 for AB-XB,
+        4 for AB-XA,
+        5 for AB-AY,
+        6 for AB-BY,
+        7 for AB-XY
+    - edgelist: A matrix with the observed relational event history. Each row represents an observed event and contains four columns: time, sender, receiver, weight
+    - actors: A vector with the actors that can potentially interact.
+    - memory: String with the type of memory effect. The default is to consider the "full" memory. Further, only the "interval" memory has an effect, since this statistic only considers the event that occurred last.
+    - memory_value: Numeric vector indicating the start and end of the memory interval.
+    - start: An integer indicating the first row in the edgelist for which the statistic must be computed.
+    - stop: An integer indicating the last row in the edgelist for which statistic must be computed.
+    - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
+
+   Returns:
+     A matrix with the p-shift statistic. Rows refer to the time points, and columns refer to the actors.
+*/
+arma::mat calc_pshift_receiver(int type,
+                               const arma::mat &edgelist,
+                               const arma::vec &actors,
+                               std::string memory,
+                               arma::vec memory_value,
+                               int start,
+                               int stop,
+                               bool display_progress)
+{
+    // Progress update
+    if (display_progress)
+    {
+        // Define the statistic names
+        Rcpp::CharacterVector statisticNames = Rcpp::CharacterVector::create("psABAB", "psABBA", "psABXB", "psABXA", "psABAY", "psABBY", "psABXY");
+
+        // Check if the 'type' variable is within valid range
+        if (type >= 1 && type <= statisticNames.size())
+        {
+            Rcpp::Rcout << "Computing " << statisticNames[type - 1] << " statistic" << std::endl;
+        }
+        else
+        {
+            Rcpp::Rcerr << "Invalid type value. Please provide a valid type." << std::endl;
+        }
+    }
+
+    // Progress bar
+    Progress p(stop - start + 1, display_progress);
+
+    // Initialize saving space and fill with zeros
+    arma::mat stat((stop - start + 1), actors.n_elem, arma::fill::zeros);
+
+    // Initialize statistic
+    int sender_prev = 0;
+    int receiver_prev = 0;
+    int sender_next = 0;
+
+    if (start > 0)
+    {
+
+        bool update = true;
+
+        if (memory == "interval")
+        {
+            // Did the last event occur within the interval?
+            double current_time = edgelist(start, 0);
+            double last_time = edgelist(start - 1, 0);
+            update = (last_time > (current_time - memory_value(1))) && (last_time < (current_time - memory_value(0)));
+        }
+
+        if (update)
+        {
+            sender_prev = edgelist(start - 1, 1);
+            receiver_prev = edgelist(start - 1, 2);
+            sender_next = edgelist(start, 1);
+
+            if (type == 1)
+            {
+                if (sender_prev == sender_next)
+                {
+                    stat(0, receiver_prev) = 1;
+                }
+            }
+            else if (type == 2)
+            {
+                if (receiver_prev == sender_next)
+                {
+                    stat(0, sender_prev) = 1;
+                }
+            }
+            else if (type == 3)
+            {
+                if (receiver_prev != sender_next && sender_prev != sender_next)
+                {
+                    stat(0, receiver_prev) = 1;
+                }
+            }
+            else if (type == 4)
+            {
+                if (receiver_prev != sender_next && sender_prev != sender_next)
+                {
+                    stat(0, sender_prev) = 1;
+                }
+            }
+            else if (type == 5)
+            {
+                if (sender_prev == sender_next)
+                {
+                    stat.row(0).ones();
+                    stat(0, sender_prev) = 0;
+                    stat(0, receiver_prev) = 0;
+                }
+            }
+            else if (type == 6)
+            {
+                if (receiver_prev == sender_next)
+                {
+                    stat.row(0).ones();
+                    stat(0, sender_prev) = 0;
+                    stat(0, receiver_prev) = 0;
+                }
+            }
+            else if (type == 7)
+            {
+                if (sender_prev != sender_next && receiver_prev != sender_next)
+                {
+                    stat.row(0).ones();
+                    stat(0, sender_prev) = 0;
+                    stat(0, receiver_prev) = 0;
+                }
+            }
+        }
+
+        p.increment();
+    } else {
+        if (type == 7) {
+            stat.row(0).ones();
+        }      
+    }
+
+    // Iterate over time points
+    for (int i = start; i < (stop - start); ++i)
+    {
+
+        if (memory == "interval")
+        {
+            bool update = true;
+            // Does the current event occur within the interval of the next?
+            double new_time = edgelist(i + 1, 0);
+            double current_time = edgelist(i, 0);
+            update = (current_time > (new_time - memory_value(1))) && (current_time < (new_time - memory_value(0)));
+
+            if (!update)
+            {
+                p.increment();
+                continue;
+            }
+        }
+
+        sender_prev = edgelist(i, 1);
+        receiver_prev = edgelist(i, 2);
+        sender_next = edgelist(i + 1, 1);
+
+        if (type == 1)
+        {
+            if (sender_prev == sender_next)
+            {
+                stat(i + 1, receiver_prev) = 1;
+            }
+        }
+        else if (type == 2)
+        {
+            if (receiver_prev == sender_next)
+            {
+                stat(i + 1, sender_prev) = 1;
+            }
+        }
+        else if (type == 3)
+        {
+            if (receiver_prev != sender_next && sender_prev != sender_next)
+            {
+                stat(i + 1, receiver_prev) = 1;
+            }
+        }
+        else if (type == 4)
+        {
+            if (receiver_prev != sender_next && sender_prev != sender_next)
+            {
+                stat(i + 1, sender_prev) = 1;
+            }
+        }
+        else if (type == 5)
+        {
+            if (sender_prev == sender_next)
+            {
+                stat.row(i + 1).ones();
+                stat(i + 1, sender_prev) = 0;
+                stat(i + 1, receiver_prev) = 0;
+            }
+        }
+        else if (type == 6)
+        {
+            if (receiver_prev == sender_next)
+            {
+                stat.row(i + 1).ones();
+                stat(i + 1, sender_prev) = 0;
+                stat(i + 1, receiver_prev) = 0;
+            }
+        }
+        else if (type == 7)
+        {
+            if (sender_prev != sender_next && receiver_prev != sender_next)
+            {
+                stat.row(i + 1).ones();
+                stat(i + 1, sender_prev) = 0;
+                stat(i + 1, receiver_prev) = 0;
+            }
+        }
+        p.increment();
+    }
+
+    return stat;
 }
 
 int getRateEffectNumber(std::string effect)
@@ -1658,6 +2018,9 @@ int getRateEffectNumber(std::string effect)
     effectsMap["totaldegreeSender"] = 5;
     effectsMap["recencySendSender"] = 6;
     effectsMap["recencyReceiveSender"] = 7;
+    effectsMap["psABA"] = 8;
+    effectsMap["psABB"] = 9;
+    effectsMap["psABX"] = 10;
 
     // userStat
     effectsMap["userStat"] = 888;
@@ -1795,6 +2158,24 @@ arma::cube compute_stats_rate(Rcpp::CharacterVector &effects,
             stat = recency_aom("Receive", edgelist, actors, start, stop,
                                display_progress);
             break;
+        // 8 psABA
+        case 8:
+            stat = calc_pshift_sender(1, edgelist, actors, memory,
+                                      memory_value, start, stop,
+                                      display_progress);
+            break;
+        // 9 psABB
+        case 9:
+            stat = calc_pshift_sender(2, edgelist, actors, memory,
+                                      memory_value, start, stop,
+                                      display_progress);
+            break;
+        // 10 psABX
+        case 10:
+            stat = calc_pshift_sender(3, edgelist, actors, memory,
+                                      memory_value, start, stop,
+                                      display_progress);
+            break;
         // userStat
         case 888:
             stat = get_user_stat2(covariates[i], start, stop);
@@ -1851,6 +2232,13 @@ int getChoiceEffectNumber(std::string effect)
     effectsMap["recencySendReceiver"] = 17;
     effectsMap["recencyReceiveReceiver"] = 18;
     effectsMap["recencyContinue"] = 19;
+    effectsMap["psABAB"] = 20;
+    effectsMap["psABBA"] = 21;
+    effectsMap["psABXB"] = 22;
+    effectsMap["psABXA"] = 23;
+    effectsMap["psABAY"] = 24;
+    effectsMap["psABBY"] = 25;
+    effectsMap["psABXY"] = 26;
 
     // userStat
     effectsMap["userStat"] = 888;
@@ -2009,6 +2397,48 @@ arma::cube compute_stats_choice(Rcpp::CharacterVector &effects,
         case 19:
             stat = recency_aom("Continue", edgelist, actors, start, stop,
                                display_progress);
+            break;
+        // 20 psABAB
+        case 20:
+            stat = calc_pshift_receiver(1, edgelist, actors, memory,
+                                        memory_value, start, stop,
+                                        display_progress);
+            break;
+        // 21 psABBA
+        case 21:
+            stat = calc_pshift_receiver(2, edgelist, actors, memory,
+                                        memory_value, start, stop,
+                                        display_progress);
+            break;
+        // 22 psABXB
+        case 22:
+            stat = calc_pshift_receiver(3, edgelist, actors, memory,
+                                        memory_value, start, stop,
+                                        display_progress);
+            break;
+        // 23 psABXA
+        case 23:
+            stat = calc_pshift_receiver(4, edgelist, actors, memory,
+                                        memory_value, start, stop,
+                                        display_progress);
+            break;
+        // 24 psABAY
+        case 24:
+            stat = calc_pshift_receiver(5, edgelist, actors, memory,
+                                        memory_value, start, stop,
+                                        display_progress);
+            break;
+        // 25 psABBY
+        case 25:
+            stat = calc_pshift_receiver(6, edgelist, actors, memory,
+                                        memory_value, start, stop,
+                                        display_progress);
+            break;
+        // 26 psABXY
+        case 26:
+            stat = calc_pshift_receiver(7, edgelist, actors, memory,
+                                        memory_value, start, stop,
+                                        display_progress);
             break;
         // userStat
         case 888:

@@ -458,8 +458,8 @@ expect_warning(
 colnames(info)[1] <- "id"
 
 expect_warning(
-    aomstats(reh = reh, sender_effects = ~ 1, attributes = info),
-    pattern = "use 'name'"
+	aomstats(reh = reh, sender_effects = ~ 1, attr_data = info),
+	pattern = "Use 'name'"
 )
 
 colnames(info)[1] <- "name"
@@ -471,7 +471,7 @@ expect_warning(
 
 expect_error(
     aomstats(reh = edgelist, sender_effects = ~ 1),
-    pattern = "object of class remify"
+    pattern = "remify object"
 )
 
 reh <- remify::remify(edgelist, model = "tie")

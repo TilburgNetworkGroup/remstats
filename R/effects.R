@@ -1683,26 +1683,13 @@ ccp <- function(duration) {
 
 #' psABBA
 #'
-#' Specifies the statistic for a pshift AB-BA effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a participation shift AB-BA.
 #'
 #' @param consider_type logical, indicates whether to consider the event type
 #' in determining which dyads create a pshift (TRUE) or not (FALSE, default).
 #'
 #' @details
-#' The AB-BA pshift effect refers to one of Gibson's (2003) dyadic
-#' participation shifts. The AB-BA pshift refers to the tendency for immediate
-#' reciprocation (the next sender is the current receiver and the next receiver
-#' is the current sender). For each timepoint t, the psABBA statistic is equal
-#' to one for the dyad that will create the participation shift if it would
-#' occur in the edgelist at time t and equal to zero for the dyads that will
-#' not create this participation shift. If consider_type is set to TRUE, the
-#' type of the AB event and the type of the BA event have to be equal. If it is
-#' set to FALSE, the participation shift is set to one for every BA event,
-#' regardless of the event type. If multiple events in the edgelist occur at
-#' the same time point, the order of these events determines whether the
-#' p-shift is observed. Note that the AB-BA pshift is only defined for directed
-#' events.
+#' The AB-BA pshift effect refers to one of Gibson's (2003) dyadic participation shifts. The AB-BA pshift refers to the tendency for immediate reciprocation (the next sender is the previous receiver and the next receiver is the previous sender). For each timepoint t, the psABBA statistic is equal to one for the dyad that will create the participation shift if it would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the BA event have to be equal. If it is set to FALSE, the participation shift is set to one for every BA event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed. Note that the AB-BA pshift is only defined for directed events.
 #'
 #' @aliases pshift
 #' @seealso \code{\link{psABBY}}, \code{\link{psABXA}}, \code{\link{psABXB}},
@@ -1732,27 +1719,45 @@ psABBA <- function(consider_type = FALSE) {
 	return(call_args)
 }
 
+#' psABB
+#'
+#' Specifies the statistic for a participation shift AB-B in the sender step of the actor-oriented model. 
+#'
+#' @details
+#' The AB-B participation shift refers to the tendency for immediate reciprocation (the next sender is the previous receiver). For each timepoint t, the psABBA statistic is equal to one for the actor (i.e, the previous event receiver) that will create the participation shift if it would occur as sender in the edgelist at time t and equal to zero for the actors that will not create this participation shift. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed. 
+#' 
+#' @seealso \code{\link{psABA}} or \code{\link{psABX}} for exploring alternative participation shifts in the sender step of the actor-oriented model.
+#'
+#' @examples
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(reh = reh_actor, sender_effects = ~ psABB())
+#'
+#' @export
+psABB <- function() {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABB))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+	
+	# Add effect
+    call_args$effect <- "psABB"
+	
+	return(call_args)
+}
+
 #' psABBY
 #'
-#' Specifies the statistic for a pshift AB-BY effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a participation shift AB-BY.
 #'
 #' @inheritParams psABBA
 #'
 #' @details
-#' The AB-BY pshift effect refers to one of Gibson's (2003) dyadic
-#' participation shifts. The AB-BY pshift refers to a tendency for turn
-#' receiving (here, the next sender is the current receiver and the next
-#' receiver is not in the current event). For each timepoint t, the psABBY
-#' statistic is equal to one for the dyads that will create the participation
-#' shift if they would occur in the edgelist at time t and equal to zero for
-#' the dyads that will not create this participation shift. If consider_type is
-#' set to TRUE, the type of the AB event and the type of the BY events have to
-#' be equal. If it is set to FALSE, the participation shift is set to one for
-#' every BY event, regardless of the event type. If multiple events in the
-#' edgelist occur at the same time point, the order of these events determines
-#' whether the p-shift is observed. Note that the AB-BY pshift is only defined
-#' for directed events.
+#' The AB-BY participation shift refers to one of Gibson's (2003) dyadic participation shifts. The AB-BY pshift refers to a tendency for turn receiving (here, the next sender is the previous receiver and the next receiver is not in the current previous). For each timepoint t, the psABBY statistic is equal to one for the dyads that will create the participation shift if they would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the BY events have to be equal. If it is set to FALSE, the participation shift is set to one for every BY event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed. Note that the AB-BY pshift is only defined for directed events.
 #'
 #' @seealso \code{\link{psABBA}}, \code{\link{psABXA}}, \code{\link{psABXB}},
 #' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation
@@ -1783,29 +1788,14 @@ psABBY <- function(consider_type = FALSE) {
 
 #' psABXA
 #'
-#' Specifies the statistic for a pshift AB-XA effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a participation shift AB-XA.
 #'
 #' @inheritParams psABBA
 #'
 #' @details
-#' The AB-XA pshift effect refers to one of Gibson's (2003) dyadic
-#' participation shifts. The AB-XA pshift refers to a tendency for turn
-#' usurping (here, the next sender is not in the current event and the next
-#' receiver is the current sender). For each timepoint t, the psABXA statistic
-#' is equal to one for the dyads that will create the participation shift if
-#' they would occur in the edgelist at time t and equal to zero for the dyads
-#' that will not create this participation shift. If consider_type is set to
-#' TRUE, the type of the AB event and the type of the XA events have to be
-#' equal. If it is set to FALSE, the participation shift is set to one for
-#' every XA event, regardless of the event type. If multiple events in the
-#' edgelist occur at the same time point, the order of these events determines
-#' whether the p-shift is observed. Note that the AB-XA pshift is only defined
-#' for directed events.
+#' The AB-XA participation shift refers to one of Gibson's (2003) dyadic participation shifts. The AB-XA pshift refers to a tendency for turn usurping (here, the next sender is not in the previous event and the next receiver is the previous sender). For each timepoint t, the psABXA statistic is equal to one for the dyads that will create the participation shift if they would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the XA events have to be equal. If it is set to FALSE, the participation shift is set to one for every XA event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the pshift is observed. Note that the AB-XA pshift is only defined for directed events.
 #'
-#' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXB}},
-#' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation
-#' shifts.
+#' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation shifts.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1830,27 +1820,55 @@ psABXA <- function(consider_type = FALSE) {
 	return(call_args)
 }
 
+#' psABX
+#'
+#' Specifies the statistic for a participation shift AB-X in the sender step of 
+#' the actor-oriented model.
+#'
+#' @details
+#' The AB-X participation shift refers to a tendency for turn usurping (here, 
+#' the next sender is not in the previous event). For each timepoint t, the 
+#' psABX statistic is equal to one for the actors that will create the 
+#' participation shift if they would occur as the sender in the edgelist at 
+#' time t and equal to zero for the actors that will not create this 
+#' participation shift. If multiple events in the edgelist occur at the same 
+#' time point, the order of these events determines whether the p-shift is 
+#' observed. 
+#'
+#' @seealso \code{\link{psABA}} or \code{\link{psABB}} for exploring 
+#' alternative participation shifts in the sender step of the actor-oriented 
+#' model.
+#'
+#' @examples
+#' reh_actor <- remify::remify(history, model = "actor")
+#' remstats(reh = reh_actor, sender_effects = ~ psABX())
+#'
+#' @export
+psABX <- function() {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABX))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABX"
+	
+	return(call_args)
+}
+
 #' psABXB
 #'
-#' Specifies the statistic for a pshift AB-XB effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a participation shift AB-XB.
 #'
 #' @inheritParams psABBA
 #'
 #' @details
-#' The AB-XB pshift effect refers to one of Gibson's (2003) dyadic
-#' participation shifts. The AB-XB pshift refers to a tendency for turn
-#' usurping (here, the next sender is not in the current event and the next
-#' receiver is the current receiver). For each timepoint t, the psABXB
-#' statistic is equal to one for the dyads that will create the participation
-#' shift if they would occur in the edgelist at time t and equal to zero for
-#' the dyads that will not create this participation shift. If consider_type is
-#' set to TRUE, the type of the AB event and the type of the XB events have to
-#' be equal. If it is set to FALSE, the participation shift is set to one for
-#' every XB event, regardless of the event type. If multiple events in the
-#' edgelist occur at the same time point, the order of these events determines
-#' whether the p-shift is observed. Note that the AB-XB pshift is only defined
-#' for directed events.
+#' The AB-XB participation shift refers to one of Gibson's (2003) dyadic participation shifts. The AB-XB pshift refers to a tendency for turn usurping (here, the next sender is not in the previous event and the next receiver is the previous receiver). For each timepoint t, the psABXB statistic is equal to one for the dyads that will create the participation shift if they would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the XB events have to be equal. If it is set to FALSE, the participation shift is set to one for every XB event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed. Note that the AB-XB pshift is only defined for directed events.
 #'
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}},
 #' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation
@@ -1881,24 +1899,12 @@ psABXB <- function(consider_type = FALSE) {
 
 #' psABXY
 #'
-#' Specifies the statistic for a pshift AB-XY effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a participation shift AB-XY.
 #'
 #' @inheritParams psABBA
 #'
 #' @details
-#' The AB-XY pshift effect refers to one of Gibson's (2003) dyadic
-#' participation shifts. The AB-XY pshift refers to a tendency for turn
-#' usurping (here, the next sender and the next receiver are not in the current
-#' event). For each timepoint t, the psABXY statistic is equal to one for the
-#' dyads that will create the participation shift if they would occur in the
-#' edgelist at time t and equal to zero for the dyads that will not create this
-#' participation shift. If consider_type is set to TRUE, the type of the AB
-#' event and the type of the XY events have to be equal. If it is set to FALSE,
-#' the participation shift is set to one for every XY event, regardless of the
-#' event type. If multiple events in the edgelist occur at the same time point,
-#' the order of these events determines whether the p-shift is observed. Note
-#' that the AB-XY pshift is only defined for directed events.
+#' The AB-XY participation shift refers to one of Gibson's (2003) dyadic participation shifts. The AB-XY pshift refers to a tendency for turn usurping (here, the next sender and the next receiver are not in the previous event). For each timepoint t, the psABXY statistic is equal to one for the dyads that will create the participation shift if they would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the XY events have to be equal. If it is set to FALSE, the participation shift is set to one for every XY event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed. Note that the AB-XY pshift is only defined for directed events.
 #'
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}},
 #' \code{\link{psABXB}} or \code{\link{psABAY}} for other dyadic participation
@@ -1929,26 +1935,12 @@ psABXY <- function(consider_type = FALSE) {
 
 #' psABAY
 #'
-#' Specifies the statistic for a pshift AB-AY effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a participation shift AB-AY.
 #'
 #' @inheritParams psABBA
 #'
 #' @details
-#' The AB-AY pshift effect refers to one of Gibson's (2003) dyadic
-#' participation shifts. The AB-AY pshift refers to a tendency for turn
-#' continuing. For directed events, the next sender (A) is the current sender
-#' (A) and the next receiver (Y) is not in the current event. For undirected
-#' events, one of the next actors (A or B) is one of the current actors (A) and
-#' the other current actor (Y) is not in the event. For each timepoint t, the
-#' psABAY statistic is equal to one for the dyads that will create the
-#' participation shift if they would occur in the edgelist at time t and equal
-#' to zero for the dyads that will not create this participation shift. If
-#' consider_type is set to TRUE, the type of the AB event and the type of the
-#' AY events have to be equal. If it is set to FALSE, the participation shift
-#' is set to one for every AY event, regardless of the event type. If multiple
-#' events in the edgelist occur at the same time point, the order of these
-#' events determines whether the p-shift is observed.
+#' The AB-AY participation shift effect refers to one of Gibson's (2003) dyadic participation shifts. The AB-AY pshift refers to a tendency for turn continuing. For directed events, the next sender (A) is the previous sender (A) and the next receiver (Y) is not in the previous event. For undirected events, one of the next actors (A or B) is one of the current actors (A) and the other current actor (Y) is not in the event. For each timepoint t, the psABAY statistic is equal to one for the dyads that will create the participation shift if they would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the AY events have to be equal. If it is set to FALSE, the participation shift is set to one for every AY event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed.
 #'
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}},
 #' \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAB}} for other dyadic participation shifts.
@@ -1978,15 +1970,14 @@ psABAY <- function(consider_type = FALSE) {
 
 #' psABAB
 #'
-#' Specifies the statistic for a pshift AB-AB effect in the \code{effects}
-#' argument of \code{\link{tomstats}}.
+#' Specifies the statistic for a pshift AB-AB effect.
 #'
 #' @inheritParams psABBA
 #'
 #' @details
 #'
 #' Refers to the tendency for the same dyads to keep interacting. For directed
-#' events, the next sender and receiver are equal to the current sender and
+#' events, the next sender and receiver are equal to the previous sender and
 #' receiver. For undirected events, the next actor pair is equal to the current
 #' actor pair. For each timepoint t, the psABAB statistic is equal to one for
 #' the dyads that will create the participation shift if they would occur in
@@ -2019,6 +2010,47 @@ psABAB <- function(consider_type = FALSE) {
 
     # Add effect
     call_args$effect <- "psABAB"
+	
+	return(call_args)
+}
+
+#' psABA
+#'
+#' Specifies the statistic for a participation shift AB-A in the sender step of 
+#' the actor-oriented model.
+#'
+#' @details
+#'
+#' Refers to the tendency for the same actor to keep initiating events: The 
+#' next sender is equal to the previous sender. For each timepoint t, the psABA 
+#' statistic is equal to one for the actor that will create the participation 
+#' shift if they would occur in the edgelist as the sender at time t and equal 
+#' to zero for the actors that will not create this participation shift. If 
+#' multiple events in the edgelist occur at the same time point, the order of 
+#' these events determines whether the p-shift is observed.
+#'
+#' @seealso \code{\link{psABB}} or \code{\link{psABX}} for exploring 
+#' alternative participation shifts in the sender step of the actor-oriented 
+#' model.
+#'
+#' @examples
+#' reh_actor <- remify::remify(history, model = "actor", directed = FALSE)
+#' remstats(sender_effects = ~ psABA(), reh = reh_actor)
+#'
+#' @export
+psABA <- function() {
+    call_args <- as.list(match.call()[-1])
+	defaults <- as.list(formals(psABA))
+	
+	# Update call_args with default values
+	for (arg_name in names(defaults)) {
+		if (!(arg_name %in% names(call_args))) {
+			call_args[[arg_name]] <- defaults[[arg_name]]
+		}
+	}
+
+    # Add effect
+    call_args$effect <- "psABA"
 	
 	return(call_args)
 }
