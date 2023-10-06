@@ -18,6 +18,9 @@
 #'  \item \code{\link{totaldegreeSender}()}
 #'  \item \code{\link{recencySendSender}()}
 #'  \item \code{\link{recencyReceiveSender}()}
+#'  \item \code{\link{psABA}()}
+#'  \item \code{\link{psABB}()}
+#'  \item \code{\link{psABX}()}
 #' }
 #'
 #' A list of available effects and their corresponding statistics for the
@@ -42,6 +45,13 @@
 #'  \item \code{\link{recencySendReceiver}()}
 #'  \item \code{\link{recencyReceiveReceiver}()}
 #'  \item \code{\link{recencyContinue}()}
+#'  \item \code{\link{psABAB}()}
+#'  \item \code{\link{psABBA}()}
+#'  \item \code{\link{psABXA}()}
+#'  \item \code{\link{psABXB}()}
+#'  \item \code{\link{psABAY}()}
+#'  \item \code{\link{psABBY}()}
+#'  \item \code{\link{psABXY}()}
 #' }
 #'
 #' @export
@@ -56,6 +66,9 @@ actor_effects <- function(step = NULL) {
             "totaldegreeSender",
             "recencySendSender",
             "recencyReceiveSender",
+            "psABA",
+            "psABB",
+            "psABX",
             "userStat"
         ),
         receiver = c(
@@ -78,6 +91,13 @@ actor_effects <- function(step = NULL) {
             "recencySendReceiver",
             "recencyReceiveReceiver",
             "recencyContinue",
+            "psABBA",
+            "psABAB",
+            "psABXB",
+            "psABXA",
+            "psABAY",
+            "psABBY",
+            "psABXY",
             "userStat"
         )
     )

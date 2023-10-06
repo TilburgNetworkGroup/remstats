@@ -1930,7 +1930,6 @@ arma::mat computeTriadStatsTypesConsidered(
     - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
     - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
     - consider_type: A boolean value indicating whether to separately calculate p-shifts per event type (true) or disregard event types (false).
-    - scaling: A string with the type of scaling that has to be applied.
     - display_progress: A boolean value indicating whether to display the statistic calculation progress bar (true) or not (false).
 
    Returns:

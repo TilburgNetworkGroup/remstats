@@ -1,3 +1,10 @@
+# remstats 3.1.6
+Date: 06-10-2023
+Works with remify >= 3.1.0.
+
+## New features
+* Collection of participation shifts are available for the actor-oriented model. 
+
 # remstats 3.1.5
 Date: 05-09-2023
 Works with remify >= 3.1.0. 

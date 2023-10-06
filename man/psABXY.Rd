@@ -11,22 +11,10 @@ psABXY(consider_type = FALSE)
 in determining which dyads create a pshift (TRUE) or not (FALSE, default).}
 }
 \description{
-Specifies the statistic for a pshift AB-XY effect in the \code{effects}
-argument of \code{\link{tomstats}}.
+Specifies the statistic for a participation shift AB-XY.
 }
 \details{
-The AB-XY pshift effect refers to one of Gibson's (2003) dyadic
-participation shifts. The AB-XY pshift refers to a tendency for turn
-usurping (here, the next sender and the next receiver are not in the current
-event). For each timepoint t, the psABXY statistic is equal to one for the
-dyads that will create the participation shift if they would occur in the
-edgelist at time t and equal to zero for the dyads that will not create this
-participation shift. If consider_type is set to TRUE, the type of the AB
-event and the type of the XY events have to be equal. If it is set to FALSE,
-the participation shift is set to one for every XY event, regardless of the
-event type. If multiple events in the edgelist occur at the same time point,
-the order of these events determines whether the p-shift is observed. Note
-that the AB-XY pshift is only defined for directed events.
+The AB-XY participation shift refers to one of Gibson's (2003) dyadic participation shifts. The AB-XY pshift refers to a tendency for turn usurping (here, the next sender and the next receiver are not in the previous event). For each timepoint t, the psABXY statistic is equal to one for the dyads that will create the participation shift if they would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the XY events have to be equal. If it is set to FALSE, the participation shift is set to one for every XY event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed. Note that the AB-XY pshift is only defined for directed events.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie")

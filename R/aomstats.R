@@ -106,285 +106,106 @@ aomstats <- function(reh,
                      display_progress = FALSE,
                      attributes, edgelist) {
 
-   # Check if the deprecated argument "attributes" is used
-  if (!missing(attributes)) {
-        warning("use 'attr_data' instead of 'attributes'")
-        attr_data <- attributes
-  }
-
-  # Check if the deprecated "id" column is used in attr_data
-    if (!is.null(attr_data)) {
-        if (("id" %in% colnames(attr_data)) & !("name" %in% colnames(attr_data))) {
-        warning("use 'name' instead of 'id' in 'attr_data'")
-        colnames(attr_data)[which(colnames(attr_data) == "id")] <- "name"
-        }
-    }
+  # Check if the deprecated argument "attributes" is used
+	if (!missing(attributes)) {
+		warning("use 'attr_data' instead of 'attributes'")
+		attr_data <- attributes
+	}
 
   # Check if the deprecated argument "edgelist" is used
-  if (!missing(edgelist)) {
-        warning("use 'reh' instead of 'edgelist'")
-        reh <- edgelist
-  }
+	if (!missing(edgelist)) {
+		warning("use 'reh' instead of 'edgelist'")
+		reh <- edgelist
+	}
 
-  # Check the reh
-  if (!("remify" %in% class(reh))) {
-    stop("Expected a reh object of class remify")
-  }
-  if (attr(reh, "model") != "actor") {
-    stop("The reh object should be prepared with the model argument set to `actor' if effects for the actor-oriented model are computed")
-  }
+  # Validate remaining aomstats arguments
+	attr_data <- validate_aomstats_arguments(attr_data, reh)	
 
-  # Extract relevant elements from the prepared remify::remify object
-  edgelist <- reh$edgelist
-  actors <- attr(reh, "dictionary")$actors
-  edgelist[,1] <- cumsum(reh$intereventTime)
+  # Prepare the edgelist
+  edgelist <- prepare_aomstats_edgelist(reh) 
 
-  # Transform to cpp indexing!
-  mat_edges <- as.matrix(edgelist)
-  mat_edges[, 2] <- mat_edges[, 2] - 1
-  mat_edges[, 3] <- mat_edges[, 3] - 1
+  # Prepare the network actors 
+  actors <- prepare_aomstats_actors(reh)
 
-  actors$actorID <- actors$actorID - 1
+  # Prepare event weights
+  weights <- prepare_aomstats_event_weights(edgelist)
 
-  # Check for event weights
-  if (!("weight" %in% colnames(edgelist))) {
-    weights <- rep(1, nrow(edgelist))
-  } else {
-    weights <- edgelist$weight
-  }
-
-  # Match memory
+  # Validate the memory argument 
   memory <- match.arg(memory)
   memory_value <- validate_memory(memory, memory_value)
 
-  # Convert R start and stop indices to C++ (indexing starts at 0)
-  if (start < 1) {
-    stop("The 'start' value should be set to 1 or a larger number.")
-  }
-  if (stop < start) {
-    stop("The 'stop' value cannot be smaller than the 'start' value.")
-  }
-  start <- start - 1
-  if (stop == Inf) {
-    stop <- nrow(edgelist)
-  }
-  stop <- stop - 1
+  # Prepare subset arguments
+  subset <- prepare_aomstats_subset(start, stop, edgelist)
+  start <- subset$start
+  stop <- subset$stop 
 
   # Initialize stats
-  rateStats <- NULL
-  choiceStats <- NULL
+  sender_stats <- NULL
+  receiver_stats <- NULL
 
-  # sender_effects
-  rateFormula <- sender_effects
-  if (!is.null(sender_effects)) {
-    # Prepare main sender_effects
-    check_formula(rateFormula)
-    sender_effects <- parse_formula(rateFormula, "rateEffects")
-    sender_effectsNames <- sapply(sender_effects, function(x) x$effect)
+  # Sender model ------------------------------------------------------------
+  sender_formula <- sender_effects
+  if (!is.null(sender_formula)) {
+    # Prepare sender_effects
+    temp <- prepare_sender_effects(sender_formula)
+    sender_effects <- temp$sender_effects
+    sender_effects_names <- temp$sender_effects_names
+    sender_interactions <- temp[[3]]
 
-    # Check correct specification effects
-    if (!all(sender_effectsNames %in% actor_effects(step = "sender"))) {
-      stop(paste("Attempting to request effects that are not defined for the sender activity model"))
-    }
-
-    # Prepare interaction sender_effects
-    sender_effects_int <- parse_int(
-      rateFormula, "rateEffects",
-      sender_effects
-    )
-    sender_effectsNames <- append(sender_effectsNames, rep("interact", length(sender_effects_int)), length(sender_effectsNames))
-    rate_interactions <- list()
-    rate_interactions[which(sender_effectsNames == "interact")] <- sender_effects_int
-
-    # Prepare sender_effects covariate information
-    rateCovar <- lapply(sender_effects, function(x) {
-      if (x$effect == "send") {
-        if (is.null(x$x)) {
-          # Check if the variable name is in the attr_data object
-          if (!(x$variable %in% colnames(attr_data))) {
-            stop(paste0("Variable '", x$variable, "' not in attr_data object for the '", x$effect, "' effect."))
-          }
-          # Check if the time variable is available
-          if (!("time" %in% colnames(attr_data))) {
-            stop(paste0("time variable is missing in attr_data object"))
-          }
-          if (anyNA(attr_data$time)) {
-            stop("time variable in attr_data cannot have missing values")
-          }
-          dat <- data.frame(
-            name = attr_data$name,
-            time = attr_data$time,
-            x = attr_data[, x$variable]
-          )
-          # Warning for missing values
-          if (anyNA(dat)) {
-            warning(paste0("Missing values in the attr_data object for the '", x$effect, "' effect can cause unexpected behavior."))
-          }
-          # Check if all actors are in the attr_data
-          if (!all(actors[, 1] %in% dat$name)) {
-            stop("Missing actors in the attr_data object.")
-          }
-          dat$name <- actors[match(dat$name, actors[, 1]), 2]
-          colnames(dat)[3] <- x$variable
-          as.matrix(dat)
-        } else {
-          dat <- x$x
-          # Check if all actors are in the attr_data
-          if (!all(actors[, 1] %in% dat$name)) {
-            stop("Missing actors in the attr_data object.")
-          }
-          dat$name <- actors[match(dat$name, actors[, 1]), 2]
-          as.matrix(dat)
-        }
-        # Check for actors in the attr_data object that are not in the
-        # risk set
-        if (any(is.na(dat$name))) {
-          warning(paste0("attr_data contain actors that are not in the risk set. These are not included in the computation of the statistics."))
-          dat <- dat[!is.na(dat$name), ]
-        }
-        as.matrix(dat)
-      } else if(x$effect == "userStat") {
-        if (NROW(x$x) != nrow(edgelist)) {
-          stop("Number of rows of matrix 'x' in userStat() does not match number of events in edgelist")
-        }
-
-        if (NCOL(x$x) != nrow(actors)) {
-          stop("Number of columns of matrix 'x' in userStat() does not match number of actors")
-        }
-
-        as.matrix(x$x)
-      } else {
-        matrix()
-      }
-    })
+    # Prepare sender covariate information
+    sender_covar <- prepare_sender_covariates(sender_effects, attr_data, 
+      actors, edgelist)
 
     # Prepare sender_effects scaling
-    rateScaling <- sapply(sender_effects, function(x) {
-	    ifelse("scaling" %in% names(x), x$scaling, "none")
-    })
-    rateScaling <- append(rateScaling, rep("none", length(sender_effects_int)), length(rateScaling))
+    sender_scaling <- prepare_aomstats_scaling(sender_effects, 
+      sender_interactions)
 
-    # Compute the rate statistics
-    rateStats <- compute_stats_rate(
-      sender_effectsNames, mat_edges, actors[, 2], weights, rateCovar,
-      rate_interactions, memory, memory_value, rateScaling, start, stop,
+    # Compute the sender statistics
+    sender_stats <- compute_stats_rate(
+      sender_effects_names, edgelist, actors[, 2], weights, sender_covar,
+      sender_interactions, memory, memory_value, sender_scaling, start, stop,
       display_progress
     )
 
     # Add variable names to the statistics dimnames
-    rateStats <- add_variable_names(rateStats, sender_effectsNames, 
-      sender_effects, rate_interactions)
+    sender_stats <- add_variable_names(sender_stats, sender_effects_names, 
+      sender_effects, sender_interactions)
   }
 
-  # receiver_effects
-  choiceFormula <- receiver_effects
+  # Receiver model ----------------------------------------------------------
+  receiver_formula <- receiver_effects
   if (!is.null(receiver_effects)) {
-    # Prepare main receiver_effects
-    check_formula(choiceFormula)
-    receiver_effects <- parse_formula(choiceFormula, "choiceEffects")
-    receiver_effectsNames <- sapply(receiver_effects, function(x) x$effect)
+    # Prepare receiver_effects
+    temp <- prepare_receiver_effects(receiver_formula)
+    receiver_effects <- temp$receiver_effects
+    receiver_effects_names <- temp$receiver_effects_names
+    receiver_interactions <- temp$receiver_interactions
 
-    # Check correct specification effects
-    if (!all(receiver_effectsNames %in% actor_effects(step = "receiver"))) {
-      stop(paste("Attempting to request effects that are not defined for the receiver choice model"))
-    }
-
-    # Prepare interaction receiver_effects
-    receiver_effects_int <- parse_int(
-      choiceFormula, "choiceEffects",
-      receiver_effects
-    )
-    receiver_effectsNames <- append(receiver_effectsNames, rep("interact", length(receiver_effects_int)), length(receiver_effectsNames))
-    choice_interactions <- list()
-    choice_interactions[which(receiver_effectsNames == "interact")] <- receiver_effects_int
-
-    # Prepare receiver_effects covariate information
-    choiceCovar <- lapply(receiver_effects, function(x) {
-      if (x$effect %in% c("receive", "same", "difference", "average")) {
-        if (is.null(x$x)) {
-          # Check if the variable name is in the attr_data object
-          if (!(x$variable %in% colnames(attr_data))) {
-            stop(paste0("Variable '", x$variable, "' not in attr_data object for the '", x$effect, "' effect."))
-          }
-          # Check if the time variable is available
-          if (!("time" %in% colnames(attr_data))) {
-            stop(paste0("time variable is missing in attr_data object"))
-          }
-          if (anyNA(attr_data$time)) {
-            stop("time variable in attr_data cannot have missing values")
-          }
-          dat <- data.frame(
-            name = attr_data$name,
-            time = attr_data$time,
-            x = attr_data[, x$variable]
-          )
-          # Warning for missing values
-          if (anyNA(dat)) {
-            warning(paste0("Missing values in the attr_data object for the '", x$effect, "' effect can cause unexpected behavior."))
-          }
-          # Check if all actors are in the attr_data
-          if (!all(actors[, 1] %in% dat$name)) {
-            stop("Missing actors in the attr_data object.")
-          }
-          dat$name <- actors[match(dat$name, actors[, 1]), 2]
-          colnames(dat)[3] <- x$variable
-          as.matrix(dat)
-        } else {
-          dat <- x$x
-          # Check if all actors are in the attr_data
-          if (!all(actors[, 1] %in% dat$name)) {
-            stop("Missing actors in the attr_data object.")
-          }
-          dat$name <- actors[match(dat$name, actors[, 1]), 2]
-          as.matrix(dat)
-        }
-        # Check for actors in the attr_data object that are not in the
-        # risk set
-        if (any(is.na(dat$name))) {
-          warning(paste0("attr_data contain actors that are not in the risk set. These are not included in the computation of the statistics."))
-          dat <- dat[!is.na(dat$name), ]
-        }
-        as.matrix(dat)
-      } else if (x$effect == "tie") {
-        parse_tie(x, reh)
-      } else if(x$effect == "userStat") {
-        if (NROW(x$x) != nrow(edgelist)) {
-          stop("Number of rows of matrix 'x' in userStat() does not match number of events in edgelist")
-        }
-
-        if (NCOL(x$x) != nrow(actors)) {
-          stop("Number of columns of matrix 'x' in userStat() does not match number of actors")
-        }
-
-        as.matrix(x$x)
-      } else {
-        matrix()
-      }
-    })
+    # Prepare receiver covariate information
+    receiver_covar <- prepare_receiver_covariates(receiver_effects, attr_data, 
+      actors, edgelist, reh)
 
     # Prepare receiver_effects scaling
-    choiceScaling <- sapply(receiver_effects, function(x) {
-	    ifelse("scaling" %in% names(x), x$scaling, "none")
-    })
-    choiceScaling <- append(choiceScaling, rep("none", length(receiver_effects_int)), length(choiceScaling))
+    receiver_scaling <- prepare_aomstats_scaling(receiver_effects, 
+      receiver_interactions)
 
     # Compute the choice statistics
-    choiceStats <- compute_stats_choice(
-      receiver_effectsNames, mat_edges, actors[, 2], weights, choiceCovar,
-      choice_interactions, memory, memory_value, choiceScaling,
+    receiver_stats <- compute_stats_choice(
+      receiver_effects_names, edgelist, actors[, 2], weights, receiver_covar,
+      receiver_interactions, memory, memory_value, receiver_scaling,
       start, stop, display_progress
     )
 
     # Add variable names to the statistics dimnames
-    choiceStats <- add_variable_names(choiceStats, 
-      receiver_effectsNames, receiver_effects, choice_interactions)
+    receiver_stats <- add_variable_names(receiver_stats, 
+      receiver_effects_names, receiver_effects, receiver_interactions)
   }
 
   # Output
-  out <- list(sender_stats = rateStats, receiver_stats = choiceStats)
+  out <- list(sender_stats = sender_stats, receiver_stats = receiver_stats)
   class(out) <- c("aomstats", "remstats")
   attr(out, "model") <- "actor"
-  attr(out, "formula") <- list(rate = rateFormula, choice = choiceFormula)
+  attr(out, "formula") <- list(rate = sender_effects, choice = receiver_effects)
   attr(out, "actors") <- actors
   out
 }

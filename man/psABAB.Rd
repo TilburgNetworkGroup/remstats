@@ -11,12 +11,11 @@ psABAB(consider_type = FALSE)
 in determining which dyads create a pshift (TRUE) or not (FALSE, default).}
 }
 \description{
-Specifies the statistic for a pshift AB-AB effect in the \code{effects}
-argument of \code{\link{tomstats}}.
+Specifies the statistic for a pshift AB-AB effect.
 }
 \details{
 Refers to the tendency for the same dyads to keep interacting. For directed
-events, the next sender and receiver are equal to the current sender and
+events, the next sender and receiver are equal to the previous sender and
 receiver. For undirected events, the next actor pair is equal to the current
 actor pair. For each timepoint t, the psABAB statistic is equal to one for
 the dyads that will create the participation shift if they would occur in
