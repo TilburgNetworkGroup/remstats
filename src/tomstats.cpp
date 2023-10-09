@@ -428,7 +428,8 @@ arma::mat calc_actor_stats_exo(int type,
       IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, true);
       for (int dyadID : dyadIDs)
       {
-        if (dyadID >= 0) {
+        if (dyadID >= 0)
+        {
           stat(0, dyadID) = value;
         }
       }
@@ -440,7 +441,8 @@ arma::mat calc_actor_stats_exo(int type,
       IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, true);
       for (int dyadID : dyadIDs)
       {
-        if (dyadID >= 0) {
+        if (dyadID >= 0)
+        {
           stat(0, dyadID) = value;
         }
       }
@@ -492,7 +494,8 @@ arma::mat calc_actor_stats_exo(int type,
                 IntegerVector dyadIDs = getDyadIDs(riskset, actor, NA_INTEGER, NA_INTEGER, true);
                 for (int dyadID : dyadIDs)
                 {
-                  if (dyadID >= 0) {
+                  if (dyadID >= 0)
+                  {
                     thisrow(dyadID) = value;
                   }
                 }
@@ -504,7 +507,8 @@ arma::mat calc_actor_stats_exo(int type,
                 IntegerVector dyadIDs = getDyadIDs(riskset, NA_INTEGER, actor, NA_INTEGER, true);
                 for (int dyadID : dyadIDs)
                 {
-                  if (dyadID >= 0) {
+                  if (dyadID >= 0)
+                  {
                     thisrow(dyadID) = value;
                   }
                 }
@@ -2314,13 +2318,16 @@ arma::mat calc_rrank(int type, const arma::mat &edgelist,
 {
   if (display_progress)
   {
-    if(type == 1) {
+    if (type == 1)
+    {
       Rcpp::Rcout << "Calculating rrankSend statistic" << std::endl;
-    } else if(type == 2) {
+    }
+    else if (type == 2)
+    {
       Rcpp::Rcout << "Calculating rrankReceive statistic" << std::endl;
     }
   }
-  
+
   // Saving space
   arma::mat stat(stop - start + 1, riskset.n_rows, arma::fill::zeros);
 
@@ -2895,41 +2902,97 @@ arma::mat calc_recency(int type,
   return stat;
 }
 
-// calc_tie_stats_exo
-arma::mat calc_tie_stats_exo(const arma::mat &covariates, const arma::mat &edgelist,
-                             const arma::mat &riskset, int start, int stop)
+arma::mat convert_to_risksetMatrix(arma::mat riskset, int N, int C)
 {
 
-  // Slice the edgelist according to "start" and "stop"
-  arma::mat slice = edgelist.rows(start, stop);
+  arma::mat risksetMatrix(N, N * C);
+  risksetMatrix.fill(-999);
 
-  // Initialize saving space
-  arma::mat stat(slice.n_rows, riskset.n_rows, arma::fill::zeros);
+  int sender;
+  int receiver;
+  int type;
+  int dyad;
 
-  // Saving space
-  arma::rowvec thisrow(riskset.n_rows);
-
-  // For loop over dyads
   for (arma::uword i = 0; i < riskset.n_rows; ++i)
   {
-
-    // Find the relevant actors
-    arma::uword actor1 = riskset(i, 0);
-    arma::uword actor2 = riskset(i, 1);
-
-    // Find the value
-    double tieval = covariates(actor1, actor2);
-    thisrow(i) = tieval;
+    sender = riskset(i, 0);
+    receiver = riskset(i, 1);
+    type = riskset(i, 2);
+    dyad = riskset(i, 3);
+    risksetMatrix(sender, receiver + (N * type)) = dyad;
   }
 
-  // Save in stat
-  for (arma::uword m = 0; m < slice.n_rows; ++m)
+  return risksetMatrix;
+}
+
+/**
+    Calculates tie statistics
+
+    @param covariates Matrix containing covariate information (actor1, actor2, time, value).
+    @param edgelist Matrix representing edges between actors at specific time points (time, dyad, weight).
+    @param riskset Matrix defining the set of potential edges.
+    @param N Number of actors.
+    @param start Starting index for the tie statistic calculation.
+    @param stop Ending index for the tie statistic calculation.
+    @return Matrix containing tie statistics for the specified range of indices.
+*/
+arma::mat calculate_tie_statistic(
+    const arma::mat &covariates,
+    const arma::mat &edgelist,
+    const arma::mat &riskset, int N, int C,
+    int start, int stop)
+{
+  // Convert the riskset
+  arma::mat risksetMatrix = convert_to_risksetMatrix(riskset, N, C);
+
+  // Unique time points in the covariates
+  arma::vec time_points = covariates.col(2);
+  time_points = unique(time_points);
+  time_points = sort(time_points);
+
+  // Initialise the statistic
+  arma::mat stat(stop - start + 1, risksetMatrix.max() + 1);
+
+  // Initialize objects
+  double time;
+  arma::uvec time_indices, edgelist_indices, dyad_index;
+  arma::mat time_covariates;
+  int actor1, actor2, dyad;
+  double value;
+
+  // Loop over unique time points
+  for (arma::uword t = 0; t < time_points.n_elem; ++t)
   {
-    stat.row(m) = thisrow;
+    time = time_points(t);
+    time_indices = arma::find(covariates.col(2) == time);
+    time_covariates = covariates.rows(time_indices);
+
+    edgelist_indices = arma::find(edgelist.col(0) >= time);
+    edgelist_indices = edgelist_indices(arma::find(edgelist_indices >= start && edgelist_indices <= stop));
+    edgelist_indices = edgelist_indices - start;
+
+    // Loop over time_covariates
+    for (arma::uword i = 0; i < time_covariates.n_rows; ++i)
+    {
+      actor1 = time_covariates(i, 0);
+      actor2 = time_covariates(i, 1);
+      value = time_covariates(i, 3);
+
+      // Loop over event types
+      for (int k = 0; k < C; ++k)
+      {
+        dyad = risksetMatrix(actor1, actor2 + (N * k));
+
+        if (dyad >= 0)
+        {
+          dyad_index = arma::uvec({static_cast<arma::uword>(dyad)});
+          stat.submat(edgelist_indices, dyad_index).fill(value);
+        }
+      }
+    }
   }
 
-  // Output
-  return (stat);
+  return stat;
 }
 
 // get_user_stat
@@ -3205,7 +3268,8 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector &effects,
     // tie
     case 13:
       // Compute statistic
-      stat = calc_tie_stats_exo(covariates[i], edgelist, riskset, start, stop);
+      stat = calculate_tie_statistic(covariates[i], edgelist, riskset,
+                                     actors.n_elem, types.n_elem, start, stop);
       break;
 
     // same

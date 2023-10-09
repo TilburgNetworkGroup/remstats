@@ -115,7 +115,7 @@ expect_warning(
 )
 
 expect_warning(
-    tie(x = 1:3, scaling = "as.is"),
+    tie(variable = "test", scaling = "as.is"),
     pattern = "use 'scaling' is 'none'"
 )
 
@@ -155,7 +155,7 @@ reh <- remify::remify(edgelist, model = "tie")
 
 expect_warning(
     remstats(reh = reh, tie_effects = ~ 1, attributes = info),
-    pattern = "use 'attr_data'"
+    pattern = "Use 'attr_actors'"
 )
 
 colnames(info)[1] <- "id"
@@ -169,7 +169,7 @@ colnames(info)[1] <- "name"
 
 expect_warning(
     remstats(edgelist = reh, tie_effects = ~ 1),
-    pattern = "use 'reh'"
+    pattern = "Use 'reh'"
 )
 
 expect_error(
@@ -195,7 +195,7 @@ reh <- remify::remify(edgelist, model = "tie")
 
 expect_warning(
     tomstats(reh = reh, effects = ~ 1, attributes = info),
-    pattern = "use 'attr_data'"
+    pattern = "Use 'attr_actors'"
 )
 
 colnames(info)[1] <- "id"
@@ -209,7 +209,7 @@ colnames(info)[1] <- "name"
 
 expect_warning(
     tomstats(edgelist = reh, effects = ~ 1),
-    pattern = "use 'reh'"
+    pattern = "Use 'reh'"
 )
 
 expect_error(
@@ -253,13 +253,13 @@ reh <- remify::remify(edgelist, model = "tie")
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ send(variable = "x3"), 
-        attr_data = info),
-    pattern = "'x3' not in attr_data"
+        attr_actors = info),
+    pattern = "'x3' not in attr_actors"
 )
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ send(variable = "x1"), 
-        attr_data = info[,-2]),
+        attr_actors = info[,-2]),
     pattern = "time variable is missing"
 )
 
@@ -267,7 +267,7 @@ info$time[1] <- NA
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ send(variable = "x1"), 
-        attr_data = info),
+        attr_actors = info),
     pattern = "missing values"
 )
 
@@ -276,7 +276,7 @@ info$x1[1] <- NA
 
 expect_warning(
     remstats(reh = reh, tie_effects = ~ send(variable = "x1"), 
-        attr_data = info),
+        attr_actors = info),
     pattern = "Missing values"
 )
 
@@ -284,7 +284,7 @@ info$x1[1] <- 10
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ send(variable = "x1"), 
-        attr_data = info[1:2,]),
+        attr_actors = info[1:2,]),
     pattern = "Missing actors"
 )
 
@@ -292,7 +292,7 @@ info2 <- rbind(info, c(4, 0, 40, 1))
 
 expect_warning(
     remstats(reh = reh, tie_effects = ~ send(variable = "x1"), 
-        attr_data = info2),
+        attr_actors = info2),
     pattern = "not in the risk set"
 )
 
@@ -319,29 +319,29 @@ expect_error(
 
 # prep_exo ---------------------------------------------------------------
 expect_error(
-    send(variable = "x1", attr_data = attributes),
-    pattern = "Cannot find"
+    send(variable = "x1", attr_actors = attributes),
+    pattern = "not in attr_actors"
 )
 
 expect_error(
-    send(variable = 1, attr_data = info),
+    send(variable = 1, attr_actors = info),
     pattern = "should be a string"
 )
 
 expect_error(
-    send(variable = "x3", attr_data = info),
-    pattern = "'x3' not in attr_data"
+    send(variable = "x3", attr_actors = info),
+    pattern = "'x3' not in attr_actors"
 )
 
 expect_error(
-    send(variable = "x1", attr_data = info[,-2]),
+    send(variable = "x1", attr_actors = info[,-2]),
     pattern = "time variable is missing"
 )
 
 info$time[1] <- NA
 
 expect_error(
-    send(variable = "x1", attr_data = info),
+    send(variable = "x1", attr_actors = info),
     pattern = "missing values"
 )
 
@@ -349,7 +349,7 @@ info$time[1] <- 0
 info$x1[1] <- NA
 
 expect_warning(
-    send(variable = "x1", attr_data = info),
+    send(variable = "x1", attr_actors = info),
     pattern = "Missing values"
 )
 
@@ -452,13 +452,13 @@ reh <- remify::remify(edgelist, model = "actor")
 
 expect_warning(
     aomstats(reh = reh, sender_effects = ~ 1, attributes = info),
-    pattern = "use 'attr_data'"
+    pattern = "Use 'attr_actors'"
 )
 
 colnames(info)[1] <- "id"
 
 expect_warning(
-	aomstats(reh = reh, sender_effects = ~ 1, attr_data = info),
+	aomstats(reh = reh, sender_effects = ~ 1 + send(variable = "x1"), attr_actors = info),
 	pattern = "Use 'name'"
 )
 
@@ -466,7 +466,7 @@ colnames(info)[1] <- "name"
 
 expect_warning(
     aomstats(edgelist = reh, sender_effects = ~ 1),
-    pattern = "use 'reh'"
+    pattern = "Use 'reh'"
 )
 
 expect_error(
@@ -507,25 +507,25 @@ reh <- remify::remify(edgelist, model = "actor")
 
 expect_error(
     remstats(reh = reh, sender_effects = ~ send(variable = "x3"), 
-        attr_data = info),
-    pattern = "'x3' not in attr_data"
+        attr_actors = info),
+    pattern = "'x3' not in attr_actors"
 )
 
 expect_error(
     remstats(reh = reh, receiver_effects = ~ receive(variable = "x3"), 
-        attr_data = info),
-    pattern = "'x3' not in attr_data"
+        attr_actors = info),
+    pattern = "'x3' not in attr_actors"
 )
 
 expect_error(
     remstats(reh = reh, sender_effects = ~ send(variable = "x1"), 
-        attr_data = info[,-2]),
+        attr_actors = info[,-2]),
     pattern = "time variable is missing"
 )
 
 expect_error(
     remstats(reh = reh, receiver_effects = ~ receive(variable = "x1"), 
-        attr_data = info[,-2]),
+        attr_actors = info[,-2]),
     pattern = "time variable is missing"
 )
 
@@ -533,13 +533,13 @@ info$time[1] <- NA
 
 expect_error(
     remstats(reh = reh, sender_effects = ~ send(variable = "x1"), 
-        attr_data = info),
+        attr_actors = info),
     pattern = "missing values"
 )
 
 expect_error(
     remstats(reh = reh, receiver_effects = ~ receive(variable = "x1"), 
-        attr_data = info),
+        attr_actors = info),
     pattern = "missing values"
 )
 
@@ -548,13 +548,13 @@ info$x1[1] <- NA
 
 expect_warning(
     remstats(reh = reh, sender_effects = ~ send(variable = "x1"), 
-        attr_data = info),
+        attr_actors = info),
     pattern = "Missing values"
 )
 
 expect_warning(
     remstats(reh = reh, receiver_effects = ~ receive(variable = "x1"), 
-        attr_data = info),
+        attr_actors = info),
     pattern = "Missing values"
 )
 
@@ -562,13 +562,13 @@ info$x1[1] <- 10
 
 expect_error(
     remstats(reh = reh, sender_effects = ~ send(variable = "x1"), 
-        attr_data = info[1:2,]),
+        attr_actors = info[1:2,]),
     pattern = "Missing actors"
 )
 
 expect_error(
     remstats(reh = reh, receiver_effects = ~ receive(variable = "x1"), 
-        attr_data = info[1:2,]),
+        attr_actors = info[1:2,]),
     pattern = "Missing actors"
 )
 
@@ -576,13 +576,13 @@ info2 <- rbind(info, c(4, 0, 40, 1))
 
 expect_warning(
     remstats(reh = reh, sender_effects = ~ send(variable = "x1"), 
-        attr_data = info2),
+        attr_actors = info2),
     pattern = "not in the risk set"
 )
 
 expect_warning(
     remstats(reh = reh, receiver_effects = ~ receive(variable = "x1"), 
-        attr_data = info2),
+        attr_actors = info2),
     pattern = "not in the risk set"
 )
 

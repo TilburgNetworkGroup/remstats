@@ -7,7 +7,8 @@
 tomstats(
   effects,
   reh,
-  attr_data = NULL,
+  attr_actors = NULL,
+  attr_dyads = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
   start = 1,
@@ -15,6 +16,7 @@ tomstats(
   display_progress = FALSE,
   adjmat = NULL,
   get_adjmat = FALSE,
+  attr_data,
   attributes,
   edgelist
 )
@@ -28,9 +30,12 @@ effects and their corresponding statistics}
 \item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
 the relational event history.}
 
-\item{attr_data}{optionally, an object of class
-\code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
-Details).}
+\item{attr_actors}{optionally, an object of class
+\code{"\link[base]{data.frame}"} that contains exogenous attributes for 
+actors (see Details).}
+
+\item{attr_dyads}{optionally, an object of class \code{data.frame} or 
+\code{matrix} containing attribute information for dyads (see Details).}
 
 \item{memory}{The memory to be used. See `Details'.}
 
@@ -54,7 +59,7 @@ rows the time points and on the columns the risk set entries}
 \item{get_adjmat}{whether the adjmat computed by tomstats should be
 outputted as an attribute of the statistics.}
 
-\item{attributes}{deprecated, please use "attr_data" instead}
+\item{attributes}{deprecated, please use "attr_actors" instead}
 
 \item{edgelist}{deprecated, please use "reh" instead}
 }
@@ -99,13 +104,13 @@ undirected events (see the documentation of the statistics). Note that
 undirected events are only available for the tie-oriented model.
 }
 
-\section{attr_data}{
+\section{attr_actors}{
 
 For the computation of the \emph{exogenous} statistics an attributes object
 with the exogenous covariate information has to be supplied to the
-\code{attr_data} argument in either \code{remstats()} or in the separate
+\code{attr_actors} argument in either \code{remstats()} or in the separate
 effect functions supplied to the \code{..._effects} arguments (e.g., see
-\code{\link{send}}). This \code{attr_data} object should be constructed as
+\code{\link{send}}). This \code{attr_actors} object should be constructed as
 follows: A dataframe with rows refering to the attribute value of actor
 \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 actor name (corresponding to the actor names in the relational event
@@ -117,6 +122,11 @@ the \code{variable} argument in the effect function). Note that the
 procedure for the exogenous effects `tie' and `event' deviates from this,
 here the exogenous covariate information has to be specified in a different
 way, see \code{\link{tie}} and \code{\link{event}}.
+}
+
+\section{attr_dyads}{
+  
+For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 }
 
 \section{Memory}{
@@ -172,7 +182,7 @@ is accurate.
 library(remstats)
 reh <- remify::remify(edgelist = history, model = "tie")
 effects <- ~ inertia():send("extraversion") + otp()
-tomstats(effects, reh = reh, attr_data = info)
+tomstats(effects, reh = reh, attr_actors = info)
 
 }
 \references{

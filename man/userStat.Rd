@@ -10,9 +10,6 @@ userStat(x, variableName = NULL)
 \item{x}{matrix with number of rows equal to the number of events and number
 of columns equal to the number of dyads in the network (tie-oriented model) 
 or the number of actors in the network (actor-oriented model)}
-
-\item{variableName}{optionally, a string indicating the variable name, used
-for the dimnames of the output statistics object}
 }
 \description{
 Allows the user to add its own pre-computed statistic to the statistics

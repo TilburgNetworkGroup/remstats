@@ -1,3 +1,15 @@
+# remstats 3.1.7
+Date: 09-10-23
+Works with remify >= 3.1.0.
+
+## New features
+- **Flexible data format**: Introducing support for long-format data in the `tie()` statistic.
+- **Temporal variability**: Introducing support for time-varying covariates in the `tie()` statistic. 
+- **Alternative statistic**: Presenting the `dyad()` statistic as an alternative to the `tie()` statistic. 
+
+## Major changes
+- **Updated function arguments**: To align with the introduction of the long data format (`attr_dyads`) for the `tie()` statistic, the previously used `attr_data` object has been renamed to `attr_actors`. This change ensures consistency and clarity in our terminology.
+
 # remstats 3.1.6
 Date: 06-10-2023
 Works with remify >= 3.1.0.

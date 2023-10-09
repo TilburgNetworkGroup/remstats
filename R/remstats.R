@@ -30,12 +30,12 @@
 #' undirected events (see the documentation of the statistics). Note that
 #' undirected events are only available for the tie-oriented model.
 #'
-#' @section attr_data:
-#' For the computation of the \emph{exogenous} statistics an attributes object
-#' with the exogenous covariate information has to be supplied to the
-#' \code{attr_data} argument in either \code{remstats()} or in the separate
+#' @section attr_actors:
+#' For the computation of the \emph{exogenous} statistics an attributes 
+#' object with the exogenous covariate information has to be supplied to the
+#' \code{attr_actors} argument in either \code{remstats()} or in the separate
 #' effect functions supplied to the \code{..._effects} arguments (e.g., see
-#' \code{\link{send}}). This \code{attr_data} object should be constructed as
+#' \code{\link{send}}). This \code{attr_actors} object should be constructed as
 #' follows: A dataframe with rows refering to the attribute value of actor
 #' \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 #' actor name (corresponding to the actor names in the relational event
@@ -47,6 +47,9 @@
 #' procedure for the exogenous effects `tie' and `event' deviates from this,
 #' here the exogenous covariate information has to be specified in a different
 #' way, see \code{\link{tie}} and \code{\link{event}}.
+#' 
+#' @section attr_dyads:  
+#' For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 #'
 #' @section Memory:
 #' The default `memory` setting is `"full"`, which implies that at each time
@@ -103,9 +106,11 @@
 #' computed, see `Details'
 #' @param reh an object of class \code{"\link[remify]{remify}"} characterizing 
 #' the relational event history.
-#' @param attr_data optionally, an object of class
-#' \code{"\link[base]{data.frame}"} that contains the exogenous attributes (see
-#' Details).
+#' @param attr_actors optionally, an object of class
+#' \code{"\link[base]{data.frame}"} that contains exogenous attributes for 
+#' actors (see Details).
+#' @param attr_dyads optionally, an object of class \code{data.frame} or 
+#' \code{matrix} containing attribute information for dyads (see Details).
 #' @param memory The memory to be used. See `Details'.
 #' @param memory_value Numeric value indicating the memory parameter. See
 #' `Details'.
@@ -122,7 +127,7 @@
 #' risk set entries
 #' @param get_adjmat for a tie-oriented model, whether the adjmat computed by 
 #' remstats should be outputted as an attribute of the statistics.
-#' @param attributes deprecated, please use "attr_data" instead
+#' @param attributes deprecated, please use "attr_actors" instead
 #' @param edgelist deprecated, please use "reh" instead
 #'
 #' @return An object of class 'remstats'. In case of the 
@@ -147,14 +152,14 @@
 #'
 #' eff <- ~ inertia():send("extraversion") + otp()
 #' reh_tie <- remify::remify(edgelist = history, model = "tie")
-#' remstats(reh = reh_tie, tie_effects = eff, attr_data = info)
+#' remstats(reh = reh_tie, tie_effects = eff, attr_actors = info)
 #'
 #' seff <- ~ send("extraversion")
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
 #' reh_actor <- remify::remify(edgelist = history, model = "actor")
 #' remstats(
 #'     reh = reh_actor, sender_effects = seff, receiver_effects = reff,
-#'     attr_data = info
+#'     attr_actors = info
 #' )
 #'
 #' @references Butts, C. T. (2008). A relational event framework for social
@@ -165,31 +170,37 @@
 #' Science, 4, 318–352. \url{https://doi.org/10.15195/v4.a14}
 #'
 #' @export
-remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
-                     receiver_effects = NULL, attr_data = NULL, 
+remstats <- function(reh, tie_effects = NULL, 
+                     sender_effects = NULL,
+                     receiver_effects = NULL, 
+                     attr_actors = NULL, attr_dyads = NULL, 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf,
                      display_progress = FALSE,
                      adjmat = NULL, get_adjmat = FALSE,
-                     attributes, edgelist) {
+                     attr_data, attributes, edgelist) {
 
     # Check if the deprecated argument "attributes" is used
     if (!missing(attributes)) {
-            warning("use 'attr_data' instead of 'attributes'")
-            attr_data <- attributes
+            warning("Deprecated argument: Use 'attr_actors' instead of 'attributes'")
+            attr_actors <- attributes
+    }
+    if (!missing(attr_data)) {
+            warning("Deprecated argument: Use 'attr_actors' instead of 'attr_data'")
+            attr_actors <- attr_data
     }
 
-    # Check if the deprecated "id" column is used in attr_data
-    if (!is.null(attr_data)) {
-        if (("id" %in% colnames(attr_data)) & !("name" %in% colnames(attr_data))) {
-        warning("use 'name' instead of 'id' in 'attr_data'")
-        colnames(attr_data)[which(colnames(attr_data) == "id")] <- "name"
+    # Check if the deprecated "id" column is used in attr_actors
+    if (!is.null(attr_actors)) {
+        if (("id" %in% colnames(attr_actors)) & !("name" %in% colnames(attr_actors))) {
+        warning("use 'name' instead of 'id' in 'attr_actors'")
+        colnames(attr_actors)[which(colnames(attr_actors) == "id")] <- "name"
         }
     }
 
     # Check if the deprecated argument "edgelist" is used
     if (!missing(edgelist)) {
-            warning("use 'reh' instead of 'edgelist'")
+            warning("Deprecated argument: Use 'reh' instead of 'edgelist'")
             reh <- edgelist
     }
 
@@ -201,9 +212,10 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
     if (attr(reh, "model") == "tie") {
         out <- tomstats(
             effects = tie_effects, reh = reh,
-            attr_data = attr_data, memory = memory,
-            memory_value = memory_value, start = start,
-            stop = stop, display_progress = display_progress, 
+            attr_actors = attr_actors, attr_dyads = attr_dyads, 
+            memory = memory, memory_value = memory_value, 
+            start = start, stop = stop, 
+            display_progress = display_progress, 
             adjmat = adjmat, get_adjmat = get_adjmat
         )
     }
@@ -212,9 +224,10 @@ remstats <- function(reh, tie_effects = NULL, sender_effects = NULL,
         out <- aomstats(
             reh = reh, sender_effects = sender_effects,
             receiver_effects = receiver_effects,
-            attr_data = attr_data, memory = memory,
-            memory_value = memory_value, start = start,
-            stop = stop, display_progress = display_progress
+            attr_actors = attr_actors, attr_dyads = attr_dyads, 
+            memory = memory, memory_value = memory_value, 
+            start = start, stop = stop, 
+            display_progress = display_progress
         )
     }
 

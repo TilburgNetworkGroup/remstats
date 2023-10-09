@@ -27,8 +27,13 @@ info2 <- data.frame(
 info <- rbind(info, info2)
 
 # Tie info
-X <<- matrix(1:9, nrow = 3)
-X <<- X %*% t(X) 
+X_wide <<- matrix(1:9, nrow = 3)
+X_wide <<- X_wide %*% t(X_wide) 
+X_long <<- data.frame(
+	actor1 = c(1, 1, 2),
+	actor2 = c(2, 3, 3),
+	X_long = c(78, 90, 108)
+)
 
 # Event info
 setting <<- c("a", "b", "b", "a", "a")
@@ -41,10 +46,12 @@ edgelist$type <- event_types
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE, riskset = "active")
 effects <- ~ average(variable = "x1") + difference(variable = "x1") + 
   maximum(variable = "x1") + minimum(variable = "x1") +
-  same(variable = "x2") + tie(x = X, variableName = "X") +
+  same(variable = "x2") + 
+  tie(variable = "X_wide", attr_dyads = X_wide) +
+  tie(variable = "X_long", attr_dyads = X_long) +
   event(x = setting, variableName = "setting") +
   userStat(x = Y, variableName = "Y")
-stats <- remstats(reh, tie_effects = effects, attr_data = info)
+stats <- remstats(reh, tie_effects = effects, attr_actors = info)
 riskset <- attr(stats, "riskset")
 
 # Baseline
@@ -108,7 +115,8 @@ tie <- rbind(
   c(78, 90, 108, 78, 108),
   c(78, 90, 108, 78, 108)
 )
-expect_equal(stats[, , "tie_X"], tie)
+expect_equal(stats[, , "tie_X_wide"], tie)
+expect_equal(stats[, , "tie_X_long"], tie)
 
 # event
 event <- rbind(
@@ -129,8 +137,9 @@ std_effects <- ~
   difference(variable = "x1", scaling = "std") + 
   maximum(variable = "x1", scaling = "std") + 
   minimum(variable = "x1", scaling = "std") + 
-  tie(x = X, variableName = "X", scaling = "std")
-std_stats <- remstats(reh, tie_effects = std_effects, attr_data = info)
+  tie(variable = "X_wide", attr_dyads = X_wide, scaling = "std")
+  tie(variable = "X_long", attr_dyads = X_long, scaling = "std")
+std_stats <- remstats(reh, tie_effects = std_effects, attr_actors = info)
 
 sapply(2:dim(std_stats)[3], function(p) {
   stat_name <- dimnames(std_stats)[[3]][p]

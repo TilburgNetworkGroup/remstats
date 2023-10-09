@@ -16,7 +16,7 @@ info <- data.frame(
 # Tie model
 reh <- remify::remify(edgelist, model = "tie")
 effects <- ~ send(variable = "x1"):inertia()
-stats <- remstats(reh, tie_effects = effects, attr_data = info)
+stats <- remstats(reh, tie_effects = effects, attr_actors = info)
 
 interaction <- stats[, , "send_x1"] * stats[, , "inertia"]
 expect_equal(stats[, , "send_x1:inertia"], interaction)
@@ -26,7 +26,7 @@ reh <- remify::remify(edgelist, model = "actor")
 sender_effects <- ~ send(variable = "x1"):outdegreeSender()
 receiver_effects <- ~ receive(variable = "x1"):inertia()
 stats <- remstats(reh, sender_effects = sender_effects, 
-    receiver_effects = receiver_effects, attr_data = info)
+    receiver_effects = receiver_effects, attr_actors = info)
 sender_stats <- stats$sender_stats
 receiver_stats <- stats$receiver_stats
 

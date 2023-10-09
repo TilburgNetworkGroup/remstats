@@ -25,6 +25,27 @@ namespace remstats {
         }
     }
 
+    inline arma::mat calculate_aom_tie_statistic(const arma::mat& covariates, const arma::mat& edgelist, const arma::vec& actors, int start, int stop, Rcpp::String scaling, bool display_progress) {
+        typedef SEXP(*Ptr_calculate_aom_tie_statistic)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_calculate_aom_tie_statistic p_calculate_aom_tie_statistic = NULL;
+        if (p_calculate_aom_tie_statistic == NULL) {
+            validateSignature("arma::mat(*calculate_aom_tie_statistic)(const arma::mat&,const arma::mat&,const arma::vec&,int,int,Rcpp::String,bool)");
+            p_calculate_aom_tie_statistic = (Ptr_calculate_aom_tie_statistic)R_GetCCallable("remstats", "_remstats_calculate_aom_tie_statistic");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_calculate_aom_tie_statistic(Shield<SEXP>(Rcpp::wrap(covariates)), Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(actors)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(scaling)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
     inline arma::cube compute_stats_rate(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, bool display_progress) {
         typedef SEXP(*Ptr_compute_stats_rate)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_rate p_compute_stats_rate = NULL;

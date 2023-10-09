@@ -14,6 +14,46 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// calculate_aom_tie_statistic
+arma::mat calculate_aom_tie_statistic(const arma::mat& covariates, const arma::mat& edgelist, const arma::vec& actors, int start, int stop, Rcpp::String scaling, bool display_progress);
+static SEXP _remstats_calculate_aom_tie_statistic_try(SEXP covariatesSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP scalingSEXP, SEXP display_progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type actors(actorsSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type scaling(scalingSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_aom_tie_statistic(covariates, edgelist, actors, start, stop, scaling, display_progress));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _remstats_calculate_aom_tie_statistic(SEXP covariatesSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP scalingSEXP, SEXP display_progressSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_remstats_calculate_aom_tie_statistic_try(covariatesSEXP, edgelistSEXP, actorsSEXP, startSEXP, stopSEXP, scalingSEXP, display_progressSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // compute_stats_rate
 arma::cube compute_stats_rate(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, bool display_progress);
 static SEXP _remstats_compute_stats_rate_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
@@ -247,6 +287,7 @@ END_RCPP
 static int _remstats_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
+        signatures.insert("arma::mat(*calculate_aom_tie_statistic)(const arma::mat&,const arma::mat&,const arma::vec&,int,int,Rcpp::String,bool)");
         signatures.insert("arma::cube(*compute_stats_rate)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
         signatures.insert("arma::cube(*compute_stats_choice)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
         signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
@@ -258,6 +299,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
 
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _remstats_RcppExport_registerCCallable() { 
+    R_RegisterCCallable("remstats", "_remstats_calculate_aom_tie_statistic", (DL_FUNC)_remstats_calculate_aom_tie_statistic_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_rate", (DL_FUNC)_remstats_compute_stats_rate_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_choice", (DL_FUNC)_remstats_compute_stats_choice_try);
     R_RegisterCCallable("remstats", "_remstats_getRisksetMatrix", (DL_FUNC)_remstats_getRisksetMatrix_try);
@@ -268,6 +310,7 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_remstats_calculate_aom_tie_statistic", (DL_FUNC) &_remstats_calculate_aom_tie_statistic, 7},
     {"_remstats_compute_stats_rate", (DL_FUNC) &_remstats_compute_stats_rate, 12},
     {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 12},
     {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
