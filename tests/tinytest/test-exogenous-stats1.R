@@ -25,8 +25,15 @@ info2 <- data.frame(
 info <- rbind(info, info2)
 
 # Tie info
-X <<- matrix(1:9, 3, 3)
-diag(X) <- 0
+X_wide <<- matrix(1:9, 3, 3)
+diag(X_wide) <- 0
+
+X_long <<- data.frame(
+	actor1 = c(1, 1, 2, 2, 3, 3, 1),
+	actor2 = c(2, 3, 1, 3, 1, 2, 2),
+  time = c(rep(0, 6), 2),
+	X_long = c(4, 7, 2, 8, 3, 6, 40)
+)
 
 # Event info
 setting <<- c("a", "b", "b", "a", "a")
@@ -39,10 +46,12 @@ reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 effects <- ~ send(variable = "x1") + receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") +
   maximum(variable = "x1") + minimum(variable = "x1") +
-  same(variable = "x2") + tie(x = X, variableName = "X") +
+  same(variable = "x2") + 
+  tie(variable = "X_wide", attr_dyads = X_wide) +
+	tie(variable = "X_long", attr_dyads = X_long) +
   event(x = setting, variableName = "setting") +
   userStat(x = Y, variableName = "Y")
-stats <- remstats(reh, tie_effects = effects, attr_data = info)
+stats <- remstats(reh, tie_effects = effects, attr_actors = info)
 riskset <- attr(stats, "riskset")
 
 # Baseline
@@ -126,7 +135,16 @@ tie <- rbind(
   c(4, 7, 2, 8, 6),
   c(4, 7, 2, 8, 6)
 )
-expect_equal(stats[, , "tie_X"], tie)
+expect_equal(stats[, , "tie_X_wide"], tie)
+
+tie_long <- rbind(
+	c(4, 7, 2, 8, 6),
+	c(40, 7, 2, 8, 6),
+	c(40, 7, 2, 8, 6),
+	c(40, 7, 2, 8, 6),
+	c(40, 7, 2, 8, 6)
+)
+expect_equal(stats[, , "tie_X_long"], tie_long)
 
 # event
 event <- rbind(
@@ -141,17 +159,17 @@ expect_equal(stats[, , "event_setting"], event)
 # userStat
 expect_equal(stats[, , "userStat_Y"], Y)
 
-# test attr_data in variable functions
+# test attr_actors in variable functions
 info3 <<- info[, 1:3]
 info2 <<- info[, c(1, 2, 4)]
 
-effects2 <- ~ send(variable = "x1", attr_data = info3) + 
-receive(variable = "x1", attr_data = info3) + 
-  average(variable = "x1", attr_data = info3) + 
-  difference(variable = "x1", attr_data = info3) + 
-  maximum(variable = "x1", attr_data = info3) + 
-  minimum(variable = "x1", attr_data = info3) +
-  same(variable = "x2", attr_data = info2) 
+effects2 <- ~ send(variable = "x1", attr_actors = info3) + 
+receive(variable = "x1", attr_actors = info3) + 
+  average(variable = "x1", attr_actors = info3) + 
+  difference(variable = "x1", attr_actors = info3) + 
+  maximum(variable = "x1", attr_actors = info3) + 
+  minimum(variable = "x1", attr_actors = info3) +
+  same(variable = "x2", attr_actors = info2) 
 stats2 <- remstats(reh, tie_effects = effects2)
 
 expect_equal(stats2[, , "send_x1"], send)
@@ -164,7 +182,7 @@ expect_equal(stats2[, , "same_x2"], same)
 
 # test difference absolute = FALSE
 effects3 <- ~ difference(variable = "x1", absolute = FALSE)
-stats3 <- remstats(reh, tie_effects = effects3, attr_data = info)
+stats3 <- remstats(reh, tie_effects = effects3, attr_actors = info)
 
 difference <- rbind(
   c(-10, -20, 10, -10, 10),
@@ -175,6 +193,15 @@ difference <- rbind(
 )
 expect_equal(stats3[, , "difference_x1"], difference)
 
+# test attr_dyads in remstats
+stats4 <- remstats(reh, tie_effects = ~ tie(variable = "X_wide"), 
+  attr_dyads = X_wide)
+expect_equal(stats4[, , "tie_X_wide"], tie)
+
+stats5 <- remstats(reh, tie_effects = ~ tie(variable = "X_long"), 
+  attr_dyads = X_long)
+expect_equal(stats5[, , "tie_X_long"], tie_long)
+
 # test standardization
 std_effects <- ~
   send(variable = "x1", scaling = "std") + 
@@ -183,8 +210,9 @@ std_effects <- ~
   difference(variable = "x1", scaling = "std") + 
   maximum(variable = "x1", scaling = "std") + 
   minimum(variable = "x1", scaling = "std") +
-  tie(x = X, variableName = "X", scaling = "std")
-std_stats <- remstats(reh, tie_effects = std_effects, attr_data = info)
+  tie(variable = "X_wide", attr_dyads = X_wide, scaling = "std") +
+  tie(variable = "X_long", attr_dyads = X_long, scaling = "std")
+std_stats <- remstats(reh, tie_effects = std_effects, attr_actors = info)
 
 sapply(2:dim(std_stats)[3], function(p) {
   stat_name <- dimnames(std_stats)[[3]][p]

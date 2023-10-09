@@ -40,8 +40,8 @@ NULL
 #' sending events.
 #'
 #' @param variable string with the name of the column in the
-#' \code{attr_data} object for which the statistic has to be computed.
-#' @param attr_data optionally, an object of class
+#' \code{attr_actors} object for which the statistic has to be computed.
+#' @param attr_actors optionally, an object of class
 #' \code{\link[base]{data.frame}} that contains the attribute, see
 #' 'Details.'
 #' @param scaling the method for scaling the statistic. Default is to not scale
@@ -54,7 +54,7 @@ NULL
 #' that have actor \emph{i} as sender. Note that a "send" effect is only
 #' defined for directed relational events.
 #'
-#' The \code{attr_data} object should be constructed as a
+#' The \code{attr_actors} object should be constructed as a
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
@@ -65,20 +65,20 @@ NULL
 #' specification of the "send" effect (i.e., the column name should correspond
 #' to the string that is supplied to the \code{variable} argument)}
 #' }
-#' Note that it is possible to omit the attr_data object in the call of
+#' Note that it is possible to omit the attr_actors object in the call of
 #' \code{send()} and, instead, supply it in the call of \code{remstats()} for
 #' multiple exogenous effects.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ send("extraversion")
-#' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #' 
 #' reh_actor <- remify::remify(history, model = "actor")
-#' remstats(reh = reh_actor, sender_effects = effects, attr_data = info)
+#' remstats(reh = reh_actor, sender_effects = effects, attr_actors = info)
 #'
 #' @export
-send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
+send <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -87,7 +87,7 @@ send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 		scaling <- match.arg(scaling)
 	}
     # Prep
-    prep_exo("send", variable, attr_data, scaling)
+    prep_exo("send", variable, attr_actors, scaling)
 }
 
 #' receive
@@ -103,7 +103,7 @@ send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' that have actor \emph{i} as receiver. Note that a "receive" effect is only
 #' defined for directed relational events.
 #'
-#' The \code{attr_data} object should be constructed as a
+#' The \code{attr_actors} object should be constructed as a
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
@@ -114,7 +114,7 @@ send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' specification of the "receive" effect (i.e., the column name should
 #' correspond to the string that is supplied to the \code{variable} argument)}
 #' }
-#' Note that it is possible to omit the attr_data object in the call of
+#' Note that it is possible to omit the attr_actors object in the call of
 #' \code{receive()} and, instead, supply it in the call of \code{remstats()}
 #' for multiple exogenous effects.
 #'
@@ -123,13 +123,13 @@ send <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ receive("extraversion")
-#' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #' 
 #' reh_actor <- remify::remify(history, model = "actor")
-#' remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
+#' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
 #' @export
-receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
+receive <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -138,7 +138,7 @@ receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 		scaling <- match.arg(scaling)
 	}
     # Prep
-    prep_exo("receive", variable, attr_data, scaling)
+    prep_exo("receive", variable, attr_actors, scaling)
 }
 
 #' tie
@@ -146,39 +146,28 @@ receive <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' Specifies the statistic for a "tie" (or, "dyad") effect. 
 #'
 #' @details
-#' The "tie" effect refers to an exogenous dyad attribute that affects dyad
-#' \emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s
-#' probability of being chosen as a receiver for the event send by the active
-#' sender \emph{i} (actor-oriented model). The statistic is equal to the value 
-#' of the exogenous attribute for dyad \emph{(i,j)} in matrix \code{x}.
+#' The "tie" effect or "dyad" effect refers to an exogenous dyad attribute that influences dyad \emph{(i,j)}'s interaction rate (in tie-oriented models) or the probability of actor \emph{j} being chosen as a receiver for the event sent by the active sender \emph{i} (in actor-oriented models). The statistic represents the value of the exogenous attribute for dyad \emph{(i,j)} in the \code{attr_dyads} data.
 #'
-#' @param x a matrix with attribute information, rows and columns should refer
-#' to actors in the edgelist
-#' @param variableName optionally, a string indicating the variable name, used
-#' for the dimnames of the output statistics object
-#' @param scaling the method for scaling the statistic. Default is to not scale
-#' the statistic. Alternatively, standardization of the statistic per time 
-#' point can be requested with "std".
+#' @param variable A string specifying the attribute to compute the statistic. If \code{attr_dyads} is a \code{data.frame}, this refers to the column name in \code{attr_actors}. If \code{attr_dyads} is a \code{matrix}, this corresponds to the name of the exogenous attribute, used to label the statistic in the resulting \code{remstats} object.
+#' @param attr_dyads A \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
+#' @param scaling The method for scaling the statistic. The default is no scaling. Alternatively, standardization of the statistic per time point can be requested with "std".
+#' 
+#' @aliases dyad
 #'
 #' @examples
-#' data(info, package = "remstats")
-#' actors <- unique(info$name)
-#' age <- info[match(actors, info$name), "age"]
-#' both_old <- sapply(seq_along(actors), function(i) {
-#'     sapply(seq_along(actors), function(j) {
-#'         ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)
-#'     })
-#' })
-#' rownames(both_old) <- colnames(both_old) <- actors
-#' reh_tie <- remify::remify(history, model = "tie")
-#' effects <- ~ tie(both_old, variableName = "both.old")
-#' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+#' data(history)
+#' data(both_male_long)
+#' effect <- ~ tie(variable = "both_male", attr_dyads = both_male_long)
+#' reh <- remify::remify(history, model = "tie")
+#' remstats(reh = reh, tie_effects = effect)
 #' 
-#' reh_actor <- remify::remify(history, model = "actor")
-#' remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
+#' data(both_male_wide)
+#' effect <- ~ tie(variable = "both_male", attr_dyads = both_male_wide)
+#' reh <- remify::remify(history, model = "tie")
+#' remstats(reh = reh, tie_effects = effect)
 #'
 #' @export
-tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
+tie <- function(variable, attr_dyads = NULL, scaling = c("none", "std")) {
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -186,15 +175,12 @@ tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
 	} else {
 		scaling <- match.arg(scaling)
 	}
-
-    # Output
-    list(
-        effect = "tie",
-        x = x,
-        variable = variableName,
-        scaling = scaling
-    )
+	# Prep
+	prep_tie(variable, attr_dyads, scaling)   
 }
+
+#' @export
+dyad <- tie
 
 #' same
 #'
@@ -214,7 +200,7 @@ tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
 #' (actor-oriented model) and equal to 0 for dyads and receivers that do not
 #' have the same value.
 #'
-#' The \code{attr_data} object should be constructed as a
+#' The \code{attr_actors} object should be constructed as a
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
@@ -225,7 +211,7 @@ tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
 #' specification of the "same" effect (i.e., the column name should correspond
 #' to the string that is supplied to the \code{variable} argument)}
 #' }
-#' Note that it is possible to omit the attr_data object in the call of
+#' Note that it is possible to omit the attr_actors object in the call of
 #' \code{same()} and, instead, supply it in the call of \code{remstats()} for
 #' multiple exogenous effects.
 #'
@@ -234,15 +220,15 @@ tie <- function(x, variableName = NULL, scaling = c("none", "std")) {
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ same("age")
-#' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #' 
 #' reh_actor <- remify::remify(history, model = "actor")
-#' remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
+#' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
 #' @export
-same <- function(variable, attr_data = NULL) {
+same <- function(variable, attr_actors = NULL) {
     # Prep
-    prep_exo("same", variable, attr_data, "none")
+    prep_exo("same", variable, attr_actors, "none")
 }
 
 #' difference
@@ -260,7 +246,7 @@ same <- function(variable, attr_data = NULL) {
 #' between the values of actor \emph{i} and \emph{j} on the attribute at
 #' timepoint \emph{t}.
 #'
-#' The \code{attr_data} object should be constructed as a
+#' The \code{attr_actors} object should be constructed as a
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
@@ -271,7 +257,7 @@ same <- function(variable, attr_data = NULL) {
 #' specification of the "difference" effect (i.e., the column name should
 #' correspond to the string that is supplied to the \code{variable} argument)}
 #' }
-#' Note that it is possible to omit the attr_data object in the call of
+#' Note that it is possible to omit the attr_actors object in the call of
 #' \code{difference()} and, instead, supply it in the call of \code{remstats()}
 #' for multiple exogenous effects.
 #'
@@ -282,13 +268,13 @@ same <- function(variable, attr_data = NULL) {
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ difference("extraversion", absolute = TRUE)
-#' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #' 
 #' reh_actor <- remify::remify(history, model = "actor")
-#' remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
+#' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
 #' @export
-difference <- function(variable, attr_data = NULL,
+difference <- function(variable, attr_actors = NULL,
                        scaling = c("none", "std"), absolute = TRUE) {
     # Match scaling
     if("as.is" %in% scaling) {
@@ -299,7 +285,7 @@ difference <- function(variable, attr_data = NULL,
 	}
     scaling <- ifelse(absolute, paste0(scaling, "_abs"), scaling)
     # Prep
-    prep_exo("difference", variable, attr_data, scaling)
+    prep_exo("difference", variable, attr_actors, scaling)
 }
 
 #' average
@@ -317,7 +303,7 @@ difference <- function(variable, attr_data = NULL,
 #' average of the values of actor \emph{i} and \emph{j} on the attribute at
 #' timepoint \emph{t}.
 #'
-#' The \code{attr_data} object should be constructed as a
+#' The \code{attr_actors} object should be constructed as a
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
@@ -328,7 +314,7 @@ difference <- function(variable, attr_data = NULL,
 #' specification of the "average" effect (i.e., the column name should
 #' correspond to the string that is supplied to the \code{variable} argument)}
 #' }
-#' Note that it is possible to omit the attr_data object in the call of
+#' Note that it is possible to omit the attr_actors object in the call of
 #' \code{average()} and, instead, supply it in the call of \code{remstats()} for
 #' multiple exogenous effects.
 #'
@@ -337,13 +323,13 @@ difference <- function(variable, attr_data = NULL,
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ average("extraversion")
-#' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #' 
 #' reh_actor <- remify::remify(history, model = "actor")
-#' remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
+#' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
 #' @export
-average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
+average <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -352,7 +338,7 @@ average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 		scaling <- match.arg(scaling)
 	}
     # Prep
-    prep_exo(effect = "average", variable = variable, attr_data = attr_data, scaling = scaling)
+    prep_exo(effect = "average", variable = variable, attr_actors = attr_actors, scaling = scaling)
 }
 
 #' minimum
@@ -367,7 +353,7 @@ average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' minimum of the values of actor \emph{i} and \emph{j} on the attribute at
 #' timepoint \emph{t}.
 #'
-#' The \code{attr_data} object should be constructed as a
+#' The \code{attr_actors} object should be constructed as a
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
@@ -378,7 +364,7 @@ average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' specification of the "minimum" effect (i.e., the column name should
 #' correspond to the string that is supplied to the \code{variable} argument)}
 #' }
-#' Note that it is possible to omit the attr_data object in the call of
+#' Note that it is possible to omit the attr_actors object in the call of
 #' \code{minimum()} and, instead, supply it in the call of \code{remstats()} for
 #' multiple exogenous effects.
 #'
@@ -387,10 +373,10 @@ average <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ minimum("extraversion")
-#' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #'
 #' @export
-minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
+minimum <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -399,7 +385,7 @@ minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 		scaling <- match.arg(scaling)
 	}
     # Prep
-    prep_exo("minimum", variable, attr_data, scaling)
+    prep_exo("minimum", variable, attr_actors, scaling)
 }
 
 #' maximum
@@ -414,7 +400,7 @@ minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' maximum of the values of actor \emph{i} and \emph{j} on the attribute at
 #' timepoint \emph{t}.
 #'
-#' The \code{attr_data} object should be constructed as a
+#' The \code{attr_actors} object should be constructed as a
 #' \code{\link[base]{data.frame}} where each row refers to the attribute value
 #' of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
@@ -425,7 +411,7 @@ minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' specification of the "maximum" effect (i.e., the column name should
 #' correspond to the string that is supplied to the \code{variable} argument)}
 #' }
-#' Note that it is possible to omit the attr_data object in the call of
+#' Note that it is possible to omit the attr_actors object in the call of
 #' \code{maximum()} and, instead, supply it in the call of \code{remstats()} for
 #' multiple exogenous effects.
 #'
@@ -434,10 +420,10 @@ minimum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ maximum("extraversion")
-#' remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+#' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #'
 #' @export
-maximum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
+maximum <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -446,7 +432,7 @@ maximum <- function(variable, attr_data = NULL, scaling = c("none", "std")) {
 		scaling <- match.arg(scaling)
 	}
     # Prep
-    prep_exo("maximum", variable, attr_data, scaling)
+    prep_exo("maximum", variable, attr_actors, scaling)
 }
 
 #' event
@@ -2418,6 +2404,6 @@ userStat <- function(x, variableName = NULL) {
         effect = "userStat",
         x = x,
         variable = variableName,
-        scaling = 1
+        scaling = "none"
     )
 }

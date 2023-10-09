@@ -2,46 +2,34 @@
 % Please edit documentation in R/effects.R
 \name{tie}
 \alias{tie}
+\alias{dyad}
 \title{tie}
 \usage{
-tie(x, variableName = NULL, scaling = c("none", "std"))
+tie(variable, attr_dyads = NULL, scaling = c("none", "std"))
 }
 \arguments{
-\item{x}{a matrix with attribute information, rows and columns should refer
-to actors in the edgelist}
+\item{variable}{A string specifying the attribute to compute the statistic. If \code{attr_dyads} is a \code{data.frame}, this refers to the column name in \code{attr_actors}. If \code{attr_dyads} is a \code{matrix}, this corresponds to the name of the exogenous attribute, used to label the statistic in the resulting \code{remstats} object.}
 
-\item{variableName}{optionally, a string indicating the variable name, used
-for the dimnames of the output statistics object}
+\item{attr_dyads}{A \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.}
 
-\item{scaling}{the method for scaling the statistic. Default is to not scale
-the statistic. Alternatively, standardization of the statistic per time 
-point can be requested with "std".}
+\item{scaling}{The method for scaling the statistic. The default is no scaling. Alternatively, standardization of the statistic per time point can be requested with "std".}
 }
 \description{
 Specifies the statistic for a "tie" (or, "dyad") effect.
 }
 \details{
-The "tie" effect refers to an exogenous dyad attribute that affects dyad
-\emph{(i,j)}'s rate of interacting (tie-oriented model) or actor \emph{j}'s
-probability of being chosen as a receiver for the event send by the active
-sender \emph{i} (actor-oriented model). The statistic is equal to the value 
-of the exogenous attribute for dyad \emph{(i,j)} in matrix \code{x}.
+The "tie" effect or "dyad" effect refers to an exogenous dyad attribute that influences dyad \emph{(i,j)}'s interaction rate (in tie-oriented models) or the probability of actor \emph{j} being chosen as a receiver for the event sent by the active sender \emph{i} (in actor-oriented models). The statistic represents the value of the exogenous attribute for dyad \emph{(i,j)} in the \code{attr_dyads} data.
 }
 \examples{
-data(info, package = "remstats")
-actors <- unique(info$name)
-age <- info[match(actors, info$name), "age"]
-both_old <- sapply(seq_along(actors), function(i) {
-    sapply(seq_along(actors), function(j) {
-        ifelse(age[i] == 1 & age[j] == 1 & i != j, 1, 0)
-    })
-})
-rownames(both_old) <- colnames(both_old) <- actors
-reh_tie <- remify::remify(history, model = "tie")
-effects <- ~ tie(both_old, variableName = "both.old")
-remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+data(history)
+data(both_male_long)
+effect <- ~ tie(variable = "both_male", attr_dyads = both_male_long)
+reh <- remify::remify(history, model = "tie")
+remstats(reh = reh, tie_effects = effect)
 
-reh_actor <- remify::remify(history, model = "actor")
-remstats(reh = reh_actor, receiver_effects = effects, attr_data = info)
+data(both_male_wide)
+effect <- ~ tie(variable = "both_male", attr_dyads = both_male_wide)
+reh <- remify::remify(history, model = "tie")
+remstats(reh = reh, tie_effects = effect)
 
 }

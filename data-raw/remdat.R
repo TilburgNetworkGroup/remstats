@@ -52,4 +52,35 @@ info$agreeableness <- round(info$agreeableness, 2)
 info <- info[order(info$name, info$time),]
 rownames(info) <- NULL
 
-usethis::use_data(info, history, overwrite = TRUE)
+# Create tie/dyad exogenous objects
+actors <- unique(info$name)
+sex <- info[match(actors, info$name), "sex"]
+both_male_wide <- sapply(seq_along(actors), function(i) {
+	sapply(seq_along(actors), function(j) {
+		ifelse(sex[i] == 0 & sex[j] == 0, 1, 0)
+	})
+})
+rownames(both_male_wide) <- colnames(both_male_wide) <- actors
+
+# Get row and column names
+row_ids <- rownames(both_male_wide)
+col_ids <- colnames(both_male_wide)
+
+# Initialize empty vectors to store data
+row_data <- character(0)
+col_data <- character(0)
+value_data <- numeric(0)
+
+# Iterate through the matrix 
+for (i in 1:nrow(both_male_wide)) {
+	for (j in 1:ncol(both_male_wide)) {
+		row_data <- c(row_data, row_ids[i])
+		col_data <- c(col_data, col_ids[j])
+		value_data <- c(value_data, both_male_wide[i, j])
+	}
+}
+
+# Create a data frame
+both_male_long <- data.frame(actor1 = row_data, actor2 = col_data, both_male = value_data)
+ 
+usethis::use_data(info, history, both_male_wide, both_male_long, overwrite = TRUE)

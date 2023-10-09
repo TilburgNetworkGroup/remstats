@@ -19,12 +19,12 @@
 #' the documentation of the \code{scaling} argument in the separate effect
 #' functions for more information on this.
 #'
-#' @section attr_data:
+#' @section attr_actors:
 #' For the computation of the \emph{exogenous} statistics an attributes object
 #' with the exogenous covariate information has to be supplied to the
-#' \code{attr_data} argument in either \code{remstats()} or in the separate
+#' \code{attr_actors} argument in either \code{remstats()} or in the separate
 #' effect functions supplied to the \code{..._effects} arguments (e.g., see
-#' \code{\link{send}}). This \code{attr_data} object should be constructed as
+#' \code{\link{send}}). This \code{attr_actors} object should be constructed as
 #' follows: A dataframe with rows refering to the attribute value of actor
 #' \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 #' actor name (corresponding to the actor names in the relational event
@@ -36,6 +36,9 @@
 #' procedure for the exogenous effects `tie' and `event' deviates from this,
 #' here the exogenous covariate information has to be specified in a different
 #' way, see \code{\link{tie}} and \code{\link{event}}.
+#' 
+#' @section attr_dyads:  
+#' For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 #'
 #' @section Memory:
 #' The default `memory` setting is `"full"`, which implies that at each time
@@ -86,7 +89,7 @@
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
 #' aomstats(
 #'   reh = reh, sender_effects = seff, receiver_effects = reff,
-#'   attr_data = info
+#'   attr_actors = info
 #' )
 #'
 #' @references Stadtfeld, C., & Block, P. (2017). Interactions, actors, and
@@ -98,28 +101,32 @@
 aomstats <- function(reh,
                      sender_effects = NULL,
                      receiver_effects = NULL,
-                     attr_data = NULL,
+                     attr_actors = NULL,
+                     attr_dyads = NULL, 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = Inf,
                      start = 1,
                      stop = Inf,
                      display_progress = FALSE,
-                     attributes, edgelist) {
+                     attr_data, attributes, edgelist) {
 
   # Check if the deprecated argument "attributes" is used
 	if (!missing(attributes)) {
-		warning("use 'attr_data' instead of 'attributes'")
-		attr_data <- attributes
-	}
-
+    warning("Deprecated argument: Use 'attr_actors' instead of 'attributes'")
+    attr_actors <- attributes
+  }
+  if (!missing(attr_data)) {
+    warning("Deprecated argument: Use 'attr_actors' instead of 'attr_data'")
+    attr_actors <- attr_data
+  }
   # Check if the deprecated argument "edgelist" is used
-	if (!missing(edgelist)) {
-		warning("use 'reh' instead of 'edgelist'")
-		reh <- edgelist
-	}
+  if (!missing(edgelist)) {
+    warning("Deprecated argument: Use 'reh' instead of 'edgelist'")
+    reh <- edgelist
+  }
 
   # Validate remaining aomstats arguments
-	attr_data <- validate_aomstats_arguments(attr_data, reh)	
+	attr_actors <- validate_aomstats_arguments(attr_actors, reh)	
 
   # Prepare the edgelist
   edgelist <- prepare_aomstats_edgelist(reh) 
@@ -153,7 +160,7 @@ aomstats <- function(reh,
     sender_interactions <- temp[[3]]
 
     # Prepare sender covariate information
-    sender_covar <- prepare_sender_covariates(sender_effects, attr_data, 
+    sender_covar <- prepare_sender_covariates(sender_effects, attr_actors, 
       actors, edgelist)
 
     # Prepare sender_effects scaling
@@ -182,8 +189,8 @@ aomstats <- function(reh,
     receiver_interactions <- temp$receiver_interactions
 
     # Prepare receiver covariate information
-    receiver_covar <- prepare_receiver_covariates(receiver_effects, attr_data, 
-      actors, edgelist, reh)
+    receiver_covar <- prepare_receiver_covariates(receiver_effects, 
+      attr_actors, attr_dyads, actors, edgelist, reh)
 
     # Prepare receiver_effects scaling
     receiver_scaling <- prepare_aomstats_scaling(receiver_effects, 

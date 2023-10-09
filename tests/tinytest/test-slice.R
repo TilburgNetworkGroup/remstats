@@ -26,7 +26,7 @@ info <- rbind(info, info2)
 
 # Tie info
 X <<- matrix(1:9, 3, 3)
-diag(X) <- 0
+diag(X) <<- 0
 
 # Event info
 setting <<- c("a", "b", "b", "a", "a")
@@ -54,11 +54,11 @@ effects <- ~
     send(variable = "x1") + receive(variable = "x1") + 
     average(variable = "x1") + difference(variable = "x1") + 
     maximum(variable = "x1") + minimum(variable = "x1") +
-    same(variable = "x2") + tie(x = X, variableName = "X") +
+    same(variable = "x2") + tie(variable = "X", attr_dyads = X) +
     event(x = setting, variableName = "setting") +
     userStat(x = Y, variableName = "Y")
-stats <- remstats(reh, tie_effects = effects, attr_data = info)
-slice_stats <- remstats(reh, tie_effects = effects, attr_data = info, 
+stats <- remstats(reh, tie_effects = effects, attr_actors = info)
+slice_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
   start = 2, stop = 4)
 
 # Test
@@ -75,7 +75,7 @@ sender_effects <- ~ send(variable = "x1") +
   recencySendSender() + recencyReceiveSender()
 receiver_effects <- ~ receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") + 
-  same(variable = "x2") + tie(x = X, variableName = "X") +
+  same(variable = "x2") + tie(variable = "X", attr_dyads = X) +
   userStat(x = Y, variableName = "Y") +
   indegreeReceiver() + outdegreeReceiver() + totaldegreeReceiver() +
   inertia() + reciprocity() +
@@ -87,14 +87,14 @@ receiver_effects <- ~ receive(variable = "x1") +
 stats <- remstats(reh = reh,
   sender_effects = sender_effects,
   receiver_effects = receiver_effects, 
-  attr_data = info
+  attr_actors = info
 )
 sender_stats <- stats$sender_stats
 receiver_stats <- stats$receiver_stats
 slice_stats <- remstats(reh = reh,
   sender_effects = sender_effects,
   receiver_effects = receiver_effects, 
-  attr_data = info, start = 2, stop = 4
+  attr_actors = info, start = 2, stop = 4
 )
 slice_sender_stats <- slice_stats$sender_stats
 slice_receiver_stats <- slice_stats$receiver_stats

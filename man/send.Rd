@@ -4,13 +4,13 @@
 \alias{send}
 \title{send}
 \usage{
-send(variable, attr_data = NULL, scaling = c("none", "std"))
+send(variable, attr_actors = NULL, scaling = c("none", "std"))
 }
 \arguments{
 \item{variable}{string with the name of the column in the
-\code{attr_data} object for which the statistic has to be computed.}
+\code{attr_actors} object for which the statistic has to be computed.}
 
-\item{attr_data}{optionally, an object of class
+\item{attr_actors}{optionally, an object of class
 \code{\link[base]{data.frame}} that contains the attribute, see
 'Details.'}
 
@@ -30,7 +30,7 @@ attribute for actor \emph{i} at time \emph{t} for all dyads in the risk set
 that have actor \emph{i} as sender. Note that a "send" effect is only
 defined for directed relational events.
 
-The \code{attr_data} object should be constructed as a
+The \code{attr_actors} object should be constructed as a
 \code{\link[base]{data.frame}} where each row refers to the attribute value
 of actor \emph{i} at timepoint \emph{t}:
 \itemize{
@@ -41,16 +41,16 @@ column with only zero's if the attribute does not vary over time).}
 specification of the "send" effect (i.e., the column name should correspond
 to the string that is supplied to the \code{variable} argument)}
 }
-Note that it is possible to omit the attr_data object in the call of
+Note that it is possible to omit the attr_actors object in the call of
 \code{send()} and, instead, supply it in the call of \code{remstats()} for
 multiple exogenous effects.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ send("extraversion")
-remstats(reh = reh_tie, tie_effects = effects, attr_data = info)
+remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 
 reh_actor <- remify::remify(history, model = "actor")
-remstats(reh = reh_actor, sender_effects = effects, attr_data = info)
+remstats(reh = reh_actor, sender_effects = effects, attr_actors = info)
 
 }
