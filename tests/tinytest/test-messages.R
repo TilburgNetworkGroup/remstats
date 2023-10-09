@@ -116,7 +116,7 @@ expect_warning(
 
 expect_warning(
     tie(variable = "test", scaling = "as.is"),
-    pattern = "use 'scaling' is 'none'"
+    pattern = "deprecated"
 )
 
 expect_warning(

@@ -167,11 +167,21 @@ receive <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
 #' remstats(reh = reh, tie_effects = effect)
 #'
 #' @export
-tie <- function(variable, attr_dyads = NULL, scaling = c("none", "std")) {
-    # Match scaling
-    if("as.is" %in% scaling) {
-		warning("use 'scaling' is 'none' instead of 'as.is'")
-		scaling <- "none"
+tie <- function(variable, attr_dyads = NULL, scaling = c("none", "std"), x, variableName) {
+	# Deal with old function set-up
+	if(!missing(x)) {
+		warning("The 'x' argument in 'tie()' is deprecated. Please use 'attr_dyads' instead.")
+		attr_dyads <- x 
+	}
+	if(!missing(variableName)) {
+    warning("The 'variableName' argument in 'tie()' is deprecated. Please use 'variable' instead.")
+    variable <- variableName
+  }
+
+  # Match scaling
+  if("as.is" %in% scaling) {
+		warning("The 'scaling' value 'as.is' is deprecated. Use 'none' instead.")
+    scaling <- "none"
 	} else {
 		scaling <- match.arg(scaling)
 	}

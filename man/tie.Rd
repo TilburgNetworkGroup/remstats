@@ -5,7 +5,7 @@
 \alias{dyad}
 \title{tie}
 \usage{
-tie(variable, attr_dyads = NULL, scaling = c("none", "std"))
+tie(variable, attr_dyads = NULL, scaling = c("none", "std"), x, variableName)
 }
 \arguments{
 \item{variable}{A string specifying the attribute to compute the statistic. If \code{attr_dyads} is a \code{data.frame}, this refers to the column name in \code{attr_actors}. If \code{attr_dyads} is a \code{matrix}, this corresponds to the name of the exogenous attribute, used to label the statistic in the resulting \code{remstats} object.}
