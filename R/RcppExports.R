@@ -31,5 +31,5 @@ combine_stats <- function(array_list, keep_list) {
 
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
-    .Call('_remstats_RcppExport_registerCCallable', PACKAGE = 'remstats')
+    .Call(`_remstats_RcppExport_registerCCallable`)
 })

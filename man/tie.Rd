@@ -13,6 +13,10 @@ tie(variable, attr_dyads = NULL, scaling = c("none", "std"), x, variableName)
 \item{attr_dyads}{A \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.}
 
 \item{scaling}{The method for scaling the statistic. The default is no scaling. Alternatively, standardization of the statistic per time point can be requested with "std".}
+
+\item{x}{Deprecated, please use 'attr_dyads' instead.}
+
+\item{variableName}{Deprecated, please use 'variable' instead.}
 }
 \description{
 Specifies the statistic for a "tie" (or, "dyad") effect.

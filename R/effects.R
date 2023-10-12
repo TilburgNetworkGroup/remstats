@@ -151,6 +151,8 @@ receive <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
 #' @param variable A string specifying the attribute to compute the statistic. If \code{attr_dyads} is a \code{data.frame}, this refers to the column name in \code{attr_actors}. If \code{attr_dyads} is a \code{matrix}, this corresponds to the name of the exogenous attribute, used to label the statistic in the resulting \code{remstats} object.
 #' @param attr_dyads A \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 #' @param scaling The method for scaling the statistic. The default is no scaling. Alternatively, standardization of the statistic per time point can be requested with "std".
+#' @param x Deprecated, please use 'attr_dyads' instead.
+#' @param variableName Deprecated, please use 'variable' instead.
 #' 
 #' @aliases dyad
 #'
@@ -176,6 +178,12 @@ tie <- function(variable, attr_dyads = NULL, scaling = c("none", "std"), x, vari
 	if(!missing(variableName)) {
     warning("The 'variableName' argument in 'tie()' is deprecated. Please use 'variable' instead.")
     variable <- variableName
+  }
+  if(!is.character(variable)) {
+    stop("The 'variable' argument should be of type character.")
+  }
+  if(!is.matrix(attr_dyads) & !is.data.frame(attr_dyads)) {
+    stop("The 'attr_dyads' argument should be of type matrix or data.frame.")
   }
 
   # Match scaling
@@ -2381,10 +2389,10 @@ recencyContinue <- function(consider_type = FALSE) {
 #' object and, optionally, interact this statistic with other statistics in the
 #' formula. 
 #'
-#' @param x matrix with number of rows equal to the number of events and number
+#' @param x Matrix with number of rows equal to the number of events and number
 #' of columns equal to the number of dyads in the network (tie-oriented model) 
 #' or the number of actors in the network (actor-oriented model)
-#' @inheritParams tie
+#' @param variableName Optionally, a string with the name of the statistic. 
 #'
 #' @examples
 #' reh <- remify::remify(history, model = "tie")
@@ -2406,7 +2414,7 @@ recencyContinue <- function(consider_type = FALSE) {
 userStat <- function(x, variableName = NULL) {
     # Missing values
     if (anyNA(x)) {
-        warning("Matrix 'x' in userStat() contains missing values.")
+        warning("Matrix 'x' in 'userStat()' contains missing values.")
     }
 
     # Output
