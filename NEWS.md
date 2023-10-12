@@ -1,3 +1,9 @@
+# remstats 3.2.0
+Date: 12-10-23
+Works with remify >= 3.2.0
+
+## New features
+
 # remstats 3.1.7
 Date: 09-10-23
 Works with remify >= 3.1.0.
