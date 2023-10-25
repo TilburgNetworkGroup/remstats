@@ -546,8 +546,8 @@ FEtype <- function() {
 #' divided by the outdegree of the sender at time t (see 'details') or
 #' standardization of the raw counts per time point can be requested with 'std'.
 #' @param consider_type logical, indicates whether to count the number of past
-#' events separately for each event type (TRUE) or sum across different event
-#' types (FALSE, default).
+#' events separately for each event type (TRUE, default) or sum across 
+#' different event types (FALSE).
 #'
 #' @examples 
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -559,7 +559,7 @@ FEtype <- function() {
 #'
 #' @export
 inertia <- function(scaling = c("none", "prop", "std"),
-                    consider_type = FALSE) {
+                    consider_type = TRUE) {
 
 	# Match scaling
 	if("as.is" %in% scaling) {
@@ -614,8 +614,8 @@ inertia <- function(scaling = c("none", "prop", "std"),
 #' divided by the indegree of the sender at time t (see 'details') or
 #' standardization of the raw counts per time point can be requested with 'std'.
 #' @param consider_type logical, indicates whether to count the number of past
-#' reciprocal events separately for each event type (TRUE) or sum across
-#' different event types (FALSE, default).
+#' reciprocal events separately for each event type (TRUE, default) or sum 
+#' across different event types (FALSE).
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -627,7 +627,7 @@ inertia <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 reciprocity <- function(scaling = c("none", "prop", "std"),
-                        consider_type = FALSE) {
+                        consider_type = TRUE) {
 							
 	# Match scaling
 	if("as.is" %in% scaling) {
@@ -682,8 +682,8 @@ reciprocity <- function(scaling = c("none", "prop", "std"),
 #' be requested with 'prop' or standardization of the raw degree counts per
 #' time point can be requested with 'std'.
 #' @param consider_type logical, indicates whether to count the degrees
-#' separately for each event type (TRUE) or sum degrees across different event
-#' types (FALSE, default).
+#' separately for each event type (TRUE, default) or sum degrees across 
+#' different event types (FALSE).
 #'
 #' @aliases degree indegree
 #' @seealso \code{\link{indegreeReceiver}}, \code{\link{outdegreeSender}},
@@ -700,7 +700,7 @@ reciprocity <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 indegreeSender <- function(scaling = c("none", "prop", "std"),
-                           consider_type = FALSE) {
+                           consider_type = TRUE) {
 
 	# Match scaling
 	if("as.is" %in% scaling) {
@@ -765,7 +765,7 @@ indegreeSender <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 indegreeReceiver <- function(scaling = c("none", "prop", "std"),
-                             consider_type = FALSE) {
+                             consider_type = TRUE) {
     
 	# Match scaling
 	if("as.is" %in% scaling) {
@@ -831,7 +831,7 @@ indegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 outdegreeSender <- function(scaling = c("none", "prop", "std"),
-                            consider_type = FALSE) {
+                            consider_type = TRUE) {
     
 	# Match scaling
 	if("as.is" %in% scaling) {
@@ -896,7 +896,7 @@ outdegreeSender <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 outdegreeReceiver <- function(scaling = c("none", "prop", "std"),
-                              consider_type = FALSE) {
+                              consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -951,8 +951,8 @@ outdegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' time t can be requested with 'prop' or standardization of the raw degree
 #' counts per time point can be requested with 'std'.
 #' @param consider_type logical, indicates whether to count the degrees
-#' separately for each event type (TRUE) or sum degrees across different event
-#' types (FALSE, default).
+#' separately for each event type (TRUE, default) or sum degrees across 
+#' different event types (FALSE).
 #'
 #' @aliases totaldegree
 #' @seealso \code{\link{indegreeSender}}, \code{\link{indegreeReceiver}},
@@ -969,7 +969,7 @@ outdegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 totaldegreeSender <- function(scaling = c("none", "prop", "std"),
-                              consider_type = FALSE) {
+                              consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -1034,7 +1034,7 @@ totaldegreeSender <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
-                                consider_type = FALSE) {
+                                consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -1093,7 +1093,7 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 totaldegreeDyad <- function(scaling = c("none", "prop", "std"), 
-	consider_type = FALSE) {
+	consider_type = TRUE) {
     
 	# Match scaling
 	if("as.is" %in% scaling) {
@@ -1151,7 +1151,7 @@ totaldegreeDyad <- function(scaling = c("none", "prop", "std"),
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-degreeDiff <- function(scaling = c("none", "std"), consider_type = FALSE) {
+degreeDiff <- function(scaling = c("none", "std"), consider_type = TRUE) {
     
 	# Match scaling
 	if("as.is" %in% scaling) {
@@ -1214,7 +1214,7 @@ degreeDiff <- function(scaling = c("none", "std"), consider_type = FALSE) {
 #'
 #' @export
 degreeMin <- function(scaling = c("none", "prop", "std"),
-                      consider_type = FALSE) {
+                      consider_type = TRUE) {
     
 	# Match scaling
 	if("as.is" %in% scaling) {
@@ -1277,7 +1277,7 @@ degreeMin <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 degreeMax <- function(scaling = c("none", "prop", "std"),
-                      consider_type = FALSE) {
+                      consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -1325,9 +1325,15 @@ degreeMax <- function(scaling = c("none", "prop", "std"),
 #' Please note that the outgoing two-path effect, 'otp', is exclusively defined 
 #' for directed events.
 #'
-#' @param unique A logical value indicating whether to sum the minimum of events with third actors (FALSE, default) or the number of third actors that create a new, unique two-path (TRUE). See details for more information.
-#' @param scaling The method for scaling the triad statistic. The default value is "none", which means the statistic is not scaled. Alternatively, you can set it to "std" to request standardization of the raw counts per time point.
-#' @param consider_type A logical value indicating whether to count the two-paths separately for each event type (TRUE) or sum across different event types (FALSE, default).
+#' @param unique A logical value indicating whether to sum the minimum of 
+#' events with third actors (FALSE, default) or the number of third actors that 
+#' create a new, unique two-path (TRUE). See details for more information.
+#' @param scaling The method for scaling the triad statistic. The default value 
+#' is "none", which means the statistic is not scaled. Alternatively, you can 
+#' set it to "std" to request standardization of the raw counts per time point.
+#' @param consider_type A logical value indicating whether to count the 
+#' two-paths separately for each event type (TRUE, default) or sum across 
+#' different event types (FALSE).
 #'
 #' @aliases triad
 #' @seealso \code{\link{itp}}, \code{\link{osp}}, or \code{\link{isp}} for
@@ -1347,7 +1353,7 @@ degreeMax <- function(scaling = c("none", "prop", "std"),
 #'
 #' @export
 otp <- function(unique = FALSE, scaling = c("none", "std"), 
-                consider_type = FALSE) {
+                consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -1414,7 +1420,7 @@ otp <- function(unique = FALSE, scaling = c("none", "std"),
 #'
 #' @export
 itp <- function(unique = FALSE, scaling = c("none", "std"), 
-                consider_type = FALSE) {
+                consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -1471,8 +1477,8 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 #' standardization of the raw counts per time point can be requested
 #' with 'std'.
 #' @param consider_type logical, indicates whether to count the shared partners
-#' separately for each event type (TRUE) or sum across different event
-#' types (FALSE, default).
+#' separately for each event type (TRUE, default) or sum across different event
+#' types (FALSE).
 #'
 #' @seealso \code{\link{otp}}, \code{\link{itp}}, or \code{\link{isp}} for
 #' other types of triadic effects for directed relational events and
@@ -1490,7 +1496,7 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 #' remstats(reh = reh_actor, receiver_effects = effects)
 #'
 #' @export
-osp <- function(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE) {
+osp <- function(unique = FALSE, scaling = c("none", "std"), consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -1558,7 +1564,7 @@ osp <- function(unique = FALSE, scaling = c("none", "std"), consider_type = FALS
 #'
 #' @export
 isp <- function(unique = FALSE, scaling = c("none", "std"), 
-  consider_type = FALSE) {
+  consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -1619,7 +1625,7 @@ isp <- function(unique = FALSE, scaling = c("none", "std"),
 #'
 #' @export
 sp <- function(unique = FALSE, scaling = c("none", "std"), 
-  consider_type = FALSE) {
+  consider_type = TRUE) {
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -1682,7 +1688,7 @@ ccp <- function(duration) {
 #' Specifies the statistic for a participation shift AB-BA.
 #'
 #' @param consider_type logical, indicates whether to consider the event type
-#' in determining which dyads create a pshift (TRUE) or not (FALSE, default).
+#' in determining which dyads create a pshift (TRUE, default) or not (FALSE).
 #'
 #' @details
 #' The AB-BA pshift effect refers to one of Gibson's (2003) dyadic participation shifts. The AB-BA pshift refers to the tendency for immediate reciprocation (the next sender is the previous receiver and the next receiver is the previous sender). For each timepoint t, the psABBA statistic is equal to one for the dyad that will create the participation shift if it would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the BA event have to be equal. If it is set to FALSE, the participation shift is set to one for every BA event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed. Note that the AB-BA pshift is only defined for directed events.
@@ -1698,7 +1704,7 @@ ccp <- function(duration) {
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-psABBA <- function(consider_type = FALSE) {
+psABBA <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(psABBA))
 	
@@ -1765,7 +1771,7 @@ psABB <- function() {
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-psABBY <- function(consider_type = FALSE) {
+psABBY <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(psABBY))
 	
@@ -1799,7 +1805,7 @@ psABBY <- function(consider_type = FALSE) {
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-psABXA <- function(consider_type = FALSE) {
+psABXA <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(psABXA))
 	
@@ -1876,7 +1882,7 @@ psABX <- function() {
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-psABXB <- function(consider_type = FALSE) {
+psABXB <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(psABXB))
 	
@@ -1912,7 +1918,7 @@ psABXB <- function(consider_type = FALSE) {
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-psABXY <- function(consider_type = FALSE) {
+psABXY <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(psABXY))
 	
@@ -1947,7 +1953,7 @@ psABXY <- function(consider_type = FALSE) {
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-psABAY <- function(consider_type = FALSE) {
+psABAY <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(psABAY))
 	
@@ -1993,7 +1999,7 @@ psABAY <- function(consider_type = FALSE) {
 #' remstats(tie_effects = effects, reh = reh_tie)
 #'
 #' @export
-psABAB <- function(consider_type = FALSE) {
+psABAB <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(psABAB))
 	
@@ -2065,7 +2071,7 @@ psABA <- function() {
 #' 'rrankSend' effect is only defined for directed events.
 #'
 #' @param consider_type logical, indicates whether to discriminate between
-#' event types in determining the event rank (TRUE) or not (FALSE, default).
+#' event types in determining the event rank (TRUE, default) or not (FALSE).
 #'
 #' @aliases recencyRank rrank
 #' @seealso \code{\link{rrankReceive}}, \code{\link{recencySendSender}},
@@ -2082,7 +2088,7 @@ psABA <- function() {
 #' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
-rrankSend <- function(consider_type = FALSE) {
+rrankSend <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(rrankSend))
 	
@@ -2128,7 +2134,7 @@ rrankSend <- function(consider_type = FALSE) {
 #' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
-rrankReceive <- function(consider_type = FALSE) {
+rrankReceive <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(rrankReceive))
 	
@@ -2159,8 +2165,8 @@ rrankReceive <- function(consider_type = FALSE) {
 #' 'recencySendSender' effect is only defined for directed events.
 #'
 #' @param consider_type logical, indicates whether to compute the recency
-#' separately for each event type (TRUE) or regardless of event types (FALSE,
-#' default).
+#' separately for each event type (TRUE, default) or regardless of event types 
+#' (FALSE).
 #'
 #' @seealso \code{\link{rrankSend}}, \code{\link{rrankReceive}},
 #' \code{\link{recencySendReceiver}}, \code{\link{recencyReceiveSender}},
@@ -2176,7 +2182,7 @@ rrankReceive <- function(consider_type = FALSE) {
 #' remstats(sender_effects = effects, reh = reh_actor)
 #'
 #' @export
-recencySendSender <- function(consider_type = FALSE) {
+recencySendSender <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(recencySendSender))
 	
@@ -2221,7 +2227,7 @@ recencySendSender <- function(consider_type = FALSE) {
 #' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
-recencySendReceiver <- function(consider_type = FALSE) {
+recencySendReceiver <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(recencySendReceiver))
 	
@@ -2266,7 +2272,7 @@ recencySendReceiver <- function(consider_type = FALSE) {
 #' remstats(sender_effects = effects, reh = reh_actor)
 #'
 #' @export
-recencyReceiveSender <- function(consider_type = FALSE) {
+recencyReceiveSender <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(recencyReceiveSender))
 	
@@ -2312,7 +2318,7 @@ recencyReceiveSender <- function(consider_type = FALSE) {
 #' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
-recencyReceiveReceiver <- function(consider_type = FALSE) {
+recencyReceiveReceiver <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(recencyReceiveReceiver))
 	
@@ -2358,7 +2364,7 @@ recencyReceiveReceiver <- function(consider_type = FALSE) {
 #' remstats(receiver_effects = effects, reh = reh_actor)
 #'
 #' @export
-recencyContinue <- function(consider_type = FALSE) {
+recencyContinue <- function(consider_type = TRUE) {
     call_args <- as.list(match.call()[-1])
 	defaults <- as.list(formals(recencyContinue))
 	

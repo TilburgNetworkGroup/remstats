@@ -53,8 +53,8 @@
 #' procedure for the exogenous effects `tie' and `event' deviates from this,
 #' here the exogenous covariate information has to be specified in a different
 #' way, see \code{\link{tie}} and \code{\link{event}}.
-#' 
-#' @section attr_dyads:  
+#'
+#' @section attr_dyads:
 #' For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 #'
 #' @section Memory:
@@ -122,8 +122,8 @@
 #' @export
 tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
                      memory = c("full", "window", "decay", "interval"),
-                     memory_value = NA, start = 1, stop = Inf, 
-                     display_progress = FALSE, 
+                     memory_value = NA, start = 1, stop = Inf,
+                     display_progress = FALSE,
                      adjmat = NULL, get_adjmat = FALSE,
                      attr_data, attributes, edgelist) {
   # Check if the deprecated argument "attributes" is used
@@ -162,9 +162,11 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   effects <- inputs$effects
   effectNames <- inputs$effectNames
   edgelist <- inputs$edgelist
+  weights <- inputs$weights
   actors <- inputs$actor
   types <- inputs$types
-  prepR <- inputs$prepR
+  riskset <- inputs$riskset
+  risksetMatrix <- inputs$risksetMatrix
   memory <- inputs$memory
   memory_value <- inputs$memory_value
   scaling <- inputs$scaling
@@ -174,21 +176,20 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   start <- inputs$start
   stop <- inputs$stop
 
-  # Compute the adjacency matrix
-  if (is.null(adjmat)) {
-    if (any(grepl("degree", effectNames)) | any(effectNames %in% c("inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp"))) {
-      adjmat <- compute_adjmat(
-        edgelist, nrow(prepR), attr(reh, "directed"),
-        memory, memory_value, start, stop, display_progress
-      )
-    } else {
-      adjmat <- matrix()
-    }
+  # Compute the inertia building block
+  # if (is.null(adjmat)) {
+  if (any(grepl("degree", effectNames)) | any(effectNames %in% c("inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp"))) {
+    inertia <- calculate_inertia(edgelist, weights, risksetMatrix, memory,   
+                                 memory_value, start, stop, display_progress, 
+                                 method = "pt")
+  } else {
+    adjmat <- matrix()
   }
+  # }
 
   # Compute statistics
   statistics <- compute_stats_tie(
-    effectNames, edgelist, adjmat, actors[, 2],
+    effectNames, edgelist, inertia, actors[, 2],
     types[, 2], prepR, scaling, consider_type, covar, interactions, start,
     stop, attr(reh, "directed"), display_progress
   )

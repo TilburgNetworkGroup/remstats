@@ -13,6 +13,18 @@ compute_stats_choice <- function(effects, edgelist, actors, weights, covariates,
     .Call(`_remstats_compute_stats_choice`, effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, display_progress)
 }
 
+get_riskset <- function(actorID, typeID, N, C, directed) {
+    .Call(`_remstats_get_riskset`, actorID, typeID, N, C, directed)
+}
+
+convert_to_risksetMatrix2 <- function(riskset, N, C) {
+    .Call(`_remstats_convert_to_risksetMatrix2`, riskset, N, C)
+}
+
+calculate_inertia <- function(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method = "pt") {
+    .Call(`_remstats_calculate_inertia`, edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method)
+}
+
 getRisksetMatrix <- function(actorID, typeID, N, C, directed) {
     .Call(`_remstats_getRisksetMatrix`, actorID, typeID, N, C, directed)
 }
@@ -31,5 +43,5 @@ combine_stats <- function(array_list, keep_list) {
 
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
-    .Call('_remstats_RcppExport_registerCCallable', PACKAGE = 'remstats')
+    .Call(`_remstats_RcppExport_registerCCallable`)
 })

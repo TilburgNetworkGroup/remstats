@@ -25,9 +25,9 @@
 #   effects, reh, attr_actors, memory, memory_value,
 #   start, stop
 # )
-prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
-                             memory = c("full", "window", "decay", "interval"),
-                             memory_value = NA, start = 1, stop = Inf) {
+prepare_tomstats <- function(effects, reh, attr_actors = NULL, 
+  attr_dyads = NULL, memory = c("full", "window", "decay", "interval"),
+  memory_value = NA, start = 1, stop = Inf) {
   # Check if reh is of class remify
   if (!("remify" %in% class(reh))) {
     stop("Expected a reh object of class remify")
@@ -39,42 +39,37 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
   }
 
   # Extract relevant elements from the prepared remify::remify object
-  edgelist.reh <- reh$edgelist
-  dyads <- attr(reh, "dyad")
+  dyads <- unlist(attr(reh, "dyad"))
   actors <- attr(reh, "dictionary")$actors
   types <- attr(reh, "dictionary")$types
 
   # Convert actor IDs to cpp indexing
   actors$actorID <- actors$actorID - 1
 
+  # Prepare the edgelist for cpp processing
+  edgelist <- reh$edgelist
+  edgelist$actor1_ID <- edgelist$actor1_ID - 1
+  edgelist$actor2_ID <- edgelist$actor2_ID - 1
+
+  # Deal with event types
   if (is.null(types)) {
     # Prepare a default types object
     types <- data.frame(typeName = 0, typeID = 0)
   } else {
     # Convert type IDs to cpp indexing
     types$typeID <- types$typeID - 1
+    edgelist$type_ID <- edgelist$type_ID - 1
   }
-
+ 
   # Prepare the event weights
   if (attr(reh, "weighted")) {
-    weight <- edgelist.reh$weight
+    weights <- edgelist$weight
   } else {
-    weight <- rep(1, nrow(edgelist.reh))
+    weights <- rep(1, nrow(edgelist))
   }
-
-  # Prepare the edgelist "evls"-style
-  if(attr(reh, "ordinal")) {
-    edgelist.reh$time <- 1:nrow(edgelist.reh)
-  } else {
-    edgelist.reh$time <- cumsum(reh$intereventTime)
-  }
-  edgelist.reh <- matrix(cbind(edgelist.reh$time, dyads, weight),
-    ncol = 3, byrow = FALSE
-  )
-  edgelist.reh[, 2] <- edgelist.reh[, 2] - 1 # cpp indexing!
 
   # Prepare the full risk set
-  prepR <- getRisksetMatrix(
+  prepR <- get_riskset(
     actorID = actors$actorID,
     typeID = types$typeID,
     N = nrow(actors),
@@ -85,17 +80,17 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
   # Reduce risk set to "active" dyads only
   if (attr(reh, "riskset") == "active") {
     # Get dyadInfo
-    dyad <- attr(reh, "dyad")
-    dyadIDactive <- as.vector(attr(reh, "dyadIDactive"))
-    dyadInfo <- data.frame(dyadIDactive, dyad)
+    dyadIDactive <- unlist(attr(reh, "dyadIDactive"))
+    dyadInfo <- data.frame(dyadIDactive, dyads)
     dyadInfo <- unique(dyadInfo[order(dyadIDactive), ])
 
     # Select "active" dyads only
-    prepR <- prepR[dyadInfo$dyad, ]
-    full_dyad_id <- prepR[, 4] # cpp indexing!
+    prepR <- prepR[dyadInfo$dyads, ]
     prepR[, 4] <- seq(0, nrow(prepR) - 1, 1)
-    edgelist.reh[, 2] <- match(dyads - 1, full_dyad_id) - 1 # cpp indexing!
   }
+
+  # Get the risksetMatrix
+  risksetMatrix <- convert_to_risksetMatrix(prepR, nrow(actors), nrow(types))
 
   # Match memory
   memory <- match.arg(memory)
@@ -110,7 +105,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
   }
   start <- start - 1
   if (stop == Inf) {
-    stop <- nrow(edgelist.reh)
+    stop <- nrow(edgelist)
   }
   stop <- stop - 1
 
@@ -160,7 +155,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
   interactions[which(effectNames == "interact")] <- effects_int
 
   # Prepare covariate information
-  covar <- process_covariate(effects, attr_actors, attr_dyads, actors, edgelist.reh, reh, prepR)
+  covar <- process_covariate(effects, attr_actors, attr_dyads, actors, edgelist, reh, prepR)
 
   # Prepare scaling info (vector length p)
   scaling <- sapply(effects, function(x) {
@@ -189,10 +184,12 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
     form = form,
     effects = effects,
     effectNames = effectNames,
-    edgelist = edgelist.reh,
+    edgelist = as.matrix(edgelist),
+    weights = weights,
     actors = actors,
     types = types,
-    prepR = prepR,
+    riskset = prepR, 
+    risksetMatrix = risksetMatrix,
     memory = memory,
     memory_value = memory_value,
     scaling = scaling,
@@ -661,8 +658,7 @@ modify_riskset <- function(riskset, reh, actors, types) {
 #
 # [examples]
 # covariates <- process_covariate(effects, attr_actors, actors, edgelist, reh, prepR)
-process_covariate <- function(effects, attr_actors, attr_dyads, actors, edgelist, 
-  reh, prepR) {
+process_covariate <- function(effects, attr_actors, attr_dyads, actors, edgelist, reh, prepR) {
   lapply(effects, function(x) {
     effect <- x$effect
     if (effect %in% c("send", "receive", "same", "difference", "average", "minimum", "maximum")) {
