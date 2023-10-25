@@ -1,3 +1,10 @@
+# remstats 3.1.8
+Date: 25-10-23
+Works with remify >= 3.1.0.
+
+## Fixed 
+- Resolve the bug in `bind_remstats()` that occurs when combining two actor-oriented `remstats` objects, one of which has receiver effects while the other does not.
+
 # remstats 3.1.7
 Date: 09-10-23
 Works with remify >= 3.1.0.
