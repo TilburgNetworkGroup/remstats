@@ -50,6 +50,9 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
   edgelist <- reh$edgelist
   edgelist$actor1_ID <- edgelist$actor1_ID - 1
   edgelist$actor2_ID <- edgelist$actor2_ID - 1
+  if (!attr(reh, "directed")) {
+    edgelist[,c(2,3)] <- t(apply(edgelist, 1, function(x) sort(c(x[2], x[3]))))
+  }
 
   # Deal with event types
   if (is.null(types)) {
@@ -95,6 +98,11 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
   # Match memory
   memory <- match.arg(memory)
   memory_value <- validate_memory(memory, memory_value)
+  if(memory == "window") {
+    # Change memory to interval (window is a special case)
+    memory <- "interval"
+    memory_value <- c(0, memory_value)
+  }
 
   # Convert R start and stop indices to C++ (indexing starts at 0)
   if (start < 1) {
@@ -165,9 +173,9 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
 
   # Prepare consider_type info
   consider_type <- sapply(effects, function(x) {
-	  ifelse("consider_type" %in% names(x), x$consider_type, FALSE)
+	  ifelse("consider_type" %in% names(x), x$consider_type, TRUE)
   })
-  consider_type <- append(consider_type, rep(FALSE, length(effects_int)), length(consider_type))
+  consider_type <- append(consider_type, rep(TRUE, length(effects_int)), length(consider_type))
 
   # Check correct scaling inertia statistic
   if (!attr(reh, "directed")) {
@@ -418,10 +426,10 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
     dimnames(statistics)[[3]][unique_effects] <- paste0(dimnames(statistics)[[3]][unique_effects], ".unique")
   }
 
-  # Add .type 
-  type_effects <- sapply(effects, function(x) isTRUE(x$consider_type))
+  # Add .TypeAgg 
+  type_effects <- sapply(effects, function(x) isFALSE(x$consider_type))
   if (any(type_effects)) {
-    dimnames(statistics)[[3]][type_effects] <- paste0(dimnames(statistics)[[3]][type_effects], ".type")
+    dimnames(statistics)[[3]][type_effects] <- paste0(dimnames(statistics)[[3]][type_effects], ".TypeAgg")
   }
 
   # Add variable name to interaction statistics

@@ -6,7 +6,7 @@
 \alias{indegree}
 \title{indegreeSender}
 \usage{
-indegreeSender(scaling = c("none", "prop", "std"), consider_type = FALSE)
+indegreeSender(scaling = c("none", "prop", "std"), consider_type = TRUE)
 }
 \arguments{
 \item{scaling}{the method for scaling the degree statistic. Default is
@@ -16,8 +16,8 @@ be requested with 'prop' or standardization of the raw degree counts per
 time point can be requested with 'std'.}
 
 \item{consider_type}{logical, indicates whether to count the degrees
-separately for each event type (TRUE) or sum degrees across different event
-types (FALSE, default).}
+separately for each event type (TRUE, default) or sum degrees across 
+different event types (FALSE).}
 }
 \description{
 Specifies the statistic for an `indegreeSender` effect in the tie-oriented

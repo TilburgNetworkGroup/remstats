@@ -1064,27 +1064,28 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 
 #' totaldegreeDyad
 #'
-#' Specifies the statistic for a `totaldegreeDyad` effect.
+#' Specifies the statistic for a 'totaldegreeDyad' effect.
 #'
 #' @inheritParams totaldegreeSender
 #'
 #' @details
-#' The totaldegreeDyad effect describes the tendency for dyads to increase their
-#' interaction rate when the total degree of the two actors in the pair
-#' increases. The statistic at timepoint \emph{t} for dyad \emph{(i,j)} is
-#' computed by summing the degrees of the actors in the pair \emph{(i,j)}.
-#'
-#' Optionally, a scaling method can be applied using the \code{scaling} 
-#' argument. When using the "prop" scaling method, the degree count is divided 
-#' by the total number of past events times two. This scaling transforms the 
-#' statistic in a fraction, representing the proportion of past events times 
-#' two in which at least one actor in the dyad was involved. In the case of the 
-#' first timepoint, where no events have occurred previously, it assumes that 
-#' each actor is equally likely to be involved in an event. In this scenario, 
-#' the statistic is set to 2 divied by the number of actors \emph{n}.
+#' The 'totaldegreeDyad' effect refers to the tendency of pairs of actors 
+#' (dyads) to increase their interaction rate as the total degree (number of 
+#' interactions) of both actors in the pair goes up. To calculate this effect 
+#' for a specific pair (i,j) at a given timepoint (t), we sum the degrees of 
+#' the two actors in the dyad (i,j). 
 #' 
-#' The totaldegreeDyad effect is defined for the tie-oriented model, both for 
-#' directed and undirected events.  
+#' Additionally, there is an optional scaling method, which can be chosen using 
+#' the 'scaling' method. When the 'prop' scaling method is applied, the degree 
+#' count is divided by two times the total number of past events. This scaling 
+#' converts the statistic into a fraction, representing the proportion of past 
+#' events in which at least one actor in the dyad was involved. For the first 
+#' timepoint, where no events have previously occurred, it is assumed that each 
+#' actor is equally likely to be involved in an event. In this case, the 
+#' statistic is set to 1 divided by the total number of actors (N). 
+#' 
+#' The totaldegreeDyad effect is defined for the tie-oriented model and is 
+#' applicable to both directed and undirected events.
 #' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1942,15 +1943,32 @@ psABXY <- function(consider_type = TRUE) {
 #' @inheritParams psABBA
 #'
 #' @details
-#' The AB-AY participation shift effect refers to one of Gibson's (2003) dyadic participation shifts. The AB-AY pshift refers to a tendency for turn continuing. For directed events, the next sender (A) is the previous sender (A) and the next receiver (Y) is not in the previous event. For undirected events, one of the next actors (A or B) is one of the current actors (A) and the other current actor (Y) is not in the event. For each timepoint t, the psABAY statistic is equal to one for the dyads that will create the participation shift if they would occur in the edgelist at time t and equal to zero for the dyads that will not create this participation shift. If consider_type is set to TRUE, the type of the AB event and the type of the AY events have to be equal. If it is set to FALSE, the participation shift is set to one for every AY event, regardless of the event type. If multiple events in the edgelist occur at the same time point, the order of these events determines whether the p-shift is observed.
-#'
+#' One of Gibson's (2003) dyadic participation shifts. The AB-AY participation 
+#' shift refers to a tendency for \emph{turn continuing}. For directed events, 
+#' the sender (A) in the current event is the same as the sender in the 
+#' previous event (A), and the receiver (Y) is different from the previous 
+#' receiver (B). In undirected events, one of the current actors (A) matches 
+#' one of the actors in the previous events (A or B), while the other actor (Y) 
+#' is different. 
+#' 
+#' To identify these shifts, a statistic 'psABAY' is calculated for each pair 
+#' of actors at a given timepoint (t). If the pair's interaction follows the 
+#' AB-AY pattern, the statistic is set equal to one; otherwise, it's set to 
+#' zero. 
+#' 
+#' Additionaly, the types of the AB and AY events can be taken into account. If 
+#' 'consider_type' is 'TRUE', the type of the AB event and the type of the AY 
+#' event must match for the shift to occur. If 'consider_type' is 'FALSE', the 
+#' shift happens for every AY event, regardless of the event type. 
+#' 
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}},
-#' \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAB}} for other dyadic participation shifts.
+#' \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAB}} for other 
+#' dyadic participation shifts.
 #'
 #' @examples
-#' reh_tie <- remify::remify(history, model = "tie")
+#' reh <- remify::remify(history, model = "tie")
 #' effects <- ~ psABAY()
-#' remstats(reh = reh_tie, tie_effects = effects)
+#' remstats(reh = reh, tie_effects = effects)
 #'
 #' @export
 psABAY <- function(consider_type = TRUE) {

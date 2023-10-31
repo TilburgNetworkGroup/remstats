@@ -4,7 +4,7 @@
 \alias{osp}
 \title{osp}
 \usage{
-osp(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE)
+osp(unique = FALSE, scaling = c("none", "std"), consider_type = TRUE)
 }
 \arguments{
 \item{unique}{A logical value indicating whether to sum the minimum of 
@@ -17,8 +17,8 @@ standardization of the raw counts per time point can be requested
 with 'std'.}
 
 \item{consider_type}{logical, indicates whether to count the shared partners
-separately for each event type (TRUE) or sum across different event
-types (FALSE, default).}
+separately for each event type (TRUE, default) or sum across different event
+types (FALSE).}
 }
 \description{
 Specifies the statistic for an outgoing shared partners effect.

@@ -4,14 +4,20 @@
 \alias{itp}
 \title{itp}
 \usage{
-itp(unique = FALSE, scaling = c("none", "std"), consider_type = FALSE)
+itp(unique = FALSE, scaling = c("none", "std"), consider_type = TRUE)
 }
 \arguments{
-\item{unique}{A logical value indicating whether to sum the minimum of events with third actors (FALSE, default) or the number of third actors that create a new, unique two-path (TRUE). See details for more information.}
+\item{unique}{A logical value indicating whether to sum the minimum of 
+events with third actors (FALSE, default) or the number of third actors that 
+create a new, unique two-path (TRUE). See details for more information.}
 
-\item{scaling}{The method for scaling the triad statistic. The default value is "none", which means the statistic is not scaled. Alternatively, you can set it to "std" to request standardization of the raw counts per time point.}
+\item{scaling}{The method for scaling the triad statistic. The default value 
+is "none", which means the statistic is not scaled. Alternatively, you can 
+set it to "std" to request standardization of the raw counts per time point.}
 
-\item{consider_type}{A logical value indicating whether to count the two-paths separately for each event type (TRUE) or sum across different event types (FALSE, default).}
+\item{consider_type}{A logical value indicating whether to count the 
+two-paths separately for each event type (TRUE, default) or sum across 
+different event types (FALSE).}
 }
 \description{
 Specifies the statistic for an incoming two-path effect.

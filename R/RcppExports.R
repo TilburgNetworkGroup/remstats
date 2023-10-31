@@ -17,24 +17,64 @@ get_riskset <- function(actorID, typeID, N, C, directed) {
     .Call(`_remstats_get_riskset`, actorID, typeID, N, C, directed)
 }
 
-convert_to_risksetMatrix2 <- function(riskset, N, C) {
-    .Call(`_remstats_convert_to_risksetMatrix2`, riskset, N, C)
+convert_to_risksetMatrix <- function(riskset, N, C) {
+    .Call(`_remstats_convert_to_risksetMatrix`, riskset, N, C)
 }
 
 calculate_inertia <- function(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method = "pt") {
     .Call(`_remstats_calculate_inertia`, edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method)
 }
 
-getRisksetMatrix <- function(actorID, typeID, N, C, directed) {
-    .Call(`_remstats_getRisksetMatrix`, actorID, typeID, N, C, directed)
+transform_inertia <- function(inertia, risksetMatrix, display_progress) {
+    .Call(`_remstats_transform_inertia`, inertia, risksetMatrix, display_progress)
 }
 
-compute_adjmat <- function(edgelist, D, directed, memory, memory_value, start, stop, display_progress) {
-    .Call(`_remstats_compute_adjmat`, edgelist, D, directed, memory, memory_value, start, stop, display_progress)
+calculate_degree_actor <- function(type, inertia, risksetMatrix, consider_type, display_progress) {
+    .Call(`_remstats_calculate_degree_actor`, type, inertia, risksetMatrix, consider_type, display_progress)
 }
 
-compute_stats_tie <- function(effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed, display_progress) {
-    .Call(`_remstats_compute_stats_tie`, effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed, display_progress)
+calculate_degree_dyad <- function(type, inertia, risksetMatrix, consider_type, display_progress) {
+    .Call(`_remstats_calculate_degree_dyad`, type, inertia, risksetMatrix, consider_type, display_progress)
+}
+
+calculate_reciprocity <- function(inertia, risksetMatrix, consider_type, display_progress) {
+    .Call(`_remstats_calculate_reciprocity`, inertia, risksetMatrix, consider_type, display_progress)
+}
+
+calculate_triad <- function(type, inertia, risksetMatrix, scaling, consider_type, display_progress) {
+    .Call(`_remstats_calculate_triad`, type, inertia, risksetMatrix, scaling, consider_type, display_progress)
+}
+
+calculate_pshift <- function(type, edgelist, risksetMatrix, start, stop, directed, consider_type, display_progress, method = "pt") {
+    .Call(`_remstats_calculate_pshift`, type, edgelist, risksetMatrix, start, stop, directed, consider_type, display_progress, method)
+}
+
+calculate_recency <- function(type, edgelist, risksetMatrix, start, stop, consider_type, display_progress, method = "pt") {
+    .Call(`_remstats_calculate_recency`, type, edgelist, risksetMatrix, start, stop, consider_type, display_progress, method)
+}
+
+calculate_rrank <- function(type, edgelist, riskset, N, C, start, stop, consider_type, display_progress, method = "pt") {
+    .Call(`_remstats_calculate_rrank`, type, edgelist, riskset, N, C, start, stop, consider_type, display_progress, method)
+}
+
+calculate_exo_actor <- function(type, edgelist, risksetMatrix, covariates, start, stop, display_progress, method = "pt") {
+    .Call(`_remstats_calculate_exo_actor`, type, edgelist, risksetMatrix, covariates, start, stop, display_progress, method)
+}
+
+calculate_exo_dyad <- function(type, edgelist, riskset, covariates, start, stop, display_progress, method = "pt") {
+    .Call(`_remstats_calculate_exo_dyad`, type, edgelist, riskset, covariates, start, stop, display_progress, method)
+}
+
+calculate_exo_tie <- function(covariates, edgelist, risksetMatrix, start, stop, display_progress, method = "pt") {
+    .Call(`_remstats_calculate_exo_tie`, covariates, edgelist, risksetMatrix, start, stop, display_progress, method)
+}
+
+calculate_exo_event <- function(covariates, edgelist, riskset, start, stop, display_progress, method = "pt") {
+    .Call(`_remstats_calculate_exo_event`, covariates, edgelist, riskset, start, stop, display_progress, method)
+}
+
+compute_stats_tie <- function(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method = "pt") {
+    .Call(`_remstats_compute_stats_tie`, effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method)
 }
 
 combine_stats <- function(array_list, keep_list) {

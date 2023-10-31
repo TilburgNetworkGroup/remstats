@@ -1,11 +1,16 @@
 # remstats 3.2.0
-Date: 12-10-23
-Works with remify >= 3.2.0
+**Date**: October 31, 2023
+Compatible with `remify` version 3.2.0. 
 
-## New features
+## Added
+- [Issue [#67](https://github.com/TilburgNetworkGroup/remstats/issues/67)] - Introducing the ability to manage simultaneous events. 
 
-## Major changes
-- The default 'consider_type' argument is set to `TRUE` instead of `FALSE`. 
+## Changed
+- [Issue [#72](https://github.com/TilburgNetworkGroup/remstats/issues/72)] - When weighting the past events, counting now starts from the time of the preceding event instead of the current event. This change ensures the constant hazard assumption is maintained. 
+- The default value for the `consider_type` argument is now `TRUE` for improved logical consistency. 
+
+## Removed
+- The `ccp` effect has been removed. 
 
 # remstats 3.1.7
 Date: 09-10-23

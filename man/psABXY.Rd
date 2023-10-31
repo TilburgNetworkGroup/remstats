@@ -4,11 +4,11 @@
 \alias{psABXY}
 \title{psABXY}
 \usage{
-psABXY(consider_type = FALSE)
+psABXY(consider_type = TRUE)
 }
 \arguments{
 \item{consider_type}{logical, indicates whether to consider the event type
-in determining which dyads create a pshift (TRUE) or not (FALSE, default).}
+in determining which dyads create a pshift (TRUE, default) or not (FALSE).}
 }
 \description{
 Specifies the statistic for a participation shift AB-XY.

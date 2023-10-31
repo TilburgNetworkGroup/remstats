@@ -177,22 +177,21 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   stop <- inputs$stop
 
   # Compute the inertia building block
-  # if (is.null(adjmat)) {
-  if (any(grepl("degree", effectNames)) | any(effectNames %in% c("inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp"))) {
-    inertia <- calculate_inertia(edgelist, weights, risksetMatrix, memory,   
-                                 memory_value, start, stop, display_progress, 
-                                 method = "pt")
-  } else {
-    adjmat <- matrix()
+  if (is.null(adjmat)) {
+    if (any(grepl("degree", effectNames)) | any(effectNames %in% c("inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp"))) {
+      inertia <- calculate_inertia(edgelist, weights, risksetMatrix, memory,
+        memory_value, start, stop, display_progress,
+        method = "pt"
+      )
+    } else {
+      inertia <- matrix()
+    }
   }
-  # }
 
   # Compute statistics
-  statistics <- compute_stats_tie(
-    effectNames, edgelist, inertia, actors[, 2],
-    types[, 2], prepR, scaling, consider_type, covar, interactions, start,
-    stop, attr(reh, "directed"), display_progress
-  )
+  statistics <- compute_stats_tie(effectNames, edgelist, riskset, 
+    risksetMatrix, inertia, covar, interactions, memory, memory_value, scaling, 
+    consider_type, start, stop, attr(reh, "directed"), FALSE, method = "pt")
 
   # Add variable names to the statistics dimnames
   statistics <- add_variable_names(
@@ -201,7 +200,7 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   )
 
   # Modify riskset output
-  riskset <- modify_riskset(prepR, reh, actors, types)
+  riskset <- modify_riskset(riskset, reh, actors, types)
 
   # Format output
   class(statistics) <- c("tomstats", "remstats")

@@ -13,45 +13,45 @@ event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 edgelist$type <- event_types
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 effects <- ~
-  FEtype() + 
-    outdegreeSender() + outdegreeReceiver() +
-    indegreeSender() + indegreeReceiver() +
-    totaldegreeSender() + totaldegreeReceiver() +
-    totaldegreeDyad() +
-    inertia() + reciprocity() +
-    isp() + itp() + osp() + otp() +
-    isp(unique = TRUE) + itp(unique = TRUE) + 
-    osp(unique = TRUE) + otp(unique = TRUE) +
-    psABBA() + psABBY() + psABAB() + psABBY() +
-    psABXA() + psABXB() + psABXY() +
-    recencyContinue() +
-    recencySendSender() + recencySendReceiver() +
-    recencyReceiveSender() + recencyReceiveReceiver() +
-    rrankSend() + rrankReceive() +
-    outdegreeSender(consider_type = TRUE) +
-    outdegreeReceiver(consider_type = TRUE) +
-    indegreeSender(consider_type = TRUE) +
-    indegreeReceiver(consider_type = TRUE) +
-    totaldegreeSender(consider_type = TRUE) +
-    totaldegreeReceiver(consider_type = TRUE) +
-    totaldegreeDyad(consider_type = TRUE) +
-    inertia(consider_type = TRUE) + reciprocity(consider_type = TRUE) +
-    isp(consider_type = TRUE) + itp(consider_type = TRUE) +
-    osp(consider_type = TRUE) + otp(consider_type = TRUE) +
-    isp(unique = TRUE, consider_type = TRUE) + 
-    itp(unique = TRUE, consider_type = TRUE) +
-    osp(unique = TRUE, consider_type = TRUE) + 
-    otp(unique = TRUE, consider_type = TRUE) +    
-    psABBA(consider_type = TRUE) + psABBY(consider_type = TRUE) +
-    psABAB(consider_type = TRUE) + psABBY(consider_type = TRUE) +
-    psABXA(consider_type = TRUE) + psABXB(consider_type = TRUE) +
-    psABXY(consider_type = TRUE) +
-    recencyContinue(consider_type = TRUE) +
-    recencySendSender(consider_type = TRUE) +
-    recencySendReceiver(consider_type = TRUE) +
-    recencyReceiveSender(consider_type = TRUE) +
-    recencyReceiveReceiver(consider_type = TRUE) +
-    rrankSend(consider_type = TRUE) + rrankReceive(consider_type = TRUE)
+	FEtype() + 
+	outdegreeSender() + outdegreeReceiver() +
+	indegreeSender() + indegreeReceiver() +
+	totaldegreeSender() + totaldegreeReceiver() +
+	totaldegreeDyad() +
+	inertia() + reciprocity() +
+	isp() + itp() + osp() + otp() +
+	isp(unique = TRUE) + itp(unique = TRUE) + 
+	osp(unique = TRUE) + otp(unique = TRUE) +
+	psABBA() + psABBY() + psABAB() + psABAY() +
+	psABXA() + psABXB() + psABXY() +
+	recencyContinue() +
+	recencySendSender() + recencySendReceiver() +
+	recencyReceiveSender() + recencyReceiveReceiver() +
+	rrankSend() + rrankReceive() +
+	outdegreeSender(consider_type = FALSE) +
+	outdegreeReceiver(consider_type = FALSE) +
+	indegreeSender(consider_type = FALSE) +
+	indegreeReceiver(consider_type = FALSE) +
+	totaldegreeSender(consider_type = FALSE) +
+	totaldegreeReceiver(consider_type = FALSE) +
+	totaldegreeDyad(consider_type = FALSE) +
+	inertia(consider_type = FALSE) + reciprocity(consider_type = FALSE) +
+	isp(consider_type = FALSE) + itp(consider_type = FALSE) +
+	osp(consider_type = FALSE) + otp(consider_type = FALSE) +
+	isp(unique = TRUE, consider_type = FALSE) + 
+	itp(unique = TRUE, consider_type = FALSE) +
+	osp(unique = TRUE, consider_type = FALSE) + 
+	otp(unique = TRUE, consider_type = FALSE) +    
+	psABBA(consider_type = FALSE) + psABBY(consider_type = FALSE) +
+	psABAB(consider_type = FALSE) + psABAY(consider_type = FALSE) +
+	psABXA(consider_type = FALSE) + psABXB(consider_type = FALSE) +
+	psABXY(consider_type = FALSE) +
+	recencyContinue(consider_type = FALSE) +
+	recencySendSender(consider_type = FALSE) +
+	recencySendReceiver(consider_type = FALSE) +
+	recencyReceiveSender(consider_type = FALSE) +
+	recencyReceiveReceiver(consider_type = FALSE) +
+	rrankSend(consider_type = FALSE) + rrankReceive(consider_type = FALSE)
 stats <- remstats(reh, tie_effects = effects)
 riskset <- attr(stats, "riskset")
 
@@ -63,8 +63,8 @@ FEtype <- cbind(matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)),
 	matrix(1, nrow = nrow(edgelist), ncol = sum(riskset$type == 2)))
 expect_equal(stats[, , "FEtype_2"], FEtype)
 
-# outdegreeSender
-outdegreeSender <- rbind(
+# outdegreeSender.TypeAgg
+outdegreeSender.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
   c(1, 1, 1, 1, 0, 0, 1, 1, 1, 0),
@@ -76,10 +76,10 @@ outdegreeSender <- rbind(
   c(2, 4, 4, 4, 1, 1, 2, 4, 4, 1),
   c(2, 5, 5, 5, 1, 1, 2, 5, 5, 1)
 )
-expect_equal(stats[, , "outdegreeSender"], outdegreeSender)
+expect_equal(stats[, , "outdegreeSender.TypeAgg"], outdegreeSender.TypeAgg)
 
-# outdegreeSender.type
-outdegreeSender.type <- rbind(
+# outdegreeSender
+outdegreeSender <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(1, 1, 1, 1, 0, 0, 0, 0, 0, 0),
@@ -91,10 +91,10 @@ outdegreeSender.type <- rbind(
   c(1, 2, 2, 2, 1, 0, 1, 2, 2, 1),
   c(1, 3, 3, 3, 1, 0, 1, 2, 2, 1)
 )
-expect_equal(stats[, , "outdegreeSender.type"], outdegreeSender.type)
+expect_equal(stats[, , "outdegreeSender"], outdegreeSender)
 
-# outdegreeReceiver
-outdegreeReceiver <- rbind(
+# outdegreeReceiver.TypeAgg
+outdegreeReceiver.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 1, 0, 0, 0, 1, 0, 1, 0, 0),
   c(0, 1, 0, 0, 1, 1, 0, 1, 0, 0),
@@ -106,10 +106,10 @@ outdegreeReceiver <- rbind(
   c(1, 2, 1, 1, 4, 2, 1, 2, 1, 1),
   c(1, 2, 1, 1, 5, 2, 1, 2, 1, 1)
 )
-expect_equal(stats[, , "outdegreeReceiver"], outdegreeReceiver)
+expect_equal(stats[, , "outdegreeReceiver.TypeAgg"], outdegreeReceiver.TypeAgg)
 
-# outdegreeReceiver.type
-outdegreeReceiver.type <- rbind(
+# outdegreeReceiver
+outdegreeReceiver <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
   c(0, 1, 0, 0, 1, 1, 0, 0, 0, 0),
@@ -121,10 +121,10 @@ outdegreeReceiver.type <- rbind(
   c(1, 1, 1, 0, 2, 1, 0, 1, 0, 0),
   c(1, 1, 1, 0, 3, 1, 0, 1, 0, 0)
 )
-expect_equal(stats[, , "outdegreeReceiver.type"], outdegreeReceiver.type)
+expect_equal(stats[, , "outdegreeReceiver"], outdegreeReceiver)
 
-# indegreeSender
-indegreeSender <- rbind(
+# indegreeSender.TypeAgg
+indegreeSender.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
   c(1, 0, 0, 0, 1, 0, 1, 0, 0, 0),
@@ -136,10 +136,10 @@ indegreeSender <- rbind(
   c(2, 1, 1, 1, 5, 0, 2, 1, 1, 0),
   c(2, 1, 1, 1, 5, 1, 2, 1, 1, 1)
 )
-expect_equal(stats[, , "indegreeSender"], indegreeSender)
+expect_equal(stats[, , "indegreeSender.TypeAgg"], indegreeSender.TypeAgg)
 
-# indegreeSender.type
-indegreeSender.type <- rbind(
+# indegreeSender
+indegreeSender <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
   c(1, 0, 0, 0, 1, 0, 0, 0, 0, 0),
@@ -151,10 +151,10 @@ indegreeSender.type <- rbind(
   c(1, 1, 1, 1, 2, 0, 1, 0, 0, 0),
   c(1, 1, 1, 1, 2, 1, 1, 0, 0, 0)
 )
-expect_equal(stats[, , "indegreeSender.type"], indegreeSender.type)
+expect_equal(stats[, , "indegreeSender"], indegreeSender)
 
-# indegreeReceiver
-indegreeReceiver <- rbind(
+# indegreeReceiver.TypeAgg
+indegreeReceiver.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 1, 0, 0, 0, 1, 0, 1, 1),
   c(1, 1, 1, 0, 0, 1, 1, 1, 1, 1),
@@ -166,10 +166,10 @@ indegreeReceiver <- rbind(
   c(5, 2, 5, 0, 1, 2, 5, 2, 5, 5),
   c(5, 2, 5, 1, 1, 2, 5, 2, 5, 5)
 )
-expect_equal(stats[, , "indegreeReceiver"], indegreeReceiver)
+expect_equal(stats[, , "indegreeReceiver.TypeAgg"], indegreeReceiver.TypeAgg)
 
-# indegreeReceiver.type
-indegreeReceiver.type <- rbind(
+# indegreeReceiver
+indegreeReceiver <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 1, 0, 0, 0, 0, 0, 0, 0),
   c(1, 1, 1, 0, 0, 1, 0, 0, 0, 0),
@@ -181,34 +181,34 @@ indegreeReceiver.type <- rbind(
   c(2, 1, 2, 0, 1, 1, 3, 1, 3, 3),
   c(2, 1, 2, 1, 1, 1, 3, 1, 3, 3)
 )
-expect_equal(stats[, , "indegreeReceiver.type"], indegreeReceiver.type)
+expect_equal(stats[, , "indegreeReceiver"], indegreeReceiver)
 
 # totaldegreeSender
 totaldegreeSender <- indegreeSender + outdegreeSender
 expect_equal(stats[, , "totaldegreeSender"], totaldegreeSender)
 
-# totaldegreeSender.type
-totaldegreeSender.type <- indegreeSender.type + outdegreeSender.type
-expect_equal(stats[, , "totaldegreeSender.type"], totaldegreeSender.type)
+# totaldegreeSender.TypeAgg
+totaldegreeSender.TypeAgg <- indegreeSender.TypeAgg + outdegreeSender.TypeAgg
+expect_equal(stats[, , "totaldegreeSender.TypeAgg"], totaldegreeSender.TypeAgg)
 
 # totaldegreeReceiver
 totaldegreeReceiver <- indegreeReceiver + outdegreeReceiver
 expect_equal(stats[, , "totaldegreeReceiver"], totaldegreeReceiver)
 
-# totaldegreeReceiver.type
-totaldegreeReceiver.type <- indegreeReceiver.type + outdegreeReceiver.type
-expect_equal(stats[, , "totaldegreeReceiver.type"], totaldegreeReceiver.type)
+# totaldegreeReceiver.TypeAgg
+totaldegreeReceiver.TypeAgg <- indegreeReceiver.TypeAgg + outdegreeReceiver.TypeAgg
+expect_equal(stats[, , "totaldegreeReceiver.TypeAgg"], totaldegreeReceiver.TypeAgg)
+
+# totaldegreeDyad.TypeAgg
+totaldegreeDyad.TypeAgg <- totaldegreeSender.TypeAgg + totaldegreeReceiver.TypeAgg
+expect_equal(stats[, , "totaldegreeDyad.TypeAgg"], totaldegreeDyad.TypeAgg)
 
 # totaldegreeDyad
 totaldegreeDyad <- totaldegreeSender + totaldegreeReceiver
 expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
 
-# totaldegreeDyad.type
-totaldegreeDyad.type <- totaldegreeSender.type + totaldegreeReceiver.type
-expect_equal(stats[, , "totaldegreeDyad.type"], totaldegreeDyad.type)
-
-# inertia
-inertia <- rbind(
+# inertia.TypeAgg
+inertia.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
   c(1, 1, 0, 0, 0, 0, 1, 1, 0, 0),
@@ -220,10 +220,10 @@ inertia <- rbind(
   c(2, 2, 2, 0, 1, 0, 2, 2, 2, 1),
   c(2, 2, 2, 1, 1, 0, 2, 2, 2, 1)
 )
-expect_equal(stats[, , "inertia"], inertia)
+expect_equal(stats[, , "inertia.TypeAgg"], inertia.TypeAgg)
 
-# inertia.type
-inertia.type <- rbind(
+# inertia
+inertia <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(1, 1, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -235,10 +235,10 @@ inertia.type <- rbind(
   c(1, 1, 1, 0, 1, 0, 1, 1, 1, 1),
   c(1, 1, 1, 1, 1, 0, 1, 1, 1, 1)
 )
-expect_equal(stats[, , "inertia.type"], inertia.type)
+expect_equal(stats[, , "inertia"], inertia)
 
-# reciprocity
-reciprocity <- rbind(
+# reciprocity.TypeAgg
+reciprocity.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -250,10 +250,10 @@ reciprocity <- rbind(
   c(0, 0, 1, 0, 2, 0, 0, 0, 1, 0),
   c(0, 0, 1, 0, 2, 0, 0, 0, 1, 0)
 )
-expect_equal(stats[, , "reciprocity"], reciprocity)
+expect_equal(stats[, , "reciprocity.TypeAgg"], reciprocity.TypeAgg)
 
-# reciprocity.type
-reciprocity.type <- rbind(
+# reciprocity
+reciprocity <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -265,10 +265,10 @@ reciprocity.type <- rbind(
   c(0, 0, 1, 0, 1, 0, 0, 0, 0, 0),
   c(0, 0, 1, 0, 1, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "reciprocity.type"], reciprocity.type)
+expect_equal(stats[, , "reciprocity"], reciprocity)
 
-# itp
-itp <- rbind(
+# itp.TypeAgg
+itp.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
@@ -280,10 +280,10 @@ itp <- rbind(
   c(1, 1, 0, 1, 2, 0, 1, 1, 0, 0),
   c(1, 1, 0, 1, 3, 0, 1, 1, 0, 1)
 )
-expect_equal(stats[, , "itp"], itp)
+expect_equal(stats[, , "itp.TypeAgg"], itp.TypeAgg)
 
-# itp.type
-itp.type <- rbind(
+# itp
+itp <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
@@ -295,10 +295,10 @@ itp.type <- rbind(
   c(1, 1, 0, 0, 1, 0, 0, 0, 0, 0),
   c(1, 1, 0, 0, 1, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "itp.type"], itp.type)
+expect_equal(stats[, , "itp"], itp)
 
-# itp.unique
-itp.unique <- rbind(
+# itp.unique.TypeAgg
+itp.unique.TypeAgg <- rbind(
 	matrix(0, ncol = nrow(riskset)),
 	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 	c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
@@ -310,10 +310,10 @@ itp.unique <- rbind(
 	c(1, 1, 0, 1, 1, 0, 1, 1, 0, 0),
 	c(1, 1, 0, 1, 2, 0, 1, 1, 0, 1)
 )
-expect_equal(stats[, , "itp.unique"], itp.unique)
+expect_equal(stats[, , "itp.unique.TypeAgg"], itp.unique.TypeAgg)
 
-# itp.unique.type
-itp.unique.type <- rbind(
+# itp.unique
+itp.unique <- rbind(
 	matrix(0, ncol = nrow(riskset)),
 	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
@@ -325,10 +325,10 @@ itp.unique.type <- rbind(
   c(1, 1, 0, 0, 1, 0, 0, 0, 0, 0),
   c(1, 1, 0, 0, 1, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "itp.unique.type"], itp.unique.type)
+expect_equal(stats[, , "itp.unique"], itp.unique)
 
-# otp
-otp <- rbind(
+# otp.TypeAgg
+otp.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 1, 0, 0, 0, 0, 0, 1, 0),
@@ -340,10 +340,10 @@ otp <- rbind(
   c(0, 0, 2, 0, 0, 0, 0, 0, 2, 0),
   c(0, 0, 3, 0, 0, 0, 0, 0, 3, 0)
 )
-expect_equal(stats[, , "otp"], otp)
+expect_equal(stats[, , "otp.TypeAgg"], otp.TypeAgg)
 
-# otp.type
-otp.type <- rbind(
+# otp
+otp <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 1, 0, 0, 0, 0, 0, 0, 0),
@@ -355,10 +355,10 @@ otp.type <- rbind(
   c(0, 0, 1, 0, 0, 0, 0, 0, 1, 0),
   c(0, 0, 1, 0, 0, 0, 0, 0, 1, 0)
 )
-expect_equal(stats[, , "otp.type"], otp.type)
+expect_equal(stats[, , "otp"], otp)
 
-# otp.unique
-otp.unique <- rbind(
+# otp.unique.TypeAgg
+otp.unique.TypeAgg <- rbind(
 	matrix(0, ncol = nrow(riskset)),
 	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 	c(0, 0, 1, 0, 0, 0, 0, 0, 1, 0),
@@ -370,10 +370,10 @@ otp.unique <- rbind(
 	c(0, 0, 1, 0, 0, 0, 0, 0, 1, 0),
 	c(0, 0, 2, 0, 0, 0, 0, 0, 2, 0)
 )
-expect_equal(stats[, , "otp.unique"], otp.unique)
+expect_equal(stats[, , "otp.unique.TypeAgg"], otp.unique.TypeAgg)
 
-# otp.unique.type
-otp.unique.type <- rbind(
+# otp.unique
+otp.unique <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 1, 0, 0, 0, 0, 0, 0, 0),
@@ -385,10 +385,10 @@ otp.unique.type <- rbind(
   c(0, 0, 1, 0, 0, 0, 0, 0, 1, 0),
   c(0, 0, 1, 0, 0, 0, 0, 0, 1, 0)
 )
-expect_equal(stats[, , "otp.unique.type"], otp.unique.type)
+expect_equal(stats[, , "otp.unique"], otp.unique)
 
-# isp
-isp <- rbind(
+# isp.TypeAgg
+isp.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -400,10 +400,10 @@ isp <- rbind(
   c(2, 0, 0, 0, 0, 0, 2, 0, 0, 0),
   c(2, 0, 0, 0, 0, 1, 2, 0, 0, 1)
 )
-expect_equal(stats[, , "isp"], isp)
+expect_equal(stats[, , "isp.TypeAgg"], isp.TypeAgg)
 
-# isp.type
-isp.type <- rbind(
+# isp
+isp <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -415,10 +415,10 @@ isp.type <- rbind(
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
   c(1, 0, 0, 0, 0, 1, 1, 0, 0, 0)
 )
-expect_equal(stats[, , "isp.type"], isp.type)
+expect_equal(stats[, , "isp"], isp)
 
-# isp.unique
-isp.unique <- rbind(
+# isp.unique.TypeAgg
+isp.unique.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -430,10 +430,10 @@ isp.unique <- rbind(
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
   c(1, 0, 0, 0, 0, 1, 1, 0, 0, 1)
 )
-expect_equal(stats[, , "isp.unique"], isp.unique)
+expect_equal(stats[, , "isp.unique.TypeAgg"], isp.unique.TypeAgg)
 
-# isp.unique.type
-isp.unique.type <- rbind(
+# isp.unique
+isp.unique <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -445,10 +445,10 @@ isp.unique.type <- rbind(
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
   c(1, 0, 0, 0, 0, 1, 1, 0, 0, 0)
 )
-expect_equal(stats[, , "isp.unique.type"], isp.unique.type)
+expect_equal(stats[, , "isp.unique"], isp.unique)
 
-# osp
-osp <- rbind(
+# osp.TypeAgg
+osp.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -460,10 +460,10 @@ osp <- rbind(
   c(0, 2, 0, 1, 0, 1, 0, 2, 0, 0),
   c(0, 2, 0, 1, 0, 1, 0, 2, 0, 0)
 )
-expect_equal(stats[, , "osp"], osp)
+expect_equal(stats[, , "osp.TypeAgg"], osp.TypeAgg)
 
-# osp.type
-osp.type <- rbind(
+# osp
+osp <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -475,10 +475,10 @@ osp.type <- rbind(
   c(0, 1, 0, 0, 0, 0, 0, 1, 0, 0),
   c(0, 1, 0, 0, 0, 0, 0, 1, 0, 0)
 )
-expect_equal(stats[, , "osp.type"], osp.type)
+expect_equal(stats[, , "osp"], osp)
 
-# osp.unique
-osp.unique <- rbind(
+# osp.unique.TypeAgg
+osp.unique.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -490,10 +490,10 @@ osp.unique <- rbind(
   c(0, 1, 0, 1, 0, 1, 0, 1, 0, 0),
   c(0, 1, 0, 1, 0, 1, 0, 1, 0, 0)
 )
-expect_equal(stats[, , "osp.unique"], osp.unique)
+expect_equal(stats[, , "osp.unique.TypeAgg"], osp.unique.TypeAgg)
 
-# osp.unique.type
-osp.unique.type <- rbind(
+# osp.unique
+osp.unique <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -505,10 +505,10 @@ osp.unique.type <- rbind(
   c(0, 1, 0, 0, 0, 0, 0, 1, 0, 0),
   c(0, 1, 0, 0, 0, 0, 0, 1, 0, 0)
 )
-expect_equal(stats[, , "osp.unique.type"], osp.unique.type)
+expect_equal(stats[, , "osp.unique"], osp.unique)
 
-# psABBA
-psABBA <- rbind(
+# psABBA.TypeAgg
+psABBA.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -520,10 +520,10 @@ psABBA <- rbind(
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABBA"], psABBA)
+expect_equal(stats[, , "psABBA.TypeAgg"], psABBA.TypeAgg)
 
-# psABBA.type
-psABBA.type <- rbind(
+# psABBA
+psABBA <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -535,10 +535,10 @@ psABBA.type <- rbind(
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABBA.type"], psABBA.type)
+expect_equal(stats[, , "psABBA"], psABBA)
 
-# psABBY
-psABBY <- rbind(
+# psABBY.TypeAgg
+psABBY.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
@@ -550,10 +550,10 @@ psABBY <- rbind(
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 1, 0, 0, 0, 1)
 )
-expect_equal(stats[, , "psABBY"], psABBY)
+expect_equal(stats[, , "psABBY.TypeAgg"], psABBY.TypeAgg)
 
-# psABBY.type
-psABBY.type <- rbind(
+# psABBY
+psABBY <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
   c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -565,10 +565,10 @@ psABBY.type <- rbind(
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABBY.type"], psABBY.type)
+expect_equal(stats[, , "psABBY"], psABBY)
 
-# psABAB
-psABAB <- rbind(
+# psABAB.TypeAgg
+psABAB.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
   c(0, 1, 0, 0, 0, 0, 0, 1, 0, 0),
@@ -580,10 +580,10 @@ psABAB <- rbind(
   c(0, 0, 1, 0, 0, 0, 0, 0, 1, 0),
   c(0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABAB"], psABAB)
+expect_equal(stats[, , "psABAB.TypeAgg"], psABAB.TypeAgg)
 
-# psABAB.type
-psABAB.type <- rbind(
+# psABAB
+psABAB <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 1, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -595,10 +595,10 @@ psABAB.type <- rbind(
   c(0, 0, 1, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 1, 0, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABAB.type"], psABAB.type)
+expect_equal(stats[, , "psABAB"], psABAB)
 
-# psABXB
-psABXB <- rbind(
+# psABXB.TypeAgg
+psABXB.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 1, 0, 0, 0, 0, 0, 1, 1),
   c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0),
@@ -610,10 +610,10 @@ psABXB <- rbind(
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 1),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABXB"], psABXB)
+expect_equal(stats[, , "psABXB.TypeAgg"], psABXB.TypeAgg)
 
-# psABXB.type
-psABXB.type <- rbind(
+# psABXB
+psABXB <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 1, 0, 0, 0, 0, 0, 0, 0),
 	c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0),
@@ -625,10 +625,10 @@ psABXB.type <- rbind(
 	c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABXB.type"], psABXB.type)
+expect_equal(stats[, , "psABXB"], psABXB)
 
-# psABXY
-psABXY <- rbind(
+# psABXY.TypeAgg
+psABXY.TypeAgg <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 1, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
@@ -640,10 +640,10 @@ psABXY <- rbind(
   c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0),
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0)
 )
-expect_equal(stats[, , "psABXY"], psABXY)
+expect_equal(stats[, , "psABXY.TypeAgg"], psABXY.TypeAgg)
 
-# psABXY.type
-psABXY.type <- rbind(
+# psABXY
+psABXY <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(0, 0, 0, 1, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -655,10 +655,70 @@ psABXY.type <- rbind(
   c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0),
   c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABXY.type"], psABXY.type)
+expect_equal(stats[, , "psABXY"], psABXY)
 
-# recencyContinue
-recencyContinue <- rbind(
+# psABXA.TypeAgg
+psABXA.TypeAgg <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 1, 0, 0, 0, 1, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+	c(0, 1, 0, 0, 0, 1, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(1, 0, 0, 0, 0, 0, 1, 0, 0, 1),
+	c(0, 0, 0, 1, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+)
+expect_equal(stats[, , "psABXA.TypeAgg"], psABXA.TypeAgg)
+
+# psABXA
+psABXA <- rbind(
+	matrix(0.0, ncol = nrow(riskset)),
+	c(0, 1, 0, 0, 0, 1, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+)
+expect_equal(stats[, , "psABXA"], psABXA)
+
+# psABAY.TypeAgg
+psABAY.TypeAgg <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 1, 1, 0, 0, 0, 0, 1, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 1, 0, 1, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0),
+	c(0, 0, 1, 1, 0, 0, 0, 0, 1, 0),
+	c(0, 1, 0, 1, 0, 0, 0, 1, 0, 0),
+	c(0, 1, 1, 0, 0, 0, 0, 1, 1, 0)
+)
+expect_equal(stats[, , "psABAY.TypeAgg"], psABAY.TypeAgg)
+
+# psABAY
+psABAY <- rbind(
+	matrix(0.0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 1, 1, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0),
+	c(0, 1, 0, 1, 0, 0, 0, 0, 0, 0),
+	c(0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
+)
+expect_equal(stats[, , "psABAY"], psABAY)
+
+# recencyContinue.TypeAgg
+recencyContinue.TypeAgg <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(1/2, 0.0, 0.0, 0.0, 0.0, 0, 1/2, 0.0, 0.0, 0.0),
   c(1/3, 1/2, 0.0, 0.0, 0.0, 0, 1/3, 1/2, 0.0, 0.0),
@@ -670,10 +730,10 @@ recencyContinue <- rbind(
   c(1/7, 1/3, 1/2, 0.0, 1/5, 0, 1/7, 1/3, 1/2, 1/4),
   c(1/8, 1/4, 1/3, 1/2, 1/6, 0, 1/8, 1/4, 1/3, 1/5)
 )
-expect_equal(stats[, , "recencyContinue"], recencyContinue)
+expect_equal(stats[, , "recencyContinue.TypeAgg"], recencyContinue.TypeAgg)
 
-# recencyContinue.type
-recencyContinue.type <- rbind(
+# recencyContinue
+recencyContinue <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(1/2, 0.0, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 0.0, 0.0),
   c(1/3, 1/2, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 0.0, 0.0),
@@ -685,10 +745,10 @@ recencyContinue.type <- rbind(
   c(1/9, 1/8, 1/2, 0.0, 1/5, 0, 1/7, 1/3, 1/6, 1/4),
   c(1/10, 1/9, 1/3, 1/2, 1/6, 0, 1/8, 1/4, 1/7, 1/5)
 )
-expect_equal(stats[, , "recencyContinue.type"], recencyContinue.type)
+expect_equal(stats[, , "recencyContinue"], recencyContinue)
 
-# recencySendSender
-recencySendSender <- rbind(
+# recencySendSender.TypeAgg
+recencySendSender.TypeAgg <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(1/2, 0.0, 0.0, 0.0, 0.0, 0.0, 1/2, 0.0, 0.0, 0.0),
   c(1/3, 1/2, 1/2, 1/2, 0.0, 0.0, 1/3, 1/2, 1/2, 0.0),
@@ -700,10 +760,10 @@ recencySendSender <- rbind(
   c(1/7, 1/2, 1/2, 1/2, 1/5, 1/4, 1/7, 1/2, 1/2, 1/4),
   c(1/8, 1/2, 1/2, 1/2, 1/6, 1/5, 1/8, 1/2, 1/2, 1/5)
 )
-expect_equal(stats[, , "recencySendSender"], recencySendSender)
+expect_equal(stats[, , "recencySendSender.TypeAgg"], recencySendSender.TypeAgg)
 
-# recencySendSender.type
-recencySendSender.type <- rbind(
+# recencySendSender
+recencySendSender <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(1/2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
   c(1/3, 1/2, 1/2, 1/2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
@@ -715,10 +775,10 @@ recencySendSender.type <- rbind(
   c(1/9, 1/2, 1/2, 1/2, 1/5, 0.0, 1/7, 1/3, 1/3, 1/4),
   c(1/10, 1/2, 1/2, 1/2, 1/6, 0.0, 1/8, 1/4, 1/4, 1/5)
 )
-expect_equal(stats[, , "recencySendSender.type"], recencySendSender.type)
+expect_equal(stats[, , "recencySendSender"], recencySendSender)
 
-# recencySendReceiver
-recencySendReceiver <- rbind(
+# recencySendReceiver.TypeAgg
+recencySendReceiver.TypeAgg <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(0.0, 1/2, 0.0, 0.0, 0.0, 1/2, 0.0, 1/2, 0.0, 0.0),
   c(0.0, 1/3, 0.0, 0.0, 1/2, 1/3, 0.0, 1/3, 0.0, 0.0),
@@ -730,10 +790,10 @@ recencySendReceiver <- rbind(
   c(1/5, 1/7, 1/5, 1/4, 1/2, 1/7, 1/5, 1/7, 1/5, 1/5),
   c(1/6, 1/8, 1/6, 1/5, 1/2, 1/8, 1/6, 1/8, 1/6, 1/6)
 )
-expect_equal(stats[, , "recencySendReceiver"], recencySendReceiver)
+expect_equal(stats[, , "recencySendReceiver.TypeAgg"], recencySendReceiver.TypeAgg)
 
-# recencySendReceiver.type
-recencySendReceiver.type <- rbind(
+# recencySendReceiver
+recencySendReceiver <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(0.0, 1/2, 0.0, 0.0, 0.0, 1/2, 0.0, 0.0, 0.0, 0.0),
   c(0.0, 1/3, 0.0, 0.0, 1/2, 1/3, 0.0, 0.0, 0.0, 0.0),
@@ -745,10 +805,10 @@ recencySendReceiver.type <- rbind(
   c(1/5, 1/9, 1/5, 0.0, 1/2, 1/9, 0.0, 1/7, 0.0, 0.0),
   c(1/6, 1/10, 1/6, 0.0, 1/2, 1/10, 0.0, 1/8, 0.0, 0.0)
 )
-expect_equal(stats[, , "recencySendReceiver.type"], recencySendReceiver.type)
+expect_equal(stats[, , "recencySendReceiver"], recencySendReceiver)
 
-# recencyReceiveSender
-recencyReceiveSender <- rbind(
+# recencyReceiveSender.TypeAgg
+recencyReceiveSender.TypeAgg <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(0.0, 0.0, 0.0, 0.0, 1/2, 0.0, 0.0, 0.0, 0.0, 0.0),
   c(1/2, 0.0, 0.0, 0.0, 1/3, 0.0, 1/2, 0.0, 0.0, 0.0),
@@ -760,10 +820,10 @@ recencyReceiveSender <- rbind(
   c(1/3, 1/5, 1/5, 1/5, 1/2, 0.0, 1/3, 1/5, 1/5, 0.0),
   c(1/4, 1/6, 1/6, 1/6, 1/3, 1/2, 1/4, 1/6, 1/6, 1/2)
 )
-expect_equal(stats[, , "recencyReceiveSender"], recencyReceiveSender)
+expect_equal(stats[, , "recencyReceiveSender.TypeAgg"], recencyReceiveSender.TypeAgg)
 
-# recencyReceiveSender.type
-recencyReceiveSender.type <- rbind(
+# recencyReceiveSender
+recencyReceiveSender <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(0.0, 0.0, 0.0, 0.0, 1/2, 0.0, 0.0, 0.0, 0.0, 0.0),
   c(1/2, 0.0, 0.0, 0.0, 1/3, 0.0, 0.0, 0.0, 0.0, 0.0),
@@ -775,10 +835,10 @@ recencyReceiveSender.type <- rbind(
   c(1/8, 1/5, 1/5, 1/5, 1/2, 0.0, 1/3, 0.0, 0.0, 0.0),
   c(1/9, 1/6, 1/6, 1/6, 1/3, 1/2, 1/4, 0.0, 0.0, 0.0)
 )
-expect_equal(stats[, , "recencyReceiveSender.type"], recencyReceiveSender.type)
+expect_equal(stats[, , "recencyReceiveSender"], recencyReceiveSender)
 
-# recencyReceiveReceiver
-recencyReceiveReceiver <- rbind(
+# recencyReceiveReceiver.TypeAgg
+recencyReceiveReceiver.TypeAgg <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(1/2, 0.0, 1/2, 0.0, 0.0, 0.0, 1/2, 0.0, 1/2, 1/2),
   c(1/3, 1/2, 1/3, 0.0, 0.0, 1/2, 1/3, 1/2, 1/3, 1/3),
@@ -790,10 +850,10 @@ recencyReceiveReceiver <- rbind(
   c(1/2, 1/3, 1/2, 0.0, 1/5, 1/3, 1/2, 1/3, 1/2, 1/2),
   c(1/3, 1/4, 1/3, 1/2, 1/6, 1/4, 1/3, 1/4, 1/3, 1/3)
 )
-expect_equal(stats[, , "recencyReceiveReceiver"], recencyReceiveReceiver)
+expect_equal(stats[, , "recencyReceiveReceiver.TypeAgg"], recencyReceiveReceiver.TypeAgg)
 
-# recencyReceiveReceiver.type
-recencyReceiveReceiver.type <- rbind(
+# recencyReceiveReceiver
+recencyReceiveReceiver <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(1/2, 0.0, 1/2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
   c(1/3, 1/2, 1/3, 0.0, 0.0, 1/2, 0.0, 0.0, 0.0, 0.0),
@@ -805,10 +865,10 @@ recencyReceiveReceiver.type <- rbind(
   c(1/2, 1/8, 1/2, 0.0, 1/5, 1/8, 1/4, 1/3, 1/4, 1/4),
   c(1/3, 1/9, 1/3, 1/2, 1/6, 1/9, 1/5, 1/4, 1/5, 1/5)
 )
-expect_equal(stats[, , "recencyReceiveReceiver.type"], recencyReceiveReceiver.type)
+expect_equal(stats[, , "recencyReceiveReceiver"], recencyReceiveReceiver)
 
-# rrankSend
-rrankSend <- rbind(
+# rrankSend.TypeAgg
+rrankSend.TypeAgg <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(1, 0.0, 0.0, 0.0, 0, 0, 1, 0.0, 0.0, 0),
   c(1, 1.0, 0.0, 0.0, 0, 0, 1, 1.0, 0.0, 0),
@@ -820,10 +880,10 @@ rrankSend <- rbind(
   c(1, 1/2, 1.0, 0.0, 1, 0, 1, 1/2, 1.0, 1),
   c(1, 1/3, 1/2, 1.0, 1, 0, 1, 1/3, 1/2, 1)
 )
-expect_equal(stats[, , "rrankSend"], rrankSend)
+expect_equal(stats[, , "rrankSend.TypeAgg"], rrankSend.TypeAgg)
 
-# rrankSend.type
-rrankSend.type <- rbind(
+# rrankSend
+rrankSend <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(1, 0.0, 0.0, 0.0, 0, 0, 0, 0.0, 0.0, 0),
   c(1, 1.0, 0.0, 0.0, 0, 0, 0, 0.0, 0.0, 0),
@@ -835,10 +895,10 @@ rrankSend.type <- rbind(
   c(1, 1/2, 1.0, 0.0, 1, 0, 1, 1.0, 1/2, 1),
   c(1, 1/3, 1/2, 1.0, 1, 0, 1, 1.0, 1/2, 1)
 )
-expect_equal(stats[, , "rrankSend.type"], rrankSend.type)
+expect_equal(stats[, , "rrankSend"], rrankSend)
 
-# rrankReceive
-rrankReceive <- rbind(
+# rrankReceive.TypeAgg
+rrankReceive.TypeAgg <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0.0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0.0, 0, 0, 0, 0, 0),
@@ -850,10 +910,10 @@ rrankReceive <- rbind(
   c(0, 0, 1, 0, 1.0, 0, 0, 0, 1, 0),
   c(0, 0, 1, 0, 1.0, 0, 0, 0, 1, 0)
 )
-expect_equal(stats[, , "rrankReceive"], rrankReceive)
+expect_equal(stats[, , "rrankReceive.TypeAgg"], rrankReceive.TypeAgg)
 
-# rrankReceive.type
-rrankReceive.type <- rbind(
+# rrankReceive
+rrankReceive <- rbind(
   matrix(0.0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -865,7 +925,7 @@ rrankReceive.type <- rbind(
   c(0, 0, 1, 0, 1, 0, 0, 0, 0, 0),
   c(0, 0, 1, 0, 1, 0, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "rrankReceive.type"], rrankReceive.type)
+expect_equal(stats[, , "rrankReceive"], rrankReceive)
 
 # test standardization
 std_effects <- ~
@@ -878,23 +938,23 @@ std_effects <- ~
     osp(scaling = "std") + otp(scaling = "std") +
     isp(scaling = "std", unique = TRUE) + itp(scaling = "std", unique = TRUE) + 
     osp(scaling = "std", unique = TRUE) + otp(scaling = "std", unique = TRUE) +
-    outdegreeSender(consider_type = TRUE, scaling = "std") +
-    outdegreeReceiver(consider_type = TRUE, scaling = "std") +
-    indegreeSender(consider_type = TRUE, scaling = "std") +
-    indegreeReceiver(consider_type = TRUE, scaling = "std") +
-    totaldegreeSender(consider_type = TRUE, scaling = "std") +
-    totaldegreeReceiver(consider_type = TRUE, scaling = "std") +
-    totaldegreeDyad(consider_type = TRUE, scaling = "std") +
-    inertia(consider_type = TRUE, scaling = "std") +
-    reciprocity(consider_type = TRUE, scaling = "std") +
-    isp(consider_type = TRUE, scaling = "std") +
-    itp(consider_type = TRUE, scaling = "std") +
-    osp(consider_type = TRUE, scaling = "std") +
-    otp(consider_type = TRUE, scaling = "std") +
-    isp(consider_type = TRUE, scaling = "std", unique = TRUE) + 
-    itp(consider_type = TRUE, scaling = "std", unique = TRUE) + 
-    osp(consider_type = TRUE, scaling = "std", unique = TRUE) +
-    otp(consider_type = TRUE, scaling = "std", unique = TRUE) 
+    outdegreeSender(consider_type = FALSE, scaling = "std") +
+    outdegreeReceiver(consider_type = FALSE, scaling = "std") +
+    indegreeSender(consider_type = FALSE, scaling = "std") +
+    indegreeReceiver(consider_type = FALSE, scaling = "std") +
+    totaldegreeSender(consider_type = FALSE, scaling = "std") +
+    totaldegreeReceiver(consider_type = FALSE, scaling = "std") +
+    totaldegreeDyad(consider_type = FALSE, scaling = "std") +
+    inertia(consider_type = FALSE, scaling = "std") +
+    reciprocity(consider_type = FALSE, scaling = "std") +
+    isp(consider_type = FALSE, scaling = "std") +
+    itp(consider_type = FALSE, scaling = "std") +
+    osp(consider_type = FALSE, scaling = "std") +
+    otp(consider_type = FALSE, scaling = "std") +
+    isp(consider_type = FALSE, scaling = "std", unique = TRUE) + 
+    itp(consider_type = FALSE, scaling = "std", unique = TRUE) + 
+    osp(consider_type = FALSE, scaling = "std", unique = TRUE) +
+    otp(consider_type = FALSE, scaling = "std", unique = TRUE) 
 std_stats <- remstats(reh, tie_effects = std_effects)
 
 sapply(2:dim(std_stats)[3], function(p) {
@@ -913,15 +973,15 @@ prop_effects <- ~
     totaldegreeReceiver(scaling = "prop") +
     totaldegreeDyad(scaling = "prop") +
     inertia(scaling = "prop") + reciprocity(scaling = "prop") +
-    outdegreeSender(consider_type = TRUE, scaling = "prop") +
-    outdegreeReceiver(consider_type = TRUE, scaling = "prop") +
-    indegreeSender(consider_type = TRUE, scaling = "prop") +
-    indegreeReceiver(consider_type = TRUE, scaling = "prop") +
-    totaldegreeSender(consider_type = TRUE, scaling = "prop") +
-    totaldegreeReceiver(consider_type = TRUE, scaling = "prop") +
-    totaldegreeDyad(consider_type = TRUE, scaling = "prop") +
-    inertia(consider_type = TRUE, scaling = "prop") +
-    reciprocity(consider_type = TRUE, scaling = "prop")
+    outdegreeSender(consider_type = FALSE, scaling = "prop") +
+    outdegreeReceiver(consider_type = FALSE, scaling = "prop") +
+    indegreeSender(consider_type = FALSE, scaling = "prop") +
+    indegreeReceiver(consider_type = FALSE, scaling = "prop") +
+    totaldegreeSender(consider_type = FALSE, scaling = "prop") +
+    totaldegreeReceiver(consider_type = FALSE, scaling = "prop") +
+    totaldegreeDyad(consider_type = FALSE, scaling = "prop") +
+    inertia(consider_type = FALSE, scaling = "prop") +
+    reciprocity(consider_type = FALSE, scaling = "prop")
 prop_stats <- remstats(reh, tie_effects = prop_effects)
 
 sapply(c(2:5, 11:14), function(p) {
@@ -940,31 +1000,31 @@ sapply(c(6:7, 15:16), function(p) {
 
 # totaldegreeDyad
 prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
-prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 2/4
+prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 1/4
 expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)
 
 # totaldegreeDyad.type
-prop_totaldegreeDyad.type <- stats[,,"totaldegreeDyad.type"] / (2*(1:nrow(stats)-1))
-prop_totaldegreeDyad.type[1,] <- prop_totaldegreeDyad.type[1,] <- 2/4
-expect_equal(prop_stats[,,"totaldegreeDyad.type"], prop_totaldegreeDyad.type)
+prop_totaldegreeDyad.TypeAgg <- stats[,,"totaldegreeDyad.TypeAgg"] / (2*(1:nrow(stats)-1))
+prop_totaldegreeDyad.TypeAgg[1,] <- prop_totaldegreeDyad.TypeAgg[1,] <- 1/4
+expect_equal(prop_stats[,,"totaldegreeDyad.TypeAgg"], prop_totaldegreeDyad.TypeAgg)
 
 # inertia
 prop_inertia <- stats[, , "inertia"] / stats[, , "outdegreeSender"]
 prop_inertia[stats[, , "outdegreeSender"] == 0] <- 1 / 3
 expect_equal(prop_stats[, , "inertia"], prop_inertia)
 
-# inertia.type
-prop_inertia.type <- stats[, , "inertia.type"] / stats[, , "outdegreeSender.type"]
-prop_inertia.type[stats[, , "outdegreeSender.type"] == 0] <- 1 / 3
-expect_equal(prop_stats[, , "inertia.type"], prop_inertia.type)
+# inertia.TypeAgg
+prop_inertia.TypeAgg <- stats[, , "inertia.TypeAgg"] / stats[, , "outdegreeSender.TypeAgg"]
+prop_inertia.TypeAgg[stats[, , "outdegreeSender.TypeAgg"] == 0] <- 1 / 3
+expect_equal(prop_stats[, , "inertia.TypeAgg"], prop_inertia.TypeAgg)
 
 # reciprocity
 prop_reciprocity <- stats[, , "reciprocity"] / stats[, , "indegreeSender"]
 prop_reciprocity[stats[, , "indegreeSender"] == 0] <- 1 / 3
 expect_equal(prop_stats[, , "reciprocity"], prop_reciprocity)
 
-# reciprocity.type
-prop_reciprocity.type <- stats[, , "reciprocity.type"] /
-  stats[, , "indegreeSender.type"]
-prop_reciprocity.type[stats[, , "indegreeSender.type"] == 0] <- 1 / 3
-expect_equal(prop_stats[, , "reciprocity.type"], prop_reciprocity.type)
+# reciprocity.TypeAgg
+prop_reciprocity.TypeAgg <- stats[, , "reciprocity.TypeAgg"] /
+  stats[, , "indegreeSender.TypeAgg"]
+prop_reciprocity.TypeAgg[stats[, , "indegreeSender.TypeAgg"] == 0] <- 1 / 3
+expect_equal(prop_stats[, , "reciprocity.TypeAgg"], prop_reciprocity.TypeAgg)

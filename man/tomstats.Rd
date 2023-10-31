@@ -125,7 +125,7 @@ way, see \code{\link{tie}} and \code{\link{event}}.
 }
 
 \section{attr_dyads}{
-  
+
 For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 }
 

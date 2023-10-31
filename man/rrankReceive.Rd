@@ -4,11 +4,11 @@
 \alias{rrankReceive}
 \title{rrankReceive}
 \usage{
-rrankReceive(consider_type = FALSE)
+rrankReceive(consider_type = TRUE)
 }
 \arguments{
 \item{consider_type}{logical, indicates whether to discriminate between
-event types in determining the event rank (TRUE) or not (FALSE, default).}
+event types in determining the event rank (TRUE, default) or not (FALSE).}
 }
 \description{
 Specifies the statistic for a recency rank receive effect in the

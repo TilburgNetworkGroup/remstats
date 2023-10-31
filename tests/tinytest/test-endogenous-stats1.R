@@ -18,7 +18,7 @@ effects <- ~
     isp() + itp() + osp() + otp() +
     isp(unique = TRUE) + itp(unique = TRUE) +
     osp(unique = TRUE) + otp(unique = TRUE) +
-    psABBA() + psABBY() + psABAB() + psABBY() +
+    psABBA() + psABBY() + psABAB() + psABAY() +
     psABXA() + psABXB() + psABXY() +
     recencyContinue() +
     recencySendSender() + recencySendReceiver() +
@@ -327,6 +327,36 @@ psABXY <- rbind(
 )
 expect_equal(stats[, , "psABXY"], psABXY)
 
+# psABXA
+psABXA <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 1, 0, 0, 0, 1, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(0, 1, 0, 0, 0, 1, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(1, 0, 0, 0, 0, 0, 1),
+	c(0, 0, 0, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0)
+)
+expect_equal(stats[, , "psABXA"], psABXA)
+
+# psABAY
+psABAY <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 1, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 1, 0, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 1, 0),
+	c(0, 0, 1, 1, 0, 0, 0),
+	c(0, 1, 0, 1, 0, 0, 0),
+	c(0, 1, 1, 0, 0, 0, 0)
+)
+expect_equal(stats[, , "psABAY"], psABAY)
+
 # recencyContinue
 recencyContinue <- rbind(
   matrix(0, ncol = nrow(riskset)),
@@ -482,7 +512,7 @@ sapply(6:7, function(p) {
 
 # totaldegreeDyad
 prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
-prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 2/4
+prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 1/4
 expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)
 
 # inertia
