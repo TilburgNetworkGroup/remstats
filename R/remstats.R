@@ -197,7 +197,7 @@ remstats <- function(
     receiver_effects = NULL, 
     attr_actors = NULL, 
     attr_dyads = NULL, 
-    method = c("pe", "pt"),
+    method = c("pt", "pe"),
     memory = c("full", "window", "decay", "interval"),
     memory_value = NA, 
     start = 1, 

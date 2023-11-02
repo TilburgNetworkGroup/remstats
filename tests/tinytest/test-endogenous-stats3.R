@@ -59,7 +59,8 @@ riskset <- attr(stats, "riskset")
 expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow(riskset)))
 
 # FEtype
-FEtype <- cbind(matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)), 
+FEtype <- cbind(
+  matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)), 
 	matrix(1, nrow = nrow(edgelist), ncol = sum(riskset$type == 2)))
 expect_equal(stats[, , "FEtype_2"], FEtype)
 
@@ -1045,14 +1046,15 @@ reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 effects <- ~ FEtype() + inertia(consider_type = FALSE) + 
   itp(consider_type = FALSE) 
 
-stats <- remstats(reh, tie_effects = effects, method = "pt")
-riskset <- attr(stats, "riskset")
+# Method = "pt"
+pt_stats <- remstats(reh, tie_effects = effects, method = "pt")
+riskset <- attr(pt_stats, "riskset")
 
 # FEtype
 FEtype <- cbind(
   matrix(0, nrow = NROW(unique(edgelist$time)), ncol = sum(riskset$type == 1)), 
 	matrix(1, nrow = NROW(unique(edgelist$time)), ncol = sum(riskset$type == 2)))
-expect_equal(stats[, , "FEtype_2"], FEtype)
+expect_equal(pt_stats[, , "FEtype_2"], FEtype)
 
 # inertia.TypeAgg
 inertia.TypeAgg <- rbind(
@@ -1065,7 +1067,7 @@ inertia.TypeAgg <- rbind(
   c(2, 2, 2, 0, 1, 0, 2, 2, 2, 1),
   c(2, 2, 2, 1, 1, 0, 2, 2, 2, 1)
 )
-expect_equal(stats[, , "inertia.TypeAgg"], inertia.TypeAgg)
+expect_equal(pt_stats[, , "inertia.TypeAgg"], inertia.TypeAgg)
 
 # itp.TypeAgg
 itp.TypeAgg <- rbind(
@@ -1078,4 +1080,44 @@ itp.TypeAgg <- rbind(
   c(1, 1, 0, 1, 2, 0, 1, 1, 0, 0),
   c(1, 1, 0, 1, 3, 0, 1, 1, 0, 1)
 )
-expect_equal(stats[, , "itp.TypeAgg"], itp.TypeAgg)
+expect_equal(pt_stats[, , "itp.TypeAgg"], itp.TypeAgg)
+
+# Method = "pe"
+pe_stats <- remstats(reh, tie_effects = effects, method = "pe")
+riskset <- attr(pe_stats, "riskset")
+
+# FEtype
+FEtype <- cbind(
+  matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)), 
+	matrix(1, nrow = nrow(edgelist), ncol = sum(riskset$type == 2)))
+expect_equal(pe_stats[, , "FEtype_2"], FEtype)
+
+# inertia.TypeAgg
+inertia.TypeAgg <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
+  c(1, 1, 0, 0, 0, 0, 1, 1, 0, 0),
+  c(2, 1, 0, 0, 0, 0, 2, 1, 0, 0),
+  c(2, 1, 1, 0, 0, 0, 2, 1, 1, 0),
+  c(2, 1, 1, 0, 1, 0, 2, 1, 1, 0),
+  c(2, 1, 1, 0, 1, 0, 2, 1, 1, 1),
+  c(2, 2, 1, 0, 1, 0, 2, 2, 1, 1),
+  c(2, 2, 2, 0, 1, 0, 2, 2, 2, 1),
+  c(2, 2, 2, 1, 1, 0, 2, 2, 2, 1)
+)
+expect_equal(pe_stats[, , "inertia.TypeAgg"], inertia.TypeAgg)
+
+# itp.TypeAgg
+itp.TypeAgg <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+  c(1, 1, 0, 0, 1, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 1, 1, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 1, 2, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 1, 2, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 1, 3, 0, 1, 1, 0, 1)
+)
+expect_equal(pe_stats[, , "itp.TypeAgg"], itp.TypeAgg)

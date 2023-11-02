@@ -232,6 +232,7 @@ edgelist <- data.frame(
 
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 
+# Method = "pt"
 # Event info
 setting <<- c("a", "b", "b", "a")
 
@@ -245,8 +246,9 @@ effects <- ~ send(variable = "x1") +
   event(x = setting, variableName = "setting") +
   userStat(x = Y, variableName = "Y")
 
-stats <- remstats(reh, tie_effects = effects, attr_actors = info, method = "pt")
-riskset <- attr(stats, "riskset")
+pt_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
+  method = "pt")
+riskset <- attr(pt_stats, "riskset")
 
 # send
 send <- rbind(
@@ -255,7 +257,7 @@ send <- rbind(
   c(100, 100, 200, 200, 300),
   c(100, 100, 200, 200, 300)
 )
-expect_equal(stats[, , "send_x1"], send)
+expect_equal(pt_stats[, , "send_x1"], send)
 
 # average
 average <- rbind(
@@ -264,7 +266,7 @@ average <- rbind(
   c(150, 200, 150, 250, 250),
   c(150, 200, 150, 250, 250)
 )
-expect_equal(stats[, , "average_x1"], average)
+expect_equal(pt_stats[, , "average_x1"], average)
 
 # tie
 tie_long <- rbind(
@@ -273,7 +275,7 @@ tie_long <- rbind(
 	c(40, 7, 2, 8, 6),
 	c(40, 7, 2, 8, 6)
 )
-expect_equal(stats[, , "tie_X_long"], tie_long)
+expect_equal(pt_stats[, , "tie_X_long"], tie_long)
 
 # event
 event <- rbind(
@@ -282,7 +284,64 @@ event <- rbind(
   rep(1, 5),
   rep(0, 5)
 )
-expect_equal(stats[, , "event_setting"], event)
+expect_equal(pt_stats[, , "event_setting"], event)
 
 # userStat
-expect_equal(stats[, , "userStat_Y"], Y)
+expect_equal(pt_stats[, , "userStat_Y"], Y)
+
+# Method = "pe"
+# Event info
+setting <<- c("a", "b", "b", "a", "a")
+
+# UserStat
+Y <<- matrix(1:25, nrow = 5, ncol = 5)
+
+# Selection of effects that have unique underlying cpp functions
+effects <- ~ send(variable = "x1") +
+  average(variable = "x1") + 
+	tie(variable = "X_long", attr_dyads = X_long) +
+  event(x = setting, variableName = "setting") +
+  userStat(x = Y, variableName = "Y")
+
+pe_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
+  method = "pet")
+riskset <- attr(pt_stats, "riskset")
+
+# send
+send <- rbind(
+  c(10, 10, 20, 20, 30),
+  c(10, 10, 20, 20, 30),
+  c(100, 100, 200, 200, 300),
+  c(100, 100, 200, 200, 300)
+)
+expect_equal(pe_stats[, , "send_x1"], send)
+
+# average
+average <- rbind(
+  c(15, 20, 15, 25, 25),
+  c(15, 20, 15, 25, 25),
+  c(150, 200, 150, 250, 250),
+  c(150, 200, 150, 250, 250)
+)
+expect_equal(pe_stats[, , "average_x1"], average)
+
+# tie
+tie_long <- rbind(
+	c(4, 7, 2, 8, 6),
+	c(40, 7, 2, 8, 6),
+	c(40, 7, 2, 8, 6),
+	c(40, 7, 2, 8, 6)
+)
+expect_equal(pe_stats[, , "tie_X_long"], tie_long)
+
+# event
+event <- rbind(
+  rep(0, 5),
+  rep(1, 5),
+  rep(1, 5),
+  rep(0, 5)
+)
+expect_equal(pe_stats[, , "event_setting"], event)
+
+# userStat
+expect_equal(pe_stats[, , "userStat_Y"], Y)

@@ -803,7 +803,7 @@ prepare_aomstats_event_weights <- function(edgelist) {
 	return(weights)
 }
 
-prepare_subset <- function(start, stop, edgelist, method = "pe") {
+prepare_subset <- function(start, stop, edgelist, method) {
   if (start < 1) {
     stop("The 'start' value should be set to 1 or a larger number.")
   }
