@@ -304,13 +304,14 @@ effects <- ~ send(variable = "x1") +
   userStat(x = Y, variableName = "Y")
 
 pe_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
-  method = "pet")
+  method = "pe")
 riskset <- attr(pt_stats, "riskset")
 
 # send
 send <- rbind(
   c(10, 10, 20, 20, 30),
   c(10, 10, 20, 20, 30),
+  c(100, 100, 200, 200, 300),
   c(100, 100, 200, 200, 300),
   c(100, 100, 200, 200, 300)
 )
@@ -321,6 +322,7 @@ average <- rbind(
   c(15, 20, 15, 25, 25),
   c(15, 20, 15, 25, 25),
   c(150, 200, 150, 250, 250),
+  c(150, 200, 150, 250, 250),
   c(150, 200, 150, 250, 250)
 )
 expect_equal(pe_stats[, , "average_x1"], average)
@@ -328,6 +330,7 @@ expect_equal(pe_stats[, , "average_x1"], average)
 # tie
 tie_long <- rbind(
 	c(4, 7, 2, 8, 6),
+	c(40, 7, 2, 8, 6),
 	c(40, 7, 2, 8, 6),
 	c(40, 7, 2, 8, 6),
 	c(40, 7, 2, 8, 6)
@@ -339,6 +342,7 @@ event <- rbind(
   rep(0, 5),
   rep(1, 5),
   rep(1, 5),
+  rep(0, 5),
   rep(0, 5)
 )
 expect_equal(pe_stats[, , "event_setting"], event)
