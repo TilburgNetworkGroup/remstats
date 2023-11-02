@@ -195,3 +195,81 @@ sapply(2:3, function(p) {
 prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
 prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 1/4
 expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)
+
+# Test method -------------------------------------------------------------
+# Small change to the times in the edgelist
+edgelist <- data.frame(
+  time = c(1, 2, 3, 4, 5, 5, 5, 6, 7, 8),
+  actor1 = c(1, 2, 1, 2, 3, 4, 2, 2, 2, 4),
+  actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
+)
+
+reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
+  riskset = "active")
+
+# Selection of effects that have unique underlying cpp functions
+effects <- ~ degreeMin() + sp() 
+
+# Method = "pt"
+pt_stats <- remstats(reh, tie_effects = effects)
+riskset <- attr(pt_stats, "riskset")
+
+# degreeMin
+degreeMin <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 1, 0, 0, 0, 0),
+  c(1, 1, 0, 1, 0, 0),
+  c(1, 2, 0, 1, 0, 0),
+  c(2, 3, 0, 2, 0, 0),
+  c(4, 4, 1, 4, 1, 1),
+  c(4, 4, 1, 5, 1, 1),
+  c(4, 4, 2, 6, 2, 2)
+)
+expect_equal(pt_stats[, , "degreeMin"], degreeMin)
+
+# sp
+sp <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(1, 1, 0, 1, 0, 0),
+  c(2, 2, 1, 2, 1, 0),
+  c(2, 2, 1, 2, 1, 0),
+  c(2, 2, 2, 3, 1, 1)
+)
+expect_equal(pt_stats[, , "sp"], sp)
+
+# Method = "pe"
+pe_stats <- remstats(reh, tie_effects = effects, method = "pe")
+riskset <- attr(pe_stats, "riskset")
+
+# degreeMin
+degreeMin <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 1, 0, 0, 0, 0),
+  c(1, 1, 0, 1, 0, 0),
+  c(1, 2, 0, 1, 0, 0),
+  c(2, 3, 0, 2, 0, 0),
+  c(3, 3, 0, 3, 0, 0),
+  c(3, 3, 1, 3, 1, 1),
+  c(4, 4, 1, 4, 1, 1),
+  c(4, 4, 1, 5, 1, 1),
+  c(4, 4, 2, 6, 2, 2)
+)
+expect_equal(pe_stats[, , "degreeMin"], degreeMin)
+
+# sp
+sp <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 1, 0, 0),
+  c(1, 1, 0, 1, 0, 0),
+  c(2, 1, 0, 1, 0, 0),
+  c(2, 1, 1, 1, 1, 0),
+  c(2, 2, 1, 2, 1, 0),
+  c(2, 2, 1, 2, 1, 0),
+  c(2, 2, 2, 3, 1, 1)
+)
+expect_equal(pe_stats[, , "sp"], sp)

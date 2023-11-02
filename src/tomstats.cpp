@@ -11,10 +11,27 @@
 // [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::depends(RcppProgress)]]
 
+/* get_riskset 
+
+Source (originally): remify. 
+
+Create the risk set from all potential actors and event types in the network. 
+
+Param:
+- actorID: vector with actor identification numbers
+- typeID: vector with event type identification numbers 
+- directed: whether the events in the network are directed 
+
+Output: matrix with sender, receiver, event type, dyad ID
+*/
+
 // [[Rcpp::export]]
-arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID,
-                      arma::uword N, arma::uword C, bool directed)
+arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed)
 {
+  // Network information
+  arma::uword N = actorID.n_elem;
+  arma::uword C = typeID.n_elem;
+
   switch (directed)
   {
   case 0:
@@ -72,6 +89,18 @@ arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID,
   }
 }
 
+/* convert_to_risksetMatrix
+
+Converts the 'long' riskset format (sender, receiver, event type, dyad ID) to a 'wide' format. 
+
+Param:
+- riskset: matrix with sender, receiver, event type, dyad ID
+- N: number of actors in the network 
+- C: number of event types in the network 
+
+Output: matrix where rows refer to senders, columns refer to (receivers + N * event type) and entries refer to dyad IDs
+*/
+
 // [[Rcpp::export]]
 arma::mat convert_to_risksetMatrix(arma::mat riskset, int N, int C)
 {
@@ -95,6 +124,11 @@ arma::mat convert_to_risksetMatrix(arma::mat riskset, int N, int C)
 
   return risksetMatrix;
 }
+
+/* inertia_event_indices
+
+Helper for calculate_inertia. Returns the indices for the events that should be used to calculate inertia, depending on the 'method' and 'memory' settings. 
+*/
 
 arma::uvec inertia_event_indices(const arma::mat &edgelist,
                                  const arma::vec &time_points,
@@ -160,6 +194,11 @@ arma::uvec inertia_event_indices(const arma::mat &edgelist,
   return event_indices;
 }
 
+/* update_inertia
+
+Helper for calculate_inertia. Returns the new inertia row that is updated with the new events. 
+*/
+
 arma::rowvec update_inertia(arma::uvec update, const arma::mat &edgelist,
                             const arma::mat &risksetMatrix, int N, int C,
                             arma::rowvec inertia_row, const arma::vec &weights)
@@ -182,6 +221,10 @@ arma::rowvec update_inertia(arma::uvec update, const arma::mat &edgelist,
   return inertia_row;
 }
 
+/* get_decay_weights
+
+Helper for calculate_inertia. Computes the decay weights for all events for a given time point. 
+*/
 arma::vec get_decay_weights(double previous_time, arma::uvec update,
                             const arma::vec &weights,
                             const arma::mat &edgelist, double mem_val)
@@ -202,6 +245,22 @@ arma::vec get_decay_weights(double previous_time, arma::uvec update,
   return decay_weights;
 }
 
+/* calculate_inertia 
+
+Calculates the inertia statistic (that is also used as a building block) where per time (in the rows) and per dyad (in the columns) the number of previous events is given. 
+
+Param:
+- edgelist: 
+- weights:
+- risksetMatrix: 
+- memory: 
+- memory_value:
+- start:
+- stop: 
+- display_progress:
+- method:
+*/
+
 // [[Rcpp::export]]
 arma::mat calculate_inertia(const arma::mat &edgelist,
                             const arma::vec &weights,
@@ -210,7 +269,7 @@ arma::mat calculate_inertia(const arma::mat &edgelist,
                             const arma::vec &memory_value,
                             int start, int stop,
                             bool display_progress,
-                            Rcpp::String method = "pt")
+                            Rcpp::String method)
 {
   // Progress update
   if (display_progress)
@@ -223,13 +282,14 @@ arma::mat calculate_inertia(const arma::mat &edgelist,
   if (method == "pt")
   {
     // ... the unique time points
-    time_points = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    time_points = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   int N = risksetMatrix.n_rows;
   int C = risksetMatrix.n_cols / N;
@@ -986,7 +1046,7 @@ arma::mat calculate_pshift(std::string type, const arma::mat &edgelist,
                            int start, int stop, bool directed,
                            bool consider_type,
                            bool display_progress,
-                           Rcpp::String method = "pt")
+                           Rcpp::String method)
 {
   // Progress update
   if (display_progress)
@@ -999,13 +1059,14 @@ arma::mat calculate_pshift(std::string type, const arma::mat &edgelist,
   if (method == "pt")
   {
     // ... the unique time points
-    time_points = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    time_points = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   // Initialize pshift matrix
   arma::mat pshift(time_points.n_elem, risksetMatrix.max() + 1,
@@ -1270,7 +1331,7 @@ arma::mat calculate_recency(std::string type, const arma::mat &edgelist,
                             const arma::mat &risksetMatrix,
                             int start, int stop, bool consider_type,
                             bool display_progress,
-                            Rcpp::String method = "pt")
+                            Rcpp::String method)
 {
   // Progress update
   if (display_progress)
@@ -1283,13 +1344,14 @@ arma::mat calculate_recency(std::string type, const arma::mat &edgelist,
   if (method == "pt")
   {
     // ... the unique time points
-    time_points = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    time_points = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   // Initialize recency matrix
   arma::mat recency(time_points.n_elem, risksetMatrix.max() + 1,
@@ -1581,7 +1643,7 @@ arma::mat calculate_rrank(int type, const arma::mat &edgelist,
                           const arma::mat &riskset, int N, int C,
                           int start, int stop,
                           bool consider_type, bool display_progress,
-                          Rcpp::String method = "pt")
+                          Rcpp::String method)
 {
   // Progress update
   if (display_progress)
@@ -1601,13 +1663,14 @@ arma::mat calculate_rrank(int type, const arma::mat &edgelist,
   if (method == "pt")
   {
     // ... the unique time points
-    time_points = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    time_points = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   // Initialize recency matrix
   arma::mat rrank(time_points.n_elem, riskset.n_rows, arma::fill::zeros);
@@ -1780,7 +1843,7 @@ arma::mat calculate_exo_actor(std::string type,
                               const arma::mat &covariates,
                               int start, int stop,
                               bool display_progress,
-                              Rcpp::String method = "pt")
+                              Rcpp::String method)
 {
   // Progress update
   if (display_progress)
@@ -1793,13 +1856,14 @@ arma::mat calculate_exo_actor(std::string type,
   if (method == "pt")
   {
     // ... the unique time points
-    time_points = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    time_points = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   // Initialize saving space
   arma::mat stat(time_points.n_elem, risksetMatrix.max() + 1,
@@ -1911,7 +1975,7 @@ arma::mat calculate_exo_dyad(std::string type,
                              const arma::mat &covariates,
                              int start, int stop,
                              bool display_progress,
-                             Rcpp::String method = "pt")
+                             Rcpp::String method)
 {
   // Progress update
   if (display_progress)
@@ -1924,13 +1988,14 @@ arma::mat calculate_exo_dyad(std::string type,
   if (method == "pt")
   {
     // ... the unique time points
-    time_points = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    time_points = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   // Storage space for the current covariate values
   arma::vec current_ac1(riskset.n_rows, arma::fill::zeros);
@@ -2097,7 +2162,7 @@ arma::mat calculate_exo_tie(const arma::mat &covariates,
                             const arma::mat &risksetMatrix,
                             int start, int stop,
                             bool display_progress,
-                            Rcpp::String method = "pt")
+                            Rcpp::String method)
 {
   // Progress update
   if (display_progress)
@@ -2105,21 +2170,22 @@ arma::mat calculate_exo_tie(const arma::mat &covariates,
     Rcpp::Rcout << "Calculating tie statistic" << std::endl;
   }
 
-  // Event time points: Depending on the method, get ...
-  arma::vec event_times;
+  // Time points: Depending on the method, get ...
+  arma::vec time_points;
   if (method == "pt")
   {
     // ... the unique time points
-    event_times = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    event_times = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   // Initialize saving space
-  arma::mat stat(event_times.n_elem, risksetMatrix.max() + 1,
+  arma::mat stat(time_points.n_elem, risksetMatrix.max() + 1,
                  arma::fill::zeros);
 
   // Get number of actors (N) and types (C) in the network
@@ -2140,7 +2206,7 @@ arma::mat calculate_exo_tie(const arma::mat &covariates,
     // Covariates values with this timepoint
     arma::uvec covar_indices = arma::find(covariates.col(2) == time);
     // Saving indices
-    arma::uvec saving_indices = arma::find(event_times >= time);
+    arma::uvec saving_indices = arma::find(time_points >= time);
 
     // Loop over covar_indices
     for (arma::uword i = 0; i < covar_indices.n_elem; ++i)
@@ -2170,7 +2236,7 @@ arma::mat calculate_exo_tie(const arma::mat &covariates,
 }
 
 // [[Rcpp::export]]
-arma::mat calculate_exo_event(const arma::mat &covariates, const arma::mat &edgelist, const arma::mat &riskset, int start, int stop, bool display_progress, Rcpp::String method = "pt")
+arma::mat calculate_exo_event(const arma::mat &covariates, const arma::mat &edgelist, const arma::mat &riskset, int start, int stop, bool display_progress, Rcpp::String method)
 {
 
   // Progress update
@@ -2184,17 +2250,17 @@ arma::mat calculate_exo_event(const arma::mat &covariates, const arma::mat &edge
   if (method == "pt")
   {
     // ... the unique time points
-    event_times = arma::unique(edgelist.submat(start, 0, stop, 0));
+    event_times = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    event_times = edgelist.submat(start, 0, stop, 0);
+    event_times = edgelist.col(0);
   }
+  event_times = event_times.subvec(start, stop);
 
   // Repeat covariates matrix along columns to match riskset's rows
-  arma::mat covRepeat = arma::repmat(covariates.rows(start, stop), 1,
-                                     riskset.n_rows);
+  arma::mat covRepeat = arma::repmat(covariates.rows(start, stop), 1, riskset.n_rows);
 
   // Check dimensions of input matrices
   if (covRepeat.n_rows != event_times.n_elem)
@@ -2208,7 +2274,7 @@ arma::mat calculate_exo_event(const arma::mat &covariates, const arma::mat &edge
 // get_user_stat
 arma::mat get_userstat(const arma::mat &covariates, const arma::mat &edgelist,
                        int start, int stop, bool display_progress,
-                       Rcpp::String method = "pt")
+                       Rcpp::String method)
 {
   // Progress update
   if (display_progress)
@@ -2221,13 +2287,14 @@ arma::mat get_userstat(const arma::mat &covariates, const arma::mat &edgelist,
   if (method == "pt")
   {
     // ... the unique time points
-    event_times = arma::unique(edgelist.submat(start, 0, stop, 0));
+    event_times = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    event_times = edgelist.submat(start, 0, stop, 0);
+    event_times = edgelist.col(0);
   }
+  event_times = event_times.subvec(start, stop);
 
   arma::mat stat = covariates.rows(start, stop);
 
@@ -2244,7 +2311,7 @@ arma::mat calculate_FEtype(const arma::mat &covariates,
                            const arma::mat &edgelist,
                            const arma::mat &riskset,
                            int start, int stop,
-                           Rcpp::String method = "pt")
+                           Rcpp::String method)
 {
 
   // Time points: Depending on the method, get ...
@@ -2252,13 +2319,14 @@ arma::mat calculate_FEtype(const arma::mat &covariates,
   if (method == "pt")
   {
     // ... the unique time points
-    time_points = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    time_points = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   // Initialize saving space
   arma::mat stat(time_points.n_elem, riskset.n_rows, arma::fill::zeros);
@@ -2459,7 +2527,7 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector effects,
                              int start, int stop,
                              bool directed,
                              bool display_progress,
-                             Rcpp::String method = "pt")
+                             Rcpp::String method)
 {
 
   // Time points: Depending on the method, get ...
@@ -2467,13 +2535,14 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector effects,
   if (method == "pt")
   {
     // ... the unique time points
-    time_points = arma::unique(edgelist.submat(start, 0, stop, 0));
+    time_points = arma::unique(edgelist.col(0));
   }
   else if (method == "pe")
   {
     // ... all event times
-    time_points = edgelist.submat(start, 0, stop, 0);
+    time_points = edgelist.col(0);
   }
+  time_points = time_points.subvec(start, stop);
 
   // Get number of actors (N) and types (C) in the network
   int N = risksetMatrix.n_rows;

@@ -9,6 +9,7 @@ tomstats(
   reh,
   attr_actors = NULL,
   attr_dyads = NULL,
+  method = c("pt", "pe"),
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
   start = 1,
@@ -37,18 +38,24 @@ actors (see Details).}
 \item{attr_dyads}{optionally, an object of class \code{data.frame} or 
 \code{matrix} containing attribute information for dyads (see Details).}
 
+\item{method}{Specifies the method for managing simultaneous events, i.e., 
+events occurring at the same time. The default 'method' is 'pt' (per 
+timepoint), where statistics are computed once for each unique timepoint in 
+the edgelist. Alternatively, you can choose 'pe' (per event), where 
+statistics are computed once for each unique event observed in the edgelist.}
+
 \item{memory}{The memory to be used. See `Details'.}
 
 \item{memory_value}{Numeric value indicating the memory parameter. See
 `Details'.}
 
 \item{start}{an optional integer value, specifying the index of the first
-event in the relational event history for which statistics must be computed
-(see 'Details')}
+time or event in the relational event history for which statistics must be 
+computed (see 'Details')}
 
 \item{stop}{an optional integer value, specifying the index of the last
-event in the relational event history for which statistics muts be computed
-(see 'Details')}
+time or event in the relational event history for which statistics muts be 
+computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
@@ -77,7 +84,7 @@ where rows refer to time points, columns refer to potential relational event
 }
 \description{
 Computes statistics for modeling relational event history data
-with Butts' (2008) relational event model.
+with the tie-oriented relational event model.
 }
 \section{Effects}{
 
@@ -159,14 +166,20 @@ that follow logically from their definition (e.g., the recenyContinue
 statistic does depend on time since the event and not on event weights).
 }
 
-\section{Subset of the relational event history}{
+\section{Subset the event history using 'start' and 'stop'}{
 
-Optionally, statistics can be computed for a slice of the relational event
-sequence - but based on the entire history. This is achieved by setting the
-start and stop values equal to the index of the first and last event for
-which statistics are requested. For example, start = 5 and stop = 5 computes
-the statistics for only the 5th event in the relational event sequence,
-based on the history that consists of events 1-4.
+It is possible to compute statistics for a segment of the relational event 
+sequence, based on the entire event history. This is done by specifying the 
+'start' and 'stop' values as the indices for the first and last event times 
+for which statistics are needed. For instance, setting 'start = 5' and 'stop 
+= 5' calculates statistics for the 5th event in the relational event 
+sequence, considering events 1-4 in the history. Note that in cases of 
+simultaneous events with the 'method' set to 'pt' (per timepoint), 'start' 
+and 'stop' should correspond to the indices of the first and last 
+\emph{unique} event timepoints for which statistics are needed. For example, 
+if 'start = 5' and 'stop = 5', statistics are computed for the 5th unique 
+timepoint in the relational event sequence, considering all events occurring 
+at unique timepoints 1-4.
 }
 
 \section{Adjacency matrix}{

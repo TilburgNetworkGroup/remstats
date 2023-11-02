@@ -145,24 +145,22 @@ RcppExport SEXP _remstats_compute_stats_choice(SEXP effectsSEXP, SEXP edgelistSE
     return rcpp_result_gen;
 }
 // get_riskset
-arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed);
-static SEXP _remstats_get_riskset_try(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP NSEXP, SEXP CSEXP, SEXP directedSEXP) {
+arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed);
+static SEXP _remstats_get_riskset_try(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP directedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< arma::uvec >::type actorID(actorIDSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type typeID(typeIDSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type N(NSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type C(CSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_riskset(actorID, typeID, N, C, directed));
+    rcpp_result_gen = Rcpp::wrap(get_riskset(actorID, typeID, directed));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_get_riskset(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP NSEXP, SEXP CSEXP, SEXP directedSEXP) {
+RcppExport SEXP _remstats_get_riskset(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP directedSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_get_riskset_try(actorIDSEXP, typeIDSEXP, NSEXP, CSEXP, directedSEXP));
+        rcpp_result_gen = PROTECT(_remstats_get_riskset_try(actorIDSEXP, typeIDSEXP, directedSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -805,7 +803,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*calculate_aom_tie_statistic)(const arma::mat&,const arma::mat&,const arma::vec&,int,int,Rcpp::String,bool)");
         signatures.insert("arma::cube(*compute_stats_rate)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
         signatures.insert("arma::cube(*compute_stats_choice)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
-        signatures.insert("arma::mat(*get_riskset)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
+        signatures.insert("arma::mat(*get_riskset)(arma::uvec,arma::uvec,bool)");
         signatures.insert("arma::mat(*convert_to_risksetMatrix)(arma::mat,int,int)");
         signatures.insert("arma::mat(*calculate_inertia)(const arma::mat&,const arma::vec&,const arma::mat&,Rcpp::String,const arma::vec&,int,int,bool,Rcpp::String)");
         signatures.insert("arma::mat(*transform_inertia)(const arma::mat&,const arma::mat&,bool)");
@@ -854,7 +852,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_calculate_aom_tie_statistic", (DL_FUNC) &_remstats_calculate_aom_tie_statistic, 7},
     {"_remstats_compute_stats_rate", (DL_FUNC) &_remstats_compute_stats_rate, 12},
     {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 12},
-    {"_remstats_get_riskset", (DL_FUNC) &_remstats_get_riskset, 5},
+    {"_remstats_get_riskset", (DL_FUNC) &_remstats_get_riskset, 3},
     {"_remstats_convert_to_risksetMatrix", (DL_FUNC) &_remstats_convert_to_risksetMatrix, 3},
     {"_remstats_calculate_inertia", (DL_FUNC) &_remstats_calculate_inertia, 9},
     {"_remstats_transform_inertia", (DL_FUNC) &_remstats_transform_inertia, 3},

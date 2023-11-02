@@ -88,17 +88,17 @@ namespace remstats {
         return Rcpp::as<arma::cube >(rcpp_result_gen);
     }
 
-    inline arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed) {
-        typedef SEXP(*Ptr_get_riskset)(SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed) {
+        typedef SEXP(*Ptr_get_riskset)(SEXP,SEXP,SEXP);
         static Ptr_get_riskset p_get_riskset = NULL;
         if (p_get_riskset == NULL) {
-            validateSignature("arma::mat(*get_riskset)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
+            validateSignature("arma::mat(*get_riskset)(arma::uvec,arma::uvec,bool)");
             p_get_riskset = (Ptr_get_riskset)R_GetCCallable("remstats", "_remstats_get_riskset");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_get_riskset(Shield<SEXP>(Rcpp::wrap(actorID)), Shield<SEXP>(Rcpp::wrap(typeID)), Shield<SEXP>(Rcpp::wrap(N)), Shield<SEXP>(Rcpp::wrap(C)), Shield<SEXP>(Rcpp::wrap(directed)));
+            rcpp_result_gen = p_get_riskset(Shield<SEXP>(Rcpp::wrap(actorID)), Shield<SEXP>(Rcpp::wrap(typeID)), Shield<SEXP>(Rcpp::wrap(directed)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -130,7 +130,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat calculate_inertia(const arma::mat& edgelist, const arma::vec& weights, const arma::mat& risksetMatrix, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::mat calculate_inertia(const arma::mat& edgelist, const arma::vec& weights, const arma::mat& risksetMatrix, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_calculate_inertia)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_calculate_inertia p_calculate_inertia = NULL;
         if (p_calculate_inertia == NULL) {
@@ -256,7 +256,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat calculate_pshift(std::string type, const arma::mat& edgelist, const arma::mat& risksetMatrix, int start, int stop, bool directed, bool consider_type, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::mat calculate_pshift(std::string type, const arma::mat& edgelist, const arma::mat& risksetMatrix, int start, int stop, bool directed, bool consider_type, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_calculate_pshift)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_calculate_pshift p_calculate_pshift = NULL;
         if (p_calculate_pshift == NULL) {
@@ -277,7 +277,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat calculate_recency(std::string type, const arma::mat& edgelist, const arma::mat& risksetMatrix, int start, int stop, bool consider_type, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::mat calculate_recency(std::string type, const arma::mat& edgelist, const arma::mat& risksetMatrix, int start, int stop, bool consider_type, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_calculate_recency)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_calculate_recency p_calculate_recency = NULL;
         if (p_calculate_recency == NULL) {
@@ -298,7 +298,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat calculate_rrank(int type, const arma::mat& edgelist, const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::mat calculate_rrank(int type, const arma::mat& edgelist, const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_calculate_rrank)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_calculate_rrank p_calculate_rrank = NULL;
         if (p_calculate_rrank == NULL) {
@@ -319,7 +319,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat calculate_exo_actor(std::string type, const arma::mat& edgelist, const arma::mat& risksetMatrix, const arma::mat& covariates, int start, int stop, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::mat calculate_exo_actor(std::string type, const arma::mat& edgelist, const arma::mat& risksetMatrix, const arma::mat& covariates, int start, int stop, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_calculate_exo_actor)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_calculate_exo_actor p_calculate_exo_actor = NULL;
         if (p_calculate_exo_actor == NULL) {
@@ -340,7 +340,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat calculate_exo_dyad(std::string type, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& covariates, int start, int stop, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::mat calculate_exo_dyad(std::string type, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& covariates, int start, int stop, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_calculate_exo_dyad)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_calculate_exo_dyad p_calculate_exo_dyad = NULL;
         if (p_calculate_exo_dyad == NULL) {
@@ -361,7 +361,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat calculate_exo_tie(const arma::mat& covariates, const arma::mat& edgelist, const arma::mat& risksetMatrix, int start, int stop, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::mat calculate_exo_tie(const arma::mat& covariates, const arma::mat& edgelist, const arma::mat& risksetMatrix, int start, int stop, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_calculate_exo_tie)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_calculate_exo_tie p_calculate_exo_tie = NULL;
         if (p_calculate_exo_tie == NULL) {
@@ -382,7 +382,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::mat calculate_exo_event(const arma::mat& covariates, const arma::mat& edgelist, const arma::mat& riskset, int start, int stop, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::mat calculate_exo_event(const arma::mat& covariates, const arma::mat& edgelist, const arma::mat& riskset, int start, int stop, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_calculate_exo_event)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_calculate_exo_event p_calculate_exo_event = NULL;
         if (p_calculate_exo_event == NULL) {
@@ -403,7 +403,7 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline arma::cube compute_stats_tie(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method = "pt") {
+    inline arma::cube compute_stats_tie(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_compute_stats_tie)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_tie p_compute_stats_tie = NULL;
         if (p_compute_stats_tie == NULL) {

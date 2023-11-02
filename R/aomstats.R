@@ -142,7 +142,7 @@ aomstats <- function(reh,
   memory_value <- validate_memory(memory, memory_value)
 
   # Prepare subset arguments
-  subset <- prepare_aomstats_subset(start, stop, edgelist)
+  subset <- prepare_subset(start, stop, edgelist, method = "pe")
   start <- subset$start
   stop <- subset$stop 
 

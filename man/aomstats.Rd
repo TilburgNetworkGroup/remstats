@@ -47,12 +47,12 @@ actors (see Details).}
 `Details'.}
 
 \item{start}{an optional integer value, specifying the index of the first
-event in the relational event history for which statistics must be computed
-(see 'Details')}
+time or event in the relational event history for which statistics must be 
+computed (see 'Details')}
 
 \item{stop}{an optional integer value, specifying the index of the last
-event in the relational event history for which statistics muts be computed
-(see 'Details')}
+time or event in the relational event history for which statistics muts be 
+computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}

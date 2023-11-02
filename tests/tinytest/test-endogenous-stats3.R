@@ -1028,3 +1028,54 @@ prop_reciprocity.TypeAgg <- stats[, , "reciprocity.TypeAgg"] /
   stats[, , "indegreeSender.TypeAgg"]
 prop_reciprocity.TypeAgg[stats[, , "indegreeSender.TypeAgg"] == 0] <- 1 / 3
 expect_equal(prop_stats[, , "reciprocity.TypeAgg"], prop_reciprocity.TypeAgg)
+
+# Test method -------------------------------------------------------------
+# Small change to the times in the edgelist
+edgelist <- data.frame(
+	time = c(1, 2, 3, 4, 5, 5, 5, 6, 7, 8),
+	actor1 = c(1, 2, 1, 2, 3, 4, 2, 2, 2, 4),
+	actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
+)
+
+event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
+edgelist$type <- event_types
+reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+
+# Selection of effects that have unique underlying cpp functions
+effects <- ~ FEtype() + inertia(consider_type = FALSE) + 
+  itp(consider_type = FALSE) 
+
+stats <- remstats(reh, tie_effects = effects, method = "pt")
+riskset <- attr(stats, "riskset")
+
+# FEtype
+FEtype <- cbind(
+  matrix(0, nrow = NROW(unique(edgelist$time)), ncol = sum(riskset$type == 1)), 
+	matrix(1, nrow = NROW(unique(edgelist$time)), ncol = sum(riskset$type == 2)))
+expect_equal(stats[, , "FEtype_2"], FEtype)
+
+# inertia.TypeAgg
+inertia.TypeAgg <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
+  c(1, 1, 0, 0, 0, 0, 1, 1, 0, 0),
+  c(2, 1, 0, 0, 0, 0, 2, 1, 0, 0),
+  c(2, 1, 1, 0, 0, 0, 2, 1, 1, 0),
+  c(2, 2, 1, 0, 1, 0, 2, 2, 1, 1),
+  c(2, 2, 2, 0, 1, 0, 2, 2, 2, 1),
+  c(2, 2, 2, 1, 1, 0, 2, 2, 2, 1)
+)
+expect_equal(stats[, , "inertia.TypeAgg"], inertia.TypeAgg)
+
+# itp.TypeAgg
+itp.TypeAgg <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+  c(1, 1, 0, 1, 2, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 1, 2, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 1, 3, 0, 1, 1, 0, 1)
+)
+expect_equal(stats[, , "itp.TypeAgg"], itp.TypeAgg)

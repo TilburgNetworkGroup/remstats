@@ -3,7 +3,7 @@
 Compatible with `remify` version 3.2.0. 
 
 ## Added
-- [Issue [#67](https://github.com/TilburgNetworkGroup/remstats/issues/67)] - Introducing the ability to manage simultaneous events. 
+- [Issue [#67](https://github.com/TilburgNetworkGroup/remstats/issues/67)] - Introducing the ability to manage simultaneous events. When events occur on the same time, the user can specify the `method` for managing simultaneous events. The default `method` is `"pt"` (per timepoint), where statistics are computed once for each unique timepoint in the edgelist. Alternatively, you can choose `"pe"` (per event), where statistics are computed once for each unique event observed in the edgelist. 
 
 ## Changed
 - [Issue [#72](https://github.com/TilburgNetworkGroup/remstats/issues/72)] - When weighting the past events, counting now starts from the time of the preceding event instead of the current event. This change ensures the constant hazard assumption is maintained. 

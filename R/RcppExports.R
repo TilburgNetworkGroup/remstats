@@ -13,15 +13,15 @@ compute_stats_choice <- function(effects, edgelist, actors, weights, covariates,
     .Call(`_remstats_compute_stats_choice`, effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, display_progress)
 }
 
-get_riskset <- function(actorID, typeID, N, C, directed) {
-    .Call(`_remstats_get_riskset`, actorID, typeID, N, C, directed)
+get_riskset <- function(actorID, typeID, directed) {
+    .Call(`_remstats_get_riskset`, actorID, typeID, directed)
 }
 
 convert_to_risksetMatrix <- function(riskset, N, C) {
     .Call(`_remstats_convert_to_risksetMatrix`, riskset, N, C)
 }
 
-calculate_inertia <- function(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method = "pt") {
+calculate_inertia <- function(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method) {
     .Call(`_remstats_calculate_inertia`, edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method)
 }
 
@@ -45,35 +45,35 @@ calculate_triad <- function(type, inertia, risksetMatrix, scaling, consider_type
     .Call(`_remstats_calculate_triad`, type, inertia, risksetMatrix, scaling, consider_type, display_progress)
 }
 
-calculate_pshift <- function(type, edgelist, risksetMatrix, start, stop, directed, consider_type, display_progress, method = "pt") {
+calculate_pshift <- function(type, edgelist, risksetMatrix, start, stop, directed, consider_type, display_progress, method) {
     .Call(`_remstats_calculate_pshift`, type, edgelist, risksetMatrix, start, stop, directed, consider_type, display_progress, method)
 }
 
-calculate_recency <- function(type, edgelist, risksetMatrix, start, stop, consider_type, display_progress, method = "pt") {
+calculate_recency <- function(type, edgelist, risksetMatrix, start, stop, consider_type, display_progress, method) {
     .Call(`_remstats_calculate_recency`, type, edgelist, risksetMatrix, start, stop, consider_type, display_progress, method)
 }
 
-calculate_rrank <- function(type, edgelist, riskset, N, C, start, stop, consider_type, display_progress, method = "pt") {
+calculate_rrank <- function(type, edgelist, riskset, N, C, start, stop, consider_type, display_progress, method) {
     .Call(`_remstats_calculate_rrank`, type, edgelist, riskset, N, C, start, stop, consider_type, display_progress, method)
 }
 
-calculate_exo_actor <- function(type, edgelist, risksetMatrix, covariates, start, stop, display_progress, method = "pt") {
+calculate_exo_actor <- function(type, edgelist, risksetMatrix, covariates, start, stop, display_progress, method) {
     .Call(`_remstats_calculate_exo_actor`, type, edgelist, risksetMatrix, covariates, start, stop, display_progress, method)
 }
 
-calculate_exo_dyad <- function(type, edgelist, riskset, covariates, start, stop, display_progress, method = "pt") {
+calculate_exo_dyad <- function(type, edgelist, riskset, covariates, start, stop, display_progress, method) {
     .Call(`_remstats_calculate_exo_dyad`, type, edgelist, riskset, covariates, start, stop, display_progress, method)
 }
 
-calculate_exo_tie <- function(covariates, edgelist, risksetMatrix, start, stop, display_progress, method = "pt") {
+calculate_exo_tie <- function(covariates, edgelist, risksetMatrix, start, stop, display_progress, method) {
     .Call(`_remstats_calculate_exo_tie`, covariates, edgelist, risksetMatrix, start, stop, display_progress, method)
 }
 
-calculate_exo_event <- function(covariates, edgelist, riskset, start, stop, display_progress, method = "pt") {
+calculate_exo_event <- function(covariates, edgelist, riskset, start, stop, display_progress, method) {
     .Call(`_remstats_calculate_exo_event`, covariates, edgelist, riskset, start, stop, display_progress, method)
 }
 
-compute_stats_tie <- function(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method = "pt") {
+compute_stats_tie <- function(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method) {
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method)
 }
 

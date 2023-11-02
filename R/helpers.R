@@ -27,7 +27,7 @@
 # )
 prepare_tomstats <- function(effects, reh, attr_actors = NULL, 
   attr_dyads = NULL, memory = c("full", "window", "decay", "interval"),
-  memory_value = NA, start = 1, stop = Inf) {
+  memory_value = NA, start = 1, stop = Inf, method = c("pt", "pe")) {
   # Check if reh is of class remify
   if (!("remify" %in% class(reh))) {
     stop("Expected a reh object of class remify")
@@ -75,8 +75,6 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
   prepR <- get_riskset(
     actorID = actors$actorID,
     typeID = types$typeID,
-    N = nrow(actors),
-    C = nrow(types),
     directed = attr(reh, "directed")
   )
 
@@ -104,18 +102,14 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
     memory_value <- c(0, memory_value)
   }
 
-  # Convert R start and stop indices to C++ (indexing starts at 0)
-  if (start < 1) {
-    stop("The 'start' value should be set to 1 or a larger number.")
-  }
-  if (stop < start) {
-    stop("The 'stop' value cannot be smaller than the 'start' value.")
-  }
-  start <- start - 1
-  if (stop == Inf) {
-    stop <- nrow(edgelist)
-  }
-  stop <- stop - 1
+  # Method for managing simultaneous events
+  method <- match.arg(method)
+
+  # Convert R start and stop indices to C++ (indexing starts at 0) and 
+  # check them
+  subset <- prepare_subset(start, stop, edgelist, method)
+  start <- subset$start
+  stop <- subset$stop
 
   # Prepare main effects
   check_formula(effects)
@@ -205,7 +199,8 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
     covar = covar,
     interactions = interactions,
     start = start,
-    stop = stop
+    stop = stop,
+    method = method
   )
 }
 
@@ -729,7 +724,7 @@ process_covariate <- function(effects, attr_actors, attr_dyads, actors, edgelist
         # Return: matrix (actor1, actor2, time, value)
         parse_tie(x, reh, attr_dyads) 
       } else if (effect == "event") {
-        if (length(x$x) != nrow(edgelist)) {
+        if (NROW(x$x) != nrow(edgelist) & NROW(x$x) != NROW(unique(edgelist[,1]))) {
           stop("Length of vector 'x' in event() does not match number of events in edgelist")
         }
         if(!is.numeric(x$x)) {
@@ -742,8 +737,8 @@ process_covariate <- function(effects, attr_actors, attr_dyads, actors, edgelist
         as.matrix(x$x)
       }
     } else if (effect == "userStat") {
-      if (NROW(x$x) != nrow(edgelist)) {
-        stop("Number of rows of matrix 'x' in userStat() does not match number of events in edgelist")
+      if (NROW(x$x) != nrow(edgelist) & NROW(x$x) != NROW(unique(edgelist[,1]))) {
+        stop("Number of rows of matrix 'x' in userStat() does not match number of timepoints or number of events in edgelist")
       }
 
       if (NCOL(x$x) != nrow(prepR)) {
@@ -808,21 +803,33 @@ prepare_aomstats_event_weights <- function(edgelist) {
 	return(weights)
 }
 
-prepare_aomstats_subset <- function(start, stop, edgelist) {
-	# Convert R start and stop indices to C++ (indexing starts at 0)
-	if (start < 1) {
-		stop("The 'start' value should be set to 1 or a larger number.")
-	}
-	if (stop < start) {
-		stop("The 'stop' value cannot be smaller than the 'start' value.")
-	}
-	start <- start - 1
-	if (stop == Inf) {
-		stop <- nrow(edgelist)
-	}
-	stop <- stop - 1
-	
-	list(start = start, stop = stop)
+prepare_subset <- function(start, stop, edgelist, method = "pe") {
+  if (start < 1) {
+    stop("The 'start' value should be set to 1 or a larger number.")
+  }
+  start <- start - 1
+  if (stop == Inf) {
+    if (method == "pe") {
+      stop <- nrow(edgelist)
+    } else if (method == "pt") {
+      stop <- NROW(unique(edgelist[,1]))
+    }    
+  }
+  stop <- stop - 1
+  if (stop < start) {
+    stop("The 'stop' value cannot be smaller than the 'start' value.")
+  }
+  if (method == "pe") {
+    if(stop > nrow(edgelist)) {
+      stop("The 'stop' value cannot be larger than the number of events in 'reh'.")
+    }
+  }
+  if (method == "pt") {
+    if(stop > NROW(unique(edgelist[,1]))) {
+      stop("The 'stop' value cannot be larger than the number of unique time points in 'reh'.")
+    }
+  }
+  list(start = start, stop = stop)
 }
 
 prepare_sender_effects <- function(sender_formula) {
