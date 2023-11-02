@@ -4,7 +4,7 @@
 \alias{same}
 \title{same}
 \usage{
-same(variable, attr_actors = NULL)
+same(variable, attr_actors = NULL, attr_data)
 }
 \arguments{
 \item{variable}{string with the name of the column in the
@@ -13,6 +13,8 @@ same(variable, attr_actors = NULL)
 \item{attr_actors}{optionally, an object of class
 \code{\link[base]{data.frame}} that contains the attribute, see
 'Details.'}
+
+\item{attr_data}{Deprecated argument. Please use 'attr_actors' instead.}
 }
 \description{
 Specifies the statistic for a "same" effect in the tie-oriented model or the

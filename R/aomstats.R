@@ -161,7 +161,7 @@ aomstats <- function(reh,
 
     # Prepare sender covariate information
     sender_covar <- prepare_sender_covariates(sender_effects, attr_actors, 
-      actors, edgelist)
+      actors, edgelist, reh)
 
     # Prepare sender_effects scaling
     sender_scaling <- prepare_aomstats_scaling(sender_effects, 

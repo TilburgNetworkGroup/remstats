@@ -970,7 +970,7 @@ validate_covariates <- function(x, attr_actors, attr_dyads, actors, edgelist,
 	}
 }
 
-prepare_sender_covariates <- function(sender_effects, attr_actors, actors, edgelist) {
+prepare_sender_covariates <- function(sender_effects, attr_actors, actors, edgelist, reh) {
 	sender_covar <- lapply(sender_effects, function(x) {
 		validate_covariates(x, attr_actors, NULL, actors, edgelist, reh)
 	})

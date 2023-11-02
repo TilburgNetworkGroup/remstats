@@ -27,6 +27,6 @@ head(both_male_long)
 
 }
 \seealso{
-\code{\link{calculate_tie_statistic}} for the function using this data, \code{\link{both_male_wide}} for the data in wide format, and \code{\link{info}} for an overview of the actor exogenous attributes.
+\code{\link{tie}} for the function using this data, \code{\link{both_male_wide}} for the data in wide format, and \code{\link{info}} for an overview of the actor exogenous attributes.
 }
 \keyword{dataset}

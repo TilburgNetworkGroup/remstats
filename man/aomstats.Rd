@@ -57,7 +57,9 @@ computed (see 'Details')}
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 
-\item{attributes}{deprecated, please use "attr_actors" instead}
+\item{attr_data}{deprecated, please use "attr_actors" instead}
+
+\item{attributes}{deprecated, please use "attr_data" instead}
 
 \item{edgelist}{deprecated, please use "reh" instead}
 }

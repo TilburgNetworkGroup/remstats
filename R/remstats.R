@@ -147,7 +147,8 @@
 #' risk set entries
 #' @param get_adjmat for a tie-oriented model, whether the adjmat computed by 
 #' remstats should be outputted as an attribute of the statistics.
-#' @param attributes deprecated, please use "attr_actors" instead
+#' @param attr_data deprecated, please use "attr_actors" instead
+#' @param attributes deprecated, please use "attr_data" instead
 #' @param edgelist deprecated, please use "reh" instead
 #'
 #' @return An object of class 'remstats'. In case of the 

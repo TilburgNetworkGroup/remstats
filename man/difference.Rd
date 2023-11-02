@@ -8,7 +8,8 @@ difference(
   variable,
   attr_actors = NULL,
   scaling = c("none", "std"),
-  absolute = TRUE
+  absolute = TRUE,
+  attr_data
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ statistic per time point can be requested with "std".}
 
 \item{absolute}{logical value indicating whether the difference values
 should be converted to the absolute difference (default is TRUE).}
+
+\item{attr_data}{Deprecated argument. Please use 'attr_actors' instead.}
 }
 \description{
 Specifies the statistic for a "difference" effect in the tie-oriented model

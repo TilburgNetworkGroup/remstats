@@ -25,6 +25,6 @@ print(both_male_wide)
 
 }
 \seealso{
-\code{\link{calculate_tie_statistic}} for the function using this data, \code{\link{both_male_long}} for the data in long format, and \code{\link{info}} for an overview of the actor exogenous attributes.
+\code{\link{tie}} for the function using this data, \code{\link{both_male_long}} for the data in long format, and \code{\link{info}} for an overview of the actor exogenous attributes.
 }
 \keyword{dataset}

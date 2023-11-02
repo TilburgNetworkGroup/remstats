@@ -4,7 +4,7 @@
 \alias{average}
 \title{average}
 \usage{
-average(variable, attr_actors = NULL, scaling = c("none", "std"))
+average(variable, attr_actors = NULL, scaling = c("none", "std"), attr_data)
 }
 \arguments{
 \item{variable}{string with the name of the column in the
@@ -17,6 +17,8 @@ average(variable, attr_actors = NULL, scaling = c("none", "std"))
 \item{scaling}{the method for scaling the statistic. Default is to not scale
 the statistic. Alternatively, standardization of the
 statistic per time point can be requested with "std".}
+
+\item{attr_data}{Deprecated argument. Please use 'attr_actors' instead.}
 }
 \description{
 Specifies the statistic for an "average" effect in the tie-oriented model or

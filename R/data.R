@@ -44,7 +44,7 @@
 #'
 #' @format A square matrix with dimensions equal to the number of unique actors.
 #' @usage data(both_male_wide)
-#' @seealso \code{\link{calculate_tie_statistic}} for the function using this data, \code{\link{both_male_long}} for the data in long format, and \code{\link{info}} for an overview of the actor exogenous attributes.
+#' @seealso \code{\link{tie}} for the function using this data, \code{\link{both_male_long}} for the data in long format, and \code{\link{info}} for an overview of the actor exogenous attributes.
 #' @source Simulated exogenous information on actors in a social network.
 #' 
 #' @examples
@@ -65,7 +65,7 @@
 #'  \item{both_male}{Binary indicator (1 for male-male dyads, 0 otherwise).}
 #' }
 #' @usage data(both_male_long)
-#' @seealso \code{\link{calculate_tie_statistic}} for the function using this data, \code{\link{both_male_wide}} for the data in wide format, and \code{\link{info}} for an overview of the actor exogenous attributes.
+#' @seealso \code{\link{tie}} for the function using this data, \code{\link{both_male_wide}} for the data in wide format, and \code{\link{info}} for an overview of the actor exogenous attributes.
 #' @source Simulated exogenous information on actors in a social network.
 #'
 #' @examples

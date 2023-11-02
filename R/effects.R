@@ -47,6 +47,7 @@ NULL
 #' @param scaling the method for scaling the statistic. Default is to not scale
 #' the statistic. Alternatively, standardization of the
 #' statistic per time point can be requested with "std".
+#' @param attr_data Deprecated argument. Please use 'attr_actors' instead.
 #'
 #' @details
 #' The statistic at timepoint \emph{t} is equal to the value of the exogenous
@@ -78,7 +79,12 @@ NULL
 #' remstats(reh = reh_actor, sender_effects = effects, attr_actors = info)
 #'
 #' @export
-send <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
+send <- function(variable, attr_actors = NULL, scaling = c("none", "std"), attr_data) {
+	# Deal with old function set-up
+	if(!missing(attr_data)) {
+		warning("The 'attr_data' argument in 'send()' is deprecated. Please use 'attr_actors' instead.")
+		attr_actors <- attr_data 
+	}
     # Match scaling
 	if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -129,7 +135,12 @@ send <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
 #' @export
-receive <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
+receive <- function(variable, attr_actors = NULL, scaling = c("none", "std"), attr_data) {
+	# Deal with old function set-up
+	if(!missing(attr_data)) {
+		warning("The 'attr_data' argument in 'send()' is deprecated. Please use 'attr_actors' instead.")
+		attr_actors <- attr_data 
+	}
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -151,6 +162,8 @@ receive <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
 #' @param variable A string specifying the attribute to compute the statistic. If \code{attr_dyads} is a \code{data.frame}, this refers to the column name in \code{attr_actors}. If \code{attr_dyads} is a \code{matrix}, this corresponds to the name of the exogenous attribute, used to label the statistic in the resulting \code{remstats} object.
 #' @param attr_dyads A \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 #' @param scaling The method for scaling the statistic. The default is no scaling. Alternatively, standardization of the statistic per time point can be requested with "std".
+#' @param x Deprecated argument. Please use 'attr_dyads' instead.
+#' @param variableName Deprecated argument. Please use 'variable' instead.
 #' 
 #' @aliases dyad
 #'
@@ -236,7 +249,12 @@ dyad <- tie
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
 #' @export
-same <- function(variable, attr_actors = NULL) {
+same <- function(variable, attr_actors = NULL, attr_data) {
+	# Deal with old function set-up
+	if(!missing(attr_data)) {
+		warning("The 'attr_data' argument in 'send()' is deprecated. Please use 'attr_actors' instead.")
+		attr_actors <- attr_data 
+	}
     # Prep
     prep_exo("same", variable, attr_actors, "none")
 }
@@ -284,9 +302,20 @@ same <- function(variable, attr_actors = NULL) {
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
 #' @export
-difference <- function(variable, attr_actors = NULL,
-                       scaling = c("none", "std"), absolute = TRUE) {
-    # Match scaling
+difference <- function(
+	variable, 
+	attr_actors = NULL,
+  scaling = c("none", "std"), 
+  absolute = TRUE,
+	attr_data
+) {
+	# Deal with old function set-up
+	if(!missing(attr_data)) {
+		warning("The 'attr_data' argument in 'send()' is deprecated. Please use 'attr_actors' instead.")
+		attr_actors <- attr_data 
+	}
+    
+	# Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
 		scaling <- "none"
@@ -339,7 +368,13 @@ difference <- function(variable, attr_actors = NULL,
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
 #' @export
-average <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
+average <- function(variable, attr_actors = NULL, scaling = c("none", "std"), attr_data) {
+    # Deal with old function set-up
+	if(!missing(attr_data)) {
+		warning("The 'attr_data' argument in 'send()' is deprecated. Please use 'attr_actors' instead.")
+		attr_actors <- attr_data 
+	}
+
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -386,7 +421,13 @@ average <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
 #' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #'
 #' @export
-minimum <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
+minimum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), attr_data) {
+  # Deal with old function set-up
+	if(!missing(attr_data)) {
+		warning("The 'attr_data' argument in 'send()' is deprecated. Please use 'attr_actors' instead.")
+		attr_actors <- attr_data 
+	}
+
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")
@@ -433,7 +474,13 @@ minimum <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
 #' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #'
 #' @export
-maximum <- function(variable, attr_actors = NULL, scaling = c("none", "std")) {
+maximum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), attr_data) {
+  # Deal with old function set-up
+	if(!missing(attr_data)) {
+		warning("The 'attr_data' argument in 'send()' is deprecated. Please use 'attr_actors' instead.")
+		attr_actors <- attr_data 
+	}
+  
     # Match scaling
     if("as.is" %in% scaling) {
 		warning("use 'scaling' is 'none' instead of 'as.is'")

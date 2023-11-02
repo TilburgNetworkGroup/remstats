@@ -79,7 +79,9 @@ risk set entries}
 \item{get_adjmat}{for a tie-oriented model, whether the adjmat computed by 
 remstats should be outputted as an attribute of the statistics.}
 
-\item{attributes}{deprecated, please use "attr_actors" instead}
+\item{attr_data}{deprecated, please use "attr_actors" instead}
+
+\item{attributes}{deprecated, please use "attr_data" instead}
 
 \item{edgelist}{deprecated, please use "reh" instead}
 }

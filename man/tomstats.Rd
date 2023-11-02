@@ -66,7 +66,9 @@ rows the time points and on the columns the risk set entries}
 \item{get_adjmat}{whether the adjmat computed by tomstats should be
 outputted as an attribute of the statistics.}
 
-\item{attributes}{deprecated, please use "attr_actors" instead}
+\item{attr_data}{deprecated, please use "attr_actors" instead}
+
+\item{attributes}{deprecated, please use "attr_data" instead}
 
 \item{edgelist}{deprecated, please use "reh" instead}
 }

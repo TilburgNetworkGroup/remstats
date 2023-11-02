@@ -7,7 +7,6 @@
 #include <map>
 
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::depends(RcppProgress)]]
 
@@ -349,7 +348,6 @@ arma::mat calculate_inertia(const arma::mat &edgelist,
 /*
   Transform the inertia building block when event types are in the dependent variable, but consider_type is FALSE.
 */
-// [[Rcpp::export]]
 arma::mat transform_inertia(const arma::mat &inertia,
                             const arma::mat &risksetMatrix,
                             bool display_progress)
@@ -402,7 +400,6 @@ arma::mat transform_inertia(const arma::mat &inertia,
   return new_inertia;
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_degree_actor(int type, const arma::mat &inertia,
                                  const arma::mat &risksetMatrix,
                                  bool consider_type,
@@ -588,7 +585,6 @@ arma::mat calculate_degree_actor(int type, const arma::mat &inertia,
   return degree_stat;
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_degree_dyad(int type, const arma::mat &inertia,
                                 const arma::mat &risksetMatrix,
                                 bool consider_type,
@@ -660,7 +656,6 @@ arma::mat calculate_degree_dyad(int type, const arma::mat &inertia,
   }
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_reciprocity(const arma::mat &inertia,
                                 const arma::mat &risksetMatrix,
                                 bool consider_type,
@@ -720,7 +715,6 @@ arma::mat calculate_reciprocity(const arma::mat &inertia,
   return reciprocity;
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_triad(int type, const arma::mat &inertia,
                           const arma::mat &risksetMatrix,
                           Rcpp::String scaling,
@@ -748,9 +742,6 @@ arma::mat calculate_triad(int type, const arma::mat &inertia,
 
   if (consider_type)
   {
-    // Declare variables
-    int path1_dyad, path2_dyad;
-
     // Loop over 'senders'
     for (arma::uword s = 0; s < N; ++s)
     {
@@ -766,6 +757,10 @@ arma::mat calculate_triad(int type, const arma::mat &inertia,
           // Loop over 'third actors'
           for (arma::uword h = 0; h < N; ++h)
           {
+            // Declare variables
+            int path1_dyad = -1; 
+            int path2_dyad = -1;
+
             if (h == s || h == r)
               continue;
 
@@ -1040,7 +1035,6 @@ arma::uvec pshift_event_indices(const arma::mat &edgelist,
   return event_indices;
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_pshift(std::string type, const arma::mat &edgelist,
                            const arma::mat &risksetMatrix,
                            int start, int stop, bool directed,
@@ -1326,7 +1320,6 @@ void update_lastActive(double time, const arma::vec &dyads,
   }
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_recency(std::string type, const arma::mat &edgelist,
                             const arma::mat &risksetMatrix,
                             int start, int stop, bool consider_type,
@@ -1638,7 +1631,6 @@ arma::rowvec rankR(arma::rowvec x, int N)
   return ranks;
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_rrank(int type, const arma::mat &edgelist,
                           const arma::mat &riskset, int N, int C,
                           int start, int stop,
@@ -1836,7 +1828,6 @@ void update_exo_actor(double value, arma::mat &stat, arma::vec dyads, int i)
      A matrix with the exogenous actor statistics. Rows refer to the time points, and columns refer to the dyads.
 */
 
-// [[Rcpp::export]]
 arma::mat calculate_exo_actor(std::string type,
                               const arma::mat &edgelist,
                               const arma::mat &risksetMatrix,
@@ -1968,7 +1959,6 @@ arma::mat calculate_exo_actor(std::string type,
   return stat;
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_exo_dyad(std::string type,
                              const arma::mat &edgelist,
                              const arma::mat &riskset,
@@ -2156,7 +2146,6 @@ arma::mat calculate_exo_dyad(std::string type,
     @param stop Ending index for the tie statistic calculation.
     @return Matrix containing tie statistics for the specified range of indices.
 */
-// [[Rcpp::export]]
 arma::mat calculate_exo_tie(const arma::mat &covariates,
                             const arma::mat &edgelist,
                             const arma::mat &risksetMatrix,
@@ -2235,7 +2224,6 @@ arma::mat calculate_exo_tie(const arma::mat &covariates,
   return stat;
 }
 
-// [[Rcpp::export]]
 arma::mat calculate_exo_event(const arma::mat &covariates, const arma::mat &edgelist, const arma::mat &riskset, int start, int stop, bool display_progress, Rcpp::String method)
 {
 
