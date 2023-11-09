@@ -39,7 +39,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
   }
 
   # Extract relevant elements from the prepared remify::remify object
-  dyads <- unlist(attr(reh, "dyad"))
+  dyads <- unlist(attr(reh, "dyadID"))
   actors <- attr(reh, "dictionary")$actors
   types <- attr(reh, "dictionary")$types
 
@@ -48,6 +48,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
 
   # Prepare the edgelist for cpp processing
   edgelist <- reh$edgelist
+  edgelist$time <- as.numeric(diff(c(attributes(reh)$origin, edgelist$time)))
   edgelist$actor1_ID <- edgelist$actor1_ID - 1
   edgelist$actor2_ID <- edgelist$actor2_ID - 1
   if (!attr(reh, "directed")) {
@@ -66,7 +67,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
  
   # Prepare the event weights
   if (attr(reh, "weighted")) {
-    weights <- edgelist$weight
+    weights <- as.numeric(edgelist$weight)
   } else {
     weights <- rep(1, nrow(edgelist))
   }
@@ -107,7 +108,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
 
   # Convert R start and stop indices to C++ (indexing starts at 0) and 
   # check them
-  subset <- prepare_subset(start, stop, edgelist, method)
+  subset <- prepare_subset(start, stop, edgelist, method, model = "tie")
   start <- subset$start
   stop <- subset$stop
 
@@ -186,7 +187,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL,
     form = form,
     effects = effects,
     effectNames = effectNames,
-    edgelist = as.matrix(edgelist),
+    edgelist = as.matrix(edgelist[,1:3]),
     weights = weights,
     actors = actors,
     types = types,
@@ -265,6 +266,10 @@ validate_memory <- function(memory, memory_value) {
     stopifnot(
       "A 'memory_value' of numeric type should be supplied when memory is 'decay'" =
         length(memory_value) == 1 && is.numeric(memory_value)
+    )
+    stopifnot(
+      "Invalid 'memory_value': must be a positive non-zero value." = 
+      memory_value[1] > 0
     )
   }
   if (memory == "interval") {
@@ -777,9 +782,6 @@ prepare_aomstats_edgelist <- function(reh) {
 	# Extract the edgelist
 	edgelist <- reh$edgelist
 	
-	# Create the time variable
-	edgelist[,1] <- cumsum(reh$intereventTime)
-	
 	# Transform to cpp indexing 
 	edgelist <- as.matrix(edgelist)
 	edgelist[, 2] <- edgelist[, 2] - 1
@@ -789,8 +791,12 @@ prepare_aomstats_edgelist <- function(reh) {
 }
 
 prepare_aomstats_actors <- function(reh) {
+  # Extract the actors
 	actors <- attr(reh, "dictionary")$actors
+
+  # Transform to cpp indexing
 	actors$actorID <- actors$actorID - 1
+
 	return(actors)
 }
 
@@ -803,7 +809,7 @@ prepare_aomstats_event_weights <- function(edgelist) {
 	return(weights)
 }
 
-prepare_subset <- function(start, stop, edgelist, method) {
+prepare_subset <- function(start, stop, edgelist, method, model) {
   if (start < 1) {
     stop("The 'start' value should be set to 1 or a larger number.")
   }
@@ -828,6 +834,15 @@ prepare_subset <- function(start, stop, edgelist, method) {
     if(stop > NROW(unique(edgelist[,1]))) {
       stop("The 'stop' value cannot be larger than the number of unique time points in 'reh'.")
     }
+  }
+  if (model == "receiver" & method == "pt") {
+    # For the receiver model, we need all timepoints not only the unique one
+    unique_times <- unique(edgelist[,1])
+    start_time <- unique_times[start + 1]
+    stop_time <- unique_times[stop + 1]
+    all_times <- edgelist[,1]
+    start <- min(which(all_times == start_time)) - 1
+    stop <- max(which(all_times == stop_time)) - 1
   }
   list(start = start, stop = stop)
 }

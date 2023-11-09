@@ -587,7 +587,6 @@ prop_inertia <- t(sapply(1:nrow(edgelist), function(m) {
   } else {
     scaled_original <- receiver_stats[m,,"inertia"] / outdegree_thisSender
   }
-  scaled_original[edgelist[m,2]] <- 0
   scaled_original  
 }))
 expect_equal(prop_receiver_stats[,,"inertia"], prop_inertia)
@@ -600,7 +599,6 @@ prop_reciprocity <- t(sapply(1:nrow(edgelist), function(m) {
   } else {
     scaled_original <- receiver_stats[m,,"reciprocity"] / indegree_thisSender
   }
-  scaled_original[edgelist[m,2]] <- 0
   scaled_original  
 }))
 expect_equal(prop_receiver_stats[,,"reciprocity"], prop_reciprocity)

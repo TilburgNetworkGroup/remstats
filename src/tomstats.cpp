@@ -126,114 +126,98 @@ arma::mat convert_to_risksetMatrix(arma::mat riskset, int N, int C)
 
 /* inertia_event_indices
 
-Helper for calculate_inertia. Returns the indices for the events that should be used to calculate inertia, depending on the 'method' and 'memory' settings. 
+Helper for calculate_inertia. Returns the indices for the events that should be used to calculate inertia, depending on the 'method' and 'memory' settings.
+
+Note: This function assumes that when memory is set to 'full,' the current inertia row (i) is initialized with the values from the previous row (i - 1). Subsequently, this row is efficiently updated with new events corresponding to the indices obtained through this function. In other memory cases, the current inertia row starts empty and must be computed using events obtained from the indices provided by this function.
 */
 
 arma::uvec inertia_event_indices(const arma::mat &edgelist,
                                  const arma::vec &time_points,
                                  int start, int i,
-                                 Rcpp::String memory,
-                                 arma::vec memory_value,
-                                 Rcpp::String method)
+                                 const std::string &memory,
+                                 const arma::vec &memory_value,
+                                 const std::string &method)
 {
+  // Declare event_indices variable
   arma::uvec event_indices;
 
-  // Current time point
+  // Get the current event time
   double current_time = time_points(i);
 
-  if (method == "pt")
+  if (memory == "full")
   {
-    if (memory == "full")
+    if (method == "pt")
     {
-      // Previous time point
+      // Declare the previous event time variable
       double previous_time = 0;
       if (i > 0)
       {
+        // Get the previous event time if the index i is larger than 0
         previous_time = time_points(i - 1);
       }
 
-      // Only compute with events that happened since the previous time point
-      event_indices = arma::find(edgelist.col(0) >= previous_time &&
-                                 edgelist.col(0) < current_time);
+      // Events that happened since the previous time point
+      event_indices = arma::find(edgelist.col(0) >= previous_time && edgelist.col(0) < current_time);
     }
-    else if (memory == "interval")
+    else if (method == "pe")
     {
-      // Start time of the interval
-      double min_time = current_time - memory_value(1);
-      // End time of the interval
-      double max_time = current_time - memory_value(0);
-      // Only update with events that happened between two time points
-      event_indices = arma::find(edgelist.col(0) >= min_time &&
-                                 edgelist.col(0) < max_time);
+      if (i == 0 && start > 0)
+      {
+        // All previous events
+        event_indices = arma::regspace<arma::uvec>(0, start - 1);
+      }
+      else if (i > 0)
+      {
+        // Only the one previous event
+        event_indices.set_size(1);
+        event_indices(0) = start + i - 1;
+      }
     }
-    else if (memory == "decay")
+  }
+  else if (memory == "interval")
+  {
+    // Define the interval times
+    double min_time = current_time - memory_value(1);
+    double max_time = current_time - memory_value(0);
+    // Only update with events that happened between two time points
+    event_indices = arma::find(edgelist.col(0) >= min_time &&
+                               edgelist.col(0) < max_time);
+  }
+  else if (memory == "decay")
+  {
+    if (method == "pt")
     {
       // Update with events that happened before the current time
       event_indices = arma::find(edgelist.col(0) < current_time);
     }
-  }
-  else if (method == "pe")
-  {
-    if (i == 0)
+    else if (method == "pe")
     {
-      event_indices = arma::find(edgelist.col(0) < current_time);
-      if (event_indices.n_elem > 0)
+      // Update with all previous events
+      if (i > 0)
       {
-        int last_event = arma::max(event_indices);
-        event_indices.resize(1);
-        event_indices(0) = last_event;
+        event_indices = arma::regspace<arma::uvec>(0, i - 1);
       }
-    }
-    else
-    {
-      event_indices.resize(1);
-      event_indices(0) = start + i - 1;
     }
   }
   return event_indices;
 }
 
-/* update_inertia
-
-Helper for calculate_inertia. Returns the new inertia row that is updated with the new events. 
-*/
-
-arma::rowvec update_inertia(arma::uvec update, const arma::mat &edgelist,
-                            const arma::mat &risksetMatrix, int N, int C,
-                            arma::rowvec inertia_row, const arma::vec &weights)
-{
-
-  for (arma::uword j = 0; j < update.n_elem; ++j)
-  {
-    arma::uword event = update(j);
-    int actor1 = edgelist(event, 1);
-    int actor2 = edgelist(event, 2);
-    int event_type = 0;
-    if (C > 1)
-    {
-      event_type = edgelist(event, 3);
-    }
-    arma::uword dyad = risksetMatrix(actor1, actor2 + (N * event_type));
-    inertia_row(dyad) += weights(event);
-  }
-
-  return inertia_row;
-}
-
 /* get_decay_weights
 
-Helper for calculate_inertia. Computes the decay weights for all events for a given time point. 
+Helper for calculate_inertia. Computes the decay weights for all events for a given time point.
 */
-arma::vec get_decay_weights(double previous_time, arma::uvec update,
+arma::vec get_decay_weights(double previous_time,
+                            arma::uvec event_indices,
                             const arma::vec &weights,
-                            const arma::mat &edgelist, double mem_val)
+                            const arma::mat &edgelist,
+                            double mem_val)
 {
 
   arma::vec decay_weights = weights;
 
-  for (arma::uword j = 0; j < update.n_elem; ++j)
+  for (arma::uword j = 0; j < event_indices.n_elem; ++j)
   {
-    arma::uword event = update(j);
+    arma::uword event = event_indices(j);
     double event_time = edgelist(event, 0);
     double event_weight = weights(event);
     double decay_weight = event_weight * exp(-(previous_time - event_time) * (log(2) / mem_val)) * (log(2) / mem_val);
@@ -244,18 +228,40 @@ arma::vec get_decay_weights(double previous_time, arma::uvec update,
   return decay_weights;
 }
 
-/* calculate_inertia 
+void update_inertia(arma::uvec event_indices, int i,
+                    arma::mat &inertia,
+                    const arma::mat &edgelist,
+                    const arma::mat &risksetMatrix,
+                    int N, int C,
+                    const arma::vec &weights)
+{
+  for (arma::uword j = 0; j < event_indices.n_elem; ++j)
+  {
+    arma::uword event = event_indices(j);
+    int actor1 = edgelist(event, 1);
+    int actor2 = edgelist(event, 2);
+    int event_type = 0;
+    if (C > 1)
+    {
+      event_type = edgelist(event, 3);
+    }
+    arma::uword dyad = risksetMatrix(actor1, actor2 + (N * event_type));
+    inertia(i, dyad) += weights(event);
+  }
+}
 
-Calculates the inertia statistic (that is also used as a building block) where per time (in the rows) and per dyad (in the columns) the number of previous events is given. 
+/* calculate_inertia
+
+Calculates the inertia statistic (that is also used as a building block) where per time (in the rows) and per dyad (in the columns) the number of previous events is given.
 
 Param:
-- edgelist: 
+- edgelist:
 - weights:
-- risksetMatrix: 
-- memory: 
+- risksetMatrix:
+- memory:
 - memory_value:
 - start:
-- stop: 
+- stop:
 - display_progress:
 - method:
 */
@@ -304,38 +310,51 @@ arma::mat calculate_inertia(const arma::mat &edgelist,
   for (arma::uword i = 0; i < time_points.n_elem; ++i)
   {
     // Indices of the events with which inertia is updated
-    arma::uvec update = inertia_event_indices(edgelist, time_points, start, i, memory, memory_value, method);
+    arma::uvec event_indices = inertia_event_indices(edgelist, time_points, start, i, memory, memory_value, method);
 
     if (memory == "full")
     {
-      // Set the previous row equal to the previous
+      // Set the current row equal to the previous
       if (i > 0)
       {
         inertia.row(i) = inertia.row(i - 1);
       }
     }
 
-    // Update this inertia row
-    if (memory == "decay")
+    // Update inertia
+    if (memory == "full" || memory == "interval")
     {
-      if (memory_value(0) <= 0)
-      {
-        throw std::runtime_error("Invalid memory_value: must be a positive non-zero value.");
-      }
-
+      update_inertia(event_indices, i, inertia, edgelist, risksetMatrix, N, C, weights);
+    }
+    else if (memory == "decay")
+    {
+      // Declare the previous event time variable
       double previous_time = 0;
-      if (i > 0)
+      if (i == 0 && start > 0)
       {
+        // Get the previous event time if start is larger than 0
+        arma::vec event_times;
+        if (method == "pt")
+        {
+          event_times = arma::unique(edgelist.col(0));
+        }
+        else if (method == "pe")
+        {
+          event_times = edgelist.col(0);
+        }
+        previous_time = arma::max(event_times.subvec(0, start - 1));
+      }
+      else if (i > 0)
+      {
+        // Get the previous event time if the index i is larger than 0
         previous_time = time_points(i - 1);
       }
 
-      arma::vec decay_weights = get_decay_weights(previous_time, update, weights, edgelist, memory_value(0));
-      inertia.row(i) = update_inertia(update, edgelist, risksetMatrix, N, C, inertia.row(i), decay_weights);
-    }
-    else
-    {
-      inertia.row(i) = update_inertia(update, edgelist, risksetMatrix, N, C,
-                                      inertia.row(i), weights);
+      // Update decay weights
+      arma::vec decay_weights = get_decay_weights(previous_time, event_indices, weights, edgelist, memory_value(0));
+
+      // Update inertia
+      update_inertia(event_indices, i, inertia, edgelist, risksetMatrix, N, C, decay_weights);
     }
 
     p.increment();
@@ -1022,13 +1041,13 @@ arma::uvec pshift_event_indices(const arma::mat &edgelist,
       if (event_indices.n_elem > 0)
       {
         int last_event = arma::max(event_indices);
-        event_indices.resize(1);
+        event_indices.set_size(1);
         event_indices(0) = last_event;
       }
     }
     else
     {
-      event_indices.resize(1);
+      event_indices.set_size(1);
       event_indices(0) = start + i - 1;
     }
   }
@@ -1503,7 +1522,7 @@ arma::mat calculate_recency(std::string type, const arma::mat &edgelist,
     else if (method == "pe")
     {
       // Only with the current event
-      event_indices.resize(1);
+      event_indices.set_size(1);
       event_indices(0) = start + m;
     }
 
@@ -1763,7 +1782,7 @@ arma::mat calculate_rrank(int type, const arma::mat &edgelist,
     else if (method == "pe")
     {
       // Only with the current event
-      event_indices.resize(1);
+      event_indices.set_size(1);
       event_indices(0) = start + i;
     }
 

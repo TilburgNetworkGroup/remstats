@@ -103,6 +103,7 @@ aomstats <- function(reh,
                      receiver_effects = NULL,
                      attr_actors = NULL,
                      attr_dyads = NULL, 
+                     method = c("pt", "pe"),
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = Inf,
                      start = 1,
@@ -141,10 +142,8 @@ aomstats <- function(reh,
   memory <- match.arg(memory)
   memory_value <- validate_memory(memory, memory_value)
 
-  # Prepare subset arguments
-  subset <- prepare_subset(start, stop, edgelist, method = "pe")
-  start <- subset$start
-  stop <- subset$stop 
+  # Validate the method
+  method <- match.arg(method)
 
   # Initialize stats
   sender_stats <- NULL
@@ -159,6 +158,9 @@ aomstats <- function(reh,
     sender_effects_names <- temp$sender_effects_names
     sender_interactions <- temp[[3]]
 
+    # Prepare subset arguments
+    subset <- prepare_subset(start, stop, edgelist, method, model = "sender")
+
     # Prepare sender covariate information
     sender_covar <- prepare_sender_covariates(sender_effects, attr_actors, 
       actors, edgelist, reh)
@@ -168,10 +170,9 @@ aomstats <- function(reh,
       sender_interactions)
 
     # Compute the sender statistics
-    sender_stats <- compute_stats_rate(
+    sender_stats <- compute_stats_sender(
       sender_effects_names, edgelist, actors[, 2], weights, sender_covar,
-      sender_interactions, memory, memory_value, sender_scaling, start, stop,
-      display_progress
+      sender_interactions, memory, memory_value, sender_scaling, subset$start, subset$stop, method, display_progress
     )
 
     # Add variable names to the statistics dimnames
@@ -188,6 +189,9 @@ aomstats <- function(reh,
     receiver_effects_names <- temp$receiver_effects_names
     receiver_interactions <- temp$receiver_interactions
 
+    # Prepare subset arguments
+    subset <- prepare_subset(start, stop, edgelist, method, model = "receiver")
+
     # Prepare receiver covariate information
     receiver_covar <- prepare_receiver_covariates(receiver_effects, 
       attr_actors, attr_dyads, actors, edgelist, reh)
@@ -197,10 +201,10 @@ aomstats <- function(reh,
       receiver_interactions)
 
     # Compute the choice statistics
-    receiver_stats <- compute_stats_choice(
+    receiver_stats <- compute_stats_receiver(
       receiver_effects_names, edgelist, actors[, 2], weights, receiver_covar,
       receiver_interactions, memory, memory_value, receiver_scaling,
-      start, stop, display_progress
+      subset$start, subset$stop, method, display_progress
     )
 
     # Add variable names to the statistics dimnames

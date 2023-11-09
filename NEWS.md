@@ -1,11 +1,12 @@
-# remstats 3.2.0
-**Date**: October 31, 2023
+# Unreleased
+**Date**: November 2nd, 2023
 Compatible with `remify` version 3.2.0. 
 
 ## Added
 - [Issue [#67](https://github.com/TilburgNetworkGroup/remstats/issues/67)] - Introducing the ability to manage simultaneous events. When events occur on the same time, the user can specify the `method` for managing simultaneous events. The default `method` is `"pt"` (per timepoint), where statistics are computed once for each unique timepoint in the edgelist. Alternatively, you can choose `"pe"` (per event), where statistics are computed once for each unique event observed in the edgelist. 
 
 ## Changed
+- The meaning of the `start` and `stop` values changes slightly when `method` is `pt`. They now refer to the indices of the first unique timepoint and last unique timepoint for which the user wishes to calculate statistics. The meaning of `start` and `stop` remains unchanged when `method` is `pe`. 
 - [Issue [#72](https://github.com/TilburgNetworkGroup/remstats/issues/72)] - When weighting the past events, counting now starts from the time of the preceding event instead of the current event. This change ensures the constant hazard assumption is maintained. 
 - The default value for the `consider_type` argument is now `TRUE` for improved logical consistency. 
 
