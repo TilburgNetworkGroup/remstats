@@ -1,6 +1,7 @@
-library(tinytest)
-library(remstats)
-tinytest::test_package("remstats", testdir="tinytest")
+
+if ( requireNamespace("tinytest", quietly=TRUE) ){
+	tinytest::test_package("Bayesrel")
+}
 
 # test-endogenous-stats / test-exogenous-stats: 
 # Condition 1: Directed events, tie-oriented model
