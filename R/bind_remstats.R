@@ -234,7 +234,7 @@ bind_remstats <- function(...) {
             final_formula <- "Combined remstats object"
             attr(statistics, "formula")$choice <- final_formula
         } else {
-            if (length(rate.list) == 1) {
+            if (length(choice.list) == 1) {
                 statistics$receiver_stats <- choice.list[[1]]
             }
             attr(statistics, "formula")$choice <-

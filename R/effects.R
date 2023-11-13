@@ -191,6 +191,12 @@ tie <- function(variable, attr_dyads = NULL, scaling = c("none", "std"), x, vari
     warning("The 'variableName' argument in 'tie()' is deprecated. Please use 'variable' instead.")
     variable <- variableName
   }
+  if(!is.character(variable)) {
+    stop("The 'variable' argument should be of type character.")
+  }
+  if(!is.matrix(attr_dyads) & !is.data.frame(attr_dyads)) {
+    stop("The 'attr_dyads' argument should be of type matrix or data.frame.")
+  }
 
   # Match scaling
   if ("as.is" %in% scaling) {
@@ -2445,10 +2451,10 @@ recencyContinue <- function(consider_type = TRUE) {
 #' object and, optionally, interact this statistic with other statistics in the
 #' formula.
 #'
-#' @param x matrix with number of rows equal to the number of events and number
-#' of columns equal to the number of dyads in the network (tie-oriented model)
+#' @param x Matrix with number of rows equal to the number of events and number
+#' of columns equal to the number of dyads in the network (tie-oriented model) 
 #' or the number of actors in the network (actor-oriented model)
-#' @inheritParams tie
+#' @param variableName Optionally, a string with the name of the statistic. 
 #'
 #' @examples
 #' reh <- remify::remify(history, model = "tie")
