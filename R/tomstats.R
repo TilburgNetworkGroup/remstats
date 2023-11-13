@@ -1,7 +1,7 @@
 #' tomstats
 #'
 #' Computes statistics for modeling relational event history data
-#' with Butts' (2008) relational event model.
+#' with the tie-oriented relational event model.
 #'
 #' @param effects an object of class \code{"\link[stats]{formula}"} (or one
 #' that can be coerced to that class): a symbolic description of the effects in
@@ -53,8 +53,8 @@
 #' procedure for the exogenous effects `tie' and `event' deviates from this,
 #' here the exogenous covariate information has to be specified in a different
 #' way, see \code{\link{tie}} and \code{\link{event}}.
-#' 
-#' @section attr_dyads:  
+#'
+#' @section attr_dyads:
 #' For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 #'
 #' @section Memory:
@@ -83,13 +83,19 @@
 #' that follow logically from their definition (e.g., the recenyContinue
 #' statistic does depend on time since the event and not on event weights).
 #'
-#' @section Subset of the relational event history:
-#' Optionally, statistics can be computed for a slice of the relational event
-#' sequence - but based on the entire history. This is achieved by setting the
-#' start and stop values equal to the index of the first and last event for
-#' which statistics are requested. For example, start = 5 and stop = 5 computes
-#' the statistics for only the 5th event in the relational event sequence,
-#' based on the history that consists of events 1-4.
+#' @section Subset the event history using 'start' and 'stop':
+#' It is possible to compute statistics for a segment of the relational event 
+#' sequence, based on the entire event history. This is done by specifying the 
+#' 'start' and 'stop' values as the indices for the first and last event times 
+#' for which statistics are needed. For instance, setting 'start = 5' and 'stop 
+#' = 5' calculates statistics for the 5th event in the relational event 
+#' sequence, considering events 1-4 in the history. Note that in cases of 
+#' simultaneous events with the 'method' set to 'pt' (per timepoint), 'start' 
+#' and 'stop' should correspond to the indices of the first and last 
+#' \emph{unique} event timepoints for which statistics are needed. For example, 
+#' if 'start = 5' and 'stop = 5', statistics are computed for the 5th unique 
+#' timepoint in the relational event sequence, considering all events occurring 
+#' at unique timepoints 1-4.
 #'
 #' @section Adjacency matrix:
 #' Optionally, a previously computed adjacency matrix can be supplied. Note
@@ -121,9 +127,10 @@
 #'
 #' @export
 tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
+                     method = c("pt", "pe"), 
                      memory = c("full", "window", "decay", "interval"),
-                     memory_value = NA, start = 1, stop = Inf, 
-                     display_progress = FALSE, 
+                     memory_value = NA, start = 1, stop = Inf,
+                     display_progress = FALSE,
                      adjmat = NULL, get_adjmat = FALSE,
                      attr_data, attributes, edgelist) {
   # Check if the deprecated argument "attributes" is used
@@ -155,16 +162,18 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
     effects = effects, reh = reh,
     attr_actors = attr_actors, attr_dyads = attr_dyads,
     memory = memory, memory_value = memory_value,
-    start = start, stop = stop
+    start = start, stop = stop, method = method
   )
 
   form <- inputs$form
   effects <- inputs$effects
   effectNames <- inputs$effectNames
   edgelist <- inputs$edgelist
+  weights <- inputs$weights
   actors <- inputs$actor
   types <- inputs$types
-  prepR <- inputs$prepR
+  riskset <- inputs$riskset
+  risksetMatrix <- inputs$risksetMatrix
   memory <- inputs$memory
   memory_value <- inputs$memory_value
   scaling <- inputs$scaling
@@ -173,25 +182,23 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   interactions <- inputs$interactions
   start <- inputs$start
   stop <- inputs$stop
+  method <- inputs$method
 
-  # Compute the adjacency matrix
+  # Compute the inertia building block
   if (is.null(adjmat)) {
     if (any(grepl("degree", effectNames)) | any(effectNames %in% c("inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp"))) {
-      adjmat <- compute_adjmat(
-        edgelist, nrow(prepR), attr(reh, "directed"),
-        memory, memory_value, start, stop, display_progress
+      inertia <- calculate_inertia(edgelist, weights, risksetMatrix, memory,
+        memory_value, start, stop, display_progress, method
       )
     } else {
-      adjmat <- matrix()
+      inertia <- matrix()
     }
   }
 
   # Compute statistics
-  statistics <- compute_stats_tie(
-    effectNames, edgelist, adjmat, actors[, 2],
-    types[, 2], prepR, scaling, consider_type, covar, interactions, start,
-    stop, attr(reh, "directed"), display_progress
-  )
+  statistics <- compute_stats_tie(effectNames, edgelist, riskset, 
+    risksetMatrix, inertia, covar, interactions, memory, memory_value, scaling, 
+    consider_type, start, stop, attr(reh, "directed"), display_progress, method)
 
   # Add variable names to the statistics dimnames
   statistics <- add_variable_names(
@@ -200,7 +207,7 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   )
 
   # Modify riskset output
-  riskset <- modify_riskset(prepR, reh, actors, types)
+  riskset <- modify_riskset(riskset, reh, actors, types)
 
   # Format output
   class(statistics) <- c("tomstats", "remstats")

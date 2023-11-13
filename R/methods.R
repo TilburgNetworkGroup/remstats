@@ -3,6 +3,7 @@
 #' Print a \code{\link{remstats}} object in a user-friendly format.
 #'
 #' @param x object of class \code{\link{remstats}}.
+#' @param ... further arguments passed to or from other methods.
 #'
 #' @examples
 #' rehObject <- remify::remify(edgelist = history, model = "tie")
@@ -109,6 +110,7 @@ print.remstats <- function(x, ...) {
 #' Produce summaries of each statistic from a \code{\link{remstats}} object.
 #'
 #' @param object object of class \code{\link{remstats}}.
+#' @param ... additional arguments affecting the summary produced.
 #'
 #' @examples
 #' rehObject <- remify::remify(edgelist = history, model = "tie")

@@ -4,12 +4,12 @@
 \alias{recencyReceiveSender}
 \title{recencyReceiveSender}
 \usage{
-recencyReceiveSender(consider_type = FALSE)
+recencyReceiveSender(consider_type = TRUE)
 }
 \arguments{
 \item{consider_type}{logical, indicates whether to compute the recency
-separately for each event type (TRUE) or regardless of event types (FALSE,
-default).}
+separately for each event type (TRUE, default) or regardless of event types
+(FALSE).}
 }
 \description{
 Specifies the statistic for a recency receive of sender effect in the

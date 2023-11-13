@@ -10,6 +10,7 @@ aomstats(
   receiver_effects = NULL,
   attr_actors = NULL,
   attr_dyads = NULL,
+  method = c("pt", "pe"),
   memory = c("full", "window", "decay", "interval"),
   memory_value = Inf,
   start = 1,
@@ -41,23 +42,31 @@ actors (see Details).}
 \item{attr_dyads}{optionally, an object of class \code{data.frame} or 
 \code{matrix} containing attribute information for dyads (see Details).}
 
+\item{method}{Specifies the method for managing simultaneous events, i.e., 
+events occurring at the same time. The default 'method' is 'pt' (per 
+timepoint), where statistics are computed once for each unique timepoint in 
+the edgelist. Alternatively, you can choose 'pe' (per event), where 
+statistics are computed once for each unique event observed in the edgelist.}
+
 \item{memory}{The memory to be used. See `Details'.}
 
 \item{memory_value}{Numeric value indicating the memory parameter. See
 `Details'.}
 
 \item{start}{an optional integer value, specifying the index of the first
-event in the relational event history for which statistics must be computed
-(see 'Details')}
+time or event in the relational event history for which statistics must be 
+computed (see 'Details')}
 
 \item{stop}{an optional integer value, specifying the index of the last
-event in the relational event history for which statistics muts be computed
-(see 'Details')}
+time or event in the relational event history for which statistics muts be 
+computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 
-\item{attributes}{deprecated, please use "attr_actors" instead}
+\item{attr_data}{deprecated, please use "attr_actors" instead}
+
+\item{attributes}{deprecated, please use "attr_data" instead}
 
 \item{edgelist}{deprecated, please use "reh" instead}
 }

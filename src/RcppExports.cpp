@@ -14,49 +14,9 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// calculate_aom_tie_statistic
-arma::mat calculate_aom_tie_statistic(const arma::mat& covariates, const arma::mat& edgelist, const arma::vec& actors, int start, int stop, Rcpp::String scaling, bool display_progress);
-static SEXP _remstats_calculate_aom_tie_statistic_try(SEXP covariatesSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP scalingSEXP, SEXP display_progressSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type actors(actorsSEXP);
-    Rcpp::traits::input_parameter< int >::type start(startSEXP);
-    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
-    Rcpp::traits::input_parameter< Rcpp::String >::type scaling(scalingSEXP);
-    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(calculate_aom_tie_statistic(covariates, edgelist, actors, start, stop, scaling, display_progress));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _remstats_calculate_aom_tie_statistic(SEXP covariatesSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP scalingSEXP, SEXP display_progressSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_calculate_aom_tie_statistic_try(covariatesSEXP, edgelistSEXP, actorsSEXP, startSEXP, stopSEXP, scalingSEXP, display_progressSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// compute_stats_rate
-arma::cube compute_stats_rate(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, bool display_progress);
-static SEXP _remstats_compute_stats_rate_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
+// compute_stats_sender
+arma::cube compute_stats_sender(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, std::string method, bool display_progress);
+static SEXP _remstats_compute_stats_sender_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type effects(effectsSEXP);
@@ -70,16 +30,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type scaling(scalingSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_stats_rate(effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, display_progress));
+    rcpp_result_gen = Rcpp::wrap(compute_stats_sender(effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, method, display_progress));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_compute_stats_rate(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
+RcppExport SEXP _remstats_compute_stats_sender(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP display_progressSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_stats_rate_try(effectsSEXP, edgelistSEXP, actorsSEXP, weightsSEXP, covariatesSEXP, interactionsSEXP, memorySEXP, memory_valueSEXP, scalingSEXP, startSEXP, stopSEXP, display_progressSEXP));
+        rcpp_result_gen = PROTECT(_remstats_compute_stats_sender_try(effectsSEXP, edgelistSEXP, actorsSEXP, weightsSEXP, covariatesSEXP, interactionsSEXP, memorySEXP, memory_valueSEXP, scalingSEXP, startSEXP, stopSEXP, methodSEXP, display_progressSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -99,9 +60,9 @@ RcppExport SEXP _remstats_compute_stats_rate(SEXP effectsSEXP, SEXP edgelistSEXP
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// compute_stats_choice
-arma::cube compute_stats_choice(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, bool display_progress);
-static SEXP _remstats_compute_stats_choice_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
+// compute_stats_receiver
+arma::cube compute_stats_receiver(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, std::string method, bool display_progress);
+static SEXP _remstats_compute_stats_receiver_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type effects(effectsSEXP);
@@ -115,16 +76,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type scaling(scalingSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_stats_choice(effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, display_progress));
+    rcpp_result_gen = Rcpp::wrap(compute_stats_receiver(effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, method, display_progress));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_compute_stats_choice(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
+RcppExport SEXP _remstats_compute_stats_receiver(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP display_progressSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_stats_choice_try(effectsSEXP, edgelistSEXP, actorsSEXP, weightsSEXP, covariatesSEXP, interactionsSEXP, memorySEXP, memory_valueSEXP, scalingSEXP, startSEXP, stopSEXP, display_progressSEXP));
+        rcpp_result_gen = PROTECT(_remstats_compute_stats_receiver_try(effectsSEXP, edgelistSEXP, actorsSEXP, weightsSEXP, covariatesSEXP, interactionsSEXP, memorySEXP, memory_valueSEXP, scalingSEXP, startSEXP, stopSEXP, methodSEXP, display_progressSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -144,25 +106,23 @@ RcppExport SEXP _remstats_compute_stats_choice(SEXP effectsSEXP, SEXP edgelistSE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// getRisksetMatrix
-arma::mat getRisksetMatrix(arma::uvec actorID, arma::uvec typeID, arma::uword N, arma::uword C, bool directed);
-static SEXP _remstats_getRisksetMatrix_try(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP NSEXP, SEXP CSEXP, SEXP directedSEXP) {
+// get_riskset
+arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed);
+static SEXP _remstats_get_riskset_try(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP directedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< arma::uvec >::type actorID(actorIDSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type typeID(typeIDSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type N(NSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type C(CSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
-    rcpp_result_gen = Rcpp::wrap(getRisksetMatrix(actorID, typeID, N, C, directed));
+    rcpp_result_gen = Rcpp::wrap(get_riskset(actorID, typeID, directed));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_getRisksetMatrix(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP NSEXP, SEXP CSEXP, SEXP directedSEXP) {
+RcppExport SEXP _remstats_get_riskset(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP directedSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_getRisksetMatrix_try(actorIDSEXP, typeIDSEXP, NSEXP, CSEXP, directedSEXP));
+        rcpp_result_gen = PROTECT(_remstats_get_riskset_try(actorIDSEXP, typeIDSEXP, directedSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -182,28 +142,65 @@ RcppExport SEXP _remstats_getRisksetMatrix(SEXP actorIDSEXP, SEXP typeIDSEXP, SE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// compute_adjmat
-arma::mat compute_adjmat(const arma::mat& edgelist, int D, bool directed, Rcpp::String memory, arma::vec memory_value, int start, int stop, bool display_progress);
-static SEXP _remstats_compute_adjmat_try(SEXP edgelistSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
+// convert_to_risksetMatrix
+arma::mat convert_to_risksetMatrix(arma::mat riskset, int N, int C);
+static SEXP _remstats_convert_to_risksetMatrix_try(SEXP risksetSEXP, SEXP NSEXP, SEXP CSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
-    Rcpp::traits::input_parameter< int >::type D(DSEXP);
-    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
-    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type memory_value(memory_valueSEXP);
-    Rcpp::traits::input_parameter< int >::type start(startSEXP);
-    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
-    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_adjmat(edgelist, D, directed, memory, memory_value, start, stop, display_progress));
+    Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< int >::type C(CSEXP);
+    rcpp_result_gen = Rcpp::wrap(convert_to_risksetMatrix(riskset, N, C));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_compute_adjmat(SEXP edgelistSEXP, SEXP DSEXP, SEXP directedSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
+RcppExport SEXP _remstats_convert_to_risksetMatrix(SEXP risksetSEXP, SEXP NSEXP, SEXP CSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_adjmat_try(edgelistSEXP, DSEXP, directedSEXP, memorySEXP, memory_valueSEXP, startSEXP, stopSEXP, display_progressSEXP));
+        rcpp_result_gen = PROTECT(_remstats_convert_to_risksetMatrix_try(risksetSEXP, NSEXP, CSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
+// calculate_inertia
+arma::mat calculate_inertia(const arma::mat& edgelist, const arma::vec& weights, const arma::mat& risksetMatrix, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool display_progress, Rcpp::String method);
+static SEXP _remstats_calculate_inertia_try(SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetMatrixSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_inertia(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _remstats_calculate_inertia(SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetMatrixSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_remstats_calculate_inertia_try(edgelistSEXP, weightsSEXP, risksetMatrixSEXP, memorySEXP, memory_valueSEXP, startSEXP, stopSEXP, display_progressSEXP, methodSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -224,33 +221,35 @@ RcppExport SEXP _remstats_compute_adjmat(SEXP edgelistSEXP, SEXP DSEXP, SEXP dir
     return rcpp_result_gen;
 }
 // compute_stats_tie
-arma::cube compute_stats_tie(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::mat& adjmat, const arma::vec& actors, const arma::vec& types, const arma::mat& riskset, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, const Rcpp::List& covariates, const Rcpp::List& interactions, int start, int stop, bool directed, bool display_progress);
-static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP typesSEXP, SEXP risksetSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP) {
+arma::cube compute_stats_tie(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method);
+static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP inertiaSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type effects(effectsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type effects(effectsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type adjmat(adjmatSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type actors(actorsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type types(typesSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type scaling(scalingSEXP);
-    Rcpp::traits::input_parameter< Rcpp::LogicalVector& >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type inertia(inertiaSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type covariates(covariatesSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type interactions(interactionsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type scaling(scalingSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector& >::type consider_type(consider_typeSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_stats_tie(effects, edgelist, adjmat, actors, types, riskset, scaling, consider_type, covariates, interactions, start, stop, directed, display_progress));
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_stats_tie(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP adjmatSEXP, SEXP actorsSEXP, SEXP typesSEXP, SEXP risksetSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP) {
+RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP inertiaSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_stats_tie_try(effectsSEXP, edgelistSEXP, adjmatSEXP, actorsSEXP, typesSEXP, risksetSEXP, scalingSEXP, consider_typeSEXP, covariatesSEXP, interactionsSEXP, startSEXP, stopSEXP, directedSEXP, display_progressSEXP));
+        rcpp_result_gen = PROTECT(_remstats_compute_stats_tie_try(effectsSEXP, edgelistSEXP, risksetSEXP, risksetMatrixSEXP, inertiaSEXP, covariatesSEXP, interactionsSEXP, memorySEXP, memory_valueSEXP, scalingSEXP, consider_typeSEXP, startSEXP, stopSEXP, directedSEXP, display_progressSEXP, methodSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -287,35 +286,35 @@ END_RCPP
 static int _remstats_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
-        signatures.insert("arma::mat(*calculate_aom_tie_statistic)(const arma::mat&,const arma::mat&,const arma::vec&,int,int,Rcpp::String,bool)");
-        signatures.insert("arma::cube(*compute_stats_rate)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
-        signatures.insert("arma::cube(*compute_stats_choice)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,bool)");
-        signatures.insert("arma::mat(*getRisksetMatrix)(arma::uvec,arma::uvec,arma::uword,arma::uword,bool)");
-        signatures.insert("arma::mat(*compute_adjmat)(const arma::mat&,int,bool,Rcpp::String,arma::vec,int,int,bool)");
-        signatures.insert("arma::cube(*compute_stats_tie)(Rcpp::CharacterVector&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::mat&,Rcpp::CharacterVector&,Rcpp::LogicalVector&,const Rcpp::List&,const Rcpp::List&,int,int,bool,bool)");
+        signatures.insert("arma::cube(*compute_stats_sender)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,std::string,bool)");
+        signatures.insert("arma::cube(*compute_stats_receiver)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,std::string,bool)");
+        signatures.insert("arma::mat(*get_riskset)(arma::uvec,arma::uvec,bool)");
+        signatures.insert("arma::mat(*convert_to_risksetMatrix)(arma::mat,int,int)");
+        signatures.insert("arma::mat(*calculate_inertia)(const arma::mat&,const arma::vec&,const arma::mat&,Rcpp::String,const arma::vec&,int,int,bool,Rcpp::String)");
+        signatures.insert("arma::cube(*compute_stats_tie)(Rcpp::CharacterVector,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const Rcpp::List&,const Rcpp::List&,Rcpp::String,const arma::vec&,Rcpp::CharacterVector&,Rcpp::LogicalVector&,int,int,bool,bool,Rcpp::String)");
     }
     return signatures.find(sig) != signatures.end();
 }
 
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _remstats_RcppExport_registerCCallable() { 
-    R_RegisterCCallable("remstats", "_remstats_calculate_aom_tie_statistic", (DL_FUNC)_remstats_calculate_aom_tie_statistic_try);
-    R_RegisterCCallable("remstats", "_remstats_compute_stats_rate", (DL_FUNC)_remstats_compute_stats_rate_try);
-    R_RegisterCCallable("remstats", "_remstats_compute_stats_choice", (DL_FUNC)_remstats_compute_stats_choice_try);
-    R_RegisterCCallable("remstats", "_remstats_getRisksetMatrix", (DL_FUNC)_remstats_getRisksetMatrix_try);
-    R_RegisterCCallable("remstats", "_remstats_compute_adjmat", (DL_FUNC)_remstats_compute_adjmat_try);
+    R_RegisterCCallable("remstats", "_remstats_compute_stats_sender", (DL_FUNC)_remstats_compute_stats_sender_try);
+    R_RegisterCCallable("remstats", "_remstats_compute_stats_receiver", (DL_FUNC)_remstats_compute_stats_receiver_try);
+    R_RegisterCCallable("remstats", "_remstats_get_riskset", (DL_FUNC)_remstats_get_riskset_try);
+    R_RegisterCCallable("remstats", "_remstats_convert_to_risksetMatrix", (DL_FUNC)_remstats_convert_to_risksetMatrix_try);
+    R_RegisterCCallable("remstats", "_remstats_calculate_inertia", (DL_FUNC)_remstats_calculate_inertia_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_tie", (DL_FUNC)_remstats_compute_stats_tie_try);
     R_RegisterCCallable("remstats", "_remstats_RcppExport_validate", (DL_FUNC)_remstats_RcppExport_validate);
     return R_NilValue;
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_remstats_calculate_aom_tie_statistic", (DL_FUNC) &_remstats_calculate_aom_tie_statistic, 7},
-    {"_remstats_compute_stats_rate", (DL_FUNC) &_remstats_compute_stats_rate, 12},
-    {"_remstats_compute_stats_choice", (DL_FUNC) &_remstats_compute_stats_choice, 12},
-    {"_remstats_getRisksetMatrix", (DL_FUNC) &_remstats_getRisksetMatrix, 5},
-    {"_remstats_compute_adjmat", (DL_FUNC) &_remstats_compute_adjmat, 8},
-    {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 14},
+    {"_remstats_compute_stats_sender", (DL_FUNC) &_remstats_compute_stats_sender, 13},
+    {"_remstats_compute_stats_receiver", (DL_FUNC) &_remstats_compute_stats_receiver, 13},
+    {"_remstats_get_riskset", (DL_FUNC) &_remstats_get_riskset, 3},
+    {"_remstats_convert_to_risksetMatrix", (DL_FUNC) &_remstats_convert_to_risksetMatrix, 3},
+    {"_remstats_calculate_inertia", (DL_FUNC) &_remstats_calculate_inertia, 9},
+    {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 16},
     {"_remstats_combine_stats", (DL_FUNC) &_remstats_combine_stats, 2},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}

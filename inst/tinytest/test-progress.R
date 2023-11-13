@@ -46,4 +46,4 @@ output <- capture.output(
     receiver_effects = receiver_effects, display_progress = TRUE,
   )
 )
-expect_true(all(grepl("Computing", output)))
+expect_true(all(grepl("Calculating", output)))

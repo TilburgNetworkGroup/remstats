@@ -25,9 +25,10 @@
 #   effects, reh, attr_actors, memory, memory_value,
 #   start, stop
 # )
-prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
-                             memory = c("full", "window", "decay", "interval"),
-                             memory_value = NA, start = 1, stop = Inf) {
+prepare_tomstats <- function(
+    effects, reh, attr_actors = NULL,
+    attr_dyads = NULL, memory = c("full", "window", "decay", "interval"),
+    memory_value = NA, start = 1, stop = Inf, method = c("pt", "pe")) {
   # Check if reh is of class remify
   if (!("remify" %in% class(reh))) {
     stop("Expected a reh object of class remify")
@@ -39,80 +40,85 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
   }
 
   # Extract relevant elements from the prepared remify::remify object
-  edgelist.reh <- reh$edgelist
-  dyads <- attr(reh, "dyad")
+  dyads <- unlist(attr(reh, "dyad"))
   actors <- attr(reh, "dictionary")$actors
   types <- attr(reh, "dictionary")$types
 
   # Convert actor IDs to cpp indexing
   actors$actorID <- actors$actorID - 1
 
+  # Origin
+  if (attr(reh, "ordinal")) {
+    if (length(attr(reh, "origin"))==0) {
+      attr(reh, "origin") <- edgelist[1,1] - 1
+    }
+  }
+
+  # Prepare the edgelist for cpp processing
+  edgelist <- reh$edgelist
+  edgelist$time <- cumsum(as.numeric(diff(c(attributes(reh)$origin, edgelist$time))))
+  edgelist$actor1_ID <- edgelist$actor1_ID - 1
+  edgelist$actor2_ID <- edgelist$actor2_ID - 1
+  if (!attr(reh, "directed")) {
+    edgelist[, c(2, 3)] <- t(apply(edgelist, 1, function(x) sort(c(x[2], x[3]))))
+  }
+
+  # Deal with event types
   if (is.null(types)) {
     # Prepare a default types object
     types <- data.frame(typeName = 0, typeID = 0)
   } else {
     # Convert type IDs to cpp indexing
     types$typeID <- types$typeID - 1
+    edgelist$type_ID <- edgelist$type_ID - 1
   }
 
   # Prepare the event weights
   if (attr(reh, "weighted")) {
-    weight <- edgelist.reh$weight
+    weights <- as.numeric(edgelist$weight)
   } else {
-    weight <- rep(1, nrow(edgelist.reh))
+    weights <- rep(1, nrow(edgelist))
   }
-
-  # Prepare the edgelist "evls"-style
-  if(attr(reh, "ordinal")) {
-    edgelist.reh$time <- 1:nrow(edgelist.reh)
-  } else {
-    edgelist.reh$time <- cumsum(reh$intereventTime)
-  }
-  edgelist.reh <- matrix(cbind(edgelist.reh$time, dyads, weight),
-    ncol = 3, byrow = FALSE
-  )
-  edgelist.reh[, 2] <- edgelist.reh[, 2] - 1 # cpp indexing!
 
   # Prepare the full risk set
-  prepR <- getRisksetMatrix(
+  prepR <- get_riskset(
     actorID = actors$actorID,
     typeID = types$typeID,
-    N = nrow(actors),
-    C = nrow(types),
     directed = attr(reh, "directed")
   )
 
   # Reduce risk set to "active" dyads only
   if (attr(reh, "riskset") == "active") {
     # Get dyadInfo
-    dyad <- attr(reh, "dyad")
-    dyadIDactive <- as.vector(attr(reh, "dyadIDactive"))
-    dyadInfo <- data.frame(dyadIDactive, dyad)
+    dyadIDactive <- unlist(attr(reh, "dyadIDactive"))
+    dyadInfo <- data.frame(dyadIDactive, dyads)
     dyadInfo <- unique(dyadInfo[order(dyadIDactive), ])
 
     # Select "active" dyads only
-    prepR <- prepR[dyadInfo$dyad, ]
-    full_dyad_id <- prepR[, 4] # cpp indexing!
+    prepR <- prepR[dyadInfo$dyads, ]
     prepR[, 4] <- seq(0, nrow(prepR) - 1, 1)
-    edgelist.reh[, 2] <- match(dyads - 1, full_dyad_id) - 1 # cpp indexing!
   }
+
+  # Get the risksetMatrix
+  risksetMatrix <- convert_to_risksetMatrix(prepR, nrow(actors), nrow(types))
 
   # Match memory
   memory <- match.arg(memory)
   memory_value <- validate_memory(memory, memory_value)
+  if (memory == "window") {
+    # Change memory to interval (window is a special case)
+    memory <- "interval"
+    memory_value <- c(0, memory_value)
+  }
 
-  # Convert R start and stop indices to C++ (indexing starts at 0)
-  if (start < 1) {
-    stop("The 'start' value should be set to 1 or a larger number.")
-  }
-  if (stop < start) {
-    stop("The 'stop' value cannot be smaller than the 'start' value.")
-  }
-  start <- start - 1
-  if (stop == Inf) {
-    stop <- nrow(edgelist.reh)
-  }
-  stop <- stop - 1
+  # Method for managing simultaneous events
+  method <- match.arg(method)
+
+  # Convert R start and stop indices to C++ (indexing starts at 0) and
+  # check them
+  subset <- prepare_subset(start, stop, edgelist, method, model = "tie")
+  start <- subset$start
+  stop <- subset$stop
 
   # Prepare main effects
   check_formula(effects)
@@ -121,14 +127,14 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
   effectNames <- sapply(effects, function(x) x$effect)
 
   # Check correct specification effects
-  if(!attr(reh, "directed")) {
-    if(!all(effectNames %in% tie_effects(directed = FALSE))) {
+  if (!attr(reh, "directed")) {
+    if (!all(effectNames %in% tie_effects(directed = FALSE))) {
       stop("Attempting to request effects that are not (yet) defined for undirected events")
     }
   }
 
-  if(attr(reh, "directed")) {
-    if(!all(effectNames %in% tie_effects(directed = TRUE))) {
+  if (attr(reh, "directed")) {
+    if (!all(effectNames %in% tie_effects(directed = TRUE))) {
       stop("Attempting to request effects that are not (yet) defined for directed events")
     }
   }
@@ -136,7 +142,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
   # Prepare fixed effects
   if (any(effectNames == "FEtype")) {
     C <- nrow(types)
-    if(C < 2) {
+    if (C < 2) {
       stop("FEtype() is not defined when the number of event types is smaller than 2.")
     }
     FEeffects <- lapply(2:C, function(c) {
@@ -150,7 +156,7 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
 
     pos <- which(effectNames == "FEtype")
     effects <- append(effects[-pos], FEeffects, pos - 1)
-    effectNames <- append(effectNames[-pos], rep("FEtype", C-1), pos - 1)
+    effectNames <- append(effectNames[-pos], rep("FEtype", C - 1), pos - 1)
   }
 
   # Prepare interaction effects
@@ -160,19 +166,19 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
   interactions[which(effectNames == "interact")] <- effects_int
 
   # Prepare covariate information
-  covar <- process_covariate(effects, attr_actors, attr_dyads, actors, edgelist.reh, reh, prepR)
+  covar <- process_covariate(effects, attr_actors, attr_dyads, actors, edgelist, reh, prepR)
 
   # Prepare scaling info (vector length p)
   scaling <- sapply(effects, function(x) {
-	  ifelse("scaling" %in% names(x), x$scaling, "none")
+    ifelse("scaling" %in% names(x), x$scaling, "none")
   })
   scaling <- append(scaling, rep("none", length(effects_int)), length(scaling))
 
   # Prepare consider_type info
   consider_type <- sapply(effects, function(x) {
-	  ifelse("consider_type" %in% names(x), x$consider_type, FALSE)
+    ifelse("consider_type" %in% names(x), x$consider_type, TRUE)
   })
-  consider_type <- append(consider_type, rep(FALSE, length(effects_int)), length(consider_type))
+  consider_type <- append(consider_type, rep(TRUE, length(effects_int)), length(consider_type))
 
   # Check correct scaling inertia statistic
   if (!attr(reh, "directed")) {
@@ -189,10 +195,12 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
     form = form,
     effects = effects,
     effectNames = effectNames,
-    edgelist = edgelist.reh,
+    edgelist = as.matrix(edgelist),
+    weights = weights,
     actors = actors,
     types = types,
-    prepR = prepR,
+    riskset = prepR,
+    risksetMatrix = risksetMatrix,
     memory = memory,
     memory_value = memory_value,
     scaling = scaling,
@@ -200,7 +208,8 @@ prepare_tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL
     covar = covar,
     interactions = interactions,
     start = start,
-    stop = stop
+    stop = stop,
+    method = method
   )
 }
 
@@ -266,6 +275,10 @@ validate_memory <- function(memory, memory_value) {
       "A 'memory_value' of numeric type should be supplied when memory is 'decay'" =
         length(memory_value) == 1 && is.numeric(memory_value)
     )
+    stopifnot(
+      "Invalid 'memory_value': must be a positive non-zero value." =
+        memory_value[1] > 0
+    )
   }
   if (memory == "interval") {
     stopifnot(
@@ -292,63 +305,55 @@ validate_memory <- function(memory, memory_value) {
 # tie_effects <- all_tie_effects()
 all_tie_effects <- function() {
   c(
-    "baseline", 
+    "baseline",
     "FEtype",
 
     # Exogenous stats
-    "send", 
+    "send",
     "receive",
-    "tie",  
-    "same", 
-    "difference", 
-    "average", 
-    "minimum", 
-    "maximum", 
-    "event", 
+    "tie",
+    "same",
+    "difference",
+    "average",
+    "minimum",
+    "maximum",
+    "event",
 
     # Endogenous stats
-    "inertia", 
-    "reciprocity", 
-
-    "indegreeSender", 
-    "indegreeReceiver", 
-    "outdegreeSender", 
-    "outdegreeReceiver", 
-    "totaldegreeSender", 
-    "totaldegreeReceiver", 
-
+    "inertia",
+    "reciprocity",
+    "indegreeSender",
+    "indegreeReceiver",
+    "outdegreeSender",
+    "outdegreeReceiver",
+    "totaldegreeSender",
+    "totaldegreeReceiver",
     "totaldegreeDyad",
-    "degreeMin", 
-    "degreeMax", 
-    "degreeDiff", 
-    "ccp",  
-
-    "otp", 
-    "itp", 
-    "osp", 
-    "isp", 
-    "sp", 
-
-    "psABBA", 
-    "psABBY", 
-    "psABXA", 
-    "psABXB", 
-    "psABXY", 
-    "psABAY", 
-    "psABAB", 
-
-    "rrankSend", 
-    "rrankReceive", 
-    
-    "recencyContinue", 
-    "recencySendSender", 
+    "degreeMin",
+    "degreeMax",
+    "degreeDiff",
+    "ccp",
+    "otp",
+    "itp",
+    "osp",
+    "isp",
+    "sp",
+    "psABBA",
+    "psABBY",
+    "psABXA",
+    "psABXB",
+    "psABXY",
+    "psABAY",
+    "psABAB",
+    "rrankSend",
+    "rrankReceive",
+    "recencyContinue",
+    "recencySendSender",
     "recencySendReceiver",
-    "recencyReceiveSender", 
+    "recencyReceiveSender",
     "recencyReceiveReceiver",
-
-    "userStat", 
-    
-    "interact" 
+    "userStat",
+    "interact"
   )
 }
 
@@ -409,11 +414,12 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
   if (sum(FEtype_effects) > 1) {
     dimnames(statistics)[[3]][FEtype_effects] <- paste0("FEtype_", unlist(
       sapply(effects, function(x) {
-      x$typeName
-    })))
+        x$typeName
+      })
+    ))
   }
 
-  # Add .unique 
+  # Add .unique
   unique_effects <- sapply(effects, function(x) {
     ifelse("scaling" %in% names(x), isTRUE(grepl("unique", x$scaling)), FALSE)
   })
@@ -421,10 +427,10 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
     dimnames(statistics)[[3]][unique_effects] <- paste0(dimnames(statistics)[[3]][unique_effects], ".unique")
   }
 
-  # Add .type 
-  type_effects <- sapply(effects, function(x) isTRUE(x$consider_type))
+  # Add .TypeAgg
+  type_effects <- sapply(effects, function(x) isFALSE(x$consider_type))
   if (any(type_effects)) {
-    dimnames(statistics)[[3]][type_effects] <- paste0(dimnames(statistics)[[3]][type_effects], ".type")
+    dimnames(statistics)[[3]][type_effects] <- paste0(dimnames(statistics)[[3]][type_effects], ".TypeAgg")
   }
 
   # Add variable name to interaction statistics
@@ -441,6 +447,61 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
   )
 
   statistics # Return the modified statistics object
+}
+
+variable_check <- function(effect, dat) {
+  if (effect == "send" | effect == "receive") {
+    if (is.logical(dat$x)) {
+      # Transform logical to binary
+      dat$x <- as.numeric(dat$x)
+    } else if (is.factor(dat$x)) {
+      x_levels <- levels(attr_actors$gender)
+
+      if (length(x_levels) != 2) {
+        stop(paste0("The variable in '", effect, "' must have two factor levels or must be numeric."))
+      } else {
+        # Convert to binary variable
+        dat$x <- ifelse(dat$x == x_levels[2], 1, 0)
+      }
+    } else if(!is.numeric(dat$x)) {
+      stop(paste0("The variable in '", effect, "' must be numeric."))
+    }
+  }
+
+  if (effect == "same") {
+    # Force x to be numeric
+    dat$x <- as.numeric(as.factor(dat$x))
+  }
+
+  if (effect == "average") {
+    # x has to be numeric
+    if (!is.numeric(dat$x)) {
+      stop("The variable in 'average' must be numeric.")
+    }
+  }
+
+  if (effect == "minimum") {
+    # x has to be numeric
+    if (!is.numeric(dat$x)) {
+      stop("The variable in 'minimum' must be numeric.")
+    }
+  }
+
+  if (effect == "maximum") {
+    # x has to be numeric
+    if (!is.numeric(dat$x)) {
+      stop("The variable in 'maximum' must be numeric.")
+    }
+  }
+
+  if (effect == "difference") {
+    # x has to be numeric
+    if (!is.numeric(dat$x)) {
+      stop("The variable in 'difference' must be numeric.")
+    }
+  }
+
+  return(dat)
 }
 
 # Prepare exogenous effect
@@ -460,7 +521,6 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
 # [examples]
 # exo_effect <- prep_exo(effect, variable, attr_actors, scaling)
 prep_exo <- function(effect, variable, attr_actors, scaling) {
-
   # Check variable
   if (!is.character(variable)) {
     stop("The 'variable' argument should be a string.")
@@ -477,15 +537,19 @@ prep_exo <- function(effect, variable, attr_actors, scaling) {
   } else {
     # Check if the variable name is in the attr_actors object
     if (!(variable %in% colnames(attr_actors))) {
-      stop(paste0("Variable '", variable, "' not in attr_actors object for the '", effect, "' effect.")) # nolint
+      stop(paste0("Variable '", variable, "' not in attr_actors object for the '", effect, "' effect."))
     }
 
     # Check if the time variable is available
     if (!("time" %in% colnames(attr_actors))) {
-      stop(paste0("time variable is missing in attr_actors object for the '", effect, "' effect.")) # nolint
+      if (anyDuplicated(attr_actors$name) > 0) {
+        warning("Duplicated actor names detected in 'attr_actors'. Did you mean to add a 'time' variable?")
+      } else {
+        attr_actors$time <- 0
+      }
     }
     if (anyNA(attr_actors$time)) {
-      stop("time variable in attr_actors cannot have missing values")
+      stop("Missing 'time' values detected in 'attr_actors'.")
     }
 
     # Collect the information in a data.frame
@@ -494,6 +558,9 @@ prep_exo <- function(effect, variable, attr_actors, scaling) {
       time = attr_actors$time,
       x = attr_actors[, variable]
     )
+
+    # Check the data class of the variable
+    dat <- variable_check(effect, dat)
 
     # Warning for missing values
     if (anyNA(dat)) {
@@ -661,24 +728,48 @@ modify_riskset <- function(riskset, reh, actors, types) {
 #
 # [examples]
 # covariates <- process_covariate(effects, attr_actors, actors, edgelist, reh, prepR)
-process_covariate <- function(effects, attr_actors, attr_dyads, actors, edgelist, 
-  reh, prepR) {
+process_covariate <- function(
+    effects,
+    attr_actors,
+    attr_dyads,
+    actors,
+    edgelist,
+    reh,
+    prepR) {
   lapply(effects, function(x) {
     effect <- x$effect
-    if (effect %in% c("send", "receive", "same", "difference", "average", "minimum", "maximum")) {
-      if (is.null(x$x)) {
+
+    if (effect %in% c(
+      "send",
+      "receive",
+      "same",
+      "difference",
+      "average",
+      "minimum",
+      "maximum"
+    )) {
+      if (is.null(x$x)) { # The variable has to be extracted from 'attr_actors'
         variable <- x$variable
 
+        # Check if the variable name is in the 'attr_actors' object
         if (!(variable %in% colnames(attr_actors))) {
           stop(paste0("Variable '", variable, "' not in attr_actors object for the '", effect, "' effect."))
         }
+
+        # Check if the 'time' variable is available
         if (!("time" %in% colnames(attr_actors))) {
-          stop("time variable is missing in attr_actors object")
-        }
-        if (anyNA(attr_actors$time)) {
-          stop("time variable in attr_actors cannot have missing values")
+          if (anyDuplicated(attr_actors$name) > 0) {
+            warning("Duplicated actor names detected in 'attr_actors'. Did you mean to add a 'time' variable?")
+          } else {
+            attr_actors$time <- 0
+          }
         }
 
+        if (anyNA(attr_actors$time)) {
+          stop("Missing 'time' values detected in 'attr_actors'.")
+        }
+
+        # Collect the information in a data.frame
         dat <- data.frame(
           name = attr_actors$name,
           time = attr_actors$time,
@@ -686,49 +777,49 @@ process_covariate <- function(effects, attr_actors, attr_dyads, actors, edgelist
           stringsAsFactors = FALSE
         )
 
+        # Check the data class of the variable
+        dat <- variable_check(effect, dat)
+
+        # Warning for missing values
         if (anyNA(dat)) {
           warning(paste0("Missing values in the attr_actors object for the '", effect, "' effect can cause unexpected behavior."))
         }
-
-        dat$name <- as.character(dat$name)
-
-        if (!all(actors[, 1] %in% dat$name)) {
-          stop("Missing actors in the attr_actors object.")
-        }
-
-        dat$name <- actors[match(dat$name, actors[, 1]), 2]
-        colnames(dat)[3] <- variable
-        dat <- dat[order(as.numeric(dat$name)), ]
-
-        as.matrix(dat)
-      } else {
+      } else { # The variable was supplied to the function in effects.R
         dat <- x$x
-
-        dat$name <- as.character(dat$name)
-
-        if (!all(actors[, 1] %in% dat$name)) {
-          stop("Missing actors in the attr_actors object.")
-        }
-
-        dat$name <- actors[match(dat$name, actors[, 1]), 2]
-        dat <- dat[order(as.numeric(dat$name)), ]
       }
 
+      # Check the actors in the obtained 'dat' object
+      dat$name <- as.character(dat$name)
+      if (!all(actors[, 1] %in% dat$name)) {
+        stop("Missing actors in the attr_actors object.")
+      }
+
+      # Convert 'actorName' to 'actorID'
+      dat$name <- actors[match(dat$name, actors[, 1]), 2]
+
+      # Set the third column name equal to the 'variable'
+      colnames(dat)[3] <- x$variable
+
+      # Order by actor ID
+      dat <- dat[order(as.numeric(dat$name)), ]
+
+      # Remove any redundant actors
       if (any(is.na(dat$name))) {
-        warning(paste0("attr_actors contain actors that are not in the risk set. These are not included in the computation of the statistics."))
+        warning(paste0("The 'attr_actors' object contains actors that are not in the risk set. These are not included in the computation of the statistics."))
         dat <- dat[!is.na(dat$name), ]
       }
 
+      # Convert to matrix and output
       as.matrix(dat)
     } else if (effect %in% c("tie", "event", "FEtype", "ccp")) {
       if (effect == "tie") {
         # Return: matrix (actor1, actor2, time, value)
-        parse_tie(x, reh, attr_dyads) 
+        parse_tie(x, reh, attr_dyads)
       } else if (effect == "event") {
-        if (length(x$x) != nrow(edgelist)) {
+        if (NROW(x$x) != nrow(edgelist) & NROW(x$x) != NROW(unique(edgelist[, 1]))) {
           stop("Length of vector 'x' in event() does not match number of events in edgelist")
         }
-        if(!is.numeric(x$x)) {
+        if (!is.numeric(x$x)) {
           x$x <- (as.numeric(factor(x$x)) - 1)
         }
         as.matrix(x$x)
@@ -738,8 +829,8 @@ process_covariate <- function(effects, attr_actors, attr_dyads, actors, edgelist
         as.matrix(x$x)
       }
     } else if (effect == "userStat") {
-      if (NROW(x$x) != nrow(edgelist)) {
-        stop("Number of rows of matrix 'x' in userStat() does not match number of events in edgelist")
+      if (NROW(x$x) != nrow(edgelist) & NROW(x$x) != NROW(unique(edgelist[, 1]))) {
+        stop("Number of rows of matrix 'x' in userStat() does not match number of timepoints or number of events in edgelist")
       }
 
       if (NCOL(x$x) != nrow(prepR)) {
@@ -753,394 +844,436 @@ process_covariate <- function(effects, attr_actors, attr_dyads, actors, edgelist
   })
 }
 
-validate_aomstats_arguments <- function(attr_actors = attr_actors, reh = reh) {
-	# Check if the deprecated "id" column is used in attr_actors
-	if (!is.null(attr_actors) & "id" %in% colnames(attr_actors) & !("name" %in% colnames(attr_actors))) {
-		colnames(attr_actors) <- ifelse(colnames(attr_actors) == "id", "name", colnames(attr_actors))
-		warning("Use 'name' instead of 'id' in 'attr_actors'")
-	}
-	
-	# Check the reh class
-	if (!inherits(reh, "remify")) {
-		stop("Invalid argument: 'reh' must be a remify object.")
-	}
-	
-	model <- attr(reh, "model")
-	# Check the reh model
-	if (is.null(model) || model != "actor") {
-		stop("Invalid argument: 'reh' object should be prepared with the model argument set to 'actor' if effects for the actor-oriented model are computed.")
-	}
-	
-	return(attr_actors)
+validate_aomstats_arguments <- function(attr_actors, reh) {
+  # Check if the deprecated "id" column is used in attr_actors
+  if (!is.null(attr_actors) & "id" %in% colnames(attr_actors) & !("name" %in% colnames(attr_actors))) {
+    colnames(attr_actors) <- ifelse(colnames(attr_actors) == "id", "name", colnames(attr_actors))
+    warning("Use 'name' instead of 'id' in 'attr_actors'")
+  }
+
+  # Check the reh class
+  if (!inherits(reh, "remify")) {
+    stop("Invalid argument: 'reh' must be a remify object.")
+  }
+
+  model <- attr(reh, "model")
+  # Check the reh model
+  if (is.null(model) || model != "actor") {
+    stop("Invalid argument: 'reh' object should be prepared with the model argument set to 'actor' if effects for the actor-oriented model are computed.")
+  }
+
+  return(attr_actors)
 }
 
 prepare_aomstats_edgelist <- function(reh) {
-	# Extract the edgelist
-	edgelist <- reh$edgelist
-	
-	# Create the time variable
-	edgelist[,1] <- cumsum(reh$intereventTime)
-	
-	# Transform to cpp indexing 
-	edgelist <- as.matrix(edgelist)
-	edgelist[, 2] <- edgelist[, 2] - 1
-	edgelist[, 3] <- edgelist[, 3] - 1
-	
-	return(edgelist)
+  # Extract the edgelist
+  edgelist <- reh$edgelist
+
+  # Transform to cpp indexing
+  edgelist <- as.matrix(edgelist)
+  edgelist[, 2] <- edgelist[, 2] - 1
+  edgelist[, 3] <- edgelist[, 3] - 1
+
+  # Origin
+  if (attr(reh, "ordinal")) {
+    if (length(attr(reh, "origin"))==0) {
+      attr(reh, "origin") <- edgelist[1,1] - 1
+    }
+  }
+
+  # Transform to numeric
+  edgelist[, 1] <- cumsum(as.numeric(diff(c(attributes(reh)$origin, edgelist[, 1]))))
+
+  return(edgelist)
 }
 
 prepare_aomstats_actors <- function(reh) {
-	actors <- attr(reh, "dictionary")$actors
-	actors$actorID <- actors$actorID - 1
-	return(actors)
+  # Extract the actors
+  actors <- attr(reh, "dictionary")$actors
+
+  # Transform to cpp indexing
+  actors$actorID <- actors$actorID - 1
+
+  return(actors)
 }
 
 prepare_aomstats_event_weights <- function(edgelist) {
-	if (!("weight" %in% colnames(edgelist))) {
-		weights <- rep(1, nrow(edgelist))
-	} else {
-		weights <- edgelist[,"weight"]
-	}
-	return(weights)
+  if (!("weight" %in% colnames(edgelist))) {
+    weights <- rep(1, nrow(edgelist))
+  } else {
+    weights <- edgelist[, "weight"]
+  }
+  return(weights)
 }
 
-prepare_aomstats_subset <- function(start, stop, edgelist) {
-	# Convert R start and stop indices to C++ (indexing starts at 0)
-	if (start < 1) {
-		stop("The 'start' value should be set to 1 or a larger number.")
-	}
-	if (stop < start) {
-		stop("The 'stop' value cannot be smaller than the 'start' value.")
-	}
-	start <- start - 1
-	if (stop == Inf) {
-		stop <- nrow(edgelist)
-	}
-	stop <- stop - 1
-	
-	list(start = start, stop = stop)
+prepare_subset <- function(start, stop, edgelist, method, model) {
+  if (start < 1) {
+    stop("The 'start' value should be set to 1 or a larger number.")
+  }
+  start <- start - 1
+  if (stop == Inf) {
+    if (method == "pe") {
+      stop <- nrow(edgelist)
+    } else if (method == "pt") {
+      stop <- NROW(unique(edgelist[, 1]))
+    }
+  }
+  stop <- stop - 1
+  if (stop < start) {
+    stop("The 'stop' value cannot be smaller than the 'start' value.")
+  }
+  if (method == "pe") {
+    if (stop > nrow(edgelist)) {
+      stop("The 'stop' value cannot be larger than the number of events in 'reh'.")
+    }
+  }
+  if (method == "pt") {
+    if (stop > NROW(unique(edgelist[, 1]))) {
+      stop("The 'stop' value cannot be larger than the number of unique time points in 'reh'.")
+    }
+  }
+  if (model == "receiver" & method == "pt") {
+    # For the receiver model, we need all timepoints not only the unique one
+    unique_times <- unique(edgelist[, 1])
+    start_time <- unique_times[start + 1]
+    stop_time <- unique_times[stop + 1]
+    all_times <- edgelist[, 1]
+    start <- min(which(all_times == start_time)) - 1
+    stop <- max(which(all_times == stop_time)) - 1
+  }
+  list(start = start, stop = stop)
 }
 
 prepare_sender_effects <- function(sender_formula) {
-	check_formula(sender_formula)
-	sender_effects <- parse_formula(sender_formula, "rateEffects")
-	sender_effects_names <- sapply(sender_effects, function(x) x$effect)
-	
-	# Check correct specification effects
-	if (!all(sender_effects_names %in% actor_effects(step = "sender"))) {
-		stop(paste("Invalid effect: Attempting to request effects that are not defined for the sender activity model"))
-	}
-	
-	# Prepare interaction sender_effects
-	sender_effects_int <- parse_int(
-		sender_formula, "rateEffects",
-		sender_effects
-	)
-	sender_effects_names <- append(sender_effects_names, rep("interact", length(sender_effects_int)), length(sender_effects_names))
-	sender_interactions <- list()
-	sender_interactions[which(sender_effects_names == "interact")] <- sender_effects_int
-	
-	# Output
-	list(
-		sender_effects = sender_effects,
-		sender_effects_names = sender_effects_names, 
-		sender_interactions = sender_interactions
-	)
+  check_formula(sender_formula)
+  sender_effects <- parse_formula(sender_formula, "rateEffects")
+  sender_effects_names <- sapply(sender_effects, function(x) x$effect)
+
+  # Check correct specification effects
+  if (!all(sender_effects_names %in% actor_effects(step = "sender"))) {
+    stop(paste("Invalid effect: Attempting to request effects that are not defined for the sender activity model"))
+  }
+
+  # Prepare interaction sender_effects
+  sender_effects_int <- parse_int(
+    sender_formula, "rateEffects",
+    sender_effects
+  )
+  sender_effects_names <- append(sender_effects_names, rep("interact", length(sender_effects_int)), length(sender_effects_names))
+  sender_interactions <- list()
+  sender_interactions[which(sender_effects_names == "interact")] <- sender_effects_int
+
+  # Output
+  list(
+    sender_effects = sender_effects,
+    sender_effects_names = sender_effects_names,
+    sender_interactions = sender_interactions
+  )
 }
 
 prepare_aomstats_scaling <- function(effects, interactions) {
-	scaling <- sapply(effects, function(x) {
-		ifelse("scaling" %in% names(x), x$scaling, "none")
-	})
-	scaling <- append(scaling, rep("none", sum(!(sapply(interactions, is.null)))), length(scaling))
-	scaling
+  scaling <- sapply(effects, function(x) {
+    ifelse("scaling" %in% names(x), x$scaling, "none")
+  })
+  scaling <- append(scaling, rep("none", sum(!(sapply(interactions, is.null)))), length(scaling))
+  scaling
 }
 
 prepare_receiver_effects <- function(receiver_formula) {
-	check_formula(receiver_formula)
-	receiver_effects <- parse_formula(receiver_formula, "choiceEffects")
-	receiver_effects_names <- sapply(receiver_effects, function(x) x$effect)
-	
-	# Check correct specification effects
-	if (!all(receiver_effects_names %in% actor_effects(step = "receiver"))) {
-		stop(paste("Invalid effect: Attempting to request effects that are not defined for the receiver choice model"))
-	}
-	
-	# Prepare interaction receiver_effects
-	receiver_effects_int <- parse_int(
-		receiver_formula, "choiceEffects",
-		receiver_effects
-	)
-	receiver_effects_names <- append(receiver_effects_names, rep("interact", length(receiver_effects_int)), length(receiver_effects_names))
-	receiver_interactions <- list()
-	receiver_interactions[which(receiver_effects_names == "interact")] <- receiver_effects_int
-	
-	# Output
-	list(
-		receiver_effects = receiver_effects,
-		receiver_effects_names = receiver_effects_names, 
-		receiver_interactions = receiver_interactions	
-	)
+  check_formula(receiver_formula)
+  receiver_effects <- parse_formula(receiver_formula, "choiceEffects")
+  receiver_effects_names <- sapply(receiver_effects, function(x) x$effect)
+
+  # Check correct specification effects
+  if (!all(receiver_effects_names %in% actor_effects(step = "receiver"))) {
+    stop(paste("Invalid effect: Attempting to request effects that are not defined for the receiver choice model"))
+  }
+
+  # Prepare interaction receiver_effects
+  receiver_effects_int <- parse_int(
+    receiver_formula, "choiceEffects",
+    receiver_effects
+  )
+  receiver_effects_names <- append(receiver_effects_names, rep("interact", length(receiver_effects_int)), length(receiver_effects_names))
+  receiver_interactions <- list()
+  receiver_interactions[which(receiver_effects_names == "interact")] <- receiver_effects_int
+
+  # Output
+  list(
+    receiver_effects = receiver_effects,
+    receiver_effects_names = receiver_effects_names,
+    receiver_interactions = receiver_interactions
+  )
 }
 
 # Actor-oriented model: covariates ----------------------------------------
 validate_attr_actors <- function(attr_actors, x) {
-	# Check if the variable name is in the attr_actors object
-	if (!(x$variable %in% colnames(attr_actors))) {
-		stop(paste0("Variable '", x$variable, "' not in attr_actors object for the '", x$effect, "' effect."))
-	}
-	# Check if the time variable is available
-	if (!("time" %in% colnames(attr_actors))) {
-		stop(paste0("time variable is missing in attr_actors object"))
-	}
-	if (anyNA(attr_actors$time)) {
-		stop("time variable in attr_actors cannot have missing values")
-	}	
-	return(attr_actors)
+
+  # Check if the variable name is in the attr_actors object
+  if (!(x$variable %in% colnames(attr_actors))) {
+    stop(paste0("Variable '", x$variable, "' not in attr_actors object for the '", x$effect, "' effect."))
+  }
+
+  # Check if the 'time' variable is available
+  if (!("time" %in% colnames(attr_actors))) {
+    if (anyDuplicated(attr_actors$name) > 0) {
+      warning("Duplicated actor names detected in 'attr_actors'. Did you mean to add a 'time' variable?")
+    } else {
+      attr_actors$time <- 0
+    }
+  }
+
+  if (anyNA(attr_actors$time)) {
+    stop("Missing 'time' values detected in 'attr_actors'.")
+  }
+
+  return(attr_actors)
 }
 
 prepare_covariate_data <- function(attr_actors, x, actors) {
-	dat <- data.frame(
-		name = attr_actors$name,
-		time = attr_actors$time,
-		x = attr_actors[, x$variable]
-	)
-	dat$name <- actors[match(dat$name, actors[, 1]), 2]
-	colnames(dat)[3] <- x$variable
+  # Collect the information in a data.frame
+  dat <- data.frame(
+    name = attr_actors$name,
+    time = attr_actors$time,
+    x = attr_actors[, x$variable]
+  )
+
+  # Check the data class of the variable
+  dat <- variable_check(x$effect, dat)
+
+  # Convert 'actorName' to 'actorID'
+  dat$name <- actors[match(dat$name, actors[, 1]), 2]
+
+  # Set the third colum name equal to the 'variable'
+  colnames(dat)[3] <- x$variable
+
   dat
 }
 
 validate_covariate_data <- function(dat, x, actors) {
-	# Warning for missing values
-	if (anyNA(dat)) {
-		warning(paste0("Missing values in the attr_actors object for the '", x$effect, "' effect can cause unexpected behavior."))
-	}
-	# Check if all actors are in the attr_actors
-	if (!all(actors[, 2] %in% dat$name)) {
-		stop("Missing actors in the attr_actors object.")
-	}
-	# Check for actors in the attr_actors object that are not in the
-	# risk set
-	if (any(is.na(dat$name))) {
-		warning(paste0("attr_actors contain actors that are not in the risk set. These are not included in the computation of the statistics."))
-		dat <- dat[!is.na(dat$name), ]
-	}
-	as.matrix(dat)
+  # Warning for missing values
+  if (anyNA(dat)) {
+    warning(paste0("Missing values in the attr_actors object for the '", x$effect, "' effect can cause unexpected behavior."))
+  }
+  # Check if all actors are in the attr_actors
+  if (!all(actors[, 2] %in% dat$name)) {
+    stop("Missing actors in the attr_actors object.")
+  }
+  # Check for actors in the attr_actors object that are not in the
+  # risk set
+  if (any(is.na(dat$name))) {
+    warning(paste0("attr_actors contain actors that are not in the risk set. These are not included in the computation of the statistics."))
+    dat <- dat[!is.na(dat$name), ]
+  }
+  as.matrix(dat)
 }
 
 validate_user_stat <- function(x, edgelist, actors) {
-	if (NROW(x) != nrow(edgelist)) {
-		stop("Number of rows of matrix 'x' in userStat() does not match the number of events in edgelist")
-	}
-	if (NCOL(x) != nrow(actors)) {
-		stop("Number of columns of matrix 'x' in userStat() does not match the number of actors")
-	}
-	as.matrix(x)
+  if (NCOL(x) != nrow(actors)) {
+    stop("Number of columns of matrix 'x' in userStat() does not match the number of actors")
+  }
+  as.matrix(x)
 }
 
-validate_covariates <- function(x, attr_actors, attr_dyads, actors, edgelist, 
-  reh) {
-	if (x$effect %in% c("send", "receive", "same", "difference", "average")) {
-		if(is.null(x$x)) {
-			attr_actors <- validate_attr_actors(attr_actors, x)
-			dat <- prepare_covariate_data(attr_actors, x, actors)
-			validate_covariate_data(dat, x, actors)
-		} else {
-			dat <- x$x
-			dat$name <- actors[match(dat$name, actors[, 1]), 2]
-		  validate_covariate_data(dat, x, actors)
-		}
-	} else if (x$effect == "tie") {
-		parse_tie(x, reh, attr_dyads)
-	} else if(x$effect == "userStat") {
-		validate_user_stat(x$x, edgelist, actors)
-	} else {
-		matrix()
-	}
+validate_covariates <- function(
+    x, attr_actors, attr_dyads, actors, edgelist,
+    reh) {
+  if (x$effect %in% c("send", "receive", "same", "difference", "average")) {
+    if (is.null(x$x)) {
+      attr_actors <- validate_attr_actors(attr_actors, x)
+      dat <- prepare_covariate_data(attr_actors, x, actors)
+      validate_covariate_data(dat, x, actors)
+    } else {
+      dat <- x$x
+      dat$name <- actors[match(dat$name, actors[, 1]), 2]
+      validate_covariate_data(dat, x, actors)
+    }
+  } else if (x$effect == "tie") {
+    parse_tie(x, reh, attr_dyads)
+  } else if (x$effect == "userStat") {
+    validate_user_stat(x$x, edgelist, actors)
+  } else {
+    matrix()
+  }
 }
 
-prepare_sender_covariates <- function(sender_effects, attr_actors, actors, edgelist) {
-	sender_covar <- lapply(sender_effects, function(x) {
-		validate_covariates(x, attr_actors, NULL, actors, edgelist, reh)
-	})
-	sender_covar
+prepare_sender_covariates <- function(sender_effects, attr_actors, actors, edgelist, reh) {
+  sender_covar <- lapply(sender_effects, function(x) {
+    validate_covariates(x, attr_actors, NULL, actors, edgelist, reh)
+  })
+  sender_covar
 }
 
-prepare_receiver_covariates <- function(receiver_effects, attr_actors, attr_dyads, actors, 
-  edgelist, reh) {
-	
+prepare_receiver_covariates <- function(
+    receiver_effects, attr_actors, attr_dyads, actors,
+    edgelist, reh) {
   receiver_covar <- lapply(receiver_effects, function(x) {
     validate_covariates(x, attr_actors, attr_dyads, actors, edgelist, reh)
   })
-	
+
   return(receiver_covar)
 }
 
 # tie/dyad effect ---------------------------------------------------------
 prep_tie <- function(variable, attr_dyads, scaling) {
-	
-	if(is.null(attr_dyads)) {
-		list(
-			effect = "tie",
-			variable = variable,
-			x = NULL,
-			scaling = scaling 
-		)
-	} else {
-		# Wide or long format?
-		# - First check
-		wide <- ifelse(nrow(attr_dyads) == ncol(attr_dyads), TRUE, FALSE)
-		# - Second check
-		wide <- ifelse(wide & !(variable %in% colnames(attr_dyads)), TRUE, FALSE)
-		
-		# Prep long format
-		if (!wide) {
-			# Check for presence of time-column
-			if ("time" %in% colnames(attr_dyads)) {
-				time <- attr_dyads[,"time"]
-			} else {
-				# Check for multiple actor appearances
-				if (any(duplicated(attr_dyads[,c(1, 2)]))) {
-					warning("Duplicated dyads in 'attr_dyads': Did you mean to include a 'time' column?")
-				}
-				time <- rep(0, nrow(attr_dyads))
-			}
-			
-			# Check for presence of variable
-			if(!(variable %in% colnames(attr_dyads))) {
-				stop(paste("Invalid variable: Cannot find", variable, "in attr_dyads"))
-			}
-			
-			# Check for missing values
-			if (anyNA(time)) {
-				warning("Missing time values in 'attr_dyads'")
-			}
-			
-			if (anyNA(attr_dyads[,1]) | anyNA(attr_dyads[,2])) {
-				warning("Missing actors in 'attr_dyads'")
-			}
-			
-			if (anyNA(attr_dyads[,variable])) {
-				warning("Missing variable values in 'attr_dyads'")
-			}
-			
-			# Collect data
-			dat <- data.frame(
-				actor1 = attr_dyads[,1],
-				actor2 = attr_dyads[,2],
-				time = time,
-				x = attr_dyads[, variable]
-			)	
-			
-			colnames(dat)[4] <- variable
-		}
-		
-		if(wide) {
-			dat <- attr_dyads
-		}
-		
-		# Output
-		list(
-			effect = "tie",
-			variable = variable,
-			x = dat,
-			scaling = scaling
-		)
-		
-	}
+  if (is.null(attr_dyads)) {
+    list(
+      effect = "tie",
+      variable = variable,
+      x = NULL,
+      scaling = scaling
+    )
+  } else {
+    # Wide or long format?
+    # - First check
+    wide <- ifelse(nrow(attr_dyads) == ncol(attr_dyads), TRUE, FALSE)
+    # - Second check
+    wide <- ifelse(wide & !(variable %in% colnames(attr_dyads)), TRUE, FALSE)
+
+    # Prep long format
+    if (!wide) {
+      # Check for presence of time-column
+      if ("time" %in% colnames(attr_dyads)) {
+        time <- attr_dyads[, "time"]
+      } else {
+        # Check for multiple actor appearances
+        if (any(duplicated(attr_dyads[, c(1, 2)]))) {
+          warning("Duplicated dyads in 'attr_dyads': Did you mean to include a 'time' column?")
+        }
+        time <- rep(0, nrow(attr_dyads))
+      }
+
+      # Check for presence of variable
+      if (!(variable %in% colnames(attr_dyads))) {
+        stop(paste("Invalid variable: Cannot find", variable, "in attr_dyads"))
+      }
+
+      # Check for missing values
+      if (anyNA(time)) {
+        warning("Missing time values in 'attr_dyads'")
+      }
+
+      if (anyNA(attr_dyads[, 1]) | anyNA(attr_dyads[, 2])) {
+        warning("Missing actors in 'attr_dyads'")
+      }
+
+      if (anyNA(attr_dyads[, variable])) {
+        warning("Missing variable values in 'attr_dyads'")
+      }
+
+      # Collect data
+      dat <- data.frame(
+        actor1 = attr_dyads[, 1],
+        actor2 = attr_dyads[, 2],
+        time = time,
+        x = attr_dyads[, variable]
+      )
+
+      colnames(dat)[4] <- variable
+    }
+
+    if (wide) {
+      dat <- attr_dyads
+    }
+
+    # Output
+    list(
+      effect = "tie",
+      variable = variable,
+      x = dat,
+      scaling = scaling
+    )
+  }
 }
 
 tie_convert_wide_to_long <- function(x, variable, reh) {
-	actors <- attr(reh, "dictionary")$actors
-	
-	# Check actors in x
-	if(is.null(rownames(x)) | is.null(colnames(x))) {
-		if(nrow(x) != nrow(actors) | ncol(x) != nrow(actors)) {
-			stop("Invalid attr_dyads object: Number of rows and columns should match number of actors in the network")
-		}
-		rownames(x) <- colnames(x) <- actors$actorName
-	} 
-	
-	# Error message in the case of missing actors
-	if ((!all(actors$actorName %in% rownames(x))) |
-			(!all(actors$actorName %in% colnames(x)))) {
-		warning("Missing actors in 'attr_dyads'")
-	}
-	
-	# Recode
-	rownames(x) <- actors$actorID[match(rownames(x), actors$actorName)] - 1
-	colnames(x) <- actors$actorID[match(colnames(x), actors$actorName)] - 1
-	
-	# Reorder
-	x <- x[order(as.numeric(rownames(x))), ]
-	x <- x[, order(as.numeric(colnames(x)))]
-	
-	# Undirected events
-	if (!attr(reh, "directed")) {
-		if (!isSymmetric(x)) {
-			if (all(is.na(x[upper.tri(x)]))) {
-				x[upper.tri(x)] <- t(x)[upper.tri(x)]
-			} else if (all(is.na(x[lower.tri(x)]))) {
-				x[lower.tri(x)] <- t(x)[lower.tri(x)]
-			} else {
-				warning("Undirected events: attr_dyads matrix is expected to be symmetrical") 
-			}
-		}
-	}
-	
-	# Error message in the case of missing values
-	if (anyNA(x[lower.tri(x)]) | anyNA(x[upper.tri(x)])) {
-		warning("Missing variable values in 'attr_dyads'")
-	}
-	
-	# Get row and column names
-	row_ids <- rownames(x)
-	col_ids <- colnames(x)
-	
-	# Initialize empty vectors to store data
-	row_data <- character(0)
-	col_data <- character(0)
-	value_data <- numeric(0)
-	
-	# Iterate through the matrix 
-	for (i in 1:nrow(x)) {
-		for (j in 1:ncol(x)) {
-			row_data <- c(row_data, row_ids[i])
-			col_data <- c(col_data, col_ids[j])
-			value_data <- c(value_data, x[i, j])
-		}
-	}
-	
-	# Create a data frame
-	result_df <- data.frame(
-    actor1 = as.integer(row_data), 
-    actor2 = as.integer(col_data), 
-    time = 0, 
-    x = value_data)
-	colnames(result_df)[4] <- variable
-	result_df
+  actors <- attr(reh, "dictionary")$actors
+
+  # Check actors in x
+  if (is.null(rownames(x)) | is.null(colnames(x))) {
+    if (nrow(x) != nrow(actors) | ncol(x) != nrow(actors)) {
+      stop("Invalid attr_dyads object: Number of rows and columns should match number of actors in the network")
+    }
+    rownames(x) <- colnames(x) <- actors$actorName
+  }
+
+  # Error message in the case of missing actors
+  if ((!all(actors$actorName %in% rownames(x))) |
+    (!all(actors$actorName %in% colnames(x)))) {
+    warning("Missing actors in 'attr_dyads'")
+  }
+
+  # Recode
+  rownames(x) <- actors$actorID[match(rownames(x), actors$actorName)] - 1
+  colnames(x) <- actors$actorID[match(colnames(x), actors$actorName)] - 1
+
+  # Reorder
+  x <- x[order(as.numeric(rownames(x))), ]
+  x <- x[, order(as.numeric(colnames(x)))]
+
+  # Undirected events
+  if (!attr(reh, "directed")) {
+    if (!isSymmetric(x)) {
+      if (all(is.na(x[upper.tri(x)]))) {
+        x[upper.tri(x)] <- t(x)[upper.tri(x)]
+      } else if (all(is.na(x[lower.tri(x)]))) {
+        x[lower.tri(x)] <- t(x)[lower.tri(x)]
+      } else {
+        warning("Undirected events: attr_dyads matrix is expected to be symmetrical")
+      }
+    }
+  }
+
+  # Error message in the case of missing values
+  if (anyNA(x[lower.tri(x)]) | anyNA(x[upper.tri(x)])) {
+    warning("Missing variable values in 'attr_dyads'")
+  }
+
+  # Get row and column names
+  row_ids <- rownames(x)
+  col_ids <- colnames(x)
+
+  # Initialize empty vectors to store data
+  row_data <- character(0)
+  col_data <- character(0)
+  value_data <- numeric(0)
+
+  # Iterate through the matrix
+  for (i in 1:nrow(x)) {
+    for (j in 1:ncol(x)) {
+      row_data <- c(row_data, row_ids[i])
+      col_data <- c(col_data, col_ids[j])
+      value_data <- c(value_data, x[i, j])
+    }
+  }
+
+  # Create a data frame
+  result_df <- data.frame(
+    actor1 = as.integer(row_data),
+    actor2 = as.integer(col_data),
+    time = 0,
+    x = value_data
+  )
+  colnames(result_df)[4] <- variable
+  result_df
   as.matrix(result_df)
 }
 
 parse_tie <- function(prepped_effect, reh, attr_dyads) {
-	x <- prepped_effect$x
-	
-	if(is.null(x)) {
-		x <- prep_tie(prepped_effect$variable, attr_dyads, prepped_effect$scaling)$x
-	} 
-	# Check the format
-	wide <- ifelse("actor1" %in% colnames(x), FALSE, TRUE) 
-	if(wide) {
-		tie_convert_wide_to_long(x, prepped_effect$variable, reh) 
+  x <- prepped_effect$x
+
+  if (is.null(x)) {
+    x <- prep_tie(prepped_effect$variable, attr_dyads, prepped_effect$scaling)$x
+  }
+  # Check the format
+  wide <- ifelse("actor1" %in% colnames(x), FALSE, TRUE)
+  if (wide) {
+    tie_convert_wide_to_long(x, prepped_effect$variable, reh)
     # return: converted matrix
-	} else {
-		actors <- attr(reh, "dictionary")$actors
-		x$actor1 <- actors$actorID[match(x$actor1, actors$actorName)] - 1
-		x$actor2 <- actors$actorID[match(x$actor2, actors$actorName)] - 1
-		as.matrix(x) # return
-	}
+  } else {
+    actors <- attr(reh, "dictionary")$actors
+    x$actor1 <- actors$actorID[match(x$actor1, actors$actorName)] - 1
+    x$actor2 <- actors$actorID[match(x$actor2, actors$actorName)] - 1
+    as.matrix(x) # return
+  }
 }
-
-
-
-

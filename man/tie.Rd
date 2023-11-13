@@ -14,9 +14,9 @@ tie(variable, attr_dyads = NULL, scaling = c("none", "std"), x, variableName)
 
 \item{scaling}{The method for scaling the statistic. The default is no scaling. Alternatively, standardization of the statistic per time point can be requested with "std".}
 
-\item{x}{Deprecated, please use 'attr_dyads' instead.}
+\item{x}{Deprecated argument. Please use 'attr_dyads' instead.}
 
-\item{variableName}{Deprecated, please use 'variable' instead.}
+\item{variableName}{Deprecated argument. Please use 'variable' instead.}
 }
 \description{
 Specifies the statistic for a "tie" (or, "dyad") effect.

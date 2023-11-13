@@ -224,6 +224,7 @@ expect_error(
     pattern = "model argument"
 )
 
+
 reh <- remify::remify(edgelist, model = "tie")
 
 expect_error(
@@ -257,18 +258,12 @@ expect_error(
     pattern = "'x3' not in attr_actors"
 )
 
-expect_error(
-    remstats(reh = reh, tie_effects = ~ send(variable = "x1"), 
-        attr_actors = info[,-2]),
-    pattern = "time variable is missing"
-)
-
 info$time[1] <- NA
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ send(variable = "x1"), 
         attr_actors = info),
-    pattern = "missing values"
+    pattern = "Missing"
 )
 
 info$time[1] <- 0
@@ -333,16 +328,11 @@ expect_error(
     pattern = "'x3' not in attr_actors"
 )
 
-expect_error(
-    send(variable = "x1", attr_actors = info[,-2]),
-    pattern = "time variable is missing"
-)
-
 info$time[1] <- NA
 
 expect_error(
     send(variable = "x1", attr_actors = info),
-    pattern = "missing values"
+    pattern = "Missing"
 )
 
 info$time[1] <- 0
@@ -517,30 +507,18 @@ expect_error(
     pattern = "'x3' not in attr_actors"
 )
 
-expect_error(
-    remstats(reh = reh, sender_effects = ~ send(variable = "x1"), 
-        attr_actors = info[,-2]),
-    pattern = "time variable is missing"
-)
-
-expect_error(
-    remstats(reh = reh, receiver_effects = ~ receive(variable = "x1"), 
-        attr_actors = info[,-2]),
-    pattern = "time variable is missing"
-)
-
 info$time[1] <- NA
 
 expect_error(
     remstats(reh = reh, sender_effects = ~ send(variable = "x1"), 
         attr_actors = info),
-    pattern = "missing values"
+    pattern = "Missing"
 )
 
 expect_error(
     remstats(reh = reh, receiver_effects = ~ receive(variable = "x1"), 
         attr_actors = info),
-    pattern = "missing values"
+    pattern = "Missing"
 )
 
 info$time[1] <- 0
@@ -589,18 +567,8 @@ expect_warning(
 Y <<- matrix(1:15, nrow = 5, ncol = 3)
 
 expect_error(
-    remstats(reh = reh, sender_effects = ~ userStat(Y[1:4, ])),
-    pattern = "number of events"
-)
-
-expect_error(
     remstats(reh = reh, sender_effects = ~ userStat(Y[, 1:2])),
     pattern = "number of actors"
-)
-
-expect_error(
-    remstats(reh = reh, receiver_effects = ~ userStat(Y[1:4, ])),
-    pattern = "number of events"
 )
 
 expect_error(

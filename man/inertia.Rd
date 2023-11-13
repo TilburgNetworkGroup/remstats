@@ -4,7 +4,7 @@
 \alias{inertia}
 \title{inertia}
 \usage{
-inertia(scaling = c("none", "prop", "std"), consider_type = FALSE)
+inertia(scaling = c("none", "prop", "std"), consider_type = TRUE)
 }
 \arguments{
 \item{scaling}{the method for scaling the inertia statistic. Default is to
@@ -14,8 +14,8 @@ divided by the outdegree of the sender at time t (see 'details') or
 standardization of the raw counts per time point can be requested with 'std'.}
 
 \item{consider_type}{logical, indicates whether to count the number of past
-events separately for each event type (TRUE) or sum across different event
-types (FALSE, default).}
+events separately for each event type (TRUE, default) or sum across
+different event types (FALSE).}
 }
 \description{
 Specifies the statistic for an inertia effect in the tie-oriented model or

@@ -1,6 +1,6 @@
 # Create example remstats objects
 edgelist <- data.frame(
-  time = c(1:4),
+  time = 1:4,
   actor1 = sample(1:3, 4, replace = T),
   actor2 = sample(4:6, 4, replace = T)
 )

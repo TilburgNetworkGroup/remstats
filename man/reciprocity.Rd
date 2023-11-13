@@ -4,7 +4,7 @@
 \alias{reciprocity}
 \title{reciprocity}
 \usage{
-reciprocity(scaling = c("none", "prop", "std"), consider_type = FALSE)
+reciprocity(scaling = c("none", "prop", "std"), consider_type = TRUE)
 }
 \arguments{
 \item{scaling}{the method for scaling the reciprocity statistic. Default is
@@ -14,8 +14,8 @@ divided by the indegree of the sender at time t (see 'details') or
 standardization of the raw counts per time point can be requested with 'std'.}
 
 \item{consider_type}{logical, indicates whether to count the number of past
-reciprocal events separately for each event type (TRUE) or sum across
-different event types (FALSE, default).}
+reciprocal events separately for each event type (TRUE, default) or sum
+across different event types (FALSE).}
 }
 \description{
 Specifies the statistic for a reciprocity effect in the tie-oriented model

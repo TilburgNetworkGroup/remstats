@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{object of class \code{\link{remstats}}.}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \description{
 Print a \code{\link{remstats}} object in a user-friendly format.

@@ -1,8 +1,8 @@
 Package: remstats
 Type: Package
 Title: Computes Statistics For Relational Event History Data
-Version: 3.1.8
-Date: 2023-10-25
+Version: 3.2.0
+Date: 2023-11-13
 Authors@R: 
     c(
         person(
@@ -67,11 +67,10 @@ Depends:
     R (>= 2.10),
 Imports: 
     Rcpp (>= 1.0.2),
-    stats,
-    utils,
-    remify (>= 3.1.0)
+    stats
 LinkingTo: Rcpp, RcppArmadillo, remify, RcppProgress
 Suggests: 
     graphics,
-    tinytest
-SystemRequirements: GNU make
+    tinytest,
+    remify (>= 3.2.0)
+SystemRequirements: GNU make, C++11

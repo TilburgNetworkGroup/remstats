@@ -7,16 +7,16 @@
 psABA()
 }
 \description{
-Specifies the statistic for a participation shift AB-A in the sender step of 
+Specifies the statistic for a participation shift AB-A in the sender step of
 the actor-oriented model.
 }
 \details{
-Refers to the tendency for the same actor to keep initiating events: The 
-next sender is equal to the previous sender. For each timepoint t, the psABA 
-statistic is equal to one for the actor that will create the participation 
-shift if they would occur in the edgelist as the sender at time t and equal 
-to zero for the actors that will not create this participation shift. If 
-multiple events in the edgelist occur at the same time point, the order of 
+Refers to the tendency for the same actor to keep initiating events: The
+next sender is equal to the previous sender. For each timepoint t, the psABA
+statistic is equal to one for the actor that will create the participation
+shift if they would occur in the edgelist as the sender at time t and equal
+to zero for the actors that will not create this participation shift. If
+multiple events in the edgelist occur at the same time point, the order of
 these events determines whether the p-shift is observed.
 }
 \examples{
@@ -25,7 +25,7 @@ remstats(sender_effects = ~ psABA(), reh = reh_actor)
 
 }
 \seealso{
-\code{\link{psABB}} or \code{\link{psABX}} for exploring 
-alternative participation shifts in the sender step of the actor-oriented 
+\code{\link{psABB}} or \code{\link{psABX}} for exploring
+alternative participation shifts in the sender step of the actor-oriented
 model.
 }

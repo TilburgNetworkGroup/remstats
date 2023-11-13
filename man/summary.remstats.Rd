@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{object}{object of class \code{\link{remstats}}.}
+
+\item{...}{additional arguments affecting the summary produced.}
 }
 \description{
 Produce summaries of each statistic from a \code{\link{remstats}} object.

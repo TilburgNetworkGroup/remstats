@@ -11,20 +11,20 @@ edgelist <- data.frame(
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 effects <- ~
   outdegreeSender() + outdegreeReceiver() +
-    indegreeSender() + indegreeReceiver() +
-    totaldegreeSender() + totaldegreeReceiver() +
-		totaldegreeDyad() +
-    inertia() + reciprocity() +
-    isp() + itp() + osp() + otp() +
-    isp(unique = TRUE) + itp(unique = TRUE) +
-    osp(unique = TRUE) + otp(unique = TRUE) +
-    psABBA() + psABBY() + psABAB() + psABBY() +
-    psABXA() + psABXB() + psABXY() +
-    recencyContinue() +
-    recencySendSender() + recencySendReceiver() +
-    recencyReceiveSender() + recencyReceiveReceiver() +
-    rrankSend() + rrankReceive()
-stats <- remstats(reh, tie_effects = effects)
+  indegreeSender() + indegreeReceiver() +
+  totaldegreeSender() + totaldegreeReceiver() +
+	totaldegreeDyad() +
+  inertia() + reciprocity() +
+  isp() + itp() + osp() + otp() +
+  isp(unique = TRUE) + itp(unique = TRUE) +
+  osp(unique = TRUE) + otp(unique = TRUE) +
+  psABBA() + psABBY() + psABAB() + psABAY() +
+  psABXA() + psABXB() + psABXY() +
+  recencyContinue() +
+  recencySendSender() + recencySendReceiver() +
+  recencyReceiveSender() + recencyReceiveReceiver() +
+  rrankSend() + rrankReceive()
+stats <- remstats(reh, tie_effects = effects, method = "pe")
 riskset <- attr(stats, "riskset")
 
 # Baseline
@@ -327,6 +327,36 @@ psABXY <- rbind(
 )
 expect_equal(stats[, , "psABXY"], psABXY)
 
+# psABXA
+psABXA <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 1, 0, 0, 0, 1, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(0, 1, 0, 0, 0, 1, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(1, 0, 0, 0, 0, 0, 1),
+	c(0, 0, 0, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0)
+)
+expect_equal(stats[, , "psABXA"], psABXA)
+
+# psABAY
+psABAY <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 1, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 1, 0, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 1, 0),
+	c(0, 0, 1, 1, 0, 0, 0),
+	c(0, 1, 0, 1, 0, 0, 0),
+	c(0, 1, 1, 0, 0, 0, 0)
+)
+expect_equal(stats[, , "psABAY"], psABAY)
+
 # recencyContinue
 recencyContinue <- rbind(
   matrix(0, ncol = nrow(riskset)),
@@ -482,7 +512,7 @@ sapply(6:7, function(p) {
 
 # totaldegreeDyad
 prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
-prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 2/4
+prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 1/4
 expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)
 
 # inertia
@@ -494,3 +524,257 @@ expect_equal(prop_stats[,,"inertia"], prop_inertia)
 prop_reciprocity <- stats[,,"reciprocity"] / stats[,,"indegreeSender"]
 prop_reciprocity[stats[,,"indegreeSender"]==0] <- 1 / 3
 expect_equal(prop_stats[,,"reciprocity"], prop_reciprocity)
+
+
+# Test method -------------------------------------------------------------
+# Small change to the times in the edgelist
+edgelist <- data.frame(
+	time = c(1, 2, 3, 4, 5, 5, 5, 6, 7, 8),
+	actor1 = c(1, 2, 1, 2, 3, 4, 2, 2, 2, 4),
+	actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
+)
+
+reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+
+# Selection of effects that have unique underlying cpp functions
+effects <- ~ outdegreeSender() + inertia() + reciprocity() +
+	itp() + psABBA() + psABAY() + recencyContinue() + rrankSend() 
+
+# Method = "pt"
+pt_stats <- remstats(reh, tie_effects = effects, method = "pt")
+riskset <- attr(pt_stats, "riskset")
+
+# Baseline
+expect_equal(pt_stats[, , "baseline"], matrix(1, nrow = NROW(unique(edgelist$time)), ncol = nrow(riskset)))
+
+# outdegreeSender
+outdegreeSender <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(1, 0, 0, 0, 0, 0, 0),
+	c(1, 1, 1, 1, 0, 0, 0),
+	c(2, 1, 1, 1, 0, 0, 0),
+	c(2, 2, 2, 2, 0, 0, 0),
+	c(2, 3, 3, 3, 1, 1, 1),
+	c(2, 4, 4, 4, 1, 1, 1),
+	c(2, 5, 5, 5, 1, 1, 1)
+)
+expect_equal(pt_stats[, , "outdegreeSender"], outdegreeSender)
+
+# inertia
+inertia <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(1, 0, 0, 0, 0, 0, 0),
+	c(1, 1, 0, 0, 0, 0, 0),
+	c(2, 1, 0, 0, 0, 0, 0),
+	c(2, 1, 1, 0, 0, 0, 0),
+		c(2, 2, 1, 0, 1, 0, 1),
+	c(2, 2, 2, 0, 1, 0, 1),
+	c(2, 2, 2, 1, 1, 0, 1)
+)
+expect_equal(pt_stats[, , "inertia"], inertia)
+
+# reciprocity
+reciprocity <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+		c(0, 0, 1, 0, 1, 0, 0),
+	c(0, 0, 1, 0, 2, 0, 0),
+	c(0, 0, 1, 0, 2, 0, 0)
+)
+expect_equal(pt_stats[, , "reciprocity"], reciprocity)
+
+# itp
+itp <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(1, 1, 0, 1, 2, 0, 0),
+	c(1, 1, 0, 1, 2, 0, 0),
+	c(1, 1, 0, 1, 3, 0, 1)
+)
+expect_equal(pt_stats[, , "itp"], itp)
+
+
+# psABBA
+psABBA <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 1, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 1, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0)
+)
+expect_equal(pt_stats[, , "psABBA"], psABBA)
+
+# psABAY
+psABAY <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 1, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 1, 0, 1, 0, 0, 0),
+	c(0, 0, 1, 1, 0, 1, 0),
+	c(0, 1, 0, 1, 0, 0, 0),
+	c(0, 1, 1, 0, 0, 0, 0)
+)
+expect_equal(pt_stats[, , "psABAY"], psABAY)
+
+# recencyContinue  
+recencyContinue <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(1/2, 0.0, 0.0, 0.0, 0.0, 0, 0.0),
+	c(1/3, 1/2, 0.0, 0.0, 0.0, 0, 0.0),
+	c(1/2, 1/3, 0.0, 0.0, 0.0, 0, 0.0),
+	c(1/3, 1/4, 1/2, 0.0, 0.0, 0, 0.0),
+	c(1/4, 1/2, 1/3, 0.0, 1/2, 0, 1/2),
+	c(1/5, 1/3, 1/2, 0.0, 1/3, 0, 1/3),
+	c(1/6, 1/4, 1/3, 1/2, 1/4, 0, 1/4)
+)
+expect_equal(pt_stats[, , "recencyContinue"], recencyContinue)
+
+# rrankSend
+rrankSend <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(1, 0.0, 0.0, 0.0, 0, 0, 0),
+	c(1, 1.0, 0.0, 0.0, 0, 0, 0),
+	c(1, 1.0, 0.0, 0.0, 0, 0, 0),
+	c(1, 1/2, 1.0, 0.0, 0, 0, 0),
+	c(1, 1.0, 1/2, 0.0, 1, 0, 1),
+	c(1, 1/2, 1.0, 0.0, 1, 0, 1),
+	c(1, 1/3, 1/2, 1.0, 1, 0, 1)
+)
+expect_equal(pt_stats[, , "rrankSend"], rrankSend)
+
+# Method = "pe"
+pe_stats <- remstats(reh, tie_effects = effects, method = "pe")
+riskset <- attr(pe_stats, "riskset")
+
+# Baseline
+expect_equal(pe_stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow(riskset)))
+
+# outdegreeSender
+outdegreeSender <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 0, 0, 0, 0, 0, 0),
+  c(1, 1, 1, 1, 0, 0, 0),
+  c(2, 1, 1, 1, 0, 0, 0),
+  c(2, 2, 2, 2, 0, 0, 0),
+  c(2, 2, 2, 2, 1, 0, 0),
+  c(2, 2, 2, 2, 1, 1, 1),
+  c(2, 3, 3, 3, 1, 1, 1),
+  c(2, 4, 4, 4, 1, 1, 1),
+  c(2, 5, 5, 5, 1, 1, 1)
+)
+expect_equal(pe_stats[, , "outdegreeSender"], outdegreeSender)
+
+# inertia
+inertia <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 0, 0, 0, 0, 0, 0),
+  c(1, 1, 0, 0, 0, 0, 0),
+  c(2, 1, 0, 0, 0, 0, 0),
+  c(2, 1, 1, 0, 0, 0, 0),
+  c(2, 1, 1, 0, 1, 0, 0),
+  c(2, 1, 1, 0, 1, 0, 1),
+  c(2, 2, 1, 0, 1, 0, 1),
+  c(2, 2, 2, 0, 1, 0, 1),
+  c(2, 2, 2, 1, 1, 0, 1)
+)
+expect_equal(pe_stats[, , "inertia"], inertia)
+
+# reciprocity
+reciprocity <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 2, 0, 0),
+  c(0, 0, 1, 0, 2, 0, 0)
+)
+expect_equal(pe_stats[, , "reciprocity"], reciprocity)
+
+# itp
+itp <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0),
+  c(1, 1, 0, 0, 1, 0, 0),
+  c(1, 1, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 1, 2, 0, 0),
+  c(1, 1, 0, 1, 2, 0, 0),
+  c(1, 1, 0, 1, 3, 0, 1)
+)
+expect_equal(pe_stats[, , "itp"], itp)
+
+# psABBA
+psABBA <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0),
+  c(0, 0, 1, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 0, 0, 0),
+  c(0, 0, 0, 0, 1, 0, 0),
+  c(0, 0, 0, 0, 0, 0, 0)
+)
+expect_equal(pe_stats[, , "psABBA"], psABBA)
+
+# psABAY
+psABAY <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 1, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 1, 0, 1, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 0, 0),
+	c(0, 0, 0, 0, 0, 1, 0),
+	c(0, 0, 1, 1, 0, 0, 0),
+	c(0, 1, 0, 1, 0, 0, 0),
+	c(0, 1, 1, 0, 0, 0, 0)
+)
+expect_equal(pe_stats[, , "psABAY"], psABAY)
+
+# recencyContinue  
+recencyContinue <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1/2, 0.0, 0.0, 0.0, 0.0, 0, 0.0),
+  c(1/3, 1/2, 0.0, 0.0, 0.0, 0, 0.0),
+  c(1/2, 1/3, 0.0, 0.0, 0.0, 0, 0.0),
+  c(1/3, 1/4, 1/2, 0.0, 0.0, 0, 0.0),
+  c(1/3, 1/4, 1/2, 0.0, 1.0, 0, 0.0),
+  c(1/3, 1/4, 1/2, 0.0, 1.0, 0, 1.0),
+  c(1/4, 1/2, 1/3, 0.0, 1/2, 0, 1/2),
+  c(1/5, 1/3, 1/2, 0.0, 1/3, 0, 1/3),
+  c(1/6, 1/4, 1/3, 1/2, 1/4, 0, 1/4)
+)
+expect_equal(pe_stats[, , "recencyContinue"], recencyContinue)
+
+# rrankSend
+rrankSend <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(1, 0.0, 0.0, 0.0, 0, 0, 0),
+  c(1, 1.0, 0.0, 0.0, 0, 0, 0),
+  c(1, 1.0, 0.0, 0.0, 0, 0, 0),
+  c(1, 1/2, 1.0, 0.0, 0, 0, 0),
+  c(1, 1/2, 1.0, 0.0, 1, 0, 0),
+  c(1, 1/2, 1.0, 0.0, 1, 0, 1),
+  c(1, 1.0, 1/2, 0.0, 1, 0, 1),
+  c(1, 1/2, 1.0, 0.0, 1, 0, 1),
+  c(1, 1/3, 1/2, 1.0, 1, 0, 1)
+)
+expect_equal(pe_stats[, , "rrankSend"], rrankSend)
