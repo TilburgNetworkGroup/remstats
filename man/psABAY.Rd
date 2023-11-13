@@ -14,22 +14,22 @@ in determining which dyads create a pshift (TRUE, default) or not (FALSE).}
 Specifies the statistic for a participation shift AB-AY.
 }
 \details{
-One of Gibson's (2003) dyadic participation shifts. The AB-AY participation 
-shift refers to a tendency for \emph{turn continuing}. For directed events, 
-the sender (A) in the current event is the same as the sender in the 
-previous event (A), and the receiver (Y) is different from the previous 
-receiver (B). In undirected events, one of the current actors (A) matches 
-one of the actors in the previous events (A or B), while the other actor (Y) 
-is different. 
+One of Gibson's (2003) dyadic participation shifts. The AB-AY participation
+shift refers to a tendency for \emph{turn continuing}. For directed events,
+the sender (A) in the current event is the same as the sender in the
+previous event (A), and the receiver (Y) is different from the previous
+receiver (B). In undirected events, one of the current actors (A) matches
+one of the actors in the previous events (A or B), while the other actor (Y)
+is different.
 
-To identify these shifts, a statistic 'psABAY' is calculated for each pair 
-of actors at a given timepoint (t). If the pair's interaction follows the 
-AB-AY pattern, the statistic is set equal to one; otherwise, it's set to 
-zero. 
+To identify these shifts, a statistic 'psABAY' is calculated for each pair
+of actors at a given timepoint (t). If the pair's interaction follows the
+AB-AY pattern, the statistic is set equal to one; otherwise, it's set to
+zero.
 
-Additionaly, the types of the AB and AY events can be taken into account. If 
-'consider_type' is 'TRUE', the type of the AB event and the type of the AY 
-event must match for the shift to occur. If 'consider_type' is 'FALSE', the 
+Additionaly, the types of the AB and AY events can be taken into account. If
+'consider_type' is 'TRUE', the type of the AB event and the type of the AY
+event must match for the shift to occur. If 'consider_type' is 'FALSE', the
 shift happens for every AY event, regardless of the event type.
 }
 \examples{
@@ -40,6 +40,6 @@ remstats(reh = reh, tie_effects = effects)
 }
 \seealso{
 \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}},
-\code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAB}} for other 
+\code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAB}} for other
 dyadic participation shifts.
 }

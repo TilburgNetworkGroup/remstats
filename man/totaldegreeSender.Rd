@@ -15,7 +15,7 @@ time t can be requested with 'prop' or standardization of the raw degree
 counts per time point can be requested with 'std'.}
 
 \item{consider_type}{logical, indicates whether to count the degrees
-separately for each event type (TRUE, default) or sum degrees across 
+separately for each event type (TRUE, default) or sum degrees across
 different event types (FALSE).}
 }
 \description{

@@ -8,7 +8,7 @@ userStat(x, variableName = NULL)
 }
 \arguments{
 \item{x}{matrix with number of rows equal to the number of events and number
-of columns equal to the number of dyads in the network (tie-oriented model) 
+of columns equal to the number of dyads in the network (tie-oriented model)
 or the number of actors in the network (actor-oriented model)}
 
 \item{variableName}{Deprecated argument. Please use 'variable' instead.}
@@ -22,7 +22,7 @@ formula.
 reh <- remify::remify(history, model = "tie")
 actor101Events <- which(history$actor1 == "101" | history$actor2 == "101")
 actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {
-	rep(i \%in\% actor101Events, reh$D)
+  rep(i \%in\% actor101Events, reh$D)
 }))
 
 # Main effects only
@@ -30,8 +30,8 @@ effects <- ~ userStat(x = actor101_stat, variableName = "actor101event")
 remstats(reh = reh, tie_effects = effects)
 
 # Model with interaction effects
-interaction_effects <- ~ inertia()*
- userStat(x = actor101_stat, variableName ="actor101event")
+interaction_effects <- ~ inertia() *
+  userStat(x = actor101_stat, variableName = "actor101event")
 remstats(reh = reh, tie_effects = interaction_effects)
 
 }

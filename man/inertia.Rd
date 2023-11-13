@@ -14,7 +14,7 @@ divided by the outdegree of the sender at time t (see 'details') or
 standardization of the raw counts per time point can be requested with 'std'.}
 
 \item{consider_type}{logical, indicates whether to count the number of past
-events separately for each event type (TRUE, default) or sum across 
+events separately for each event type (TRUE, default) or sum across
 different event types (FALSE).}
 }
 \description{

@@ -8,11 +8,11 @@ degreeDiff(scaling = c("none", "std"), consider_type = TRUE)
 }
 \arguments{
 \item{scaling}{the method for scaling the degree statistic. Default is to
-not scale the statistic (scaling = "none"). Alternatively, standardization 
+not scale the statistic (scaling = "none"). Alternatively, standardization
 of the degree difference per time point can be requested with `std`.}
 
 \item{consider_type}{logical, indicates whether to count the degrees
-separately for each event type (TRUE, default) or sum degrees across 
+separately for each event type (TRUE, default) or sum degrees across
 different event types (FALSE).}
 }
 \description{

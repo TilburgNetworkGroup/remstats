@@ -602,3 +602,340 @@ prop_reciprocity <- t(sapply(1:nrow(edgelist), function(m) {
   scaled_original  
 }))
 expect_equal(prop_receiver_stats[,,"reciprocity"], prop_reciprocity)
+
+# Test method -------------------------------------------------------------
+# Small change to the times in the edgelist
+
+# Small edgelist
+edgelist <- data.frame(
+  time = c(1, 2, 3, 4, 5, 5, 5, 6, 7, 8),
+  actor1 = c(1, 2, 1, 2, 3, 4, 2, 2, 2, 4),
+  actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
+)
+
+reh <- remify::remify(edgelist, model = "actor")
+
+# Selection of effects that have unique underlying cpp functions
+sender_effects <- ~ indegreeSender() + recencySendSender() + psABA() 
+receiver_effects <- ~ indegreeReceiver() + inertia() + reciprocity() +
+  isp() + recencyContinue() + rrankSend() + psABAB() 
+
+# Method = "pt"
+pt_stats <- remstats(reh,
+  sender_effects = sender_effects,
+  receiver_effects = receiver_effects,
+  method = "pt"
+)
+sender_stats <- pt_stats$sender_stats
+receiver_stats <- pt_stats$receiver_stats
+actors <- attr(reh, "dictionary")$actors
+
+# baseline
+expect_equal(sender_stats[, , "baseline"], matrix(1, nrow = 8, ncol = nrow(actors)))
+
+# indegreeSender
+indegreeSender <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 1, 0),
+  c(1, 0, 1, 0),
+  c(1, 0, 2, 0),
+  c(1, 0, 3, 0),
+  c(2, 1, 4, 0),
+  c(2, 1, 5, 0),
+  c(2, 1, 5, 1)
+)
+expect_equal(sender_stats[, , "indegreeSender"], indegreeSender)
+
+# recencySendSender
+recencySendSender <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(1/2, 0.0, 0.0, 0.0),
+  c(1/3, 1/2, 0.0, 0.0),
+  c(1/2, 1/3, 0.0, 0.0),
+  c(1/3, 1/2, 0.0, 0.0),
+  c(1/4, 1/2, 1/2, 1/2),
+  c(1/5, 1/2, 1/3, 1/3),
+  c(1/6, 1/2, 1/4, 1/4)
+)
+expect_equal(sender_stats[, , "recencySendSender"], recencySendSender)
+
+# psABA
+psABA <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(1, 0, 0, 0),
+  c(0, 1, 0, 0),
+  c(1, 0, 0, 0),
+  c(0, 1, 0, 0),
+  c(0, 1, 1, 1),
+  c(0, 1, 0, 0),
+  c(0, 1, 0, 0)
+)
+expect_equal(sender_stats[, , "psABA"], psABA)
+
+# indegreeReceiver
+indegreeReceiver <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 1, 0),
+	c(1, 0, 1, 0),
+	c(1, 0, 2, 0),
+	c(1, 0, 3, 0),
+	c(1, 0, 3, 0),
+	c(1, 0, 3, 0),
+	c(2, 1, 4, 0),
+	c(2, 1, 5, 0),
+	c(2, 1, 5, 1)
+)
+expect_equal(receiver_stats[, , "indegreeReceiver"], indegreeReceiver)
+
+# inertia
+inertia <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(1, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 1, 0),
+  c(2, 0, 1, 0),
+  c(2, 0, 2, 0),
+  c(0, 0, 1, 0)
+)
+expect_equal(receiver_stats[, , "inertia"], inertia)
+
+# reciprocity
+reciprocity <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0, 0),
+  c(0, 1, 0, 0),
+  c(0, 0, 0, 0),
+  c(2, 1, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 1, 0),
+  c(0, 1, 0, 0)
+)
+expect_equal(receiver_stats[, , "reciprocity"], reciprocity)
+
+# isp
+isp <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1, 0, 1, 0)
+)
+expect_equal(receiver_stats[, , "isp"], isp)
+
+# recencyContinue
+recencyContinue <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0.0, 0.0, 0.0, 0.0),
+  c(0.0, 0.0, 1/3, 0.0),
+  c(1/3, 0.0, 0.0, 0.0),
+  c(0.0, 0.0, 0.0, 0.0),
+  c(0.0, 0.0, 0.0, 0.0),
+  c(1/4, 0.0, 1/2, 0.0),
+  c(1/2, 0.0, 1/3, 0.0),
+  c(1/3, 0.0, 1/2, 0.0),
+  c(0.0, 0.0, 1/4, 0.0)
+)
+expect_equal(receiver_stats[, , "recencyContinue"], recencyContinue)
+
+# rrankSend
+rrankSend <- rbind(
+  matrix(0, ncol = nrow(actors)),
+  c(0, 0, 0, 0),
+  c(0, 0, 1, 0),
+  c(1, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(0, 0, 0, 0),
+  c(1/2, 0, 1, 0),
+  c(1, 0, 1/2, 0),
+  c(1/2, 0, 1, 0),
+  c(0, 0, 1, 0)
+)
+expect_equal(receiver_stats[, , "rrankSend"], rrankSend)
+
+# psABAB
+psABAB <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 1, 0),
+	c(1, 0, 0, 0),
+	c(0, 0, 1, 0),
+	c(0, 0, 0, 0)
+)
+expect_equal(receiver_stats[, , "psABAB"], psABAB)
+
+# Method = "pe"
+pe_stats <- remstats(reh,
+	sender_effects = sender_effects,
+	receiver_effects = receiver_effects,
+	method = "pe"
+)
+sender_stats <- pe_stats$sender_stats
+receiver_stats <- pe_stats$receiver_stats
+actors <- attr(reh, "dictionary")$actors
+
+# baseline
+expect_equal(sender_stats[, , "baseline"], matrix(1, nrow = 10, ncol = nrow(actors)))
+
+# indegreeSender
+indegreeSender <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 1, 0),
+	c(1, 0, 1, 0),
+	c(1, 0, 2, 0),
+	c(1, 0, 3, 0),
+	c(1, 1, 3, 0),
+	c(1, 1, 4, 0),
+	c(2, 1, 4, 0),
+	c(2, 1, 5, 0),
+	c(2, 1, 5, 1)
+)
+expect_equal(sender_stats[, , "indegreeSender"], indegreeSender)
+
+# recencySendSender
+recencySendSender <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(1/2, 0.0, 0.0, 0.0),
+	c(1/3, 1/2, 0.0, 0.0),
+	c(1/2, 1/3, 0.0, 0.0),
+	c(1/3, 1/2, 0.0, 0.0),
+	c(1/3, 1/2, 1/1, 0.0),
+	c(1/3, 1/2, 1/1, 1/1),
+	c(1/4, 1/2, 1/2, 1/2),
+	c(1/5, 1/2, 1/3, 1/3),
+	c(1/6, 1/2, 1/4, 1/4)
+)
+expect_equal(sender_stats[, , "recencySendSender"], recencySendSender)
+
+# psABA
+psABA <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(1, 0, 0, 0),
+	c(0, 1, 0, 0),
+	c(1, 0, 0, 0),
+	c(0, 1, 0, 0),
+	c(0, 0, 1, 0),
+	c(0, 0, 0, 1),
+	c(0, 1, 0, 0),
+	c(0, 1, 0, 0),
+	c(0, 1, 0, 0)
+)
+expect_equal(sender_stats[, , "psABA"], psABA)
+
+# indegreeReceiver
+indegreeReceiver <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 1, 0),
+	c(1, 0, 1, 0),
+	c(1, 0, 2, 0),
+	c(1, 0, 3, 0),
+	c(1, 1, 3, 0),
+	c(1, 1, 4, 0),
+	c(2, 1, 4, 0),
+	c(2, 1, 5, 0),
+	c(2, 1, 5, 1)
+)
+expect_equal(receiver_stats[, , "indegreeReceiver"], indegreeReceiver)
+
+# inertia
+inertia <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 0, 0),
+	c(0, 0, 1, 0),
+	c(1, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(1, 0, 1, 0),
+	c(2, 0, 1, 0),
+	c(2, 0, 2, 0),
+	c(0, 0, 1, 0)
+)
+expect_equal(receiver_stats[, , "inertia"], inertia)
+
+# reciprocity
+reciprocity <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 0, 0),
+	c(0, 1, 0, 0),
+	c(0, 0, 0, 0),
+	c(2, 1, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 1, 0),
+	c(0, 0, 1, 0),
+	c(0, 0, 1, 0),
+	c(0, 1, 0, 0)
+)
+expect_equal(receiver_stats[, , "reciprocity"], reciprocity)
+
+# isp
+isp <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(1, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(1, 0, 1, 0)
+)
+expect_equal(receiver_stats[, , "isp"], isp)
+
+# recencyContinue
+recencyContinue <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0.0, 0.0, 0.0, 0.0),
+	c(0.0, 0.0, 1/3, 0.0),
+	c(1/3, 0.0, 0.0, 0.0),
+	c(0.0, 0.0, 0.0, 0.0),
+	c(0.0, 0.0, 0.0, 0.0),
+	c(1/4, 0.0, 1/2, 0.0),
+	c(1/2, 0.0, 1/3, 0.0),
+	c(1/3, 0.0, 1/2, 0.0),
+	c(0.0, 0.0, 1/4, 0.0)
+)
+expect_equal(receiver_stats[, , "recencyContinue"], recencyContinue)
+
+# rrankSend
+rrankSend <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 0, 0),
+	c(0, 0, 1, 0),
+	c(1, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(1/2, 0, 1, 0),
+	c(1, 0, 1/2, 0),
+	c(1/2, 0, 1, 0),
+	c(0, 0, 1, 0)
+)
+expect_equal(receiver_stats[, , "rrankSend"], rrankSend)
+
+# psABAB
+psABAB <- rbind(
+	matrix(0, ncol = nrow(actors)),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(0, 0, 0, 0),
+	c(1, 0, 0, 0),
+	c(0, 0, 1, 0),
+	c(0, 0, 0, 0)
+)
+expect_equal(receiver_stats[, , "psABAB"], psABAB)

@@ -264,6 +264,7 @@ remstats <- function(
             receiver_effects = receiver_effects,
             attr_actors = attr_actors, 
             attr_dyads = attr_dyads, 
+            method = method,
             memory = memory, 
             memory_value = memory_value, 
             start = start, 

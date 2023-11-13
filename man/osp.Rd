@@ -7,8 +7,8 @@
 osp(unique = FALSE, scaling = c("none", "std"), consider_type = TRUE)
 }
 \arguments{
-\item{unique}{A logical value indicating whether to sum the minimum of 
-events with third actors (FALSE, default) or the number of third actors that 
+\item{unique}{A logical value indicating whether to sum the minimum of
+events with third actors (FALSE, default) or the number of third actors that
 create a new, unique shared partner (TRUE). See details for more information.}
 
 \item{scaling}{the method for scaling the triad statistic. Default is to not
@@ -24,20 +24,20 @@ types (FALSE).}
 Specifies the statistic for an outgoing shared partners effect.
 }
 \details{
-The outgoing shared partners effect describes the propensity of dyads to 
-interact based on the number of past outgoing shared partners between them. 
-By default, the statistic at timepoint t for the dyad (i,j) is computed as 
-the sum of the minimum occurrences of past (i,h) and (j,h) events across all 
+The outgoing shared partners effect describes the propensity of dyads to
+interact based on the number of past outgoing shared partners between them.
+By default, the statistic at timepoint t for the dyad (i,j) is computed as
+the sum of the minimum occurrences of past (i,h) and (j,h) events across all
 actors h.
 
-When the unique parameter is set to TRUE, a different approach is taken. 
-In this case, the statistic counts the number of actors h that contribute to 
-the creation of a new, distinct shared partner between actors i and j. 
+When the unique parameter is set to TRUE, a different approach is taken.
+In this case, the statistic counts the number of actors h that contribute to
+the creation of a new, distinct shared partner between actors i and j.
 
-Additionally, it is possible to specify a scaling method using the scaling 
+Additionally, it is possible to specify a scaling method using the scaling
 parameter.
 
-Please note that the outgoing shared partners effect, 'osp', is exclusively 
+Please note that the outgoing shared partners effect, 'osp', is exclusively
 defined for directed events.
 }
 \examples{
@@ -50,7 +50,7 @@ remstats(reh = reh_actor, receiver_effects = effects)
 
 }
 \references{
-Butts, C. (2008). A relational event framework for social 
+Butts, C. (2008). A relational event framework for social
 action. Sociological Methodology.
 }
 \seealso{

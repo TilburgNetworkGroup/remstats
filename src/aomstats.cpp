@@ -152,7 +152,6 @@ void update_outdegree(arma::mat &oudegree,
     }
 }
 
-// [[Rcpp::export]]
 arma::mat degree_sender(std::string type,
                         const arma::mat &edgelist,
                         const arma::vec &actors,
@@ -294,13 +293,24 @@ arma::mat degree_sender(std::string type,
 
 Rcpp::List getEventIndices(const arma::mat &edgelist,
                            int start, int stop,
-                           std::string method)
+                           std::string method,
+                           std::string model)
 {
     Rcpp::List eventIndices;
 
     if (method == "pt")
     {
-        arma::vec eventTimes = arma::unique(edgelist.col(0).subvec(start, stop));
+        arma::vec eventTimes;
+        if (model == "sender")
+        {
+            arma::vec uniqueTimes = arma::unique(edgelist.col(0));
+            eventTimes = uniqueTimes.subvec(start, stop);
+        }
+        else if (model == "receiver")
+        {
+            eventTimes = arma::unique(edgelist.col(0).subvec(start, stop));
+        }
+
         eventIndices = Rcpp::List(eventTimes.n_elem);
 
         for (arma::uword i = 0; i < eventTimes.n_elem; ++i)
@@ -327,7 +337,6 @@ Rcpp::List getEventIndices(const arma::mat &edgelist,
     return eventIndices;
 }
 
-// [[Rcpp::export]]
 arma::mat inertia_receiver(const arma::mat &edgelist,
                            const arma::vec &actors,
                            const arma::vec &weights,
@@ -364,7 +373,7 @@ arma::mat inertia_receiver(const arma::mat &edgelist,
         }
 
         // Get the eventIndices based on the method
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -433,7 +442,7 @@ arma::mat inertia_receiver(const arma::mat &edgelist,
     else if (memory == "decay")
     {
         // Get the eventIndices with method is 'pt'
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, "pt");
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, "pt", "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -492,10 +501,11 @@ arma::mat inertia_receiver(const arma::mat &edgelist,
         // Outdegree of the sender
         arma::mat degree = degree_sender("out", edgelist, actors, weights, memory, memory_value, start, stop, method, display_progress);
 
-        for (arma::uword i = 0; i < stat.n_rows; ++i) {
-          arma::uword event = start + i;
-          int sender = edgelist(event, 1);
-          stat.row(i) /= degree(i, sender);
+        for (arma::uword i = 0; i < stat.n_rows; ++i)
+        {
+            arma::uword event = start + i;
+            int sender = edgelist(event, 1);
+            stat.row(i) /= degree(i, sender);
         }
 
         // Replace NaN values
@@ -505,7 +515,6 @@ arma::mat inertia_receiver(const arma::mat &edgelist,
     return stat;
 }
 
-// [[Rcpp::export]]
 arma::mat reciprocity_receiver(const arma::mat &edgelist,
                                const arma::vec &actors,
                                const arma::vec &weights,
@@ -542,7 +551,7 @@ arma::mat reciprocity_receiver(const arma::mat &edgelist,
         }
 
         // Get the eventIndices based on the method
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -611,7 +620,7 @@ arma::mat reciprocity_receiver(const arma::mat &edgelist,
     else if (memory == "decay")
     {
         // Get the eventIndices with method is 'pt'
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, "pt");
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, "pt", "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -670,12 +679,13 @@ arma::mat reciprocity_receiver(const arma::mat &edgelist,
         // Indegree of the sender
         arma::mat degree = degree_sender("in", edgelist, actors, weights, memory, memory_value, start, stop, method, display_progress);
 
-        for (arma::uword i = 0; i < stat.n_rows; ++i) {
-          arma::uword event = start + i;
-          int sender = edgelist(event, 1);
-          stat.row(i) /= degree(i, sender);
+        for (arma::uword i = 0; i < stat.n_rows; ++i)
+        {
+            arma::uword event = start + i;
+            int sender = edgelist(event, 1);
+            stat.row(i) /= degree(i, sender);
         }
-        
+
         // Replace NaN values
         stat.replace(arma::datum::nan, 1.0 / (actors.n_elem - 1.0));
     }
@@ -683,7 +693,6 @@ arma::mat reciprocity_receiver(const arma::mat &edgelist,
     return stat;
 }
 
-// [[Rcpp::export]]
 arma::mat degree_receiver(std::string type,
                           const arma::mat &edgelist,
                           const arma::vec &actors,
@@ -728,7 +737,7 @@ arma::mat degree_receiver(std::string type,
         }
 
         // Get the eventIndices based on the method
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -824,7 +833,7 @@ arma::mat degree_receiver(std::string type,
     else if (memory == "decay")
     {
         // Get the eventIndices with method is 'pt'
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, "pt");
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, "pt", "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -952,7 +961,6 @@ arma::rowvec calculate_triad(std::string type,
     return statrow;
 }
 
-// [[Rcpp::export]]
 arma::mat triad_receiver(std::string type,
                          const arma::mat &edgelist,
                          const arma::vec &actors,
@@ -990,7 +998,7 @@ arma::mat triad_receiver(std::string type,
         }
 
         // Get the eventIndices based on the method
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -1071,7 +1079,7 @@ arma::mat triad_receiver(std::string type,
     else if (memory == "decay")
     {
         // Get the eventIndices with method is 'pt'
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, "pt");
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, "pt", "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -1223,7 +1231,6 @@ void update_ranks(arma::mat &ranks,
 }
 
 // Memory effects: decay doesn't make sense, interval does?
-// [[Rcpp::export]]
 arma::mat rrank_receiver(std::string type,
                          const arma::mat &edgelist,
                          const arma::vec &actors,
@@ -1235,7 +1242,7 @@ arma::mat rrank_receiver(std::string type,
     // Progress update
     if (display_progress)
     {
-        Rcpp::Rcout << "Calculating " << type << " statistic" << std::endl;
+        Rcpp::Rcout << "Calculating rrank-" << type << " statistic" << std::endl;
     }
 
     // Decare the statistics matrix (m x n)
@@ -1249,7 +1256,7 @@ arma::mat rrank_receiver(std::string type,
     update_ranks(ranks, type, past_events, edgelist);
 
     // Get the eventIndices based on the method
-    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "receiver");
 
     // Progress bar
     Progress p(eventIndices.size(), display_progress);
@@ -1264,7 +1271,7 @@ arma::mat rrank_receiver(std::string type,
         {
             int event = events(j);
             int sender = edgelist(event, 1);
-            stat.row(event) = 1 / ranks.row(sender);
+            stat.row(event - start) = 1 / ranks.row(sender);
             stat.replace(arma::datum::inf, 0);
         }
 
@@ -1324,7 +1331,6 @@ void update_lastActiveActor(arma::rowvec &lastActive,
     }
 }
 
-// [[Rcpp::export]]
 arma::mat recency_receiver(std::string type,
                            const arma::mat &edgelist,
                            const arma::vec &actors,
@@ -1336,7 +1342,7 @@ arma::mat recency_receiver(std::string type,
     // Progress update
     if (display_progress)
     {
-        Rcpp::Rcout << "Calculating recency" << type << " statistic" << std::endl;
+        Rcpp::Rcout << "Calculating recency-" << type << " statistic" << std::endl;
     }
 
     // Declare the statistics matrix (m x n)
@@ -1354,7 +1360,7 @@ arma::mat recency_receiver(std::string type,
         update_lastActiveDyad(lastActive, past_events, edgelist);
 
         // Get the eventIndices based on the method
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -1370,7 +1376,7 @@ arma::mat recency_receiver(std::string type,
                 int event = events(j);
                 double time = edgelist(event, 0);
                 int sender = edgelist(event, 1);
-                stat.row(event) = 1 / ((time - lastActive.row(sender)) + 1);
+                stat.row(event - start) = 1 / ((time - lastActive.row(sender)) + 1);
             }
 
             // Update lastActive
@@ -1391,7 +1397,7 @@ arma::mat recency_receiver(std::string type,
         update_lastActiveActor(lastActive, type, past_events, edgelist);
 
         // Get the eventIndices based on the method
-        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+        Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "receiver");
 
         // Progress bar
         Progress p(eventIndices.size(), display_progress);
@@ -1407,7 +1413,7 @@ arma::mat recency_receiver(std::string type,
                 int event = events(j);
                 double time = edgelist(event, 0);
                 int sender = edgelist(event, 1);
-                stat.row(event) = 1 / ((time - lastActive) + 1);
+                stat.row(event - start) = 1 / ((time - lastActive) + 1);
             }
 
             // Update lastActive
@@ -1499,7 +1505,6 @@ void get_pshift(arma::mat &pshift,
     }
 }
 
-// [[Rcpp::export]]
 arma::mat pshift_receiver(int type, const arma::mat &edgelist,
                           const arma::vec &actors,
                           std::string memory, arma::vec memory_value,
@@ -1568,13 +1573,15 @@ arma::mat pshift_receiver(int type, const arma::mat &edgelist,
             // Use this information to compute pshifts
             get_pshift(pshift, type, previous_events, current_events, start, edgelist);
         }
-    } else if (type == 7) {
-      arma::rowvec one_row(pshift.n_cols, arma::fill::ones);
-      pshift.row(0) = one_row; 
+    }
+    else if (type == 7)
+    {
+        arma::rowvec one_row(pshift.n_cols, arma::fill::ones);
+        pshift.row(0) = one_row;
     }
 
     // Get the eventIndices based on the method
-    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "receiver");
 
     // Progress bar
     Progress p(eventIndices.size(), display_progress);
@@ -1609,7 +1616,6 @@ arma::mat pshift_receiver(int type, const arma::mat &edgelist,
     return pshift;
 }
 
-// [[Rcpp::export]]
 arma::mat exoActor_receiver(const arma::mat &covariates,
                             const arma::mat &edgelist,
                             const arma::vec &actors,
@@ -1691,7 +1697,6 @@ arma::mat exoActor_receiver(const arma::mat &covariates,
     return stat;
 }
 
-// [[Rcpp::export]]
 arma::mat exoActor_sender(const arma::mat &covariates,
                           const arma::mat &edgelist,
                           const arma::vec &actors,
@@ -1788,7 +1793,6 @@ arma::mat exoActor_sender(const arma::mat &covariates,
     return stat;
 }
 
-// [[Rcpp::export]]
 arma::mat exoDyad_receiver(std::string type,
                            const arma::mat &covariates,
                            const arma::mat &edgelist,
@@ -1919,7 +1923,6 @@ arma::mat userStat_receiver(const arma::mat &covariates,
     return (stat);
 }
 
-// [[Rcpp::export]]
 arma::mat exoTie_receiver(
     const arma::mat &covariates,
     const arma::mat &edgelist,
@@ -1996,7 +1999,6 @@ arma::mat exoTie_receiver(
     return stat;
 }
 
-// [[Rcpp::export]]
 arma::mat recency_sender(std::string type,
                          const arma::mat &edgelist,
                          const arma::vec &actors,
@@ -2011,7 +2013,7 @@ arma::mat recency_sender(std::string type,
     }
 
     // Get the eventIndices per timepoint based on the method
-    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "sender");
 
     // Declare the statistics matrix (m x n)
     arma::mat stat(eventIndices.size(), actors.n_elem, arma::fill::zeros);
@@ -2019,6 +2021,11 @@ arma::mat recency_sender(std::string type,
     // Initialize a vector with the times the actors were last active
     arma::rowvec lastActive(actors.n_elem);
     lastActive.fill(arma::datum::inf);
+
+    // Determine the time actors were last active before 'start'
+    double start_time = edgelist(start, 0);
+    arma::uvec past_events = arma::find(edgelist.col(0) < start_time);
+    update_lastActiveActor(lastActive, type, past_events, edgelist);
 
     // Progress bar
     Progress p(eventIndices.size(), display_progress);
@@ -2065,7 +2072,6 @@ void get_pshift_sender(arma::mat &pshift,
     }
 }
 
-// [[Rcpp::export]]
 arma::mat pshift_sender(int type,
                         const arma::mat &edgelist,
                         const arma::vec &actors,
@@ -2150,7 +2156,7 @@ arma::mat pshift_sender(int type,
     }
 
     // Get the eventIndices based on the method
-    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "sender");
 
     // Progress bar
     Progress p(eventIndices.size(), display_progress);
@@ -2285,7 +2291,7 @@ arma::cube compute_stats_sender(Rcpp::CharacterVector &effects,
     }
 
     // Get the eventIndices per timepoint based on the method
-    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method);
+    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method,  "sender");
 
     // Initialize saving space
     arma::cube senderStats(eventIndices.size(), actors.n_elem, effects.size());

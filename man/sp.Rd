@@ -7,8 +7,8 @@
 sp(unique = FALSE, scaling = c("none", "std"), consider_type = TRUE)
 }
 \arguments{
-\item{unique}{A logical value indicating whether to sum the minimum of 
-events with third actors (FALSE, default) or the number of third actors that 
+\item{unique}{A logical value indicating whether to sum the minimum of
+events with third actors (FALSE, default) or the number of third actors that
 create a new, unique shared partner (TRUE). See details for more information.}
 
 \item{scaling}{the method for scaling the triad statistic. Default is to not
@@ -24,20 +24,20 @@ types (FALSE).}
 Specifies the statistic for a shared partners effect for undirected events.
 }
 \details{
-The shared partners effect describes the propensity of dyads to interact 
-based on the number of past shared partners between them. By default, the 
-statistic at timepoint t for the undirected dyad (i,j) is computed as 
-the sum of the minimum occurrences of past undirected (i,h) and undirected 
+The shared partners effect describes the propensity of dyads to interact
+based on the number of past shared partners between them. By default, the
+statistic at timepoint t for the undirected dyad (i,j) is computed as
+the sum of the minimum occurrences of past undirected (i,h) and undirected
 (j,h) events across all actors h.
 
-When the unique parameter is set to TRUE, a different approach is taken. 
-In this case, the statistic counts the number of actors h that contribute to 
-the creation of a new, distinct shared partner between actors i and j. 
+When the unique parameter is set to TRUE, a different approach is taken.
+In this case, the statistic counts the number of actors h that contribute to
+the creation of a new, distinct shared partner between actors i and j.
 
-Additionally, it is possible to specify a scaling method using the scaling 
+Additionally, it is possible to specify a scaling method using the scaling
 parameter.
 
-Please note that the shared partners effect, 'sp', is exclusively defined 
+Please note that the shared partners effect, 'sp', is exclusively defined
 for undirected events.
 }
 \examples{
@@ -47,6 +47,6 @@ remstats(tie_effects = effects, reh = reh_tie)
 
 }
 \seealso{
-\code{\link{otp}}, \code{\link{itp}}, \code{\link{osp}}, or 
+\code{\link{otp}}, \code{\link{itp}}, \code{\link{osp}}, or
 \code{\link{isp}} for triadic effects for directed relational events.
 }

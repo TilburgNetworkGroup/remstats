@@ -7,17 +7,17 @@
 psABX()
 }
 \description{
-Specifies the statistic for a participation shift AB-X in the sender step of 
+Specifies the statistic for a participation shift AB-X in the sender step of
 the actor-oriented model.
 }
 \details{
-The AB-X participation shift refers to a tendency for turn usurping (here, 
-the next sender is not in the previous event). For each timepoint t, the 
-psABX statistic is equal to one for the actors that will create the 
-participation shift if they would occur as the sender in the edgelist at 
-time t and equal to zero for the actors that will not create this 
-participation shift. If multiple events in the edgelist occur at the same 
-time point, the order of these events determines whether the p-shift is 
+The AB-X participation shift refers to a tendency for turn usurping (here,
+the next sender is not in the previous event). For each timepoint t, the
+psABX statistic is equal to one for the actors that will create the
+participation shift if they would occur as the sender in the edgelist at
+time t and equal to zero for the actors that will not create this
+participation shift. If multiple events in the edgelist occur at the same
+time point, the order of these events determines whether the p-shift is
 observed.
 }
 \examples{
@@ -26,7 +26,7 @@ remstats(reh = reh_actor, sender_effects = ~ psABX())
 
 }
 \seealso{
-\code{\link{psABA}} or \code{\link{psABB}} for exploring 
-alternative participation shifts in the sender step of the actor-oriented 
+\code{\link{psABA}} or \code{\link{psABB}} for exploring
+alternative participation shifts in the sender step of the actor-oriented
 model.
 }

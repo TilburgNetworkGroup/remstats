@@ -141,6 +141,11 @@ aomstats <- function(reh,
   # Validate the memory argument 
   memory <- match.arg(memory)
   memory_value <- validate_memory(memory, memory_value)
+  if (memory == "window") {
+    # Change memory to interval (window is a special case)
+    memory <- "interval"
+    memory_value <- c(0, memory_value)
+  }
 
   # Validate the method
   method <- match.arg(method)

@@ -8,7 +8,7 @@ recencyReceiveReceiver(consider_type = TRUE)
 }
 \arguments{
 \item{consider_type}{logical, indicates whether to compute the recency
-separately for each event type (TRUE, default) or regardless of event types 
+separately for each event type (TRUE, default) or regardless of event types
 (FALSE).}
 }
 \description{

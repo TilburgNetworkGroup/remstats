@@ -10,16 +10,16 @@
 // [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::depends(RcppProgress)]]
 
-/* get_riskset 
+/* get_riskset
 
-Source (originally): remify. 
+Source (originally): remify.
 
-Create the risk set from all potential actors and event types in the network. 
+Create the risk set from all potential actors and event types in the network.
 
 Param:
 - actorID: vector with actor identification numbers
-- typeID: vector with event type identification numbers 
-- directed: whether the events in the network are directed 
+- typeID: vector with event type identification numbers
+- directed: whether the events in the network are directed
 
 Output: matrix with sender, receiver, event type, dyad ID
 */
@@ -90,12 +90,12 @@ arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed)
 
 /* convert_to_risksetMatrix
 
-Converts the 'long' riskset format (sender, receiver, event type, dyad ID) to a 'wide' format. 
+Converts the 'long' riskset format (sender, receiver, event type, dyad ID) to a 'wide' format.
 
 Param:
 - riskset: matrix with sender, receiver, event type, dyad ID
-- N: number of actors in the network 
-- C: number of event types in the network 
+- N: number of actors in the network
+- C: number of event types in the network
 
 Output: matrix where rows refer to senders, columns refer to (receivers + N * event type) and entries refer to dyad IDs
 */
@@ -777,7 +777,7 @@ arma::mat calculate_triad(int type, const arma::mat &inertia,
           for (arma::uword h = 0; h < N; ++h)
           {
             // Declare variables
-            int path1_dyad = -1; 
+            int path1_dyad = -1;
             int path2_dyad = -1;
 
             if (h == s || h == r)
@@ -2493,8 +2493,8 @@ arma::mat normalize_degree(arma::mat stat, const arma::mat &inertia, int N,
   return stat;
 }
 
-arma::mat normalize_inertia(arma::mat stat, const arma::mat &inertia, 
-  const arma::mat &risksetMatrix, int N, bool consider_type)
+arma::mat normalize_inertia(arma::mat stat, const arma::mat &inertia,
+                            const arma::mat &risksetMatrix, int N, bool consider_type)
 {
   // Outdegree of the sender
   arma::mat degree = calculate_degree_actor(3, inertia, risksetMatrix, consider_type, false);
@@ -2506,8 +2506,8 @@ arma::mat normalize_inertia(arma::mat stat, const arma::mat &inertia,
   return stat;
 }
 
-arma::mat normalize_reciprocity(arma::mat stat, const arma::mat &inertia, 
-  const arma::mat &risksetMatrix, int N, bool consider_type)
+arma::mat normalize_reciprocity(arma::mat stat, const arma::mat &inertia,
+                                const arma::mat &risksetMatrix, int N, bool consider_type)
 {
   // Indegree of the sender
   arma::mat degree = calculate_degree_actor(1, inertia, risksetMatrix, consider_type, false);
