@@ -123,7 +123,7 @@
 #'
 #' @references Butts, C. T. (2008). A relational event framework for social
 #' action. Sociological Methodology, 38(1), 155–200.
-#' \url{https://doi.org/10.1111/j.1467-9531.2008.00203.x}
+#' \doi{10.1111/j.1467-9531.2008.00203.x}
 #'
 #' @export
 tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,

@@ -55,20 +55,20 @@ NULL
 #' that have actor \emph{i} as sender. Note that a "send" effect is only
 #' defined for directed relational events.
 #'
-#' The \code{attr_actors} object should be constructed as a
-#' \code{\link[base]{data.frame}} where each row refers to the attribute value
-#' of actor \emph{i} at timepoint \emph{t}:
+#' Construct the `attr_actors` object as a data frame where each row represents 
+#' the attribute value of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{name}: the actors' name}
-#'  \item{\code{time}: the time when the attribute values change (set to a
-#' column with only zero's if the attribute does not vary over time).}
-#'  \item{}{the third column contains the attribute that is called in the
-#' specification of the "send" effect (i.e., the column name should correspond
-#' to the string that is supplied to the \code{variable} argument)}
+#'   \item{name:} The actors' name.
+#'   \item{time:} The time when the attribute values change.
+#'   \item{variable:} The third column contains the attribute used in the
+#'   specification of the "difference" effect. The column name should correspond
+#'   to the string supplied to the \code{variable} argument in the `difference()`
+#'   function.
 #' }
-#' Note that it is possible to omit the attr_actors object in the call of
-#' \code{send()} and, instead, supply it in the call of \code{remstats()} for
-#' multiple exogenous effects.
+#' 
+#' Note that it is possible to omit the `attr_actors` object in the call of
+#' \code{difference()} and, instead, supply it in the call of \code{remstats()}
+#' for multiple exogenous effects.
 #'
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -110,19 +110,19 @@ send <- function(variable, attr_actors = NULL, scaling = c("none", "std"),
 #' that have actor \emph{i} as receiver. Note that a "receive" effect is only
 #' defined for directed relational events.
 #'
-#' The \code{attr_actors} object should be constructed as a
-#' \code{\link[base]{data.frame}} where each row refers to the attribute value
-#' of actor \emph{i} at timepoint \emph{t}:
+#' Construct the `attr_actors` object as a data frame where each row represents 
+#' the attribute value of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{name}: the actors' name}
-#'  \item{\code{time}: the time when the attribute values change (set to a
-#' column with only zero's if the attribute does not vary over time).}
-#'  \item{}{the third column contains the attribute that is called in the
-#' specification of the "receive" effect (i.e., the column name should
-#' correspond to the string that is supplied to the \code{variable} argument)}
+#'   \item{name:} The actors' name.
+#'   \item{time:} The time when the attribute values change.
+#'   \item{variable:} The third column contains the attribute used in the
+#'   specification of the "difference" effect. The column name should correspond
+#'   to the string supplied to the \code{variable} argument in the `difference()`
+#'   function.
 #' }
-#' Note that it is possible to omit the attr_actors object in the call of
-#' \code{receive()} and, instead, supply it in the call of \code{remstats()}
+#' 
+#' Note that it is possible to omit the `attr_actors` object in the call of
+#' \code{difference()} and, instead, supply it in the call of \code{remstats()}
 #' for multiple exogenous effects.
 #'
 #' @inheritParams send
@@ -230,20 +230,20 @@ dyad <- tie
 #' (actor-oriented model) and equal to 0 for dyads and receivers that do not
 #' have the same value.
 #'
-#' The \code{attr_actors} object should be constructed as a
-#' \code{\link[base]{data.frame}} where each row refers to the attribute value
-#' of actor \emph{i} at timepoint \emph{t}:
+#' Construct the `attr_actors` object as a data frame where each row represents 
+#' the attribute value of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{name}: the actors' name}
-#'  \item{\code{time}: the time when the attribute values change (set to a
-#' column with only zero's if the attribute does not vary over time).}
-#'  \item{}{the third column contains the attribute that is called in the
-#' specification of the "same" effect (i.e., the column name should correspond
-#' to the string that is supplied to the \code{variable} argument)}
+#'   \item{name:} The actors' name.
+#'   \item{time:} The time when the attribute values change.
+#'   \item{variable:} The third column contains the attribute used in the
+#'   specification of the "difference" effect. The column name should correspond
+#'   to the string supplied to the \code{variable} argument in the `difference()`
+#'   function.
 #' }
-#' Note that it is possible to omit the attr_actors object in the call of
-#' \code{same()} and, instead, supply it in the call of \code{remstats()} for
-#' multiple exogenous effects.
+#' 
+#' Note that it is possible to omit the `attr_actors` object in the call of
+#' \code{difference()} and, instead, supply it in the call of \code{remstats()}
+#' for multiple exogenous effects.
 #'
 #' @inheritParams send
 #'
@@ -281,30 +281,36 @@ same <- function(variable, attr_actors = NULL, attr_data) {
 #' between the values of actor \emph{i} and \emph{j} on the attribute at
 #' timepoint \emph{t}.
 #'
-#' The \code{attr_actors} object should be constructed as a
-#' \code{\link[base]{data.frame}} where each row refers to the attribute value
-#' of actor \emph{i} at timepoint \emph{t}:
+#' Construct the `attr_actors` object as a data frame where each row represents 
+#' the attribute value of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{name}: the actors' name}
-#'  \item{\code{time}: the time when the attribute values change (set to a
-#' column with only zero's if the attribute does not vary over time).}
-#'  \item{}{the third column contains the attribute that is called in the
-#' specification of the "difference" effect (i.e., the column name should
-#' correspond to the string that is supplied to the \code{variable} argument)}
+#'   \item{name:} The actors' name.
+#'   \item{time:} The time when the attribute values change.
+#'   \item{variable:} The third column contains the attribute used in the
+#'   specification of the "difference" effect. The column name should correspond
+#'   to the string supplied to the \code{variable} argument in the `difference()`
+#'   function.
 #' }
-#' Note that it is possible to omit the attr_actors object in the call of
+#' 
+#' Note that it is possible to omit the `attr_actors` object in the call of
+#' \code{difference()} and, instead, supply it in the call of \code{remstats()}
+#' for multiple exogenous effects.
+#' 
+#' Note that it is possible to omit the `attr_actors` object in the call of
 #' \code{difference()} and, instead, supply it in the call of \code{remstats()}
 #' for multiple exogenous effects.
 #'
 #' @inheritParams send
-#' @param absolute logical value indicating whether the difference values
+#' @param absolute Logical value indicating whether the difference values
 #' should be converted to the absolute difference (default is TRUE).
 #'
 #' @examples
+#' # Example for tie-oriented model
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ difference("extraversion", absolute = TRUE)
 #' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #'
+#' # Example for actor-oriented model
 #' reh_actor <- remify::remify(history, model = "actor")
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
@@ -347,20 +353,20 @@ difference <- function(variable,
 #' average of the values of actor \emph{i} and \emph{j} on the attribute at
 #' timepoint \emph{t}.
 #'
-#' The \code{attr_actors} object should be constructed as a
-#' \code{\link[base]{data.frame}} where each row refers to the attribute value
-#' of actor \emph{i} at timepoint \emph{t}:
+#' Construct the `attr_actors` object as a data frame where each row represents 
+#' the attribute value of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{name}: the actors' name}
-#'  \item{\code{time}: the time when the attribute values change (set to a
-#' column with only zero's if the attribute does not vary over time).}
-#'  \item{}{the third column contains the attribute that is called in the
-#' specification of the "average" effect (i.e., the column name should
-#' correspond to the string that is supplied to the \code{variable} argument)}
+#'   \item{name:} The actors' name.
+#'   \item{time:} The time when the attribute values change.
+#'   \item{variable:} The third column contains the attribute used in the
+#'   specification of the "difference" effect. The column name should correspond
+#'   to the string supplied to the \code{variable} argument in the `difference()`
+#'   function.
 #' }
-#' Note that it is possible to omit the attr_actors object in the call of
-#' \code{average()} and, instead, supply it in the call of \code{remstats()} for
-#' multiple exogenous effects.
+#' 
+#' Note that it is possible to omit the `attr_actors` object in the call of
+#' \code{difference()} and, instead, supply it in the call of \code{remstats()}
+#' for multiple exogenous effects.
 #'
 #' @inheritParams send
 #'
@@ -403,20 +409,20 @@ average <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #' minimum of the values of actor \emph{i} and \emph{j} on the attribute at
 #' timepoint \emph{t}.
 #'
-#' The \code{attr_actors} object should be constructed as a
-#' \code{\link[base]{data.frame}} where each row refers to the attribute value
-#' of actor \emph{i} at timepoint \emph{t}:
+#' Construct the `attr_actors` object as a data frame where each row represents 
+#' the attribute value of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{name}: the actors' name}
-#'  \item{\code{time}: the time when the attribute values change (set to a
-#' column with only zero's if the attribute does not vary over time).}
-#'  \item{}{the third column contains the attribute that is called in the
-#' specification of the "minimum" effect (i.e., the column name should
-#' correspond to the string that is supplied to the \code{variable} argument)}
+#'   \item{name:} The actors' name.
+#'   \item{time:} The time when the attribute values change.
+#'   \item{variable:} The third column contains the attribute used in the
+#'   specification of the "difference" effect. The column name should correspond
+#'   to the string supplied to the \code{variable} argument in the `difference()`
+#'   function.
 #' }
-#' Note that it is possible to omit the attr_actors object in the call of
-#' \code{minimum()} and, instead, supply it in the call of \code{remstats()} for
-#' multiple exogenous effects.
+#' 
+#' Note that it is possible to omit the `attr_actors` object in the call of
+#' \code{difference()} and, instead, supply it in the call of \code{remstats()}
+#' for multiple exogenous effects.
 #'
 #' @inheritParams send
 #'
@@ -456,20 +462,20 @@ minimum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #' maximum of the values of actor \emph{i} and \emph{j} on the attribute at
 #' timepoint \emph{t}.
 #'
-#' The \code{attr_actors} object should be constructed as a
-#' \code{\link[base]{data.frame}} where each row refers to the attribute value
-#' of actor \emph{i} at timepoint \emph{t}:
+#' Construct the `attr_actors` object as a data frame where each row represents 
+#' the attribute value of actor \emph{i} at timepoint \emph{t}:
 #' \itemize{
-#'  \item{\code{name}: the actors' name}
-#'  \item{\code{time}: the time when the attribute values change (set to a
-#' column with only zero's if the attribute does not vary over time).}
-#'  \item{}{the third column contains the attribute that is called in the
-#' specification of the "maximum" effect (i.e., the column name should
-#' correspond to the string that is supplied to the \code{variable} argument)}
+#'   \item{name:} The actors' name.
+#'   \item{time:} The time when the attribute values change.
+#'   \item{variable:} The third column contains the attribute used in the
+#'   specification of the "difference" effect. The column name should correspond
+#'   to the string supplied to the \code{variable} argument in the `difference()`
+#'   function.
 #' }
-#' Note that it is possible to omit the attr_actors object in the call of
-#' \code{maximum()} and, instead, supply it in the call of \code{remstats()} for
-#' multiple exogenous effects.
+#' 
+#' Note that it is possible to omit the `attr_actors` object in the call of
+#' \code{difference()} and, instead, supply it in the call of \code{remstats()}
+#' for multiple exogenous effects.
 #'
 #' @inheritParams send
 #'

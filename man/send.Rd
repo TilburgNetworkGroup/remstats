@@ -32,20 +32,20 @@ attribute for actor \emph{i} at time \emph{t} for all dyads in the risk set
 that have actor \emph{i} as sender. Note that a "send" effect is only
 defined for directed relational events.
 
-The \code{attr_actors} object should be constructed as a
-\code{\link[base]{data.frame}} where each row refers to the attribute value
-of actor \emph{i} at timepoint \emph{t}:
+Construct the `attr_actors` object as a data frame where each row represents 
+the attribute value of actor \emph{i} at timepoint \emph{t}:
 \itemize{
- \item{\code{name}: the actors' name}
- \item{\code{time}: the time when the attribute values change (set to a
-column with only zero's if the attribute does not vary over time).}
- \item{}{the third column contains the attribute that is called in the
-specification of the "send" effect (i.e., the column name should correspond
-to the string that is supplied to the \code{variable} argument)}
+  \item{name:} The actors' name.
+  \item{time:} The time when the attribute values change.
+  \item{variable:} The third column contains the attribute used in the
+  specification of the "difference" effect. The column name should correspond
+  to the string supplied to the \code{variable} argument in the `difference()`
+  function.
 }
-Note that it is possible to omit the attr_actors object in the call of
-\code{send()} and, instead, supply it in the call of \code{remstats()} for
-multiple exogenous effects.
+
+Note that it is possible to omit the `attr_actors` object in the call of
+\code{difference()} and, instead, supply it in the call of \code{remstats()}
+for multiple exogenous effects.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie")

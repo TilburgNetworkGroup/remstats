@@ -24,7 +24,7 @@ difference(
 the statistic. Alternatively, standardization of the
 statistic per time point can be requested with "std".}
 
-\item{absolute}{logical value indicating whether the difference values
+\item{absolute}{Logical value indicating whether the difference values
 should be converted to the absolute difference (default is TRUE).}
 
 \item{attr_data}{Deprecated argument. Please use 'attr_actors' instead.}
@@ -43,26 +43,32 @@ The statistic at timepoint \emph{t} is equal to the (absolute) difference
 between the values of actor \emph{i} and \emph{j} on the attribute at
 timepoint \emph{t}.
 
-The \code{attr_actors} object should be constructed as a
-\code{\link[base]{data.frame}} where each row refers to the attribute value
-of actor \emph{i} at timepoint \emph{t}:
+Construct the `attr_actors` object as a data frame where each row represents 
+the attribute value of actor \emph{i} at timepoint \emph{t}:
 \itemize{
- \item{\code{name}: the actors' name}
- \item{\code{time}: the time when the attribute values change (set to a
-column with only zero's if the attribute does not vary over time).}
- \item{}{the third column contains the attribute that is called in the
-specification of the "difference" effect (i.e., the column name should
-correspond to the string that is supplied to the \code{variable} argument)}
+  \item{name:} The actors' name.
+  \item{time:} The time when the attribute values change.
+  \item{variable:} The third column contains the attribute used in the
+  specification of the "difference" effect. The column name should correspond
+  to the string supplied to the \code{variable} argument in the `difference()`
+  function.
 }
-Note that it is possible to omit the attr_actors object in the call of
+
+Note that it is possible to omit the `attr_actors` object in the call of
+\code{difference()} and, instead, supply it in the call of \code{remstats()}
+for multiple exogenous effects.
+
+Note that it is possible to omit the `attr_actors` object in the call of
 \code{difference()} and, instead, supply it in the call of \code{remstats()}
 for multiple exogenous effects.
 }
 \examples{
+# Example for tie-oriented model
 reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ difference("extraversion", absolute = TRUE)
 remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 
+# Example for actor-oriented model
 reh_actor <- remify::remify(history, model = "actor")
 remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 

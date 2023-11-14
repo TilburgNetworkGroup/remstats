@@ -244,8 +244,8 @@ remstats(
 \references{
 Butts, C. T. (2008). A relational event framework for social
 action. Sociological Methodology, 38(1), 155–200.
-\url{https://doi.org/10.1111/j.1467-9531.2008.00203.x},
+\doi{10.1111/j.1467-9531.2008.00203.x},
 Stadtfeld, C., & Block, P. (2017). Interactions, actors, and
 time: Dynamic network actor models for relational events. Sociological
-Science, 4, 318–352. \url{https://doi.org/10.15195/v4.a14}
+Science, 4, 318–352. \doi{10.15195/v4.a14}
 }

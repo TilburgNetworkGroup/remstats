@@ -178,5 +178,5 @@ aomstats(
 \references{
 Stadtfeld, C., & Block, P. (2017). Interactions, actors, and
 time: Dynamic network actor models for relational events. Sociological
-Science, 4, 318–352. \url{https://doi.org/10.15195/v4.a14}
+Science, 4, 318–352. \doi{10.15195/v4.a14}
 }
