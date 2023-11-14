@@ -55,10 +55,10 @@ prepare_tomstats <- function(
   }
 
   # Prepare the edgelist for cpp processing
-  edgelist <- reh$edgelist
+  edgelist <- reh$edgelist[,1:3]
   edgelist$time <- cumsum(as.numeric(diff(c(attributes(reh)$origin, edgelist$time))))
-  edgelist$actor1 <- edgelist$actor1 - 1
-  edgelist$actor2 <- edgelist$actor2 - 1
+  edgelist$actor1 <- unlist(attributes(reh)$actor1ID) - 1
+  edgelist$actor2 <- unlist(attributes(reh)$actor2ID) - 1
   if (!attr(reh, "directed")) {
     edgelist[, c(2, 3)] <- t(apply(edgelist, 1, function(x) sort(c(x[2], x[3]))))
   }
@@ -70,12 +70,13 @@ prepare_tomstats <- function(
   } else {
     # Convert type IDs to cpp indexing
     types$typeID <- types$typeID - 1
-    edgelist$type <- edgelist$type - 1
+    edgelist$type <- reh$edgelist$type
+    edgelist$type <- types$typeID[match(edgelist$type, types$typeName)]
   }
 
   # Prepare the event weights
   if (attr(reh, "weighted")) {
-    weights <- as.numeric(edgelist$weight)
+    weights <- as.numeric(reh$edgelist$weight)
   } else {
     weights <- rep(1, nrow(edgelist))
   }
@@ -867,9 +868,9 @@ prepare_aomstats_edgelist <- function(reh) {
   edgelist <- reh$edgelist
 
   # Transform to cpp indexing
-  edgelist <- as.matrix(edgelist)
-  edgelist[, 2] <- edgelist[, 2] - 1
-  edgelist[, 3] <- edgelist[, 3] - 1
+  edgelist <- as.matrix(edgelist[,1:3])
+  edgelist[, 2] <- unlist(attributes(reh)$actor1ID) - 1
+  edgelist[, 3] <- unlist(attributes(reh)$actor2ID) - 1
 
   # Origin
   if (attr(reh, "ordinal")) {
@@ -894,11 +895,11 @@ prepare_aomstats_actors <- function(reh) {
   return(actors)
 }
 
-prepare_aomstats_event_weights <- function(edgelist) {
-  if (!("weight" %in% colnames(edgelist))) {
-    weights <- rep(1, nrow(edgelist))
+prepare_aomstats_event_weights <- function(reh) {
+  if (!(attributes(reh)$weighted)) {
+    weights <- rep(1, nrow(reh$edgelist))
   } else {
-    weights <- edgelist[, "weight"]
+    weights <- reh$edgelist$weight
   }
   return(weights)
 }

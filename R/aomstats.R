@@ -136,7 +136,7 @@ aomstats <- function(reh,
   actors <- prepare_aomstats_actors(reh)
 
   # Prepare event weights
-  weights <- prepare_aomstats_event_weights(edgelist)
+  weights <- prepare_aomstats_event_weights(reh)
 
   # Validate the memory argument 
   memory <- match.arg(memory)

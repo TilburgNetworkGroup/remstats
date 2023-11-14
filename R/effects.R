@@ -514,11 +514,13 @@ maximum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #' @seealso \code{\link{FEtype}}
 #'
 #' @examples
-#' reh_tie <- remify::remify(history, model = "tie")
-#' data(history, package = "remstats")
-#' work <- ifelse(history$setting == "work", 1, 0)
-#' effects <- ~ event(x = work, variableName = "setting_is_work")
-#' remstats(reh = reh_tie, tie_effects = effects)
+#' \dontrun{
+#'   reh_tie <- remify::remify(history, model = "tie")
+#'   data(history, package = "remstats")
+#'   history$work <- ifelse(history$setting == "work", 1, 0)
+#'   effects <- ~ event(x = history$work, variableName = "setting_is_work")
+#'   remstats(reh = reh_tie, tie_effects = effects)
+#' }
 #'
 #' @export
 event <- function(x, variableName = NULL) {
@@ -2436,21 +2438,22 @@ recencyContinue <- function(consider_type = TRUE) {
 #' @param variableName Optionally, a string with the name of the statistic. 
 #'
 #' @examples
-#' reh <- remify::remify(history, model = "tie")
-#' actor101Events <- which(history$actor1 == "101" | history$actor2 == "101")
-#' actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {
-#'   rep(i %in% actor101Events, reh$D)
-#' }))
-#'
-#' # Main effects only
-#' effects <- ~ userStat(x = actor101_stat, variableName = "actor101event")
-#' remstats(reh = reh, tie_effects = effects)
-#'
-#' # Model with interaction effects
-#' interaction_effects <- ~ inertia() *
-#'   userStat(x = actor101_stat, variableName = "actor101event")
-#' remstats(reh = reh, tie_effects = interaction_effects)
-#'
+#' \dontrun{
+#'  reh <- remify::remify(history, model = "tie")
+#'  actor101Events <- which(history$actor1 == "101" | history$actor2 == "101")
+#'  actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {
+#'    rep(i %in% actor101Events, reh$D)
+#'  }))
+#'  
+#'  # Main effects only
+#'  effects <- ~ userStat(x = actor101_stat, variableName = "actor101event")
+#'  remstats(reh = reh, tie_effects = effects)
+#'  
+#'  # Model with interaction effects
+#'  interaction_effects <- ~ inertia() *
+#'    userStat(x = actor101_stat, variableName = "actor101event")
+#'  remstats(reh = reh, tie_effects = interaction_effects)
+#' }
 #' @export
 userStat <- function(x, variableName = NULL) {
   # Missing values
