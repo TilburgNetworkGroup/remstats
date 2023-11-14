@@ -2,6 +2,7 @@
 
 [![github-repo-status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R-package-version](https://img.shields.io/github/r-package/v/TilburgNetworkGroup/remstats)](https://www.github.com/TilburgNetworkGroup/remstats)
+[![R-CMD-check](https://github.com/TilburgNetworkGroup/remstats/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/TilburgNetworkGroup/remstats/actions/workflows/check-standard.yaml)
 
 ## Compute statistics for relational event history data
 The `remstats` package is designed to compute a variety of statistics for relational event models. Relational event modeling approaches enable researchers to investigate both exogenous and endogenous factors influencing the evolution of a time-ordered sequence of relational events. These models are categorized into tie-oriented models, where the probability of a dyad interacting next is modeled in a single step (e.g., see Butts, 2008), and actor-oriented models, which first model the probability of a sender initiating an interaction and subsequently the probability of the senders' choice of receiver (e.g., see Stadtfeld & Block, 2017). The `remstats` package is designed to compute a variety of statistics that characterize exogenous and endogenous influences on the event stream for both types of models.
