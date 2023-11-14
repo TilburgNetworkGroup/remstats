@@ -455,7 +455,7 @@ variable_check <- function(effect, dat) {
       # Transform logical to binary
       dat$x <- as.numeric(dat$x)
     } else if (is.factor(dat$x)) {
-      x_levels <- levels(attr_actors$gender)
+      x_levels <- levels(dat$x[, , dat$variable])
 
       if (length(x_levels) != 2) {
         stop(paste0("The variable in '", effect, "' must have two factor levels or must be numeric."))

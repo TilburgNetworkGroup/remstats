@@ -4,3 +4,4 @@
 *.o
 *.so
 .vscode
+inst/doc

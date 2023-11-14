@@ -1,6 +1,6 @@
 
 if ( requireNamespace("tinytest", quietly=TRUE) ){
-	tinytest::test_package("remstats", testdir="tests/tinytest")
+	tinytest::test_package("remstats")
 }
 
 # test-endogenous-stats / test-exogenous-stats: 

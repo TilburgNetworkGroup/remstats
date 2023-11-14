@@ -886,7 +886,6 @@ arma::mat degree_receiver(std::string type,
             // Loop over simultaneous_events to get stat
             for (arma::uword j = 0; j < simultaneous_events.n_elem; ++j)
             {
-                int event = simultaneous_events(j);
                 if ((type == "out") || (type == "total"))
                 {
                     stat.row(i) += outdegree.t();
@@ -1412,7 +1411,6 @@ arma::mat recency_receiver(std::string type,
             {
                 int event = events(j);
                 double time = edgelist(event, 0);
-                int sender = edgelist(event, 1);
                 stat.row(event - start) = 1 / ((time - lastActive) + 1);
             }
 
@@ -2109,7 +2107,6 @@ arma::mat pshift_sender(int type,
     }
 
     // Declare helper variables
-    int actor = 0;
     int value = 1;
     if (type == 3)
     {
