@@ -194,7 +194,7 @@ tie <- function(variable, attr_dyads = NULL, scaling = c("none", "std"), x, vari
   if(!is.character(variable)) {
     stop("The 'variable' argument should be of type character.")
   }
-  if(!is.matrix(attr_dyads) & !is.data.frame(attr_dyads)) {
+  if(!is.null(attr_dyads) & !is.matrix(attr_dyads) & !is.data.frame(attr_dyads)) {
     stop("The 'attr_dyads' argument should be of type matrix or data.frame.")
   }
 

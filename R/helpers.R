@@ -40,7 +40,7 @@ prepare_tomstats <- function(
   }
 
   # Extract relevant elements from the prepared remify::remify object
-  dyads <- unlist(attr(reh, "dyad"))
+  dyads <- unlist(attr(reh, "dyadID"))
   actors <- attr(reh, "dictionary")$actors
   types <- attr(reh, "dictionary")$types
 
@@ -57,8 +57,8 @@ prepare_tomstats <- function(
   # Prepare the edgelist for cpp processing
   edgelist <- reh$edgelist
   edgelist$time <- cumsum(as.numeric(diff(c(attributes(reh)$origin, edgelist$time))))
-  edgelist$actor1_ID <- edgelist$actor1_ID - 1
-  edgelist$actor2_ID <- edgelist$actor2_ID - 1
+  edgelist$actor1 <- edgelist$actor1 - 1
+  edgelist$actor2 <- edgelist$actor2 - 1
   if (!attr(reh, "directed")) {
     edgelist[, c(2, 3)] <- t(apply(edgelist, 1, function(x) sort(c(x[2], x[3]))))
   }
@@ -70,7 +70,7 @@ prepare_tomstats <- function(
   } else {
     # Convert type IDs to cpp indexing
     types$typeID <- types$typeID - 1
-    edgelist$type_ID <- edgelist$type_ID - 1
+    edgelist$type <- edgelist$type - 1
   }
 
   # Prepare the event weights

@@ -34,8 +34,7 @@ expect_equal(attr(combined_stats, "adjmat"), attr(rs1, "adjmat"))
 
 # Check statistics
 if (at_home()) {
-  expected_stats <- abind::abind(rs1, rs2[, , -1], along = 3)
-  expected_stats <- abind::abind(expected_stats, rs3[, , -1], along = 3)
+  expected_stats <- abind::abind(rs1, rs2[, , "outdegreeSender"], along = 3)
   attributes(combined_stats) <- NULL
   attributes(expected_stats) <- NULL
   expect_true(identical(expected_stats, combined_stats))
@@ -64,8 +63,9 @@ expect_warning(combined_stats <- bind_remstats(rs1, rs2, rs3))
 # Check statistics
 if (at_home()) {
   expected_stats <- abind::abind(rs1$receiver_stats, 
-    rs2$receiver_stats, along = 3)
-  expected_stats <- abind::abind(expected_stats, rs3$receiver_stats, along = 3)
+    rs2$receiver_stats[,,"itp"], along = 3)
+  expected_stats <- abind::abind(expected_stats, 
+    rs3$receiver_stats[,,"indegreeReceiver"], along = 3)
   attributes(combined_stats$receiver_stats) <- NULL
   attributes(expected_stats) <- NULL
   expect_true(identical(expected_stats, combined_stats$receiver_stats))
@@ -79,18 +79,18 @@ rs5 <- remstats(reh = reh,
 rs6 <- remstats(reh = reh,
   sender_effects = ~ totaldegreeSender())
 
+# Combine remstats objects
+expect_warning(combined_stats <- bind_remstats(rs4, rs5, rs6))
+
 # Check statistics
 if (at_home()) {
   expected_stats <- abind::abind(rs4$sender_stats, 
-    rs5$sender_stats, along = 3)
-  expected_stats <- abind::abind(expected_stats, rs6$sender_stats, along = 3)
+    rs5$sender_stats[,,-1], along = 3)
+  expected_stats <- abind::abind(expected_stats, rs6$sender_stats[,,-1], along = 3)
   attributes(combined_stats$sender_stats) <- NULL
   attributes(expected_stats) <- NULL
   expect_true(identical(expected_stats, combined_stats$sender_stats))
 }
-
-# Combine remstats objects
-expect_warning(combined_stats <- bind_remstats(rs4, rs5, rs6))
 
 # Create example remstats objects
 rs7 <- remstats(reh = reh, 
@@ -108,6 +108,7 @@ expect_warning(combined_stats <- bind_remstats(rs7, rs8, rs9))
 
 # Check statistics
 if (at_home()) {
+  # Sender effects
   expected_stats <- abind::abind(rs7$sender_stats, 
     rs8$sender_stats[,,-1], along = 3)
   expected_stats <- abind::abind(expected_stats, 
@@ -116,9 +117,11 @@ if (at_home()) {
   attributes(expected_stats) <- NULL
   expect_true(identical(expected_stats, combined_stats$sender_stats))
   
+  # Receiver effects
   expected_stats <- abind::abind(rs7$receiver_stats, 
-    rs8$receiver_stats, along = 3)
-  expected_stats <- abind::abind(expected_stats, rs9$receiver_stats, along = 3)
+    rs8$receiver_stats[,,"itp"], along = 3)
+  expected_stats <- abind::abind(expected_stats, 
+    rs9$receiver_stats[,,"indegreeReceiver"], along = 3)
   attributes(combined_stats$receiver_stats) <- NULL
   attributes(expected_stats) <- NULL
   expect_true(identical(expected_stats, combined_stats$receiver_stats))

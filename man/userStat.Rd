@@ -7,11 +7,11 @@
 userStat(x, variableName = NULL)
 }
 \arguments{
-\item{x}{matrix with number of rows equal to the number of events and number
-of columns equal to the number of dyads in the network (tie-oriented model)
+\item{x}{Matrix with number of rows equal to the number of events and number
+of columns equal to the number of dyads in the network (tie-oriented model) 
 or the number of actors in the network (actor-oriented model)}
 
-\item{variableName}{Deprecated argument. Please use 'variable' instead.}
+\item{variableName}{Optionally, a string with the name of the statistic.}
 }
 \description{
 Allows the user to add its own pre-computed statistic to the statistics

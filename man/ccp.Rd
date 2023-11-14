@@ -13,8 +13,8 @@ ccp(duration)
 Statistic for a 'current common partner' effect.
 }
 \details{
-The 'ccp' or 'current common partner' effect refers to the presence of a 
-shared interaction between the actors in dyad (i, j) at time 't' with common 
-other actors. This statistic can be calculated for undirected events with a 
+The 'ccp' or 'current common partner' effect refers to the presence of a
+shared interaction between the actors in dyad (i, j) at time 't' with common
+other actors. This statistic can be calculated for undirected events with a
 duration in the tie-oriented model.
 }
