@@ -59,7 +59,6 @@ Endogenous statistics:
  \item \code{\link{osp}()}
  \item \code{\link{isp}()}
  \item \code{\link{sp}()}
- \item \code{\link{ccp}()}
  \item \code{\link{psABBA}()}
  \item \code{\link{psABBY}()}
  \item \code{\link{psABXA}()}

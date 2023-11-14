@@ -2388,7 +2388,6 @@ int getEffectNumber(std::string effect)
   effectsMap["degreeMin"] = 118;
   effectsMap["degreeMax"] = 119;
   effectsMap["degreeDiff"] = 120;
-  effectsMap["ccp"] = 121;
 
   effectsMap["otp"] = 131;
   effectsMap["itp"] = 132;

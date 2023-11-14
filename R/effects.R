@@ -1709,27 +1709,6 @@ spUnique <- function() {
   .Deprecated("sp")
 }
 
-#' ccp
-#'
-#' Statistic for a 'current common partner' effect.
-#'
-#' @param duration vector with event durations.
-#'
-#' @details
-#' The 'ccp' or 'current common partner' effect refers to the presence of a
-#' shared interaction between the actors in dyad (i, j) at time 't' with common
-#' other actors. This statistic can be calculated for undirected events with a
-#' duration in the tie-oriented model.
-#'
-#' @export
-ccp <- function(duration) {
-  # Output
-  list(
-    effect = "ccp",
-    x = duration
-  )
-}
-
 #' psABBA
 #'
 #' Specifies the statistic for a participation shift AB-BA.

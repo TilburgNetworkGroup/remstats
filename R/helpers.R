@@ -332,7 +332,6 @@ all_tie_effects <- function() {
     "degreeMin",
     "degreeMax",
     "degreeDiff",
-    "ccp",
     "otp",
     "itp",
     "osp",
@@ -811,7 +810,7 @@ process_covariate <- function(
 
       # Convert to matrix and output
       as.matrix(dat)
-    } else if (effect %in% c("tie", "event", "FEtype", "ccp")) {
+    } else if (effect %in% c("tie", "event", "FEtype")) {
       if (effect == "tie") {
         # Return: matrix (actor1, actor2, time, value)
         parse_tie(x, reh, attr_dyads)
@@ -825,9 +824,7 @@ process_covariate <- function(
         as.matrix(x$x)
       } else if (effect == "FEtype") {
         as.matrix(x$typeID)
-      } else if (effect == "ccp") {
-        as.matrix(x$x)
-      }
+      } 
     } else if (effect == "userStat") {
       if (NROW(x$x) != nrow(edgelist) & NROW(x$x) != NROW(unique(edgelist[, 1]))) {
         stop("Number of rows of matrix 'x' in userStat() does not match number of timepoints or number of events in edgelist")

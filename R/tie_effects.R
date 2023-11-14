@@ -50,7 +50,6 @@
 #'  \item \code{\link{osp}()}
 #'  \item \code{\link{isp}()}
 #'  \item \code{\link{sp}()}
-#'  \item \code{\link{ccp}()}
 #'  \item \code{\link{psABBA}()}
 #'  \item \code{\link{psABBY}()}
 #'  \item \code{\link{psABXA}()}
@@ -80,7 +79,7 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
     if (directed) {
       # Filter out effects that are not defined for directed events
       effects <- effects[!(effects %in% c(
-        "sp", "degreeMin", "degreeMax", "ccp", "degreeDiff"
+        "sp", "degreeMin", "degreeMax", "degreeDiff"
       ))]
     } else if (!directed) {
       # Filter out effects that are not defined for undirected events
@@ -107,7 +106,7 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
       # Filter out endogenous effects
       effects <- effects[!(effects %in% c(
         "indegreeSender", "indegreeReceiver", "outdegreeSender",
-        "outdegreeReceiver", "totaldegreeSender", "totaldegreeReceiver", "ccp",
+        "outdegreeReceiver", "totaldegreeSender", "totaldegreeReceiver", 
         "totaldegreeDyad", "degreeDiff", "degreeMin", "degreeMax",
         "inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp",
         "psABBA", "psABBY", "psABXA", "psABXB", "psABXY",
