@@ -34,7 +34,7 @@ to the fraction of messages send by actor i that were send to actor j. If
 actor i hasn't send any messages yet it can be assumed that every actor is
 equally likely to receive a message from i and the statistic is set equal to
 1/(n-1), where n refers to the number of actors. The resulting statistic is
-similar to the "FrPSndSnd" statistic in the R package relevent, or the
+similar to the "FrPSndSnd" statistic in the R package 'relevent', or the
 persistence statistic in Section 2.2.2 of Butts (2008). Note that this
 scaling method is only defined for directed events.
 }

@@ -35,7 +35,7 @@
 #' \code{attr_actors} argument in either \code{remstats()} or in the separate
 #' effect functions supplied to the \code{..._effects} arguments (e.g., see
 #' \code{\link{send}}). This \code{attr_actors} object should be constructed as
-#' follows: A dataframe with rows refering to the attribute value of actor
+#' follows: A dataframe with rows referring to the attribute value of actor
 #' \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 #' actor name (corresponding to the actor names in the relational event
 #' history). A `time` column is required that contains the time when attributes
@@ -72,7 +72,7 @@
 #' A third option is to set `memory` to `"interval"`. In this case, the past
 #' event history within a given time interval is considered. For example, when
 #' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
-#' only the past events tha happened between 50 and 100 time units ago are
+#' only the past events that happened between 50 and 100 time units ago are
 #' included in the computation of the statistics. Finally, the fourth option is
 #' to set `memory` to `"decay"`. In this case, the weight of the past event in
 #' the computation of the statistics depend on the elapsed time between $t$ and
@@ -138,7 +138,7 @@
 #' time or event in the relational event history for which statistics must be 
 #' computed (see 'Details')
 #' @param stop an optional integer value, specifying the index of the last
-#' time or event in the relational event history for which statistics muts be 
+#' time or event in the relational event history for which statistics must be 
 #' computed (see 'Details')
 #' @param display_progress should a progress bar for the computation of the
 #' endogenous statistics be shown (TRUE) or not (FALSE)?

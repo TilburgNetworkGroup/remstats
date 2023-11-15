@@ -54,7 +54,7 @@ time or event in the relational event history for which statistics must be
 computed (see 'Details')}
 
 \item{stop}{an optional integer value, specifying the index of the last
-time or event in the relational event history for which statistics muts be 
+time or event in the relational event history for which statistics must be 
 computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the

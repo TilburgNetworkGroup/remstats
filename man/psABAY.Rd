@@ -27,7 +27,7 @@ of actors at a given timepoint (t). If the pair's interaction follows the
 AB-AY pattern, the statistic is set equal to one; otherwise, it's set to
 zero.
 
-Additionaly, the types of the AB and AY events can be taken into account. If
+Additionally, the types of the AB and AY events can be taken into account. If
 'consider_type' is 'TRUE', the type of the AB event and the type of the AY
 event must match for the shift to occur. If 'consider_type' is 'FALSE', the
 shift happens for every AY event, regardless of the event type.

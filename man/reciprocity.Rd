@@ -34,7 +34,7 @@ fraction of messages received by actor i that were received from actor j. If
 actor i hasn't received any messages yet it can be assumed that actor i is
 equally likely to receive a message from every actor and the statistic is
 set equal to 1/(n-1), where n refers to the number of actors. The resulting
-statistic is similar to the "FrRecSnd" statistic in the R package relevent.
+statistic is similar to the "FrRecSnd" statistic in the R package 'relevent'.
 }
 \examples{
 reh_tie <- remify::remify(history, model = "tie")

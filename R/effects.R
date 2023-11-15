@@ -596,7 +596,7 @@ FEtype <- function() {
 #' actor i hasn't send any messages yet it can be assumed that every actor is
 #' equally likely to receive a message from i and the statistic is set equal to
 #' 1/(n-1), where n refers to the number of actors. The resulting statistic is
-#' similar to the "FrPSndSnd" statistic in the R package relevent, or the
+#' similar to the "FrPSndSnd" statistic in the R package 'relevent', or the
 #' persistence statistic in Section 2.2.2 of Butts (2008). Note that this
 #' scaling method is only defined for directed events.
 #'
@@ -665,7 +665,7 @@ inertia <- function(scaling = c("none", "prop", "std"),
 #' actor i hasn't received any messages yet it can be assumed that actor i is
 #' equally likely to receive a message from every actor and the statistic is
 #' set equal to 1/(n-1), where n refers to the number of actors. The resulting
-#' statistic is similar to the "FrRecSnd" statistic in the R package relevent.
+#' statistic is similar to the "FrRecSnd" statistic in the R package 'relevent'.
 #'
 #' @param scaling the method for scaling the reciprocity statistic. Default is
 #' to not scale the statistic but keep the raw 'counts'. Alternatively, the
@@ -1989,7 +1989,7 @@ psABXY <- function(consider_type = TRUE) {
 #' AB-AY pattern, the statistic is set equal to one; otherwise, it's set to
 #' zero.
 #'
-#' Additionaly, the types of the AB and AY events can be taken into account. If
+#' Additionally, the types of the AB and AY events can be taken into account. If
 #' 'consider_type' is 'TRUE', the type of the AB event and the type of the AY
 #' event must match for the shift to occur. If 'consider_type' is 'FALSE', the
 #' shift happens for every AY event, regardless of the event type.
