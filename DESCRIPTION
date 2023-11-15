@@ -2,7 +2,7 @@ Package: remstats
 Type: Package
 Title: Computes Statistics for Relational Event History Data
 Version: 3.2.0
-Date: 2023-11-13
+Date: 2023-11-15
 Authors@R: 
     c(
         person(
@@ -13,27 +13,27 @@ Authors@R:
         person(
             given = "Giuseppe",
             family = "Arena",
-            role = "aut",
+            role = "ctb",
             email = "g.arena@tilburguniversity.edu"),
         person(
             given = "Diana",
             family = "Karimova",
-            role = "aut",
+            role = "ctb",
             email = "d.karimova@tilburguniversity.edu"),
         person(
             given = "Rumana",
             family = "Lakdawala",
-            role = "aut",
+            role = "ctb",
             email = "r.j.lakdawala@tilburguniversity.edu"),
         person(
             given = "Mahdi",
             family = "Shafiee Kamalabad",
-            role = "aut",
+            role = "ctb",
             email = "m.shafiee@tilburguniversity.edu"),
         person(
             given = "Fabio",
             family = "Generoso Vieira",
-            role = "aut",
+            role = "ctb",
             email = "f.v.generosovieira@tilburguniversity.edu"),
         person(
             given = "Roger",
@@ -47,12 +47,7 @@ Authors@R:
             email = "j.mulder3@tilburguniversity.edu")
     )
 Maintainer: Marlyne Meijerink-Bosman <m.l.meijerink@tilburguniversity.edu>
-Description: Relational event modeling approaches enable researchers to study 
-    the exogenous and endogenous predictors of how a time-ordered sequence of 
-    relational events - a so-called relational event history - evolves over 
-    time. Relational event models can be distinguished in "tie-oriented 
-    models" and "actor-oriented models". The `R`-package `remstats` computes a 
-    variety of statistics for both type of models.  
+Description: The 'remstats' package is designed to compute a variety of statistics for relational event models. Relational event modeling approaches enable researchers to investigate both exogenous and endogenous factors influencing the evolution of a time-ordered sequence of relational events. These models are categorized into tie-oriented models, where the probability of a dyad interacting next is modeled in a single step, and actor-oriented models, which first model the probability of a sender initiating an interaction and subsequently the probability of the senders' choice of receiver. The 'remstats' package is designed to compute a variety of statistics that characterize exogenous and endogenous influences on the event stream for both types of models.  
 License: GPL (>= 3)
 URL: https://github.com/TilburgNetworkGroup/remstats
 BugReports: https://github.com/TilburgNetworkGroup/remstats/issues
