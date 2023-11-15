@@ -67,6 +67,19 @@
 #'  \item \code{\link{FEtype}()}
 #' }
 #'
+#' @examples 
+#' # List of available effects 
+#' tie_effects()
+#' 
+#' # List of available effects for undirected networks
+#' tie_effects(directed = FALSE)
+#' 
+#' # List of available endogenous effects for undirected networks
+#' tie_effects(directed = FALSE, endogenous = TRUE)
+#' 
+#' @return
+#' Returns a list of available effects and their corresponding statistics.
+#' 
 #' @export
 tie_effects <- function(directed = NULL, endogenous = NULL) {
   # Name all effects

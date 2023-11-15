@@ -23,11 +23,21 @@ statistics in the combined object are removed based on their name.
 }
 \examples{
 library(remstats)
+
+# Load the data
+data(history)
+data(info)
+
+# Prepare the data
 reh <- remify::remify(edgelist = history, model = "actor")
+
+# Obtain two different statistics objects
 effects1 <- ~ inertia():receive("extraversion") + otp()
 stats1 <- remstats(receiver_effects = effects1, reh = reh, attr_actors = info)
 effects2 <- ~ reciprocity()
 stats2 <- remstats(receiver_effects = effects2, reh = reh, attr_actors = info)
+
+# Bind the two statistics objects
 statsC <- bind_remstats(stats1, stats2)
 
 }

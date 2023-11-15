@@ -11,6 +11,9 @@
 
 \item{...}{further arguments passed to or from other methods.}
 }
+\value{
+The function prints formatted information about the remstats object to the console, presenting details about the relational event network statistics in a user-friendly format.
+}
 \description{
 Print a \code{\link{remstats}} object in a user-friendly format.
 }

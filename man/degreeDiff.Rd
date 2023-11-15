@@ -15,6 +15,9 @@ of the degree difference per time point can be requested with `std`.}
 separately for each event type (TRUE, default) or sum degrees across
 different event types (FALSE).}
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for a `degreeDiff` effect in the tie-oriented
 model.

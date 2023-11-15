@@ -20,6 +20,9 @@ with 'std'.}
 separately for each event type (TRUE, default) or sum across different event
 types (FALSE).}
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for an outgoing shared partners effect.
 }

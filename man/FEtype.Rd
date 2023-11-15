@@ -6,6 +6,9 @@
 \usage{
 FEtype()
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for fixed effects for event types in the
 tie-oriented model.

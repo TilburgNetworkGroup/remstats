@@ -20,6 +20,9 @@ statistic per time point can be requested with "std".}
 
 \item{attr_data}{Deprecated argument. Please use 'attr_actors' instead.}
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for a "minimum" effect in the tie-oriented model. A
 "minimum" effect refers to an exogenous actor attribute that affects dyad

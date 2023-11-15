@@ -33,4 +33,6 @@ to the attribute of the event at timepoint \emph{t}.
 }
 \seealso{
 \code{\link{FEtype}}
+
+ @returns List with all information required by `remstats::remstats()` to compute the statistic.
 }

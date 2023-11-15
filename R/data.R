@@ -12,8 +12,15 @@
 #'  \item{weight}{the intensity of the event (e.g., based on the duration)}
 #' }
 #' 
+#' @usage data(history)
+#' @source Simulated relational event history for actors in a social network.
 #' @seealso \code{\link{info}} for exogenous information on the actors in 
 #' the social network. 
+#' 
+#' @examples 
+#' data(history)
+#' 
+#' @keywords dataset
 "history"
 
 #' Simulated exogenous information on actors in a social network. 
@@ -32,7 +39,15 @@
 #'  \item{extraversion}{standardized extraversion score of the actor}
 #'  \item{agreeableness}{standardized agreeableness score of the actor}
 #' }
+#' 
+#' @usage data(info)
+#' @source Simulated exogenous information on actors in a social network.
 #' @seealso \code{\link{history}} for the relational event history. 
+#' 
+#' @examples 
+#' data(info)
+#' 
+#' @keywords dataset
 "info"
 
 #' Exogenous Dyad Attribute Matrix: both_male_wide

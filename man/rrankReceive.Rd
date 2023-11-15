@@ -10,6 +10,10 @@ rrankReceive(consider_type = TRUE)
 \item{consider_type}{logical, indicates whether to discriminate between
 event types in determining the event rank (TRUE, default) or not (FALSE).}
 }
+\value{
+List with all information required by `remstats::remstats()` to 
+compute the statistic.
+}
 \description{
 Specifies the statistic for a recency rank receive effect in the
 \code{effects} argument of \code{\link{tomstats}} or the

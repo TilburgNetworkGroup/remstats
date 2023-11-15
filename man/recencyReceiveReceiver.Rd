@@ -11,6 +11,10 @@ recencyReceiveReceiver(consider_type = TRUE)
 separately for each event type (TRUE, default) or regardless of event types
 (FALSE).}
 }
+\value{
+List with all information required by `remstats::remstats()` to 
+compute the statistic.
+}
 \description{
 Specifies the statistic for a recency receive of receiver effect in the
 \code{effects} argument of \code{\link{tomstats}} or the

@@ -19,6 +19,9 @@ set it to "std" to request standardization of the raw counts per time point.}
 two-paths separately for each event type (TRUE, default) or sum across
 different event types (FALSE).}
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for an incoming two-path effect.
 }

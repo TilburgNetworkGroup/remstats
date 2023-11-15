@@ -117,7 +117,15 @@
 #'
 #' @examples
 #' library(remstats)
+#' 
+#' # Load data
+#' data(history)
+#' data(info)
+#' 
+#' # Prepare data
 #' reh <- remify::remify(edgelist = history, model = "tie")
+#' 
+#' # Compute effects
 #' effects <- ~ inertia():send("extraversion") + otp()
 #' tomstats(effects, reh = reh, attr_actors = info)
 #'

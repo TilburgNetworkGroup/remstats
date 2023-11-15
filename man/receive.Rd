@@ -20,6 +20,9 @@ statistic per time point can be requested with "std".}
 
 \item{attr_data}{Deprecated argument. Please use 'attr_actors' instead.}
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for a "receive" effect in the tie-oriented model or
 the receiver choice step of the actor-oriented model. A "receive" effect
@@ -48,10 +51,15 @@ Note that it is possible to omit the `attr_actors` object in the call of
 for multiple exogenous effects.
 }
 \examples{
+data(history)
+data(info)
+
+# Tie-oriented model
 reh_tie <- remify::remify(history, model = "tie")
 effects <- ~ receive("extraversion")
 remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 
+# Actor-oriented model
 reh_actor <- remify::remify(history, model = "actor")
 remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 

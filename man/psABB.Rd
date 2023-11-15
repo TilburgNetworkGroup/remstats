@@ -6,6 +6,9 @@
 \usage{
 psABB()
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for a participation shift AB-B in the sender step of the actor-oriented model.
 }

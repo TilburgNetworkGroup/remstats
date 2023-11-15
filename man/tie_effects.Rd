@@ -15,6 +15,9 @@ tie-oriented model for undirected events if false.}
 statistics in the tie-oriented model if true, or all exogenous statistics if 
 false}
 }
+\value{
+Returns a list of available effects and their corresponding statistics.
+}
 \description{
 Overview of statistics in the tie-oriented model, see Details.
 }
@@ -75,4 +78,15 @@ Endogenous statistics:
  \item \code{\link{recencyContinue}()}
  \item \code{\link{FEtype}()}
 }
+}
+\examples{
+# List of available effects 
+tie_effects()
+
+# List of available effects for undirected networks
+tie_effects(directed = FALSE)
+
+# List of available endogenous effects for undirected networks
+tie_effects(directed = FALSE, endogenous = TRUE)
+
 }

@@ -20,6 +20,9 @@ statistic per time point can be requested with "std".}
 
 \item{attr_data}{Deprecated argument. Please use 'attr_actors' instead.}
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for an "average" effect in the tie-oriented model or
 the receiver choice step of the actor-oriented model. An "average" effect

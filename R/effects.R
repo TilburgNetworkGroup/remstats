@@ -69,12 +69,19 @@ NULL
 #' Note that it is possible to omit the `attr_actors` object in the call of
 #' \code{difference()} and, instead, supply it in the call of \code{remstats()}
 #' for multiple exogenous effects.
+#' 
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
 #'
 #' @examples
+#' data(history)
+#' data(info)
+#' 
+#' # Tie-oriented model
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ send("extraversion")
 #' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #'
+#' # Actor-oriented model
 #' reh_actor <- remify::remify(history, model = "actor")
 #' remstats(reh = reh_actor, sender_effects = effects, attr_actors = info)
 #'
@@ -127,11 +134,18 @@ send <- function(variable, attr_actors = NULL, scaling = c("none", "std"),
 #'
 #' @inheritParams send
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
+#' data(history)
+#' data(info)
+#' 
+#' # Tie-oriented model
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ receive("extraversion")
 #' remstats(reh = reh_tie, tie_effects = effects, attr_actors = info)
 #'
+#' # Actor-oriented model
 #' reh_actor <- remify::remify(history, model = "actor")
 #' remstats(reh = reh_actor, receiver_effects = effects, attr_actors = info)
 #'
@@ -168,6 +182,8 @@ receive <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #'
 #' @aliases dyad
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' data(history)
 #' data(both_male_long)
@@ -247,6 +263,8 @@ dyad <- tie
 #'
 #' @inheritParams send
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ same("age")
@@ -304,6 +322,8 @@ same <- function(variable, attr_actors = NULL, attr_data) {
 #' @param absolute Logical value indicating whether the difference values
 #' should be converted to the absolute difference (default is TRUE).
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' # Example for tie-oriented model
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -370,6 +390,8 @@ difference <- function(variable,
 #'
 #' @inheritParams send
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ average("extraversion")
@@ -424,6 +446,8 @@ average <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #' \code{difference()} and, instead, supply it in the call of \code{remstats()}
 #' for multiple exogenous effects.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @inheritParams send
 #'
 #' @examples
@@ -479,6 +503,9 @@ minimum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #'
 #' @inheritParams send
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic. 
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ maximum("extraversion")
@@ -519,6 +546,8 @@ maximum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #'
 #' @seealso \code{\link{FEtype}}
 #'
+#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' \dontrun{
 #'   reh_tie <- remify::remify(history, model = "tie")
@@ -562,6 +591,8 @@ event <- function(x, variableName = NULL) {
 #'
 #' @seealso \code{\link{event}}
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' history$type <- history$setting
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -609,6 +640,8 @@ FEtype <- function() {
 #' events separately for each event type (TRUE, default) or sum across
 #' different event types (FALSE).
 #'
+#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ inertia()
@@ -676,6 +709,8 @@ inertia <- function(scaling = c("none", "prop", "std"),
 #' reciprocal events separately for each event type (TRUE, default) or sum
 #' across different event types (FALSE).
 #'
+#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ reciprocity()
@@ -748,6 +783,8 @@ reciprocity <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
+#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ indegreeSender()
@@ -812,6 +849,8 @@ indegreeSender <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
+#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ indegreeReceiver()
@@ -877,6 +916,8 @@ indegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ outdegreeSender()
@@ -941,6 +982,8 @@ outdegreeSender <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{outdegreeSender}}, \code{\link{totaldegreeSender}}, or
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ outdegreeReceiver()
@@ -1014,6 +1057,8 @@ outdegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{outdegreeSender}}, \code{\link{outdegreeReceiver}}, or
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' effects <- ~ totaldegreeSender()
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1079,6 +1124,8 @@ totaldegreeSender <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{outdegreeSender}}, \code{\link{outdegreeReceiver}}, or
 #' \code{\link{totaldegreeSender}} for other types of degree effects.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ totaldegreeReceiver()
@@ -1142,6 +1189,8 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' The totaldegreeDyad effect is defined for the tie-oriented model and is
 #' applicable to both directed and undirected events.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ totaldegreeDyad()
@@ -1200,6 +1249,8 @@ totaldegreeDyad <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{totaldegreeDyad}} for other types of degree effects for
 #' undirected events.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ degreeDiff()
@@ -1261,6 +1312,8 @@ degreeDiff <- function(scaling = c("none", "std"), consider_type = TRUE) {
 #' \code{\link{totaldegreeDyad}} for other types of degree effects for
 #' undirected events.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ degreeMin()
@@ -1323,6 +1376,8 @@ degreeMin <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{totaldegreeDyad}} for other types of degree effects for
 #' undirected events.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ degreeMax()
@@ -1396,6 +1451,8 @@ degreeMax <- function(scaling = c("none", "prop", "std"),
 #' @references Butts, C. (2008). A relational event framework for social
 #' action. Sociological Methodology.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ otp()
@@ -1463,6 +1520,8 @@ otp <- function(unique = FALSE, scaling = c("none", "std"),
 #' @references Butts, C. (2008). A relational event framework for social
 #' action. Sociological Methodology.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ itp()
@@ -1540,6 +1599,8 @@ itp <- function(unique = FALSE, scaling = c("none", "std"),
 #' @references Butts, C. (2008). A relational event framework for social
 #' action. Sociological Methodology.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ osp()
@@ -1607,6 +1668,8 @@ osp <- function(unique = FALSE, scaling = c("none", "std"), consider_type = TRUE
 #' @references Butts, C. (2008). A relational event framework for social
 #' action. Sociological Methodology.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ isp()
@@ -1669,6 +1732,8 @@ isp <- function(
 #'
 #' @inheritParams osp
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @seealso \code{\link{otp}}, \code{\link{itp}}, \code{\link{osp}}, or
 #' \code{\link{isp}} for triadic effects for directed relational events.
 #'
@@ -1732,6 +1797,8 @@ spUnique <- function() {
 #' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation
 #' shifts.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABBA()
@@ -1764,6 +1831,8 @@ psABBA <- function(consider_type = TRUE) {
 #'
 #' @seealso \code{\link{psABA}} or \code{\link{psABX}} for exploring alternative participation shifts in the sender step of the actor-oriented model.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_actor <- remify::remify(history, model = "actor")
 #' remstats(reh = reh_actor, sender_effects = ~ psABB())
@@ -1799,6 +1868,8 @@ psABB <- function() {
 #' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation
 #' shifts.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABBY()
@@ -1833,6 +1904,8 @@ psABBY <- function(consider_type = TRUE) {
 #'
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation shifts.
 #'
+#' @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABXA()
@@ -1875,6 +1948,9 @@ psABXA <- function(consider_type = TRUE) {
 #' alternative participation shifts in the sender step of the actor-oriented
 #' model.
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' reh_actor <- remify::remify(history, model = "actor")
 #' remstats(reh = reh_actor, sender_effects = ~ psABX())
@@ -1910,6 +1986,9 @@ psABX <- function() {
 #' \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation
 #' shifts.
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABXB()
@@ -1946,6 +2025,9 @@ psABXB <- function(consider_type = TRUE) {
 #' \code{\link{psABXB}} or \code{\link{psABAY}} for other dyadic participation
 #' shifts.
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ psABXY()
@@ -1998,6 +2080,9 @@ psABXY <- function(consider_type = TRUE) {
 #' \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAB}} for other
 #' dyadic participation shifts.
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' reh <- remify::remify(history, model = "tie")
 #' effects <- ~ psABAY()
@@ -2044,6 +2129,9 @@ psABAY <- function(consider_type = TRUE) {
 #' @seealso \code{\link{psABBA}}, \code{\link{psABBY}}, \code{\link{psABXA}},
 #' \code{\link{psABXB}}, \code{\link{psABXY}} or \code{\link{psABAY}} for other dyadic participation shifts.
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie", directed = FALSE)
 #' effects <- ~ psABAB()
@@ -2086,6 +2174,9 @@ psABAB <- function(consider_type = TRUE) {
 #' alternative participation shifts in the sender step of the actor-oriented
 #' model.
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' reh_actor <- remify::remify(history, model = "actor", directed = FALSE)
 #' remstats(sender_effects = ~ psABA(), reh = reh_actor)
@@ -2130,6 +2221,9 @@ psABA <- function() {
 #' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for
 #' other type of recency effects
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
 #' effects <- ~ rrankSend()
@@ -2175,6 +2269,9 @@ rrankSend <- function(consider_type = TRUE) {
 #' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for
 #' other type of recency effects
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #'
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -2232,6 +2329,9 @@ rrankReceive <- function(consider_type = TRUE) {
 #' reh_actor <- remify::remify(history, model = "actor")
 #' remstats(sender_effects = effects, reh = reh_actor)
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @export
 recencySendSender <- function(consider_type = TRUE) {
   call_args <- as.list(match.call()[-1])
@@ -2269,6 +2369,9 @@ recencySendSender <- function(consider_type = TRUE) {
 #' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for
 #' other type of recency effects
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' effects <- ~ recencySendReceiver()
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -2314,6 +2417,9 @@ recencySendReceiver <- function(consider_type = TRUE) {
 #' \code{\link{recencyReceiveReceiver}} and \code{\link{recencyContinue}} for
 #' other type of recency effects
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' effects <- ~ recencyReceiveSender()
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -2360,6 +2466,9 @@ recencyReceiveSender <- function(consider_type = TRUE) {
 #' \code{\link{recencyReceiveSender}} and \code{\link{recencyContinue}} for
 #' other type of recency effects
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' effects <- ~ recencyReceiveReceiver()
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -2406,6 +2515,9 @@ recencyReceiveReceiver <- function(consider_type = TRUE) {
 #' \code{\link{recencyReceiveSender}} and \code{\link{recencyReceiveReceiver}}
 #' for other type of recency effects
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' effects <- ~ recencyContinue()
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -2443,6 +2555,9 @@ recencyContinue <- function(consider_type = TRUE) {
 #' or the number of actors in the network (actor-oriented model)
 #' @param variableName Optionally, a string with the name of the statistic. 
 #'
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
+#' 
 #' @examples
 #' \dontrun{
 #'  reh <- remify::remify(history, model = "tie")

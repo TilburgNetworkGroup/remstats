@@ -10,6 +10,10 @@ psABAY(consider_type = TRUE)
 \item{consider_type}{logical, indicates whether to consider the event type
 in determining which dyads create a pshift (TRUE, default) or not (FALSE).}
 }
+\value{
+List with all information required by `remstats::remstats()` to 
+compute the statistic.
+}
 \description{
 Specifies the statistic for a participation shift AB-AY.
 }

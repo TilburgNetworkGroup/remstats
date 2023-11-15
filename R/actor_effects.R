@@ -53,6 +53,20 @@
 #'  \item \code{\link{psABBY}()}
 #'  \item \code{\link{psABXY}()}
 #' }
+#' 
+#' @examples 
+#' # List of available effects for both the sender and receiver step
+#' actor_effects()
+#' 
+#' # List of available effects for the sender step
+#' actor_effects(step = "sender")
+#' 
+#' # List of available effects for the receiver step
+#' actor_effects(step = "receiver")
+#' 
+#' @return
+#' Returns a list of available effects and their corresponding statistics based 
+#' on the specified `step` (sender or receiver).
 #'
 #' @export
 actor_effects <- function(step = NULL) {

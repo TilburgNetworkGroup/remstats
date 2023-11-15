@@ -16,6 +16,9 @@ same(variable, attr_actors = NULL, attr_data)
 
 \item{attr_data}{Deprecated argument. Please use 'attr_actors' instead.}
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for a "same" effect in the tie-oriented model or the
 receiver choice step of the actor-oriented model. A "same" effect refers to

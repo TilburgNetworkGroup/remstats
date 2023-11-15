@@ -14,15 +14,22 @@ A dataframe with 115 rows and 5 variables:
  \item{weight}{the intensity of the event (e.g., based on the duration)}
 }
 }
+\source{
+Simulated relational event history for actors in a social network.
+}
 \usage{
-history
+data(history)
 }
 \description{
 A dataset containing a small example of a relational event history. Data is 
 simulated.
 }
+\examples{
+data(history)
+
+}
 \seealso{
 \code{\link{info}} for exogenous information on the actors in 
 the social network.
 }
-\keyword{datasets}
+\keyword{dataset}

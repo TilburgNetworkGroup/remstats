@@ -11,6 +11,11 @@
 
 \item{...}{additional arguments affecting the summary produced.}
 }
+\value{
+The summaries provide information for each statistic included in the 
+remstats object, offering insights into the distribution and characteristics 
+of the data.
+}
 \description{
 Produce summaries of each statistic from a \code{\link{remstats}} object.
 }

@@ -17,14 +17,21 @@ A dataframe with 10 rows and 5 variables:
  \item{agreeableness}{standardized agreeableness score of the actor}
 }
 }
+\source{
+Simulated exogenous information on actors in a social network.
+}
 \usage{
-info
+data(info)
 }
 \description{
 A dataset containing exogenous information on the actors in the social 
 network of a relational event history. Data is simulated.
 }
+\examples{
+data(info)
+
+}
 \seealso{
 \code{\link{history}} for the relational event history.
 }
-\keyword{datasets}
+\keyword{dataset}

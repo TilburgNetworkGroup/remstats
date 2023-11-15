@@ -84,9 +84,21 @@
 #'
 #' @examples
 #' library(remstats)
-#' seff <- ~ send("extraversion")
+#' 
+#' # Load the data
+#' data(history)
+#' data(info)
+#' 
+#' # Prepare the data
 #' reh <- remify::remify(edgelist = history, model = "actor")
+#' 
+#' # Define the sender effects
+#' seff <- ~ send("extraversion")
+#' 
+#' # Define the receiver_effects
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
+#' 
+#' # Compute the statistics
 #' aomstats(
 #'   reh = reh, sender_effects = seff, receiver_effects = reff,
 #'   attr_actors = info

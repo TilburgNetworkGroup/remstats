@@ -13,6 +13,10 @@ or the number of actors in the network (actor-oriented model)}
 
 \item{variableName}{Optionally, a string with the name of the statistic.}
 }
+\value{
+List with all information required by `remstats::remstats()` to 
+compute the statistic.
+}
 \description{
 Allows the user to add its own pre-computed statistic to the statistics
 object and, optionally, interact this statistic with other statistics in the

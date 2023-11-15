@@ -18,6 +18,9 @@ tie(variable, attr_dyads = NULL, scaling = c("none", "std"), x, variableName)
 
 \item{variableName}{Deprecated argument. Please use 'variable' instead.}
 }
+\value{
+List with all information required by `remstats::remstats()` to compute the statistic.
+}
 \description{
 Specifies the statistic for a "tie" (or, "dyad") effect.
 }

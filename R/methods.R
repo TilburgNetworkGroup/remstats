@@ -4,6 +4,8 @@
 #'
 #' @param x object of class \code{\link{remstats}}.
 #' @param ... further arguments passed to or from other methods.
+#' 
+#' @return The function prints formatted information about the remstats object to the console, presenting details about the relational event network statistics in a user-friendly format.
 #'
 #' @examples
 #' rehObject <- remify::remify(edgelist = history, model = "tie")
@@ -111,6 +113,10 @@ print.remstats <- function(x, ...) {
 #'
 #' @param object object of class \code{\link{remstats}}.
 #' @param ... additional arguments affecting the summary produced.
+#' 
+#' @return The summaries provide information for each statistic included in the 
+#' remstats object, offering insights into the distribution and characteristics 
+#' of the data.
 #'
 #' @examples
 #' rehObject <- remify::remify(edgelist = history, model = "tie")

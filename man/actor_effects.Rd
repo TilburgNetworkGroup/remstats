@@ -10,6 +10,10 @@ actor_effects(step = NULL)
 \item{step}{outputs all statistics in the sender activity step (if `step =
 sender`) or receiver choice step (if `step = receiver`).}
 }
+\value{
+Returns a list of available effects and their corresponding statistics based 
+on the specified `step` (sender or receiver).
+}
 \description{
 Overview of statistics in the actor-oriented model, see Details.
 }
@@ -61,4 +65,15 @@ A list of available effects and their corresponding statistics for the
  \item \code{\link{psABBY}()}
  \item \code{\link{psABXY}()}
 }
+}
+\examples{
+# List of available effects for both the sender and receiver step
+actor_effects()
+
+# List of available effects for the sender step
+actor_effects(step = "sender")
+
+# List of available effects for the receiver step
+actor_effects(step = "receiver")
+
 }

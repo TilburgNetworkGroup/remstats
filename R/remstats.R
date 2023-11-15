@@ -161,20 +161,30 @@
 #' potential senders or receivers, respectively. The 'remstats' object has the 
 #' following attributes: 
 #'   \describe{
-#'     \item{\code{model}}{Type of model that is estimated, obtained from the remify object inputted to 'reh'.}
-#'     \item{\code{formula}}{Model formula, obtained from the formula inputted to 'tie_effects', 'sender_effects' and/or 'receiver_effects', depending on the model.}
-#'     \item{\code{riskset}}{For the tie-oriented model, the risk set used to construct the statistics.}
-#'     \item{\code{actors}}{For the actor-oriented model, the set of actors used to construct the statistics, obtained from the remify object inputted to 'reh'.}
-#'     \item{\code{adjmat}}{[Optional], for the tie-oriented model, if "get_adjmat = TRUE", the matrix with the accumulated event weights for each time point (on the rows) and each dyad (in the columns).}
+#'     \item{\code{model}}{Type of model that is estimated, obtained from the 
+#'      remify object inputted to 'reh'.}
+#'     \item{\code{formula}}{Model formula, obtained from the formula inputted 
+#'      to 'tie_effects', 'sender_effects' and/or 'receiver_effects', depending 
+#'      on the model.}
+#'     \item{\code{riskset}}{For the tie-oriented model, the risk set used to 
+#'      construct the statistics.}
+#'     \item{\code{actors}}{For the actor-oriented model, the set of actors 
+#'      used to construct the statistics, obtained from the remify object 
+#'      inputted to 'reh'.}
+#'     \item{\code{adjmat}}{[Optional], for the tie-oriented model, if 
+#'      "get_adjmat = TRUE", the matrix with the accumulated event weights for 
+#'      each time point (on the rows) and each dyad (in the columns).}
 #'   }
 #'
 #' @examples
 #' library(remstats)
 #'
+#' # Tie-oriented model
 #' eff <- ~ inertia():send("extraversion") + otp()
 #' reh_tie <- remify::remify(edgelist = history, model = "tie")
 #' remstats(reh = reh_tie, tie_effects = eff, attr_actors = info)
 #'
+#' # Actor-oriented model
 #' seff <- ~ send("extraversion")
 #' reff <- ~ receive("agreeableness") + inertia() + otp()
 #' reh_actor <- remify::remify(edgelist = history, model = "actor")
