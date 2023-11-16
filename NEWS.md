@@ -1,15 +1,20 @@
 # remstats 3.2.0
-**Date**: November 13th, 2023
+**Date**: November 16th, 2023
 Compatible with `remify` version 3.2.0. 
 
 ## Added
 - [Issue [#67](https://github.com/TilburgNetworkGroup/remstats/issues/67)] - Introducing the ability to manage simultaneous events. When events occur on the same time, the user can specify the `method` for managing simultaneous events. The default `method` is `"pt"` (per timepoint), where statistics are computed once for each unique timepoint in the edgelist. Alternatively, you can choose `"pe"` (per event), where statistics are computed once for each unique event observed in the edgelist. 
 - [Issue [[#57](https://github.com/TilburgNetworkGroup/remstats/issues/57)]] - Character / factor variables are allowed for the `same` statistic. 
+- The `subset` and `method` object to the attributes of `tomstats` and `aomstats` objects.
 
 ## Changed
 - The meaning of the `start` and `stop` values changes slightly when `method` is `pt`. They now refer to the indices of the first unique timepoint and last unique timepoint for which the user wishes to calculate statistics. The meaning of `start` and `stop` remains unchanged when `method` is `pe`. 
 - [Issue [#72](https://github.com/TilburgNetworkGroup/remstats/issues/72)] - When weighting the past events, counting now starts from the time of the preceding event instead of the current event. This change ensures the constant hazard assumption is maintained. 
 - The default value for the `consider_type` argument is now `TRUE` for improved logical consistency. 
+- Added information about the methods to the printed remstats object. 
+
+## Fixed 
+- Bug in `formula` attributes of `aomstats` object.
 
 ## Removed
 - The `ccp` effect has been removed. 

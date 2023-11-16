@@ -222,6 +222,8 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   attr(statistics, "model") <- "tie"
   attr(statistics, "formula") <- form
   attr(statistics, "riskset") <- riskset
+  attr(statistics, "subset") <- data.frame(start = start + 1, stop = stop + 1)
+  attr(statistics, "method") <- method
   if (get_adjmat) {
     attr(statistics, "adjmat") <- adjmat
   }

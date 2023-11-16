@@ -8,3 +8,4 @@
 ^\.github$
 ^README\.md$
 ^cran-comments\.md$
+^CRAN-SUBMISSION$

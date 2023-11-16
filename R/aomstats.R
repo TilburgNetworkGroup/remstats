@@ -229,11 +229,19 @@ aomstats <- function(reh,
       receiver_effects_names, receiver_effects, receiver_interactions)
   }
 
+  # Subset output
+  subset <- prepare_subset(start, stop, edgelist, method, "sender")
+  subset$start <- subset$start + 1
+  subset$stop <- subset$stop + 1
+  subset <- as.data.frame(subset)
+
   # Output
   out <- list(sender_stats = sender_stats, receiver_stats = receiver_stats)
   class(out) <- c("aomstats", "remstats")
   attr(out, "model") <- "actor"
-  attr(out, "formula") <- list(rate = sender_effects, choice = receiver_effects)
+  attr(out, "formula") <- list(rate = sender_formula, choice = receiver_formula)
   attr(out, "actors") <- actors
+  attr(out, "subset") <- subset
+  attr(out, "method") <- method
   out
 }
