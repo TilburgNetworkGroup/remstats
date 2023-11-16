@@ -868,19 +868,27 @@ prepare_aomstats_edgelist <- function(reh) {
   edgelist <- reh$edgelist
 
   # Transform to cpp indexing
-  edgelist <- as.matrix(edgelist[,1:3])
   edgelist[, 2] <- unlist(attributes(reh)$actor1ID) - 1
   edgelist[, 3] <- unlist(attributes(reh)$actor2ID) - 1
 
   # Origin
   if (attr(reh, "ordinal")) {
-    if (length(attr(reh, "origin"))==0) {
-      attr(reh, "origin") <- edgelist[1,1] - 1
-    }
+  	if (length(attr(reh, "origin"))==0) {
+  		attr(reh, "origin") <- edgelist[1,1] - 1
+  	}
   }
 
   # Transform to numeric
-  edgelist[, 1] <- cumsum(as.numeric(diff(c(attributes(reh)$origin, edgelist[, 1]))))
+  edgelist[, 1] <- cumsum(
+    as.numeric(
+      diff(
+        c(attributes(reh)$origin, edgelist[, 1])
+      )
+    )
+  )
+
+  # Transform to matrix
+  edgelist <- as.matrix(edgelist[,1:3])
 
   return(edgelist)
 }

@@ -2178,7 +2178,7 @@ psABAB <- function(consider_type = TRUE) {
 #' compute the statistic.
 #' 
 #' @examples
-#' reh_actor <- remify::remify(history, model = "actor", directed = FALSE)
+#' reh_actor <- remify::remify(history, model = "actor")
 #' remstats(sender_effects = ~ psABA(), reh = reh_actor)
 #'
 #' @export

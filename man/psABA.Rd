@@ -24,7 +24,7 @@ multiple events in the edgelist occur at the same time point, the order of
 these events determines whether the p-shift is observed.
 }
 \examples{
-reh_actor <- remify::remify(history, model = "actor", directed = FALSE)
+reh_actor <- remify::remify(history, model = "actor")
 remstats(sender_effects = ~ psABA(), reh = reh_actor)
 
 }
