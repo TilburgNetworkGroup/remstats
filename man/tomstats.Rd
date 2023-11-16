@@ -151,7 +151,7 @@ Mulders & Leenders, 2019). This length of this time window is set by the
 A third option is to set `memory` to `"interval"`. In this case, the past
 event history within a given time interval is considered. For example, when
 `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
-only the past events tha happened between 50 and 100 time units ago are
+only the past events that happened between 50 and 100 time units ago are
 included in the computation of the statistics. Finally, the fourth option is
 to set `memory` to `"decay"`. In this case, the weight of the past event in
 the computation of the statistics depend on the elapsed time between $t$ and
