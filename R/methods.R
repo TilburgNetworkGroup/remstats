@@ -25,11 +25,15 @@ print.remstats <- function(x, ...) {
   title <- "Relational Event Network Statistics"
   model <- ifelse(any(class(x) == "tomstats"), "tie-oriented", "actor-oriented")
   model.title <- paste("> Model:", model, sep = " ")
+  method <- attributes(x)$method
+  method.fancy <- ifelse(method == "pt", "time point", "event")
+  method.title <- paste("> Computation method: per", method.fancy)
 
   if (model == "tie-oriented") {
+    row.title <- ifelse(method == "pt", "time points x", "events x")
     dim.stats <- dim(x)
     dim.long <- paste("> Dimensions:",
-      dim.stats[1], "time points x",
+      dim.stats[1], row.title,
       dim.stats[2], "dyads x",
       dim.stats[3], "statistics",
       sep = " "
@@ -40,7 +44,7 @@ print.remstats <- function(x, ...) {
       paste0("\t >> ", i, ": ", stats.names[i])
     })
     stats.names3 <- paste(stats.names2, collapse = "\n")
-    cat(paste(title, model.title, dim.long, stats.title, stats.names3,
+    cat(paste(title, model.title, method.title, dim.long, stats.title, stats.names3,
       sep = "\n"
     ))
   } else if (model == "actor-oriented") {
@@ -48,9 +52,10 @@ print.remstats <- function(x, ...) {
       sender.title <- "> Sender model: empty"
     } else {
       sender.title <- "> Sender model:"
+      row.title <- ifelse(method == "pt", "time points x", "events x")
       dim.sender.stats <- dim(x$sender_stats)
       dim.sender.long <- paste("\t >> Dimensions:",
-        dim.sender.stats[1], "time points x",
+        dim.sender.stats[1], row.title,
         dim.sender.stats[2], "actors x",
         dim.sender.stats[3], "statistics",
         sep = " "
@@ -69,7 +74,7 @@ print.remstats <- function(x, ...) {
       receiver.title <- "> Receiver model:"
       dim.receiver.stats <- dim(x$receiver_stats)
       dim.receiver.long <- paste("\t >> Dimensions:",
-        dim.receiver.stats[1], "time points x",
+        dim.receiver.stats[1], "events x",
         dim.receiver.stats[2], "actors x",
         dim.receiver.stats[3], "statistics",
         sep = " "
@@ -86,18 +91,18 @@ print.remstats <- function(x, ...) {
     }
 
     if (is.null(x$sender_stats)) {
-      cat(paste(title, model.title,
+      cat(paste(title, model.title, method.title,
         sender.title, receiver.title, dim.receiver.long, stats.receiver.title,
         stats.receiver.names3,
         sep = "\n"
       ))
     } else if (is.null(x$receiver_stats)) {
-      cat(paste(title, model.title,
+      cat(paste(title, model.title, method.title,
         sender.title, dim.sender.long, stats.sender.title, stats.sender.names3,
         sep = "\n"
       ))
     } else {
-      cat(paste(title, model.title,
+      cat(paste(title, model.title, method.title,
         sender.title, dim.sender.long, stats.sender.title, stats.sender.names3,
         receiver.title, dim.receiver.long, stats.receiver.title,
         stats.receiver.names3,
