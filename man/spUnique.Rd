@@ -6,6 +6,9 @@
 \usage{
 spUnique()
 }
+\value{
+Warning.
+}
 \description{
 Deprecated. Use \code{\link{sp}}.
 }

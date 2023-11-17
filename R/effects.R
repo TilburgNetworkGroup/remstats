@@ -546,10 +546,11 @@ maximum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #'
 #' @seealso \code{\link{FEtype}}
 #'
-#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   reh_tie <- remify::remify(history, model = "tie")
 #'   data(history, package = "remstats")
 #'   history$work <- ifelse(history$setting == "work", 1, 0)
@@ -640,7 +641,8 @@ FEtype <- function() {
 #' events separately for each event type (TRUE, default) or sum across
 #' different event types (FALSE).
 #'
-#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
 #' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -709,7 +711,8 @@ inertia <- function(scaling = c("none", "prop", "std"),
 #' reciprocal events separately for each event type (TRUE, default) or sum
 #' across different event types (FALSE).
 #'
-#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
 #' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -783,7 +786,8 @@ reciprocity <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
-#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
 #' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -849,7 +853,8 @@ indegreeSender <- function(scaling = c("none", "prop", "std"),
 #' \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
 #' \code{\link{totaldegreeReceiver}} for other types of degree effects.
 #'
-#'  @returns List with all information required by `remstats::remstats()` to compute the statistic.
+#' @returns List with all information required by `remstats::remstats()` to 
+#' compute the statistic.
 #' 
 #' @examples
 #' reh_tie <- remify::remify(history, model = "tie")
@@ -1777,6 +1782,8 @@ sp <- function(
 #'
 #' Deprecated. Use \code{\link{sp}}.
 #'
+#' @returns Warning.
+#' 
 #' @export
 spUnique <- function() {
   .Deprecated("sp")
@@ -2559,7 +2566,7 @@ recencyContinue <- function(consider_type = TRUE) {
 #' compute the statistic.
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'  reh <- remify::remify(history, model = "tie")
 #'  actor101Events <- which(history$actor1 == "101" | history$actor2 == "101")
 #'  actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {

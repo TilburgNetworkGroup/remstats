@@ -68,7 +68,7 @@ totaldegreeDyad <- rbind(
 expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
 
 # ccp
-# duration <<- c(3, 2, 1, 1, 3, 2, 1, 1, 1, 1)
+# duration <- c(3, 2, 1, 1, 3, 2, 1, 1, 1, 1)
 # ccp_stats <- remstats(reh, tie_effects = ~ ccp(duration = duration))
 # ccp <- rbind(
 #   matrix(0, ncol = nrow(riskset)),

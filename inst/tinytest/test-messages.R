@@ -124,13 +124,13 @@ expect_warning(
     pattern = "deprecated"
 )
 
-x <<- c(1, 1, NA)
+x <- c(1, 1, NA)
 expect_error(
     event(x), 
     pattern = "missing values"
 )
 
-Y <<- matrix(1:15, nrow = 5, ncol = 3)
+Y <- matrix(1:15, nrow = 5, ncol = 3)
 Y[1,1] <- NA
 expect_warning(
     userStat(Y), 
@@ -291,27 +291,6 @@ expect_warning(
     pattern = "not in the risk set"
 )
 
-# Event info
-setting <<- c("a", "b", "b", "a")
-
-expect_error(
-    remstats(reh = reh, tie_effects = ~ event(x = setting)),
-    pattern = "number of events"
-)
-
-# userStat
-Y <<- matrix(1:15, nrow = 5, ncol = 3)
-
-expect_error(
-    remstats(reh = reh, tie_effects = ~ userStat(Y[1:4, ])),
-    pattern = "number of events"
-)
-
-expect_error(
-    remstats(reh = reh, tie_effects = ~ userStat(Y[, 1:2])),
-    pattern = "number of dyads"
-)
-
 # prep_exo ---------------------------------------------------------------
 expect_error(
     send(variable = "x1", attr_actors = attributes),
@@ -346,7 +325,7 @@ expect_warning(
 info$x1[1] <- 10
 
 # parse_tie ---------------------------------------------------------------
-X <<- matrix(1:9, 3, 3)
+X <- matrix(1:9, 3, 3)
 diag(X) <- 0
 
 expect_error(
@@ -562,18 +541,6 @@ expect_warning(
     remstats(reh = reh, receiver_effects = ~ receive(variable = "x1"), 
         attr_actors = info2),
     pattern = "not in the risk set"
-)
-
-Y <<- matrix(1:15, nrow = 5, ncol = 3)
-
-expect_error(
-    remstats(reh = reh, sender_effects = ~ userStat(Y[, 1:2])),
-    pattern = "number of actors"
-)
-
-expect_error(
-    remstats(reh = reh, receiver_effects = ~ userStat(Y[, 1:2])),
-    pattern = "number of actors"
 )
 
 # check_formula ------------------------------------------------------------

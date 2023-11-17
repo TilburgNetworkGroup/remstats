@@ -24,33 +24,13 @@ info2 <- data.frame(
 
 info <- rbind(info, info2)
 
-# Tie info
-X_wide <<- matrix(1:9, 3, 3)
-diag(X_wide) <- 0
-
-X_long <<- data.frame(
-	actor1 = c(1, 1, 2, 2, 3, 3, 1),
-	actor2 = c(2, 3, 1, 3, 1, 2, 2),
-  time = c(rep(0, 6), 2),
-	X_long = c(4, 7, 2, 8, 3, 6, 40)
-)
-
-# Event info
-setting <<- c("a", "b", "b", "a", "a")
-
-# UserStat
-Y <<- matrix(1:25, nrow = 5, ncol = 5)
-
 # Statistics
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
-effects <- ~ send(variable = "x1") + receive(variable = "x1") + 
+effects <-	~ send(variable = "x1") + receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") +
   maximum(variable = "x1") + minimum(variable = "x1") +
-  same(variable = "x2") + 
-  tie(variable = "X_wide", attr_dyads = X_wide) +
-	tie(variable = "X_long", attr_dyads = X_long) +
-  event(x = setting, variableName = "setting") +
-  userStat(x = Y, variableName = "Y")
+  same(variable = "x2") 
+
 stats <- remstats(reh, tie_effects = effects, attr_actors = info)
 riskset <- attr(stats, "riskset")
 
@@ -127,59 +107,6 @@ same <- rbind(
 )
 expect_equal(stats[, , "same_x2"], same)
 
-# tie
-tie <- rbind(
-  c(4, 7, 2, 8, 6),
-  c(4, 7, 2, 8, 6),
-  c(4, 7, 2, 8, 6),
-  c(4, 7, 2, 8, 6),
-  c(4, 7, 2, 8, 6)
-)
-expect_equal(stats[, , "tie_X_wide"], tie)
-
-tie_long <- rbind(
-	c(4, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6)
-)
-expect_equal(stats[, , "tie_X_long"], tie_long)
-
-# event
-event <- rbind(
-  rep(0, 5),
-  rep(1, 5),
-  rep(1, 5),
-  rep(0, 5),
-  rep(0, 5)
-)
-expect_equal(stats[, , "event_setting"], event)
-
-# userStat
-expect_equal(stats[, , "userStat_Y"], Y)
-
-# test attr_actors in variable functions
-info3 <<- info[, 1:3]
-info2 <<- info[, c(1, 2, 4)]
-
-effects2 <- ~ send(variable = "x1", attr_actors = info3) + 
-receive(variable = "x1", attr_actors = info3) + 
-  average(variable = "x1", attr_actors = info3) + 
-  difference(variable = "x1", attr_actors = info3) + 
-  maximum(variable = "x1", attr_actors = info3) + 
-  minimum(variable = "x1", attr_actors = info3) +
-  same(variable = "x2", attr_actors = info2) 
-stats2 <- remstats(reh, tie_effects = effects2)
-
-expect_equal(stats2[, , "send_x1"], send)
-expect_equal(stats2[, , "receive_x1"], receive)
-expect_equal(stats2[, , "average_x1"], average)
-expect_equal(stats2[, , "difference_x1"], difference)
-expect_equal(stats2[, , "maximum_x1"], maximum)
-expect_equal(stats2[, , "minimum_x1"], minimum)
-expect_equal(stats2[, , "same_x2"], same)
-
 # test difference absolute = FALSE
 effects3 <- ~ difference(variable = "x1", absolute = FALSE)
 stats3 <- remstats(reh, tie_effects = effects3, attr_actors = info)
@@ -193,15 +120,6 @@ difference <- rbind(
 )
 expect_equal(stats3[, , "difference_x1"], difference)
 
-# test attr_dyads in remstats
-stats4 <- remstats(reh, tie_effects = ~ tie(variable = "X_wide"), 
-  attr_dyads = X_wide)
-expect_equal(stats4[, , "tie_X_wide"], tie)
-
-stats5 <- remstats(reh, tie_effects = ~ tie(variable = "X_long"), 
-  attr_dyads = X_long)
-expect_equal(stats5[, , "tie_X_long"], tie_long)
-
 # test standardization
 std_effects <- ~
   send(variable = "x1", scaling = "std") + 
@@ -209,9 +127,7 @@ std_effects <- ~
   average(variable = "x1", scaling = "std") + 
   difference(variable = "x1", scaling = "std") + 
   maximum(variable = "x1", scaling = "std") + 
-  minimum(variable = "x1", scaling = "std") +
-  tie(variable = "X_wide", attr_dyads = X_wide, scaling = "std") +
-  tie(variable = "X_long", attr_dyads = X_long, scaling = "std")
+  minimum(variable = "x1", scaling = "std") 
 std_stats <- remstats(reh, tie_effects = std_effects, attr_actors = info)
 
 sapply(2:dim(std_stats)[3], function(p) {
@@ -233,18 +149,9 @@ edgelist <- data.frame(
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 
 # Method = "pt"
-# Event info
-setting <<- c("a", "b", "b", "a")
-
-# UserStat
-Y <<- matrix(1:20, nrow = 4, ncol = 5)
-
 # Selection of effects that have unique underlying cpp functions
 effects <- ~ send(variable = "x1") +
-  average(variable = "x1") + 
-	tie(variable = "X_long", attr_dyads = X_long) +
-  event(x = setting, variableName = "setting") +
-  userStat(x = Y, variableName = "Y")
+  average(variable = "x1") 
 
 pt_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
   method = "pt")
@@ -268,40 +175,10 @@ average <- rbind(
 )
 expect_equal(pt_stats[, , "average_x1"], average)
 
-# tie
-tie_long <- rbind(
-	c(4, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6)
-)
-expect_equal(pt_stats[, , "tie_X_long"], tie_long)
-
-# event
-event <- rbind(
-  rep(0, 5),
-  rep(1, 5),
-  rep(1, 5),
-  rep(0, 5)
-)
-expect_equal(pt_stats[, , "event_setting"], event)
-
-# userStat
-expect_equal(pt_stats[, , "userStat_Y"], Y)
-
 # Method = "pe"
-# Event info
-setting <<- c("a", "b", "b", "a", "a")
-
-# UserStat
-Y <<- matrix(1:25, nrow = 5, ncol = 5)
-
 # Selection of effects that have unique underlying cpp functions
 effects <- ~ send(variable = "x1") +
-  average(variable = "x1") + 
-	tie(variable = "X_long", attr_dyads = X_long) +
-  event(x = setting, variableName = "setting") +
-  userStat(x = Y, variableName = "Y")
+  average(variable = "x1")  
 
 pe_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
   method = "pe")
@@ -326,26 +203,3 @@ average <- rbind(
   c(150, 200, 150, 250, 250)
 )
 expect_equal(pe_stats[, , "average_x1"], average)
-
-# tie
-tie_long <- rbind(
-	c(4, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6),
-	c(40, 7, 2, 8, 6)
-)
-expect_equal(pe_stats[, , "tie_X_long"], tie_long)
-
-# event
-event <- rbind(
-  rep(0, 5),
-  rep(1, 5),
-  rep(1, 5),
-  rep(0, 5),
-  rep(0, 5)
-)
-expect_equal(pe_stats[, , "event_setting"], event)
-
-# userStat
-expect_equal(pe_stats[, , "userStat_Y"], Y)

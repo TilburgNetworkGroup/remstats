@@ -12,6 +12,10 @@ event(x, variableName = NULL)
 \item{variableName}{optionally, a string indicating the variable name, used
 for the dimnames of the output statistics object}
 }
+\value{
+List with all information required by `remstats::remstats()` to 
+compute the statistic.
+}
 \description{
 Specifies the statistic for an "event" effect in the tie-oriented model. An
 "event" effect refers to an exogenous event attribute that affects the
@@ -22,7 +26,7 @@ The statistic at timepoint \emph{t} is for all dyads in the risk set equal
 to the attribute of the event at timepoint \emph{t}.
 }
 \examples{
-\dontrun{
+\donttest{
   reh_tie <- remify::remify(history, model = "tie")
   data(history, package = "remstats")
   history$work <- ifelse(history$setting == "work", 1, 0)
@@ -33,6 +37,4 @@ to the attribute of the event at timepoint \emph{t}.
 }
 \seealso{
 \code{\link{FEtype}}
-
- @returns List with all information required by `remstats::remstats()` to compute the statistic.
 }

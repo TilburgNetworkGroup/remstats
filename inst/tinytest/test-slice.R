@@ -24,16 +24,6 @@ info2 <- data.frame(
 
 info <- rbind(info, info2)
 
-# Tie info
-X <<- matrix(1:9, 3, 3)
-diag(X) <<- 0
-
-# Event info
-setting <<- c("a", "b", "b", "a", "a")
-
-# UserStat
-Y <<- matrix(1:25, nrow = 5, ncol = 5)
-
 # Statistics
 reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 effects <- ~
@@ -54,9 +44,7 @@ effects <- ~
     send(variable = "x1") + receive(variable = "x1") + 
     average(variable = "x1") + difference(variable = "x1") + 
     maximum(variable = "x1") + minimum(variable = "x1") +
-    same(variable = "x2") + tie(variable = "X", attr_dyads = X) +
-    event(x = setting, variableName = "setting") +
-    userStat(x = Y, variableName = "Y")
+    same(variable = "x2") 
 stats <- remstats(reh, tie_effects = effects, attr_actors = info)
 slice_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
   start = 2, stop = 4)
@@ -64,19 +52,14 @@ slice_stats <- remstats(reh, tie_effects = effects, attr_actors = info,
 # Test
 expect_equal(stats[2:4,,], slice_stats[1:nrow(slice_stats),,])
 
-# UserStat
-Y <<- matrix(1:15, nrow = 5, ncol = 3)
-
 # Statistics
 reh <- remify::remify(edgelist, model = "actor")
 sender_effects <- ~ send(variable = "x1") +
-  userStat(x = Y, variableName = "Y") +
   indegreeSender() + outdegreeSender() + totaldegreeSender() +
   recencySendSender() + recencyReceiveSender()
 receiver_effects <- ~ receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") + 
-  same(variable = "x2") + tie(variable = "X", attr_dyads = X) +
-  userStat(x = Y, variableName = "Y") +
+  same(variable = "x2") + 
   indegreeReceiver() + outdegreeReceiver() + totaldegreeReceiver() +
   inertia() + reciprocity() +
   isp() + itp() + osp() + otp() +

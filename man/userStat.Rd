@@ -23,7 +23,7 @@ object and, optionally, interact this statistic with other statistics in the
 formula.
 }
 \examples{
-\dontrun{
+\donttest{
  reh <- remify::remify(history, model = "tie")
  actor101Events <- which(history$actor1 == "101" | history$actor2 == "101")
  actor101_stat <- t(sapply(seq_len(nrow(history)), function(i) {

@@ -106,7 +106,7 @@ with the exogenous covariate information has to be supplied to the
 \code{attr_actors} argument in either \code{remstats()} or in the separate
 effect functions supplied to the \code{..._effects} arguments (e.g., see
 \code{\link{send}}). This \code{attr_actors} object should be constructed as
-follows: A dataframe with rows refering to the attribute value of actor
+follows: A dataframe with rows referring to the attribute value of actor
 \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
 actor name (corresponding to the actor names in the relational event
 history). A `time` column is required that contains the time when attributes

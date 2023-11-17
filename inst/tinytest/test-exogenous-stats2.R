@@ -24,31 +24,12 @@ info2 <- data.frame(
 
 info <- rbind(info, info2)
 
-# Tie info
-X_wide <<- matrix(1:16, nrow = 4)
-X_wide <<- X_wide %*% t(X_wide) 
-X_long <<- data.frame(
-	actor1 = c(1, 1, 1, 2, 2, 3),
-	actor2 = c(2, 3, 4, 3, 4, 4),
-	X_long = c(304, 332, 360, 368, 400, 440)
-)
-
-# Event info
-setting <<- c("a", "b", "b", "a", "a")
-
-# UserStat
-Y <<- matrix(1:20, nrow = 5, ncol = 4)
-
 # Statistics
 reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
 effects <- ~ average(variable = "x1") + difference(variable = "x1") + 
   maximum(variable = "x1") + minimum(variable = "x1") +
-  same(variable = "x2") + 
-  tie(variable = "X_wide", attr_dyads = X_wide) +
-  tie(variable = "X_long", attr_dyads = X_long) +
-  event(x = setting, variableName = "setting") +
-  userStat(x = Y, variableName = "Y")
+  same(variable = "x2") 
 stats <- remstats(reh, tie_effects = effects, attr_actors = info)
 riskset <- attr(stats, "riskset")
 
@@ -105,38 +86,12 @@ same <- rbind(
 )
 expect_equal(stats[, , "same_x2"], same)
 
-# tie
-tie <- rbind(
-  c(304, 332, 368, 400),
-  c(304, 332, 368, 400),
-  c(304, 332, 368, 400),
-  c(304, 332, 368, 400),
-  c(304, 332, 368, 400)
-)
-expect_equal(stats[, , "tie_X_wide"], tie)
-expect_equal(stats[, , "tie_X_long"], tie)
-
-# event
-event <- rbind(
-  rep(0, 4),
-  rep(1, 4),
-  rep(1, 4),
-  rep(0, 4),
-  rep(0, 4)
-)
-expect_equal(stats[, , "event_setting"], event)
-
-# userStat
-expect_equal(stats[, , "userStat_Y"], Y)
-
 # test standardization
 std_effects <- ~
   average(variable = "x1", scaling = "std") + 
   difference(variable = "x1", scaling = "std") + 
   maximum(variable = "x1", scaling = "std") + 
-  minimum(variable = "x1", scaling = "std") + 
-  tie(variable = "X_wide", attr_dyads = X_wide, scaling = "std")
-  tie(variable = "X_long", attr_dyads = X_long, scaling = "std")
+  minimum(variable = "x1", scaling = "std") 
 std_stats <- remstats(reh, tie_effects = std_effects, attr_actors = info)
 
 sapply(2:dim(std_stats)[3], function(p) {

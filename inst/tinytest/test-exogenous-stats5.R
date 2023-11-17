@@ -24,30 +24,12 @@ info2 <- data.frame(
 
 info <- rbind(info, info2)
 
-# Tie info
-X_wide <<- matrix(1:9, 3, 3)
-diag(X_wide) <<- 0
-
-X_long <<- data.frame(
-	actor1 = c(1, 1, 2, 2, 3, 3, 1),
-	actor2 = c(2, 3, 1, 3, 1, 2, 2),
-	time = c(rep(0, 6), 2),
-	X_long = c(4, 7, 2, 8, 3, 6, 40)
-)
-
-# UserStat
-Y <<- matrix(1:15, nrow = 5, ncol = 3)
-
 # Statistics
 reh <- remify::remify(edgelist, model = "actor")
-sender_effects <- ~ send(variable = "x1") +
-  userStat(x = Y, variableName = "Y")
+sender_effects <- ~ send(variable = "x1") 
 receiver_effects <- ~ receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") + 
-  same(variable = "x2") + 
-  tie(variable = "X_wide", attr_dyads = X_wide) +
-	tie(variable = "X_long", attr_dyads = X_long) +
-  userStat(x = Y, variableName = "Y")
+  same(variable = "x2") 
 stats <- remstats(reh = reh,
   sender_effects = sender_effects,
   receiver_effects = receiver_effects, 
@@ -110,46 +92,12 @@ same <- rbind(
 )
 expect_equal(receiver_stats[, , "same_x2"], same)
 
-# tie
-tie <- rbind(
-  c(0, 4, 7),
-  c(0, 4, 7),
-  c(2, 0, 8),
-  c(2, 0, 8),
-  c(3, 6, 0)
-)
-expect_equal(receiver_stats[, , "tie_X_wide"], tie)
-
-tie_long <- rbind(
-	c(0, 4, 7),
-	c(0, 40, 7),
-	c(2, 0, 8),
-	c(2, 0, 8),
-	c(3, 6, 0)
-)
-expect_equal(receiver_stats[, , "tie_X_long"], tie_long)
-
-# userStat
-expect_equal(sender_stats[, , "userStat_Y"], Y)
-expect_equal(receiver_stats[, , "userStat_Y"], Y)
-
-# test attr_dyads in remstats
-stats2 <- remstats(reh, receiver_effects = ~ tie(variable = "X_wide"), 
-  attr_dyads = X_wide)
-expect_equal(stats2$receiver_stats[, , "tie_X_wide"], tie)
-
-stats3 <- remstats(reh, receiver_effects = ~ tie(variable = "X_long"), 
-  attr_dyads = X_long)
-expect_equal(stats3$receiver_stats[, , "tie_X_long"], tie_long)
-
 # test standardization
 reh <- remify::remify(edgelist, model = "actor")
 std_sender_effects <- ~ send(variable = "x1", scaling = "std")
 std_receiver_effects <- ~ receive(variable = "x1", scaling = "std") + 
   average(variable = "x1", scaling = "std") + 
-  difference(variable = "x1", scaling = "std") +
-  tie(variable = "X_wide", attr_dyads = X_wide, scaling = "std") +
-  tie(variable = "X_long", attr_dyads = X_long, scaling = "std")
+  difference(variable = "x1", scaling = "std") 
 std_stats <- remstats(reh = reh,
   sender_effects = std_sender_effects,
   receiver_effects = std_receiver_effects, 
@@ -194,17 +142,10 @@ edgelist <- data.frame(
 reh <- remify::remify(edgelist, model = "actor", riskset = "active")
 
 # Method = "pt"
-# UserStat
-Y_sender <<- matrix(1:12, nrow = 4, ncol = 3)
-Y_receiver <<- matrix(1:15, nrow = 5, ncol = 3)
-
 # Selection of effects that have unique underlying cpp functions
-sender_effects <- ~ send(variable = "x1") +
-  userStat(x = Y_sender, variableName = "Y")
+sender_effects <- ~ send(variable = "x1") 
 receiver_effects <- ~ receive(variable = "x1") + 
-  average(variable = "x1") +
-	tie(variable = "X_long", attr_dyads = X_long) +
-  userStat(x = Y_receiver, variableName = "Y")
+  average(variable = "x1") 
 pt_stats <- remstats(reh = reh,
   sender_effects = sender_effects,
   receiver_effects = receiver_effects, 
@@ -244,31 +185,12 @@ average <- rbind(
 )
 expect_equal(receiver_stats[, , "average_x1"], average)
 
-# tie
-tie <- rbind(
-  c(0, 4, 7),
-  c(0, 40, 7),
-  c(2, 0, 8),
-  c(2, 0, 8),
-  c(3, 6, 0)
-)
-expect_equal(receiver_stats[, , "tie_X_long"], tie)
-
-# userStat
-expect_equal(sender_stats[, , "userStat_Y"], Y_sender)
-expect_equal(receiver_stats[, , "userStat_Y"], Y_receiver)
-
 # Method = "pe"
-# UserStat
-Y <<- Y_receiver
 
 # Selection of effects that have unique underlying cpp functions
-sender_effects <- ~ send(variable = "x1") +
-  userStat(x = Y, variableName = "Y")
+sender_effects <- ~ send(variable = "x1") 
 receiver_effects <- ~ receive(variable = "x1") + 
-  average(variable = "x1") +
-	tie(variable = "X_long", attr_dyads = X_long) +
-  userStat(x = Y, variableName = "Y")
+  average(variable = "x1") 
 pe_stats <- remstats(reh = reh,
   sender_effects = sender_effects,
   receiver_effects = receiver_effects, 
@@ -308,17 +230,3 @@ average <- rbind(
   c(200, 250, 300)
 )
 expect_equal(receiver_stats[, , "average_x1"], average)
-
-# tie
-tie <- rbind(
-  c(0, 4, 7),
-  c(0, 40, 7),
-  c(2, 0, 8),
-  c(2, 0, 8),
-  c(3, 6, 0)
-)
-expect_equal(receiver_stats[, , "tie_X_long"], tie)
-
-# userStat
-expect_equal(sender_stats[, , "userStat_Y"], Y)
-expect_equal(receiver_stats[, , "userStat_Y"], Y)

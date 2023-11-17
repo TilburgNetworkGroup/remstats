@@ -17,6 +17,10 @@ time point can be requested with 'std'.}
 separately for each event type (TRUE, default) or sum degrees across
 different event types (FALSE).}
 }
+\value{
+List with all information required by `remstats::remstats()` to 
+compute the statistic.
+}
 \description{
 Specifies the statistic for an `indegreeReceiver` effect in the tie-oriented
 model or the receiver choice step of the actor-oriented model.
@@ -49,6 +53,4 @@ remstats(reh = reh_actor, receiver_effects = effects)
 \code{\link{indegreeSender}}, \code{\link{outdegreeSender}},
 \code{\link{outdegreeReceiver}}, \code{\link{totaldegreeSender}}, or
 \code{\link{totaldegreeReceiver}} for other types of degree effects.
-
- @returns List with all information required by `remstats::remstats()` to compute the statistic.
 }
