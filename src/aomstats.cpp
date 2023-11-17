@@ -326,7 +326,7 @@ Rcpp::List getEventIndices(const arma::mat &edgelist,
 
         for (int i = 0; i < numEvents; ++i)
         {
-            eventIndices[i] = i;
+            eventIndices[i] = start + i;
         }
     }
     else
