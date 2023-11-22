@@ -50,7 +50,7 @@ prepare_tomstats <- function(
   # Origin
   if (attr(reh, "ordinal")) {
     if (length(attr(reh, "origin"))==0) {
-      attr(reh, "origin") <- edgelist[1,1] - 1
+      attr(reh, "origin") <- reh$edgelist[1,1] - 1
     }
   }
 

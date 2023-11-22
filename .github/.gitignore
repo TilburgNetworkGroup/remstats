@@ -1,0 +1,7 @@
+.Rhistory
+.RData
+.Rproj.user
+*.o
+*.so
+.vscode
+inst/doc
