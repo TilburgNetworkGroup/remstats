@@ -1,3 +1,9 @@
+# unreleased
+
+## Fixed 
+- Fixed [Issue [[#78](https://github.com/TilburgNetworkGroup/remstats/issues/78)]]: The attributes of the `remstats` object are now correctly set after executing `bind_remstats()`.
+- Resolved a bug where `remstats` failed to find the edgelist when `reh` is ordinal.
+
 # remstats 3.2.0
 **Date**: November 16th, 2023
 Compatible with `remify` version 3.2.0. 
