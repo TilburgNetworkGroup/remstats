@@ -291,6 +291,7 @@ arma::mat degree_sender(std::string type,
     return degree;
 }
 
+// [[Rcpp::export]]
 Rcpp::List getEventIndices(const arma::mat &edgelist,
                            int start, int stop,
                            std::string method,
@@ -488,6 +489,10 @@ arma::mat inertia_receiver(const arma::mat &edgelist,
             for (arma::uword j = 0; j < simultaneous_events.n_elem; ++j)
             {
                 int event = simultaneous_events(j);
+                if (event < start)
+                { // Correction
+                    continue;
+                }
                 int sender = edgelist(event, 1);
                 stat.row(event - start) = inertia.row(sender);
             }
@@ -666,6 +671,10 @@ arma::mat reciprocity_receiver(const arma::mat &edgelist,
             for (arma::uword j = 0; j < simultaneous_events.n_elem; ++j)
             {
                 int event = simultaneous_events(j);
+                if (event < start)
+                { // Correction
+                    continue;
+                }
                 int sender = edgelist(event, 1);
                 stat.row(event - start) = reciprocity.row(sender);
             }
@@ -1130,6 +1139,10 @@ arma::mat triad_receiver(std::string type,
             for (arma::uword j = 0; j < simultaneous_events.n_elem; ++j)
             {
                 int event = simultaneous_events(j);
+                if (event < start)
+                { // Correction
+                    continue;
+                }
                 int sender = edgelist(event, 1);
                 stat.row(event - start) = calculate_triad(type, sender, inertia);
             }
@@ -2288,7 +2301,7 @@ arma::cube compute_stats_sender(Rcpp::CharacterVector &effects,
     }
 
     // Get the eventIndices per timepoint based on the method
-    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method,  "sender");
+    Rcpp::List eventIndices = getEventIndices(edgelist, start, stop, method, "sender");
 
     // Initialize saving space
     arma::cube senderStats(eventIndices.size(), actors.n_elem, effects.size());
