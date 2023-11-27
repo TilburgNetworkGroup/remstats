@@ -14,6 +14,44 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// getEventIndices
+Rcpp::List getEventIndices(const arma::mat& edgelist, int start, int stop, std::string method, std::string model);
+static SEXP _remstats_getEventIndices_try(SEXP edgelistSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< std::string >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(getEventIndices(edgelist, start, stop, method, model));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _remstats_getEventIndices(SEXP edgelistSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP modelSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_remstats_getEventIndices_try(edgelistSEXP, startSEXP, stopSEXP, methodSEXP, modelSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // compute_stats_sender
 arma::cube compute_stats_sender(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, std::string method, bool display_progress);
 static SEXP _remstats_compute_stats_sender_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP actorsSEXP, SEXP weightsSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP display_progressSEXP) {
@@ -286,6 +324,7 @@ END_RCPP
 static int _remstats_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
+        signatures.insert("Rcpp::List(*getEventIndices)(const arma::mat&,int,int,std::string,std::string)");
         signatures.insert("arma::cube(*compute_stats_sender)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,std::string,bool)");
         signatures.insert("arma::cube(*compute_stats_receiver)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,std::string,bool)");
         signatures.insert("arma::mat(*get_riskset)(arma::uvec,arma::uvec,bool)");
@@ -298,6 +337,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
 
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _remstats_RcppExport_registerCCallable() { 
+    R_RegisterCCallable("remstats", "_remstats_getEventIndices", (DL_FUNC)_remstats_getEventIndices_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_sender", (DL_FUNC)_remstats_compute_stats_sender_try);
     R_RegisterCCallable("remstats", "_remstats_compute_stats_receiver", (DL_FUNC)_remstats_compute_stats_receiver_try);
     R_RegisterCCallable("remstats", "_remstats_get_riskset", (DL_FUNC)_remstats_get_riskset_try);
@@ -309,6 +349,7 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_remstats_getEventIndices", (DL_FUNC) &_remstats_getEventIndices, 5},
     {"_remstats_compute_stats_sender", (DL_FUNC) &_remstats_compute_stats_sender, 13},
     {"_remstats_compute_stats_receiver", (DL_FUNC) &_remstats_compute_stats_receiver, 13},
     {"_remstats_get_riskset", (DL_FUNC) &_remstats_get_riskset, 3},

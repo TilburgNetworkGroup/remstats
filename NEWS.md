@@ -3,6 +3,7 @@
 ## Fixed 
 - Fixed [Issue [[#78](https://github.com/TilburgNetworkGroup/remstats/issues/78)]]: The attributes of the `remstats` object are now correctly set after executing `bind_remstats()`.
 - Resolved a bug where `remstats` failed to find the edgelist when `reh` is ordinal.
+- Resolved a bug where `aomstats` failed when the computation method was `pe`, the memory method was `decay` and the first event at the `start` index was not the first event at that time. 
 
 # remstats 3.2.0
 **Date**: November 16th, 2023
