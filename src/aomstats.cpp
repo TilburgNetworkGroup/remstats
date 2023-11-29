@@ -7,12 +7,13 @@
 #include <progress_bar.hpp>
 #include <iostream>
 #include <map>
+#include <string>
 
 using namespace Rcpp;
 
 // Helper function to get the timepoints
 arma::vec get_timepoints_sender(const arma::mat &edgelist,
-                                std::string method)
+                                Rcpp::String method)
 {
     arma::vec time_points;
 
@@ -34,9 +35,9 @@ arma::vec get_timepoints_sender(const arma::mat &edgelist,
 arma::uvec event_indices_sender(const arma::mat &edgelist,
                                 const arma::vec &time_points,
                                 int start, int i,
-                                const std::string &memory,
+                                Rcpp::String memory,
                                 const arma::vec &memory_value,
-                                const std::string &method)
+                                Rcpp::String method)
 {
     // Declare event_indices variable
     arma::uvec event_indices;
@@ -156,11 +157,11 @@ arma::mat degree_sender(std::string type,
                         const arma::mat &edgelist,
                         const arma::vec &actors,
                         const arma::vec &weights,
-                        std::string memory,
+                        Rcpp::String memory,
                         arma::vec memory_value,
                         int start,
                         int stop,
-                        std::string method,
+                        Rcpp::String method,
                         bool display_progress)
 {
     // Progress update
@@ -291,10 +292,9 @@ arma::mat degree_sender(std::string type,
     return degree;
 }
 
-// [[Rcpp::export]]
 Rcpp::List getEventIndices(const arma::mat &edgelist,
                            int start, int stop,
-                           std::string method,
+                           Rcpp::String method,
                            std::string model)
 {
     Rcpp::List eventIndices;
@@ -342,10 +342,10 @@ arma::mat inertia_receiver(const arma::mat &edgelist,
                            const arma::vec &actors,
                            const arma::vec &weights,
                            int start, int stop,
-                           std::string memory,
+                           Rcpp::String memory,
                            arma::vec memory_value,
                            Rcpp::String scaling,
-                           std::string method,
+                           Rcpp::String method,
                            bool display_progress)
 {
     // Progress update
@@ -524,10 +524,10 @@ arma::mat reciprocity_receiver(const arma::mat &edgelist,
                                const arma::vec &actors,
                                const arma::vec &weights,
                                int start, int stop,
-                               std::string memory,
+                               Rcpp::String memory,
                                arma::vec memory_value,
                                Rcpp::String scaling,
-                               std::string method,
+                               Rcpp::String method,
                                bool display_progress)
 {
     // Progress update
@@ -707,9 +707,9 @@ arma::mat degree_receiver(std::string type,
                           const arma::vec &actors,
                           const arma::vec &weights,
                           int start, int stop,
-                          std::string memory,
+                          Rcpp::String memory,
                           arma::vec memory_value,
-                          std::string method,
+                          Rcpp::String method,
                           bool display_progress)
 {
     // Progress update
@@ -974,10 +974,10 @@ arma::mat triad_receiver(std::string type,
                          const arma::vec &actors,
                          const arma::vec &weights,
                          int start, int stop,
-                         std::string memory,
+                         Rcpp::String memory,
                          arma::vec memory_value,
                          Rcpp::String scaling,
-                         std::string method,
+                         Rcpp::String method,
                          bool display_progress)
 {
     // Progress update
@@ -1248,7 +1248,7 @@ arma::mat rrank_receiver(std::string type,
                          const arma::vec &actors,
                          int start,
                          int stop,
-                         std::string method,
+                         Rcpp::String method,
                          bool display_progress)
 {
     // Progress update
@@ -1348,7 +1348,7 @@ arma::mat recency_receiver(std::string type,
                            const arma::vec &actors,
                            int start,
                            int stop,
-                           std::string method,
+                           Rcpp::String method,
                            bool display_progress)
 {
     // Progress update
@@ -1518,9 +1518,9 @@ void get_pshift(arma::mat &pshift,
 
 arma::mat pshift_receiver(int type, const arma::mat &edgelist,
                           const arma::vec &actors,
-                          std::string memory, arma::vec memory_value,
+                          Rcpp::String memory, arma::vec memory_value,
                           int start, int stop,
-                          std::string method,
+                          Rcpp::String method,
                           bool display_progress)
 {
     // Progress update
@@ -1712,7 +1712,7 @@ arma::mat exoActor_sender(const arma::mat &covariates,
                           const arma::mat &edgelist,
                           const arma::vec &actors,
                           int start, int stop,
-                          std::string method,
+                          Rcpp::String method,
                           bool display_progress)
 {
     // Progress update
@@ -1873,7 +1873,7 @@ arma::mat exoDyad_receiver(std::string type,
 
 arma::mat userStat_sender(const arma::mat &covariates,
                           const arma::mat &edgelist,
-                          int start, int stop, std::string method,
+                          int start, int stop, Rcpp::String method,
                           bool display_progress)
 {
     // Progress update
@@ -2014,7 +2014,7 @@ arma::mat recency_sender(std::string type,
                          const arma::mat &edgelist,
                          const arma::vec &actors,
                          int start, int stop,
-                         std::string method,
+                         Rcpp::String method,
                          bool display_progress)
 {
     // Progress update
@@ -2086,9 +2086,9 @@ void get_pshift_sender(arma::mat &pshift,
 arma::mat pshift_sender(int type,
                         const arma::mat &edgelist,
                         const arma::vec &actors,
-                        std::string memory, arma::vec memory_value,
+                        Rcpp::String memory, arma::vec memory_value,
                         int start, int stop,
-                        std::string method,
+                        Rcpp::String method,
                         bool display_progress)
 {
     // Progress update
@@ -2201,7 +2201,7 @@ arma::mat pshift_sender(int type,
     return pshift;
 }
 
-int getSenderEffectNumber(std::string effect)
+int getSenderEffectNumber(Rcpp::String effect)
 {
 
     std::map<std::string, int> effectsMap;
@@ -2287,11 +2287,11 @@ arma::cube compute_stats_sender(Rcpp::CharacterVector &effects,
                                 const arma::vec &weights,
                                 const Rcpp::List &covariates,
                                 const Rcpp::List &interactions,
-                                std::string memory,
+                                Rcpp::String memory,
                                 const arma::vec memory_value,
                                 Rcpp::CharacterVector &scaling,
                                 int start, int stop,
-                                std::string method,
+                                Rcpp::String method,
                                 bool display_progress)
 {
     // Progress update
@@ -2412,7 +2412,7 @@ arma::cube compute_stats_sender(Rcpp::CharacterVector &effects,
     return senderStats;
 }
 
-int getReceiverEffectNumber(std::string effect)
+int getReceiverEffectNumber(Rcpp::String effect)
 {
 
     std::map<std::string, int> effectsMap;
@@ -2516,11 +2516,11 @@ arma::cube compute_stats_receiver(Rcpp::CharacterVector &effects,
                                   const arma::vec &weights,
                                   const Rcpp::List &covariates,
                                   const Rcpp::List &interactions,
-                                  std::string memory,
+                                  Rcpp::String memory,
                                   const arma::vec memory_value,
                                   Rcpp::CharacterVector &scaling,
                                   int start, int stop,
-                                  std::string method,
+                                  Rcpp::String method,
                                   bool display_progress)
 {
     // Progress update
@@ -2619,22 +2619,22 @@ arma::cube compute_stats_receiver(Rcpp::CharacterVector &effects,
 
         // 11 otp
         case 11:
-            receiverStats.slice(i) = triad_receiver("otp", edgelist, actors, weights, start, stop, memory, memory_value, scaling[i], method, display_progress);
+            receiverStats.slice(i) = triad_receiver("otp", edgelist, actors, weights, start, stop, memory, memory_value, scaling(i), method, display_progress);
             break;
 
         // 12 itp
         case 12:
-            receiverStats.slice(i) = triad_receiver("itp", edgelist, actors, weights, start, stop, memory, memory_value, scaling[i], method, display_progress);
+            receiverStats.slice(i) = triad_receiver("itp", edgelist, actors, weights, start, stop, memory, memory_value, scaling(i), method, display_progress);
             break;
 
         // 13 osp
         case 13:
-            receiverStats.slice(i) = triad_receiver("osp", edgelist, actors, weights, start, stop, memory, memory_value, scaling[i], method, display_progress);
+            receiverStats.slice(i) = triad_receiver("osp", edgelist, actors, weights, start, stop, memory, memory_value, scaling(i), method, display_progress);
             break;
 
         // 14 isp
         case 14:
-            receiverStats.slice(i) = triad_receiver("isp", edgelist, actors, weights, start, stop, memory, memory_value, scaling[i], method, display_progress);
+            receiverStats.slice(i) = triad_receiver("isp", edgelist, actors, weights, start, stop, memory, memory_value, scaling(i), method, display_progress);
             break;
 
         // 15 rrankSend

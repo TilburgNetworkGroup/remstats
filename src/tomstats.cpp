@@ -5,6 +5,7 @@
 #include <progress_bar.hpp>
 #include <iostream>
 #include <map>
+#include <string>
 
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::interfaces(r, cpp)]]
@@ -134,9 +135,9 @@ Note: This function assumes that when memory is set to 'full,' the current inert
 arma::uvec inertia_event_indices(const arma::mat &edgelist,
                                  const arma::vec &time_points,
                                  int start, int i,
-                                 const std::string &memory,
+                                 Rcpp::String memory,
                                  const arma::vec &memory_value,
-                                 const std::string &method)
+                                 Rcpp::String method)
 {
   // Declare event_indices variable
   arma::uvec event_indices;
@@ -2353,7 +2354,7 @@ arma::mat calculate_FEtype(const arma::mat &covariates,
   return (stat);
 }
 
-int getEffectNumber(std::string effect)
+int getEffectNumber(Rcpp::String effect)
 {
 
   std::map<std::string, int> effectsMap;
