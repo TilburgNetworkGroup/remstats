@@ -292,7 +292,6 @@ arma::mat degree_sender(std::string type,
     return degree;
 }
 
-// [[Rcpp::export]]
 Rcpp::List getEventIndices(const arma::mat &edgelist,
                            int start, int stop,
                            Rcpp::String method,

@@ -1,4 +1,5 @@
-# unreleased
+# remstats 3.2.1
+**Date**: November 29th, 2023
 
 ## Fixed 
 - Fixed [Issue [[#78](https://github.com/TilburgNetworkGroup/remstats/issues/78)]]: The attributes of the `remstats` object are now correctly set after executing `bind_remstats()`.

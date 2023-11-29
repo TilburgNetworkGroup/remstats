@@ -25,27 +25,6 @@ namespace remstats {
         }
     }
 
-    inline Rcpp::List getEventIndices(const arma::mat& edgelist, int start, int stop, Rcpp::String method, std::string model) {
-        typedef SEXP(*Ptr_getEventIndices)(SEXP,SEXP,SEXP,SEXP,SEXP);
-        static Ptr_getEventIndices p_getEventIndices = NULL;
-        if (p_getEventIndices == NULL) {
-            validateSignature("Rcpp::List(*getEventIndices)(const arma::mat&,int,int,Rcpp::String,std::string)");
-            p_getEventIndices = (Ptr_getEventIndices)R_GetCCallable("remstats", "_remstats_getEventIndices");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_getEventIndices(Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(method)), Shield<SEXP>(Rcpp::wrap(model)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<Rcpp::List >(rcpp_result_gen);
-    }
-
     inline arma::cube compute_stats_sender(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, Rcpp::String method, bool display_progress) {
         typedef SEXP(*Ptr_compute_stats_sender)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_sender p_compute_stats_sender = NULL;
