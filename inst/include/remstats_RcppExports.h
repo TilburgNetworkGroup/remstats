@@ -25,11 +25,11 @@ namespace remstats {
         }
     }
 
-    inline Rcpp::List getEventIndices(const arma::mat& edgelist, int start, int stop, std::string method, std::string model) {
+    inline Rcpp::List getEventIndices(const arma::mat& edgelist, int start, int stop, Rcpp::String method, std::string model) {
         typedef SEXP(*Ptr_getEventIndices)(SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_getEventIndices p_getEventIndices = NULL;
         if (p_getEventIndices == NULL) {
-            validateSignature("Rcpp::List(*getEventIndices)(const arma::mat&,int,int,std::string,std::string)");
+            validateSignature("Rcpp::List(*getEventIndices)(const arma::mat&,int,int,Rcpp::String,std::string)");
             p_getEventIndices = (Ptr_getEventIndices)R_GetCCallable("remstats", "_remstats_getEventIndices");
         }
         RObject rcpp_result_gen;
@@ -46,11 +46,11 @@ namespace remstats {
         return Rcpp::as<Rcpp::List >(rcpp_result_gen);
     }
 
-    inline arma::cube compute_stats_sender(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, std::string method, bool display_progress) {
+    inline arma::cube compute_stats_sender(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, Rcpp::String method, bool display_progress) {
         typedef SEXP(*Ptr_compute_stats_sender)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_sender p_compute_stats_sender = NULL;
         if (p_compute_stats_sender == NULL) {
-            validateSignature("arma::cube(*compute_stats_sender)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,std::string,bool)");
+            validateSignature("arma::cube(*compute_stats_sender)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,Rcpp::String,const arma::vec,Rcpp::CharacterVector&,int,int,Rcpp::String,bool)");
             p_compute_stats_sender = (Ptr_compute_stats_sender)R_GetCCallable("remstats", "_remstats_compute_stats_sender");
         }
         RObject rcpp_result_gen;
@@ -67,11 +67,11 @@ namespace remstats {
         return Rcpp::as<arma::cube >(rcpp_result_gen);
     }
 
-    inline arma::cube compute_stats_receiver(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, std::string memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, std::string method, bool display_progress) {
+    inline arma::cube compute_stats_receiver(Rcpp::CharacterVector& effects, const arma::mat& edgelist, const arma::vec& actors, const arma::vec& weights, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec memory_value, Rcpp::CharacterVector& scaling, int start, int stop, Rcpp::String method, bool display_progress) {
         typedef SEXP(*Ptr_compute_stats_receiver)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_receiver p_compute_stats_receiver = NULL;
         if (p_compute_stats_receiver == NULL) {
-            validateSignature("arma::cube(*compute_stats_receiver)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,std::string,const arma::vec,Rcpp::CharacterVector&,int,int,std::string,bool)");
+            validateSignature("arma::cube(*compute_stats_receiver)(Rcpp::CharacterVector&,const arma::mat&,const arma::vec&,const arma::vec&,const Rcpp::List&,const Rcpp::List&,Rcpp::String,const arma::vec,Rcpp::CharacterVector&,int,int,Rcpp::String,bool)");
             p_compute_stats_receiver = (Ptr_compute_stats_receiver)R_GetCCallable("remstats", "_remstats_compute_stats_receiver");
         }
         RObject rcpp_result_gen;
