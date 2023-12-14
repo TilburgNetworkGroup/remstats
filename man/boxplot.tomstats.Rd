@@ -61,10 +61,10 @@ reh <- remify::remify(edgelist = history[,1:3], model = "tie")
 # Compute effects
 stats <- remstats(reh, tie_effects = ~ inertia())
 # Plot the 'inertia' distribution for 20 timepoints
-boxplot.tomstats(stats, effect = "inertia")
+boxplot(stats, effect = "inertia")
 # Plot the 'inertia' distribution for 20 dyads
-boxplot.tomstats(stats, effect = "inertia", by = "dyads")
+boxplot(stats, effect = "inertia", by = "dyads")
 # Plot the 'inertia' distribution for dyads 2:5
-boxplot.tomstats(stats, effect = "inertia", by = "dyads", subset = 2:5)
+boxplot(stats, effect = "inertia", by = "dyads", subset = 2:5)
 
 }
