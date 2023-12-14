@@ -82,4 +82,5 @@
     ],
     "r.rpath.windows": "C:\\Program Files\\R\\R-4.3.1\\bin\\r.exe",
     "r.alwaysUseActiveTerminal": true
+    "r.lsp.diagnostics": false
 }
