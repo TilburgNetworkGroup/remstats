@@ -16,6 +16,7 @@
 #' remstatsObject <- remstats::remstats(reh = rehObject, receiver_effects = ~ inertia())
 #' print(remstatsObject)
 #'
+#' @method print remstats
 #' @export
 print.remstats <- function(x, ...) {
   if (!any(class(x) == "remstats")) {
@@ -132,8 +133,8 @@ print.remstats <- function(x, ...) {
 #' remstatsObject <- remstats::remstats(reh = rehObject, receiver_effects = ~ inertia())
 #' summary(remstatsObject)
 #'
+#' @method summary remstats
 #' @export
-
 summary.remstats <- function(object, ...) {
   if (!any(class(object) == "remstats")) {
     stop("Expected object of class 'remstats'")

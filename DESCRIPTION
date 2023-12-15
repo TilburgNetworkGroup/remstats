@@ -58,10 +58,11 @@ Depends:
     R (>= 4.0.0) 
 Imports: 
     Rcpp (>= 1.0.8.3),
-    stats
+    stats,
+    graphics,
+    grDevices
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 Suggests: 
-    graphics,
     tinytest,
     remify (>= 3.2.0),
     knitr,

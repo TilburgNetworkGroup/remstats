@@ -55,6 +55,11 @@
 #' 
 #' @method boxplot tomstats
 #' @export
+#' @importFrom graphics bxp
+#' @importFrom graphics boxplot
+#' @importFrom graphics axis
+#' @importFrom stats IQR
+#' @importFrom stats quantile
 boxplot.tomstats <- function(x, effect, by = "timepoints", subset = NULL, outliers = TRUE, ...) {
     # Check if 'x' is a 'tomstats' object
     if (!("tomstats" %in% class(x))) {
@@ -95,8 +100,8 @@ boxplot.tomstats <- function(x, effect, by = "timepoints", subset = NULL, outlie
     # Calculate summary statistics
     my_summary <- function(x) {
         summary_stats <- quantile(x, prob = c(.25, .5, .75))
-        lower <- max(min(x), summary_stats[1] - 1.5 * IQR(x))
-        upper <- min(max(x), summary_stats[3] + 1.5 * IQR(x))
+        lower <- max(min(x), summary_stats[1] - 1.5 * stats::IQR(x))
+        upper <- min(max(x), summary_stats[3] + 1.5 * stats::IQR(x))
         summary_stats <- c(lower, summary_stats, upper)
         names(summary_stats)[c(1, 5)] <- c("lower", "upper")
         return(summary_stats)
@@ -139,12 +144,12 @@ boxplot.tomstats <- function(x, effect, by = "timepoints", subset = NULL, outlie
     capitalize <- function(x) {
         paste(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x)), sep = "")
     }
-    bxp(data,
+    graphics::bxp(data,
         main = capitalize(effect_name),
         xlab = capitalize(by), xaxt = "n",
         ylab = "Value", ...
     )
-    axis(1, at = seq_along(subset), labels = subset)
+    graphics::axis(1, at = seq_along(subset), labels = subset)
 }
 
 #' Plotting Relational Event Network Statistics
@@ -204,6 +209,11 @@ boxplot.tomstats <- function(x, effect, by = "timepoints", subset = NULL, outlie
 #' 
 #' @method boxplot aomstats
 #' @export
+#' @importFrom graphics bxp
+#' @importFrom graphics boxplot
+#' @importFrom graphics axis
+#' @importFrom stats IQR
+#' @importFrom stats quantile
 boxplot.aomstats <- function(x, effect, model, by = "timepoints", subset = NULL, outliers = TRUE, ...) {
     # Check if 'x' is a 'tomstats' object
     if (!("aomstats" %in% class(x))) {
@@ -269,9 +279,9 @@ boxplot.aomstats <- function(x, effect, model, by = "timepoints", subset = NULL,
 
     # Calculate summary statistics
     my_summary <- function(x) {
-        summary_stats <- quantile(x, prob = c(.25, .5, .75))
-        lower <- max(min(x), summary_stats[1] - 1.5 * IQR(x))
-        upper <- min(max(x), summary_stats[3] + 1.5 * IQR(x))
+        summary_stats <- stats::quantile(x, prob = c(.25, .5, .75))
+        lower <- max(min(x), summary_stats[1] - 1.5 * stats::IQR(x))
+        upper <- min(max(x), summary_stats[3] + 1.5 * stats::IQR(x))
         summary_stats <- c(lower, summary_stats, upper)
         names(summary_stats)[c(1, 5)] <- c("lower", "upper")
         return(summary_stats)
@@ -314,12 +324,12 @@ boxplot.aomstats <- function(x, effect, model, by = "timepoints", subset = NULL,
     capitalize <- function(x) {
         paste(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x)), sep = "")
     }
-    bxp(data,
+    graphics::bxp(data,
         main = capitalize(effect_name),
         xlab = capitalize(by), xaxt = "n",
         ylab = "Value", ...
     )
-    axis(1, at = seq_along(subset), labels = subset)
+    graphics::axis(1, at = seq_along(subset), labels = subset)
 }
 
 #' Plotting Relational Event Network Statistics Trajectories
@@ -361,6 +371,10 @@ boxplot.aomstats <- function(x, effect, model, by = "timepoints", subset = NULL,
 #' 
 #' @method plot aomstats
 #' @export
+#' @importFrom graphics lines
+#' @importFrom graphics legend
+#' @importFrom grDevices rainbow
+#' @importFrom stats quantile
 plot.aomstats <- function(x, effect, subset = NULL, ...) {
     # Check if 'x' is a 'aomstats' object
     if (!("aomstats" %in% class(x))) {
@@ -390,7 +404,7 @@ plot.aomstats <- function(x, effect, subset = NULL, ...) {
     if (is.null(subset)) {
         lastrow <- stat[nrow(stat),]
         ids <- rank(lastrow, ties.method = "random")
-        subset <- which(ids %in% round(quantile(ids[lastrow > 0], c(0, .25, .5, .75, 1))))
+        subset <- which(ids %in% round(stats::quantile(ids[lastrow > 0], c(0, .25, .5, .75, 1))))
         subset <- unique(subset)
     }
 
@@ -409,12 +423,12 @@ plot.aomstats <- function(x, effect, subset = NULL, ...) {
     if (ncol(stat) > 1) {
         # Plot the rest
         sapply(2:length(subset), function(i) {
-            lines(stat[, i], col = rainbow(n = length(subset))[i], lwd = 1.5)
+            graphics::lines(stat[, i], col = rainbow(n = length(subset))[i], lwd = 1.5)
         })
     }
 
     # Add legend
-    legend("topleft", legend = subset, col = rainbow(length(subset)), lty = 1, title = "Actors")
+    graphics::legend("topleft", legend = subset, col = rainbow(length(subset)), lty = 1, title = "Actors")
 }
 
 #' Plotting Relational Event Network Statistics Trajectories
@@ -456,6 +470,10 @@ plot.aomstats <- function(x, effect, subset = NULL, ...) {
 #' 
 #' @method plot tomstats
 #' @export
+#' @importFrom graphics lines
+#' @importFrom graphics legend
+#' @importFrom grDevices rainbow
+#' @importFrom stats quantile
 plot.tomstats <- function(x, effect, subset = NULL, ...) {
     # Check if 'x' is a 'tomstats' object
     if (!("tomstats" %in% class(x))) {
@@ -485,7 +503,7 @@ plot.tomstats <- function(x, effect, subset = NULL, ...) {
     if (is.null(subset)) {
         lastrow <- stat[nrow(stat),]
         ids <- rank(lastrow, ties.method = "random")
-        subset <- which(ids %in% round(quantile(ids[lastrow > 0], c(0, .25, .5, .75, 1))))
+        subset <- which(ids %in% round(stats::quantile(ids[lastrow > 0], c(0, .25, .5, .75, 1))))
         subset <- unique(subset)
     }
 
@@ -504,13 +522,13 @@ plot.tomstats <- function(x, effect, subset = NULL, ...) {
     if (ncol(stat) > 1) {
         # Plot the rest
         sapply(2:length(subset), function(i) {
-            lines(stat[, i], col = rainbow(n = length(subset))[i], lwd = 1.5)
+            graphics::lines(stat[, i], col = rainbow(n = length(subset))[i], lwd = 1.5)
         })
     }
 
     # Add legend
-    dyads <- attr(stats, "riskset")[subset,]
+    dyads <- attr(x, "riskset")[subset,]
     #labels <- paste0(dyads$id, " (", dyads[,1], ", ", dyads[,2], ")")
     labels <- dyads$id
-    legend("topleft", legend = labels, col = rainbow(length(subset)), lty = 1, title = "Dyads")
+    graphics::legend("topleft", legend = labels, col = rainbow(length(subset)), lty = 1, title = "Dyads")
 }
