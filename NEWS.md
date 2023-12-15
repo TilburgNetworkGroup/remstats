@@ -2,6 +2,7 @@
 
 ## Added
 - [Issue [[#56](https://github.com/TilburgNetworkGroup/remstats/issues/56)]] - The ability to generate exploratory `plot()` and `boxplot()` for `remstats` objects. These functions were designed to work with large remstats objects by taking a subset of timepoints, dyads or actors (depending on the type of plot). The user can determine the subset to be taken. Setting the subset to the whole sequence is not recommended for large remstats objects.
+- Added warning when `consider_type` is specified but event types are not in the DV.
 
 ## Fixed
 - Resolved conversion errors occurring when using single-letter logical values (i.e., 'T' for TRUE or 'F' for FALSE).

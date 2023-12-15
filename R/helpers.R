@@ -181,6 +181,11 @@ prepare_tomstats <- function(
   })
   consider_type <- append(consider_type, rep(TRUE, length(effects_int)), length(consider_type))
 
+  # Check consider_type info
+  if (nrow(types) == 1 & any(!consider_type)) {
+    warning("'consider_type' is FALSE is not supported with only one event type in the risk set: setting to TRUE.")
+  }
+
   # Check correct scaling inertia statistic
   if (!attr(reh, "directed")) {
     if (any(sapply(effects, function(x) x$effect == "inertia"))) {
