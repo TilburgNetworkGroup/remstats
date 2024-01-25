@@ -130,6 +130,48 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
+    inline arma::mat calculate_degree_actor(int type, const arma::mat& inertia, const arma::mat& risksetMatrix, bool consider_type, bool display_progress) {
+        typedef SEXP(*Ptr_calculate_degree_actor)(SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_calculate_degree_actor p_calculate_degree_actor = NULL;
+        if (p_calculate_degree_actor == NULL) {
+            validateSignature("arma::mat(*calculate_degree_actor)(int,const arma::mat&,const arma::mat&,bool,bool)");
+            p_calculate_degree_actor = (Ptr_calculate_degree_actor)R_GetCCallable("remstats", "_remstats_calculate_degree_actor");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_calculate_degree_actor(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(inertia)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::mat calculate_reciprocity(const arma::mat& inertia, const arma::mat& risksetMatrix, bool consider_type, bool display_progress) {
+        typedef SEXP(*Ptr_calculate_reciprocity)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr_calculate_reciprocity p_calculate_reciprocity = NULL;
+        if (p_calculate_reciprocity == NULL) {
+            validateSignature("arma::mat(*calculate_reciprocity)(const arma::mat&,const arma::mat&,bool,bool)");
+            p_calculate_reciprocity = (Ptr_calculate_reciprocity)R_GetCCallable("remstats", "_remstats_calculate_reciprocity");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_calculate_reciprocity(Shield<SEXP>(Rcpp::wrap(inertia)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
     inline arma::cube compute_stats_tie(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_compute_stats_tie)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_compute_stats_tie p_compute_stats_tie = NULL;
@@ -141,6 +183,216 @@ namespace remstats {
         {
             RNGScope RCPP_rngScope_gen;
             rcpp_result_gen = p_compute_stats_tie(Shield<SEXP>(Rcpp::wrap(effects)), Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(inertia)), Shield<SEXP>(Rcpp::wrap(covariates)), Shield<SEXP>(Rcpp::wrap(interactions)), Shield<SEXP>(Rcpp::wrap(memory)), Shield<SEXP>(Rcpp::wrap(memory_value)), Shield<SEXP>(Rcpp::wrap(scaling)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(directed)), Shield<SEXP>(Rcpp::wrap(display_progress)), Shield<SEXP>(Rcpp::wrap(method)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::cube >(rcpp_result_gen);
+    }
+
+    inline arma::vec actor_is_sender(int actor, int event_type, const arma::mat& risksetMatrix, bool consider_type) {
+        typedef SEXP(*Ptr_actor_is_sender)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr_actor_is_sender p_actor_is_sender = NULL;
+        if (p_actor_is_sender == NULL) {
+            validateSignature("arma::vec(*actor_is_sender)(int,int,const arma::mat&,bool)");
+            p_actor_is_sender = (Ptr_actor_is_sender)R_GetCCallable("remstats", "_remstats_actor_is_sender");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_actor_is_sender(Shield<SEXP>(Rcpp::wrap(actor)), Shield<SEXP>(Rcpp::wrap(event_type)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(consider_type)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::vec >(rcpp_result_gen);
+    }
+
+    inline arma::vec actor_is_receiver(int actor, int event_type, const arma::mat& risksetMatrix, bool consider_type) {
+        typedef SEXP(*Ptr_actor_is_receiver)(SEXP,SEXP,SEXP,SEXP);
+        static Ptr_actor_is_receiver p_actor_is_receiver = NULL;
+        if (p_actor_is_receiver == NULL) {
+            validateSignature("arma::vec(*actor_is_receiver)(int,int,const arma::mat&,bool)");
+            p_actor_is_receiver = (Ptr_actor_is_receiver)R_GetCCallable("remstats", "_remstats_actor_is_receiver");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_actor_is_receiver(Shield<SEXP>(Rcpp::wrap(actor)), Shield<SEXP>(Rcpp::wrap(event_type)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(consider_type)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::vec >(rcpp_result_gen);
+    }
+
+    inline arma::mat degree_sample_stat(int type, const arma::mat& inertia, const arma::mat& caseControls, const arma::mat& risksetMatrix, const arma::mat& riskset, bool consider_type, bool display_progress) {
+        typedef SEXP(*Ptr_degree_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_degree_sample_stat p_degree_sample_stat = NULL;
+        if (p_degree_sample_stat == NULL) {
+            validateSignature("arma::mat(*degree_sample_stat)(int,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,bool,bool)");
+            p_degree_sample_stat = (Ptr_degree_sample_stat)R_GetCCallable("remstats", "_remstats_degree_sample_stat");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_degree_sample_stat(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(inertia)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::mat inertia_sample_stat(const arma::mat& inertia, const arma::mat& caseControls, const arma::mat& riskset, const arma::mat& risksetMatrix, bool consider_type, bool display_progress) {
+        typedef SEXP(*Ptr_inertia_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_inertia_sample_stat p_inertia_sample_stat = NULL;
+        if (p_inertia_sample_stat == NULL) {
+            validateSignature("arma::mat(*inertia_sample_stat)(const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,bool,bool)");
+            p_inertia_sample_stat = (Ptr_inertia_sample_stat)R_GetCCallable("remstats", "_remstats_inertia_sample_stat");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_inertia_sample_stat(Shield<SEXP>(Rcpp::wrap(inertia)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::mat reciprocity_sample_stat(const arma::mat& inertia, const arma::mat& caseControls, const arma::mat& riskset, const arma::mat& risksetMatrix, bool consider_type, bool display_progress) {
+        typedef SEXP(*Ptr_reciprocity_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_reciprocity_sample_stat p_reciprocity_sample_stat = NULL;
+        if (p_reciprocity_sample_stat == NULL) {
+            validateSignature("arma::mat(*reciprocity_sample_stat)(const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,bool,bool)");
+            p_reciprocity_sample_stat = (Ptr_reciprocity_sample_stat)R_GetCCallable("remstats", "_remstats_reciprocity_sample_stat");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_reciprocity_sample_stat(Shield<SEXP>(Rcpp::wrap(inertia)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline bool creates_pshift(std::string type, int event, int actorA, int actorB, int prev_event_type, arma::mat riskset, bool consider_type) {
+        typedef SEXP(*Ptr_creates_pshift)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_creates_pshift p_creates_pshift = NULL;
+        if (p_creates_pshift == NULL) {
+            validateSignature("bool(*creates_pshift)(std::string,int,int,int,int,arma::mat,bool)");
+            p_creates_pshift = (Ptr_creates_pshift)R_GetCCallable("remstats", "_remstats_creates_pshift");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_creates_pshift(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(event)), Shield<SEXP>(Rcpp::wrap(actorA)), Shield<SEXP>(Rcpp::wrap(actorB)), Shield<SEXP>(Rcpp::wrap(prev_event_type)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(consider_type)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<bool >(rcpp_result_gen);
+    }
+
+    inline arma::mat pshift_sample_stat(std::string type, const arma::mat& caseControls, Rcpp::List events, const arma::mat& riskset, const arma::mat& risksetMatrix, bool consider_type, bool display_progress) {
+        typedef SEXP(*Ptr_pshift_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_pshift_sample_stat p_pshift_sample_stat = NULL;
+        if (p_pshift_sample_stat == NULL) {
+            validateSignature("arma::mat(*pshift_sample_stat)(std::string,const arma::mat&,Rcpp::List,const arma::mat&,const arma::mat&,bool,bool)");
+            p_pshift_sample_stat = (Ptr_pshift_sample_stat)R_GetCCallable("remstats", "_remstats_pshift_sample_stat");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_pshift_sample_stat(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(events)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::mat recency_sample_stat(std::string type, const arma::mat& edgelist, const arma::mat& risksetMatrix, const arma::mat& caseControls, int start, int stop, bool consider_type, Rcpp::String method, bool display_progress) {
+        typedef SEXP(*Ptr_recency_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_recency_sample_stat p_recency_sample_stat = NULL;
+        if (p_recency_sample_stat == NULL) {
+            validateSignature("arma::mat(*recency_sample_stat)(std::string,const arma::mat&,const arma::mat&,const arma::mat&,int,int,bool,Rcpp::String,bool)");
+            p_recency_sample_stat = (Ptr_recency_sample_stat)R_GetCCallable("remstats", "_remstats_recency_sample_stat");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_recency_sample_stat(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(method)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::mat rrank_sample_stat(int type, const arma::mat& edgelist, const arma::mat& caseControls, const arma::mat& riskset, int N, int C, int start, int stop, bool consider_type, Rcpp::String method, bool display_progress) {
+        typedef SEXP(*Ptr_rrank_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_rrank_sample_stat p_rrank_sample_stat = NULL;
+        if (p_rrank_sample_stat == NULL) {
+            validateSignature("arma::mat(*rrank_sample_stat)(int,const arma::mat&,const arma::mat&,const arma::mat&,int,int,int,int,bool,Rcpp::String,bool)");
+            p_rrank_sample_stat = (Ptr_rrank_sample_stat)R_GetCCallable("remstats", "_remstats_rrank_sample_stat");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_rrank_sample_stat(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(N)), Shield<SEXP>(Rcpp::wrap(C)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(method)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline arma::cube sample_stats(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& caseControls, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, const Rcpp::List& events, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method) {
+        typedef SEXP(*Ptr_sample_stats)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_sample_stats p_sample_stats = NULL;
+        if (p_sample_stats == NULL) {
+            validateSignature("arma::cube(*sample_stats)(Rcpp::CharacterVector,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const Rcpp::List&,const Rcpp::List&,const Rcpp::List&,Rcpp::String,const arma::vec&,Rcpp::CharacterVector&,Rcpp::LogicalVector&,int,int,bool,bool,Rcpp::String)");
+            p_sample_stats = (Ptr_sample_stats)R_GetCCallable("remstats", "_remstats_sample_stats");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_sample_stats(Shield<SEXP>(Rcpp::wrap(effects)), Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(inertia)), Shield<SEXP>(Rcpp::wrap(covariates)), Shield<SEXP>(Rcpp::wrap(interactions)), Shield<SEXP>(Rcpp::wrap(events)), Shield<SEXP>(Rcpp::wrap(memory)), Shield<SEXP>(Rcpp::wrap(memory_value)), Shield<SEXP>(Rcpp::wrap(scaling)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(directed)), Shield<SEXP>(Rcpp::wrap(display_progress)), Shield<SEXP>(Rcpp::wrap(method)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

@@ -420,6 +420,7 @@ arma::mat transform_inertia(const arma::mat &inertia,
   return new_inertia;
 }
 
+// [[Rcpp::export]]
 arma::mat calculate_degree_actor(int type, const arma::mat &inertia,
                                  const arma::mat &risksetMatrix,
                                  bool consider_type,
@@ -676,6 +677,7 @@ arma::mat calculate_degree_dyad(int type, const arma::mat &inertia,
   }
 }
 
+// [[Rcpp::export]]
 arma::mat calculate_reciprocity(const arma::mat &inertia,
                                 const arma::mat &risksetMatrix,
                                 bool consider_type,
@@ -1504,7 +1506,7 @@ arma::mat calculate_recency(std::string type, const arma::mat &edgelist,
     arma::vec fr = 1 / ((current_time - lastActive) + 1);
     recency.row(m) = fr.t();
 
-    // Get the indices of the events with which lastActive needs to be updated
+    // Get the indices of the events for which lastActive needs to be updated
     if (method == "pt")
     {
       // With all events at the current time
@@ -1684,13 +1686,13 @@ arma::mat calculate_rrank(int type, const arma::mat &edgelist,
   }
   time_points = time_points.subvec(start, stop);
 
-  // Initialize recency matrix
+  // Initialize rrank matrix
   arma::mat rrank(time_points.n_elem, riskset.n_rows, arma::fill::zeros);
 
   // Progress bar
   Progress p(time_points.n_elem, display_progress);
 
-  // Select the events in the past to initialize 'lastActive'
+  // Select the events in the past to initialize 'lastTime'
   double first_time = edgelist(start, 0);
   arma::uvec event_indices = arma::find(edgelist.col(0) < first_time);
 

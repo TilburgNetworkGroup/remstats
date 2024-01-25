@@ -1,17 +1,11 @@
-#' tomstats
+#' tomstats_sample
 #'
-#' Computes statistics for modeling relational event history data
-#' with the tie-oriented relational event model.
+#' Computes statistics for modeling relational event history data with
+#' the tie-oriented relational event model while sampling from the risk set.
 #'
-#' @param effects an object of class \code{"\link[stats]{formula}"} (or one
-#' that can be coerced to that class): a symbolic description of the effects in
-#' the model for which statistics are computed, see 'Details' for the available
-#' effects and their corresponding statistics
-#' @param adjmat optionally, a previously computed adjacency matrix with on the
-#' rows the time points and on the columns the risk set entries
-#' @param get_adjmat whether the adjmat computed by tomstats should be
-#' outputted as an attribute of the statistics.
-#' @inheritParams remstats
+#' @param controls value between 0 and 1 representing the number of controls
+#' sampled per observed event.
+#' @inheritParams tomstats
 #'
 #' @section Effects:
 #' The statistics to be computed are defined symbolically and should be
@@ -55,7 +49,16 @@
 #' way, see \code{\link{tie}} and \code{\link{event}}.
 #'
 #' @section attr_dyads:
-#' For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
+#' For the computation of the \emph{dyad exogenous} statistics with \code{tie()},
+#' an attributes object with the exogenous covariates information per dyad has to
+#' be supplied. This is a \code{data.frame} or \code{matrix} containing attribute
+#' information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first
+#' two columns should represent "actor1" and "actor2" (for directed events,
+#' "actor1" corresponds to the sender, and "actor2" corresponds to the receiver).
+#' Additional columns can represent dyads' exogenous attributes. If attributes
+#' vary over time, include a column named "time". If \code{attr_dyads} is a
+#' \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells
+#' contain dyads' exogenous attributes.
 #'
 #' @section Memory:
 #' The default `memory` setting is `"full"`, which implies that at each time
@@ -134,13 +137,13 @@
 #' \doi{10.1111/j.1467-9531.2008.00203.x}
 #'
 #' @export
-tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
-                     method = c("pt", "pe"), seed = NULL,
-                     memory = c("full", "window", "decay", "interval"),
-                     memory_value = NA, start = 1, stop = Inf,
-                     display_progress = FALSE,
-                     adjmat = NULL, get_adjmat = FALSE,
-                     attr_data, attributes, edgelist) {
+tomstats_sample <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
+                            method = c("pt", "pe"), controls = 1,
+                            memory = c("full", "window", "decay", "interval"),
+                            memory_value = NA, start = 1, stop = Inf,
+                            display_progress = FALSE,
+                            adjmat = NULL, get_adjmat = FALSE,
+                            attr_data, attributes, edgelist) {
   # Check if the deprecated argument "attributes" is used
   if (!missing(attributes)) {
     warning("Deprecated argument: Use 'attr_actors' instead of 'attributes'")
@@ -204,11 +207,26 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
     }
   }
 
+  # Perform case-control sampling
+  if (controls < 0 | controls > 1) {
+    stop("'controls' should be between 0 and 1")
+  }
+
+  caseControls <- sampleDyads(controls, riskset, reh) # To do: deal with start & stop arguments!
+
+  # Events list (for participation shifts) !! uses R indexing !!
+  if (attr(reh, "riskset") == "active") {
+    events <- attr(reh, "dyadIDactive")
+  } else {
+    events <- attr(reh, "dyadID")
+  }
+  events <- c(0, events) # To do: deal with start & stop arguments!
+
   # Compute statistics
-  statistics <- compute_stats_tie(
-    effectNames, edgelist, riskset,
-    risksetMatrix, inertia, covar, interactions, memory, memory_value, scaling,
-    consider_type, start, stop, attr(reh, "directed"), display_progress, method
+  statistics <- sample_stats(
+    effectNames, edgelist, caseControls, riskset, risksetMatrix, inertia, covar, interactions,
+    events, memory, memory_value, scaling, consider_type, start, stop, attr(reh, "directed"),
+    display_progress, method
   )
 
   # Add variable names to the statistics dimnames
@@ -221,10 +239,11 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   riskset <- modify_riskset(riskset, reh, actors, types)
 
   # Format output
-  class(statistics) <- c("tomstats", "remstats")
+  class(statistics) <- c("tomstats", "remstats") # to do: change class?
   attr(statistics, "model") <- "tie"
   attr(statistics, "formula") <- form
   attr(statistics, "riskset") <- riskset
+  attr(statistics, "caseControls") <- caseControls + 1 # transform to R indexing
   attr(statistics, "subset") <- data.frame(start = start + 1, stop = stop + 1)
   attr(statistics, "method") <- method
   if (get_adjmat) {

@@ -21,8 +21,56 @@ calculate_inertia <- function(edgelist, weights, risksetMatrix, memory, memory_v
     .Call(`_remstats_calculate_inertia`, edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method)
 }
 
+calculate_degree_actor <- function(type, inertia, risksetMatrix, consider_type, display_progress) {
+    .Call(`_remstats_calculate_degree_actor`, type, inertia, risksetMatrix, consider_type, display_progress)
+}
+
+calculate_reciprocity <- function(inertia, risksetMatrix, consider_type, display_progress) {
+    .Call(`_remstats_calculate_reciprocity`, inertia, risksetMatrix, consider_type, display_progress)
+}
+
 compute_stats_tie <- function(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method) {
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method)
+}
+
+actor_is_sender <- function(actor, event_type, risksetMatrix, consider_type) {
+    .Call(`_remstats_actor_is_sender`, actor, event_type, risksetMatrix, consider_type)
+}
+
+actor_is_receiver <- function(actor, event_type, risksetMatrix, consider_type) {
+    .Call(`_remstats_actor_is_receiver`, actor, event_type, risksetMatrix, consider_type)
+}
+
+degree_sample_stat <- function(type, inertia, caseControls, risksetMatrix, riskset, consider_type, display_progress) {
+    .Call(`_remstats_degree_sample_stat`, type, inertia, caseControls, risksetMatrix, riskset, consider_type, display_progress)
+}
+
+inertia_sample_stat <- function(inertia, caseControls, riskset, risksetMatrix, consider_type, display_progress) {
+    .Call(`_remstats_inertia_sample_stat`, inertia, caseControls, riskset, risksetMatrix, consider_type, display_progress)
+}
+
+reciprocity_sample_stat <- function(inertia, caseControls, riskset, risksetMatrix, consider_type, display_progress) {
+    .Call(`_remstats_reciprocity_sample_stat`, inertia, caseControls, riskset, risksetMatrix, consider_type, display_progress)
+}
+
+creates_pshift <- function(type, event, actorA, actorB, prev_event_type, riskset, consider_type) {
+    .Call(`_remstats_creates_pshift`, type, event, actorA, actorB, prev_event_type, riskset, consider_type)
+}
+
+pshift_sample_stat <- function(type, caseControls, events, riskset, risksetMatrix, consider_type, display_progress) {
+    .Call(`_remstats_pshift_sample_stat`, type, caseControls, events, riskset, risksetMatrix, consider_type, display_progress)
+}
+
+recency_sample_stat <- function(type, edgelist, risksetMatrix, caseControls, start, stop, consider_type, method, display_progress) {
+    .Call(`_remstats_recency_sample_stat`, type, edgelist, risksetMatrix, caseControls, start, stop, consider_type, method, display_progress)
+}
+
+rrank_sample_stat <- function(type, edgelist, caseControls, riskset, N, C, start, stop, consider_type, method, display_progress) {
+    .Call(`_remstats_rrank_sample_stat`, type, edgelist, caseControls, riskset, N, C, start, stop, consider_type, method, display_progress)
+}
+
+sample_stats <- function(effects, edgelist, caseControls, riskset, risksetMatrix, inertia, covariates, interactions, events, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method) {
+    .Call(`_remstats_sample_stats`, effects, edgelist, caseControls, riskset, risksetMatrix, inertia, covariates, interactions, events, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method)
 }
 
 combine_stats <- function(array_list, keep_list) {

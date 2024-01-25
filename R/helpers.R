@@ -49,13 +49,13 @@ prepare_tomstats <- function(
 
   # Origin
   if (attr(reh, "ordinal")) {
-    if (length(attr(reh, "origin"))==0) {
-      attr(reh, "origin") <- reh$edgelist[1,1] - 1
+    if (length(attr(reh, "origin")) == 0) {
+      attr(reh, "origin") <- reh$edgelist[1, 1] - 1
     }
   }
 
   # Prepare the edgelist for cpp processing
-  edgelist <- reh$edgelist[,1:3]
+  edgelist <- reh$edgelist[, 1:3]
   edgelist$time <- cumsum(as.numeric(diff(c(attributes(reh)$origin, edgelist$time))))
   edgelist$actor1 <- unlist(attributes(reh)$actor1ID) - 1
   edgelist$actor2 <- unlist(attributes(reh)$actor2ID) - 1
@@ -468,7 +468,7 @@ variable_check <- function(effect, dat) {
         # Convert to binary variable
         dat$x <- ifelse(dat$x == x_levels[2], 1, 0)
       }
-    } else if(!is.numeric(dat$x)) {
+    } else if (!is.numeric(dat$x)) {
       stop(paste0("The variable in '", effect, "' must be numeric."))
     }
   }
@@ -830,7 +830,7 @@ process_covariate <- function(
         as.matrix(x$x)
       } else if (effect == "FEtype") {
         as.matrix(x$typeID)
-      } 
+      }
     } else if (effect == "userStat") {
       if (NROW(x$x) != nrow(edgelist) & NROW(x$x) != NROW(unique(edgelist[, 1]))) {
         stop("Number of rows of matrix 'x' in userStat() does not match number of timepoints or number of events in edgelist")
@@ -846,6 +846,52 @@ process_covariate <- function(
     }
   })
 }
+
+sampleDyads <- function(controls, riskset, reh) {
+  # Number of events
+  M <- reh$M
+
+  # Get the ids of the dyads in the risk set
+  dyads <- riskset[, 4] # already in cpp indexing
+
+  if (controls == 1) {
+    # Do not sample
+    caseControls <- replicate(M, dyads)
+
+    # Output case-controls
+    t(caseControls)
+  } else {
+    # Do sample
+    # id of the observed dyads
+    if (attr(reh, "riskset") == "active") {
+      cases <- attr(reh, "dyadIDactive") # (transform to cpp indexing)
+    } else {
+      cases <- attr(reh, "dyadID") # (transform to cpp indexing)
+    }
+
+    # Calculate the number of dyads to sample
+    n_sample <- ceiling(controls * NROW(dyads))
+
+    # Iterate over events
+    caseControls <- sapply(cases, function(x) {
+      # Subtract cases from n_sample
+      n_controls <- n_sample - length(x)
+
+      # Transform x to cpp indexing
+      x <- x - 1
+
+      # Set from which to sample controls
+      set <- setdiff(dyads, x)
+
+      # Result
+      c(x, sort(sample(set, n_controls)))
+    })
+
+    # Output case-controls
+    t(caseControls)
+  }
+}
+
 
 validate_aomstats_arguments <- function(attr_actors, reh) {
   # Check if the deprecated "id" column is used in attr_actors
@@ -878,9 +924,9 @@ prepare_aomstats_edgelist <- function(reh) {
 
   # Origin
   if (attr(reh, "ordinal")) {
-  	if (length(attr(reh, "origin"))==0) {
-  		attr(reh, "origin") <- edgelist[1,1] - 1
-  	}
+    if (length(attr(reh, "origin")) == 0) {
+      attr(reh, "origin") <- edgelist[1, 1] - 1
+    }
   }
 
   # Transform to numeric
@@ -893,7 +939,7 @@ prepare_aomstats_edgelist <- function(reh) {
   )
 
   # Transform to matrix
-  edgelist <- as.matrix(edgelist[,1:3])
+  edgelist <- as.matrix(edgelist[, 1:3])
 
   return(edgelist)
 }
@@ -1019,7 +1065,6 @@ prepare_receiver_effects <- function(receiver_formula) {
 
 # Actor-oriented model: covariates ----------------------------------------
 validate_attr_actors <- function(attr_actors, x) {
-
   # Check if the variable name is in the attr_actors object
   if (!(x$variable %in% colnames(attr_actors))) {
     stop(paste0("Variable '", x$variable, "' not in attr_actors object for the '", x$effect, "' effect."))
