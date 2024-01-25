@@ -847,9 +847,9 @@ process_covariate <- function(
   })
 }
 
-sampleDyads <- function(controls, riskset, reh) {
-  # Number of events
-  M <- reh$M
+sampleDyads <- function(controls, riskset, reh, method, start, stop) {
+  # Number of events (if method is 'pe') or timepoints (if method is 'pt')
+  M <- stop - start + 1
 
   # Get the ids of the dyads in the risk set
   dyads <- riskset[, 4] # already in cpp indexing
@@ -868,6 +868,14 @@ sampleDyads <- function(controls, riskset, reh) {
     } else {
       cases <- attr(reh, "dyadID") # (transform to cpp indexing)
     }
+
+    # unlist if method is 'pe'
+    if (method == "pe") {
+      cases <- unlist(cases)
+    }
+
+    # subset
+    cases <- cases[(start + 1):(stop + 1)]
 
     # Calculate the number of dyads to sample
     n_sample <- ceiling(controls * NROW(dyads))

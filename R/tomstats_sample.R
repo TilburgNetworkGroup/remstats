@@ -138,7 +138,7 @@
 #'
 #' @export
 tomstats_sample <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
-                            method = c("pt", "pe"), controls = 1,
+                            method = c("pt", "pe"), controls = .1,
                             memory = c("full", "window", "decay", "interval"),
                             memory_value = NA, start = 1, stop = Inf,
                             display_progress = FALSE,
@@ -209,10 +209,10 @@ tomstats_sample <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 
   # Perform case-control sampling
   if (controls < 0 | controls > 1) {
-    stop("'controls' should be between 0 and 1")
+    stop("'controls' argument should be set between 0 and 1")
   }
 
-  caseControls <- sampleDyads(controls, riskset, reh) # To do: deal with start & stop arguments!
+  caseControls <- sampleDyads(controls, riskset, reh, method, start, stop)
 
   # Events list (for participation shifts) !! uses R indexing !!
   if (attr(reh, "riskset") == "active") {
@@ -220,7 +220,11 @@ tomstats_sample <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   } else {
     events <- attr(reh, "dyadID")
   }
-  events <- c(0, events) # To do: deal with start & stop arguments!
+  events <- c(0, events) # Add zero to deal with start is 0
+  if (method == "pe") {
+    events <- lapply(unlist(events), function(x) x)
+  }
+  events <- events[(start + 1):(stop + 1)] # Subset
 
   # Compute statistics
   statistics <- sample_stats(
