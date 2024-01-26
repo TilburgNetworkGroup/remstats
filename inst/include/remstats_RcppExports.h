@@ -382,6 +382,27 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
+    inline arma::mat exogenous_sample_stat(std::string type, const arma::mat& edgelist, const arma::mat& caseControls, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& covariates, int start, int stop, std::string method, bool display_progress) {
+        typedef SEXP(*Ptr_exogenous_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+        static Ptr_exogenous_sample_stat p_exogenous_sample_stat = NULL;
+        if (p_exogenous_sample_stat == NULL) {
+            validateSignature("arma::mat(*exogenous_sample_stat)(std::string,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,int,int,std::string,bool)");
+            p_exogenous_sample_stat = (Ptr_exogenous_sample_stat)R_GetCCallable("remstats", "_remstats_exogenous_sample_stat");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_exogenous_sample_stat(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(edgelist)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(covariates)), Shield<SEXP>(Rcpp::wrap(start)), Shield<SEXP>(Rcpp::wrap(stop)), Shield<SEXP>(Rcpp::wrap(method)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
     inline arma::cube sample_stats(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& caseControls, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, const Rcpp::List& events, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method) {
         typedef SEXP(*Ptr_sample_stats)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_sample_stats p_sample_stats = NULL;

@@ -69,6 +69,10 @@ rrank_sample_stat <- function(type, edgelist, caseControls, riskset, N, C, start
     .Call(`_remstats_rrank_sample_stat`, type, edgelist, caseControls, riskset, N, C, start, stop, consider_type, method, display_progress)
 }
 
+exogenous_sample_stat <- function(type, edgelist, caseControls, riskset, risksetMatrix, covariates, start, stop, method, display_progress) {
+    .Call(`_remstats_exogenous_sample_stat`, type, edgelist, caseControls, riskset, risksetMatrix, covariates, start, stop, method, display_progress)
+}
+
 sample_stats <- function(effects, edgelist, caseControls, riskset, risksetMatrix, inertia, covariates, interactions, events, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method) {
     .Call(`_remstats_sample_stats`, effects, edgelist, caseControls, riskset, risksetMatrix, inertia, covariates, interactions, events, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method)
 }

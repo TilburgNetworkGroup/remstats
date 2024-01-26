@@ -702,6 +702,49 @@ RcppExport SEXP _remstats_rrank_sample_stat(SEXP typeSEXP, SEXP edgelistSEXP, SE
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// exogenous_sample_stat
+arma::mat exogenous_sample_stat(std::string type, const arma::mat& edgelist, const arma::mat& caseControls, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& covariates, int start, int stop, std::string method, bool display_progress);
+static SEXP _remstats_exogenous_sample_stat_try(SEXP typeSEXP, SEXP edgelistSEXP, SEXP caseControlsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP covariatesSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP display_progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type caseControls(caseControlsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(exogenous_sample_stat(type, edgelist, caseControls, riskset, risksetMatrix, covariates, start, stop, method, display_progress));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _remstats_exogenous_sample_stat(SEXP typeSEXP, SEXP edgelistSEXP, SEXP caseControlsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP covariatesSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP display_progressSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_remstats_exogenous_sample_stat_try(typeSEXP, edgelistSEXP, caseControlsSEXP, risksetSEXP, risksetMatrixSEXP, covariatesSEXP, startSEXP, stopSEXP, methodSEXP, display_progressSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // sample_stats
 arma::cube sample_stats(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& caseControls, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, const Rcpp::List& events, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method);
 static SEXP _remstats_sample_stats_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP caseControlsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP inertiaSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP eventsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
@@ -787,6 +830,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*pshift_sample_stat)(std::string,const arma::mat&,Rcpp::List,const arma::mat&,const arma::mat&,bool,bool)");
         signatures.insert("arma::mat(*recency_sample_stat)(std::string,const arma::mat&,const arma::mat&,const arma::mat&,int,int,bool,Rcpp::String,bool)");
         signatures.insert("arma::mat(*rrank_sample_stat)(int,const arma::mat&,const arma::mat&,const arma::mat&,int,int,int,int,bool,Rcpp::String,bool)");
+        signatures.insert("arma::mat(*exogenous_sample_stat)(std::string,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,int,int,std::string,bool)");
         signatures.insert("arma::cube(*sample_stats)(Rcpp::CharacterVector,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const Rcpp::List&,const Rcpp::List&,const Rcpp::List&,Rcpp::String,const arma::vec&,Rcpp::CharacterVector&,Rcpp::LogicalVector&,int,int,bool,bool,Rcpp::String)");
     }
     return signatures.find(sig) != signatures.end();
@@ -811,6 +855,7 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
     R_RegisterCCallable("remstats", "_remstats_pshift_sample_stat", (DL_FUNC)_remstats_pshift_sample_stat_try);
     R_RegisterCCallable("remstats", "_remstats_recency_sample_stat", (DL_FUNC)_remstats_recency_sample_stat_try);
     R_RegisterCCallable("remstats", "_remstats_rrank_sample_stat", (DL_FUNC)_remstats_rrank_sample_stat_try);
+    R_RegisterCCallable("remstats", "_remstats_exogenous_sample_stat", (DL_FUNC)_remstats_exogenous_sample_stat_try);
     R_RegisterCCallable("remstats", "_remstats_sample_stats", (DL_FUNC)_remstats_sample_stats_try);
     R_RegisterCCallable("remstats", "_remstats_RcppExport_validate", (DL_FUNC)_remstats_RcppExport_validate);
     return R_NilValue;
@@ -834,6 +879,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_pshift_sample_stat", (DL_FUNC) &_remstats_pshift_sample_stat, 7},
     {"_remstats_recency_sample_stat", (DL_FUNC) &_remstats_recency_sample_stat, 9},
     {"_remstats_rrank_sample_stat", (DL_FUNC) &_remstats_rrank_sample_stat, 11},
+    {"_remstats_exogenous_sample_stat", (DL_FUNC) &_remstats_exogenous_sample_stat, 10},
     {"_remstats_sample_stats", (DL_FUNC) &_remstats_sample_stats, 18},
     {"_remstats_combine_stats", (DL_FUNC) &_remstats_combine_stats, 2},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},

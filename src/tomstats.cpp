@@ -1837,19 +1837,26 @@ void update_exo_actor(double value, arma::mat &stat, arma::vec dyads, int i)
 /*
    Function: calculate_exo_actor
 
-   Description: Computes (or transforms/obtains) the exogenous actor statistics for the tie-oriented model.
+   Description: Computes (or transforms/obtains) the exogenous actor statistics 
+   for the tie-oriented model.
 
    Parameters:
-     - type: An string indicating the type of statistic to compute: 'send' for sender effect, 'receive' for receiver effect.
-     - edgelist: A matrix with the observed relational event history. Rows refer to the observed relational events. The first column refers to the time, the second column to the sender, the third column to the receiver.
-     - risksetMatrix: A matrix where rows refer to potential senders, columns to potential receivers x event_type, and entries give the respective dyad ids.
-     - start: An integer indicating the first row in the edgelist for which statistics have to be computed.
-     - stop: An integer indicating the last row in the edgelist for which statistics have to be computed.
+     - type: An string indicating the type of statistic to compute: 'send' for 
+     sender effect, 'receive' for receiver effect.
+     - edgelist: A matrix with the observed relational event history. Rows refer 
+     to the observed relational events. The first column refers to the time, the 
+     second column to the sender, the third column to the receiver.
+     - risksetMatrix: A matrix where rows refer to potential senders, columns to 
+     potential receivers x event_type, and entries give the respective dyad ids.
+     - start: An integer indicating the first row in the edgelist for which 
+     statistics have to be computed.
+     - stop: An integer indicating the last row in the edgelist for which 
+     statistics have to be computed.
 
    Returns:
-     A matrix with the exogenous actor statistics. Rows refer to the time points, and columns refer to the dyads.
+     A matrix with the exogenous actor statistics. Rows refer to the time 
+     points, and columns refer to the dyads.
 */
-
 arma::mat calculate_exo_actor(std::string type,
                               const arma::mat &edgelist,
                               const arma::mat &risksetMatrix,
