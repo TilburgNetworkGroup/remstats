@@ -298,17 +298,17 @@ namespace remstats {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline bool creates_pshift(std::string type, int event, int actorA, int actorB, int prev_event_type, arma::mat riskset, bool consider_type) {
-        typedef SEXP(*Ptr_creates_pshift)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline bool creates_pshift(std::string type, int event, int actorA, int actorB, int prev_event_type, arma::mat riskset, bool directed, bool consider_type) {
+        typedef SEXP(*Ptr_creates_pshift)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_creates_pshift p_creates_pshift = NULL;
         if (p_creates_pshift == NULL) {
-            validateSignature("bool(*creates_pshift)(std::string,int,int,int,int,arma::mat,bool)");
+            validateSignature("bool(*creates_pshift)(std::string,int,int,int,int,arma::mat,bool,bool)");
             p_creates_pshift = (Ptr_creates_pshift)R_GetCCallable("remstats", "_remstats_creates_pshift");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_creates_pshift(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(event)), Shield<SEXP>(Rcpp::wrap(actorA)), Shield<SEXP>(Rcpp::wrap(actorB)), Shield<SEXP>(Rcpp::wrap(prev_event_type)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(consider_type)));
+            rcpp_result_gen = p_creates_pshift(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(event)), Shield<SEXP>(Rcpp::wrap(actorA)), Shield<SEXP>(Rcpp::wrap(actorB)), Shield<SEXP>(Rcpp::wrap(prev_event_type)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(directed)), Shield<SEXP>(Rcpp::wrap(consider_type)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -319,17 +319,17 @@ namespace remstats {
         return Rcpp::as<bool >(rcpp_result_gen);
     }
 
-    inline arma::mat pshift_sample_stat(std::string type, const arma::mat& caseControls, Rcpp::List events, const arma::mat& riskset, const arma::mat& risksetMatrix, bool consider_type, bool display_progress) {
-        typedef SEXP(*Ptr_pshift_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline arma::mat pshift_sample_stat(std::string type, const arma::mat& caseControls, Rcpp::List events, const arma::mat& riskset, const arma::mat& risksetMatrix, bool directed, bool consider_type, bool display_progress) {
+        typedef SEXP(*Ptr_pshift_sample_stat)(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
         static Ptr_pshift_sample_stat p_pshift_sample_stat = NULL;
         if (p_pshift_sample_stat == NULL) {
-            validateSignature("arma::mat(*pshift_sample_stat)(std::string,const arma::mat&,Rcpp::List,const arma::mat&,const arma::mat&,bool,bool)");
+            validateSignature("arma::mat(*pshift_sample_stat)(std::string,const arma::mat&,Rcpp::List,const arma::mat&,const arma::mat&,bool,bool,bool)");
             p_pshift_sample_stat = (Ptr_pshift_sample_stat)R_GetCCallable("remstats", "_remstats_pshift_sample_stat");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_pshift_sample_stat(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(events)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(display_progress)));
+            rcpp_result_gen = p_pshift_sample_stat(Shield<SEXP>(Rcpp::wrap(type)), Shield<SEXP>(Rcpp::wrap(caseControls)), Shield<SEXP>(Rcpp::wrap(events)), Shield<SEXP>(Rcpp::wrap(riskset)), Shield<SEXP>(Rcpp::wrap(risksetMatrix)), Shield<SEXP>(Rcpp::wrap(directed)), Shield<SEXP>(Rcpp::wrap(consider_type)), Shield<SEXP>(Rcpp::wrap(display_progress)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

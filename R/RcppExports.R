@@ -53,12 +53,12 @@ reciprocity_sample_stat <- function(inertia, caseControls, riskset, risksetMatri
     .Call(`_remstats_reciprocity_sample_stat`, inertia, caseControls, riskset, risksetMatrix, consider_type, display_progress)
 }
 
-creates_pshift <- function(type, event, actorA, actorB, prev_event_type, riskset, consider_type) {
-    .Call(`_remstats_creates_pshift`, type, event, actorA, actorB, prev_event_type, riskset, consider_type)
+creates_pshift <- function(type, event, actorA, actorB, prev_event_type, riskset, directed, consider_type) {
+    .Call(`_remstats_creates_pshift`, type, event, actorA, actorB, prev_event_type, riskset, directed, consider_type)
 }
 
-pshift_sample_stat <- function(type, caseControls, events, riskset, risksetMatrix, consider_type, display_progress) {
-    .Call(`_remstats_pshift_sample_stat`, type, caseControls, events, riskset, risksetMatrix, consider_type, display_progress)
+pshift_sample_stat <- function(type, caseControls, events, riskset, risksetMatrix, directed, consider_type, display_progress) {
+    .Call(`_remstats_pshift_sample_stat`, type, caseControls, events, riskset, risksetMatrix, directed, consider_type, display_progress)
 }
 
 recency_sample_stat <- function(type, edgelist, risksetMatrix, caseControls, start, stop, consider_type, method, display_progress) {

@@ -135,7 +135,7 @@
 #'
 #' @export
 tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
-                     method = c("pt", "pe"), seed = NULL,
+                     method = c("pt", "pe"), 
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA, start = 1, stop = Inf,
                      display_progress = FALSE,

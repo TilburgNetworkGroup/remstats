@@ -18,7 +18,9 @@
 #'
 #' The majority of the statistics can be scaled in some way, see
 #' the documentation of the \code{scaling} argument in the separate effect
-#' functions for more information on this.
+#' functions for more information on this. Note that 'standardization' is
+#' not available for the tomstats with case-control sampling from the
+#' risk set. 
 #'
 #' The majority of the statistics can account for the event type
 #' included as a dependent variable, see the documentation of the
@@ -27,8 +29,7 @@
 #'
 #' Note that events in the relational event history can be directed or
 #' undirected. Some statistics are only defined for either directed or
-#' undirected events (see the documentation of the statistics). Note that
-#' undirected events are only available for the tie-oriented model.
+#' undirected events (see the documentation of the statistics). 
 #'
 #' @section attr_actors:
 #' For the computation of the \emph{exogenous} statistics an attributes object
@@ -115,6 +116,7 @@
 #'     \item{\code{model}}{Type of model that is estimated.}
 #'     \item{\code{formula}}{Model formula, obtained from the formula inputted to 'tie_effects'.}
 #'     \item{\code{riskset}}{The risk set used to construct the statistics.}
+#'     \item{\code{caseControls}}{Matrix with time points on the row and sampled observed events ('cases') per time point first on the row, followed by the sampled dyads from the risk set ('controls').}
 #'     \item{\code{adjmat}}{[Optional], if "get_adjmat = TRUE", the matrix with the accumulated event weights for each time point (on the rows) and each dyad (in the columns).}
 #'   }
 #'
@@ -194,6 +196,11 @@ tomstats_sample <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   start <- inputs$start
   stop <- inputs$stop
   method <- inputs$method
+
+  # Standardization warning
+  if (any(grepl("std", scaling))) {
+    warning("Standardization is currently unavailable for case-control tomstats.")
+  }
 
   # Compute the inertia building block
   if (is.null(adjmat)) {

@@ -30,7 +30,7 @@ arma::vec actor_is_sender(int actor, int event_type,
     int N = risksetMatrix.n_rows;
 
     // Select those events with the respective event type
-    arma::uvec indices = arma::regspace<arma::uvec>(0 + (event_type * N), (N - 1) * (event_type + 1));
+    arma::uvec indices = arma::regspace<arma::uvec>(0 + (event_type * N), (N * (event_type + 1)) - 1);
     event_IDs = event_IDs.elem(indices);
   }
 
@@ -469,7 +469,7 @@ arma::mat reciprocity_sample_stat(const arma::mat &inertia,
 int dyad_triad(int type, const arma::mat &inertia, arma::uword m,
                int sender, int receiver, int event_type,
                const arma::mat &risksetMatrix, int N, int C,
-               bool consider_type)
+               bool consider_type, std::string scaling)
 {
   // Triad value
   int triad_val = 0;
@@ -483,41 +483,156 @@ int dyad_triad(int type, const arma::mat &inertia, arma::uword m,
       continue;
     }
 
-    // Depending on the triad stat type, get the two relevant dyads
-    int dyad1, dyad2;
-    if (type == 1) // otp
+    // If consider_type, only consider the given event type,
+    if (consider_type)
     {
-      dyad1 = risksetMatrix(sender, h);
-      dyad2 = risksetMatrix(h, receiver);
-    }
-    if (type == 2) // itp
-    {
-      dyad1 = risksetMatrix(h, sender);
-      dyad2 = risksetMatrix(receiver, h);
-    }
-    if (type == 3) // osp
-    {
-      dyad1 = risksetMatrix(sender, h);
-      dyad2 = risksetMatrix(receiver, h);
-    }
-    if (type == 4) // isp
-    {
-      dyad1 = risksetMatrix(h, sender);
-      dyad2 = risksetMatrix(h, receiver);
-    }
+      // Depending on the triad stat type, get the two relevant dyads
+      int dyad1, dyad2;
+      if (type == 1) // otp
+      {
+        dyad1 = risksetMatrix(sender, h + (event_type * N));
+        dyad2 = risksetMatrix(h, receiver + (event_type * N));
+      }
+      if (type == 2) // itp
+      {
+        dyad1 = risksetMatrix(h, sender + (event_type * N));
+        dyad2 = risksetMatrix(receiver, h + (event_type * N));
+      }
+      if (type == 3) // osp
+      {
+        dyad1 = risksetMatrix(sender, h + (event_type * N));
+        dyad2 = risksetMatrix(receiver, h + (event_type * N));
+      }
+      if (type == 4) // isp
+      {
+        dyad1 = risksetMatrix(h, sender + (event_type * N));
+        dyad2 = risksetMatrix(h, receiver + (event_type * N));
+      }
+      if (type == 5) // sp
+      {
+        int path1_actor1 = sender;
+        int path1_actor2 = h;
+        if (h < sender)
+        {
+          path1_actor1 = h;
+          path1_actor2 = sender;
+        }
+        int path2_actor1 = receiver;
+        int path2_actor2 = h;
+        if (h < receiver)
+        {
+          path2_actor1 = h;
+          path2_actor2 = receiver;
+        }
+        dyad1 = risksetMatrix(path1_actor1, path1_actor2 + (event_type * N));
+        dyad2 = risksetMatrix(path2_actor1, path2_actor2 + (event_type * N));
+      }
 
-    // Continue to next actor if one of the dyads does not exist
-    if ((dyad1 < 0) || (dyad2 < 0))
-    {
-      continue;
+      // Continue to next actor if one of the dyads does not exist
+      if ((dyad1 < 0) || (dyad2 < 0))
+      {
+        continue;
+      }
+
+      // Otherwise, get their inertia value // TODO: scaling (unique)
+      int val1 = inertia(m, dyad1);
+      int val2 = inertia(m, dyad2);
+
+      // If scaling includes 'unique' convert elements to 1 if greater than 0
+      if ((scaling == "none_unique") || (scaling == "std_unique"))
+      {
+        if (val1 > 0)
+        {
+          val1 = 1;
+        }
+        if (val2 > 0)
+        {
+          val2 = 1;
+        }
+      }
+
+      // Add the minimum to the triad value
+      triad_val += std::min(val1, val2);
     }
+    else
+    {
+      // Otherwise: loop over event types
 
-    // Otherwise, get their inertia value // TODO: scaling (unique)
-    int val1 = inertia(m, dyad1);
-    int val2 = inertia(m, dyad2);
+      // Initialize pair values
+      int val1 = 0;
+      int val2 = 0;
 
-    // Add the minimum to the triad value
-    triad_val += std::min(val1, val2);
+      for (int k = 0; k < C; ++k)
+      {
+        // Depending on the triad stat type, get the two relevant dyads
+        int dyad1, dyad2;
+        if (type == 1) // otp
+        {
+          dyad1 = risksetMatrix(sender, h + (k * N));
+          dyad2 = risksetMatrix(h, receiver + (k * N));
+        }
+        if (type == 2) // itp
+        {
+          dyad1 = risksetMatrix(h, sender + (k * N));
+          dyad2 = risksetMatrix(receiver, h + (k * N));
+        }
+        if (type == 3) // osp
+        {
+          dyad1 = risksetMatrix(sender, h + (k * N));
+          dyad2 = risksetMatrix(receiver, h + (k * N));
+        }
+        if (type == 4) // isp
+        {
+          dyad1 = risksetMatrix(h, sender + (k * N));
+          dyad2 = risksetMatrix(h, receiver + (k * N));
+        }
+        if (type == 5) // sp
+        {
+          int path1_actor1 = sender;
+          int path1_actor2 = h;
+          if (h < sender)
+          {
+            path1_actor1 = h;
+            path1_actor2 = sender;
+          }
+          int path2_actor1 = receiver;
+          int path2_actor2 = h;
+          if (h < receiver)
+          {
+            path2_actor1 = h;
+            path2_actor2 = receiver;
+          }
+          dyad1 = risksetMatrix(path1_actor1, path1_actor2 + (k * N));
+          dyad2 = risksetMatrix(path2_actor1, path2_actor2 + (k * N));
+        }
+
+        // Get the pair x type inertia value and add it to the pairs value
+        if (dyad1 >= 0)
+        {
+          val1 += inertia(m, dyad1);
+        }
+        if (dyad2 >= 0)
+        {
+          val2 += inertia(m, dyad2);
+        }
+      }
+
+      // If scaling includes 'unique' convert elements to 1 if greater than 0
+      if ((scaling == "none_unique") || (scaling == "std_unique"))
+      {
+        if (val1 > 0)
+        {
+          val1 = 1;
+        }
+        if (val2 > 0)
+        {
+          val2 = 1;
+        }
+      }
+
+      // Add the minimum to the triad value
+      triad_val += std::min(val1, val2);
+    }
   }
 
   // Return the triad value
@@ -529,11 +644,12 @@ arma::mat triad_sample_stat(int type, const arma::mat &inertia,
                             const arma::mat &caseControls,
                             const arma::mat &riskset,
                             const arma::mat &risksetMatrix,
+                            Rcpp::String scaling,
                             bool consider_type, bool display_progress)
 {
   // Progress update
   Rcpp::CharacterVector types = Rcpp::CharacterVector::create(
-      "otp", "itp", "osp", "isp");
+      "otp", "itp", "osp", "isp", "sp");
 
   if (display_progress)
   {
@@ -565,7 +681,8 @@ arma::mat triad_sample_stat(int type, const arma::mat &inertia,
       // calculate the triad value for this dyad
       stat(m, i) = dyad_triad(type, inertia,
                               m, sender, receiver, event_type,
-                              risksetMatrix, N, C, consider_type);
+                              risksetMatrix, N, C, consider_type,
+                              scaling);
     }
 
     p.increment();
@@ -581,7 +698,8 @@ arma::mat triad_sample_stat(int type, const arma::mat &inertia,
 
 // [[Rcpp::export]]
 bool creates_pshift(std::string type, int event, int actorA, int actorB,
-                    int prev_event_type, arma::mat riskset, bool consider_type)
+                    int prev_event_type, arma::mat riskset, bool directed,
+                    bool consider_type)
 {
   bool result = false;
 
@@ -611,7 +729,7 @@ bool creates_pshift(std::string type, int event, int actorA, int actorB,
       result = (sender == actorA) && (receiver == actorB);
     }
   }
-  else if (type == "AB-AY")
+  else if ((type == "AB-AY") && (directed))
   {
     if (consider_type)
     {
@@ -620,6 +738,25 @@ bool creates_pshift(std::string type, int event, int actorA, int actorB,
     else
     {
       result = (sender == actorA) && (receiver != actorB);
+    }
+  }
+  else if ((type == "AB-AY") && (!directed))
+  {
+    if (consider_type)
+    {
+      bool condition1 = (sender == actorA) && (receiver != actorB) && (event_type == prev_event_type);
+      bool condition2 = (sender != actorA) && (receiver == actorB) && (event_type == prev_event_type);
+      bool condition3 = (sender == actorB) && (receiver != actorA) && (event_type == prev_event_type);
+      bool condition4 = (sender != actorB) && (receiver == actorA) && (event_type == prev_event_type);
+      result = (condition1 || condition2 || condition3 || condition4);
+    }
+    else
+    {
+      bool condition1 = (sender == actorA) && (receiver != actorB);
+      bool condition2 = (sender == actorA) && (receiver != actorB);
+      bool condition3 = (sender == actorA) && (receiver != actorB);
+      bool condition4 = (sender == actorA) && (receiver != actorB);
+      result = (condition1 || condition2 || condition3 || condition4);
     }
   }
   else if (type == "AB-BY")
@@ -659,11 +796,11 @@ bool creates_pshift(std::string type, int event, int actorA, int actorB,
   {
     if (consider_type)
     {
-      result = (sender != actorA) && (receiver != actorB) && (event_type == prev_event_type);
+      result = (sender != actorA) && (sender != actorB) && (receiver != actorA) && (receiver != actorB) && (event_type == prev_event_type);
     }
     else
     {
-      result = (sender != actorA) && (receiver != actorB);
+      result = (sender != actorA) && (sender != actorB) && (receiver != actorA) && (receiver != actorB);
     }
   }
 
@@ -682,7 +819,8 @@ arma::mat pshift_sample_stat(std::string type,
                              const arma::mat &caseControls, Rcpp::List events,
                              const arma::mat &riskset,
                              const arma::mat &risksetMatrix,
-                             bool consider_type, bool display_progress)
+                             bool directed, bool consider_type, 
+                             bool display_progress)
 {
   // Progress update
   if (display_progress)
@@ -725,7 +863,8 @@ arma::mat pshift_sample_stat(std::string type,
       {
         int event = timepoint_caseControls(j);
         bool pshift = creates_pshift(type, event, actorA, actorB,
-                                     event_type, riskset, consider_type);
+                                     event_type, riskset, directed, 
+                                     consider_type);
         if (pshift)
         {
           stat(m, j) = 1;
@@ -1207,6 +1346,34 @@ arma::mat exogenous_sample_stat(std::string type,
   // Iterate over timepoints
   for (arma::uword m = 0; m < time_points.n_elem; ++m)
   {
+    // Check if the statistic needs to be updated
+    if (counter < changetimes.n_elem)
+    {
+      if (time_points(m) >= changetimes(counter))
+      {
+        // Update all changes in between
+        while (counter < changetimes.n_elem &&
+               time_points(m) >= changetimes(counter))
+        {
+          // Iterate over actors
+          for (int k = 0; k < N; ++k)
+          {
+            // Find all the attribute values for actor k at the change timepoint
+            arma::uvec indices = arma::find(covariates.col(0) == k && covariates.col(1) == changetimes(counter));
+
+            // Update if a new value exists
+            if (indices.n_elem == 1)
+            {
+              current_values(k) = covariates(indices(0), 2);
+            }
+          }
+
+          // Update the counter
+          counter += 1;
+        }
+      }
+    }
+
     // Set the statistic:
     // Iterate over caseControls at this timepoint
     for (arma::uword i = 0; i < caseControls.n_cols; ++i)
@@ -1255,34 +1422,6 @@ arma::mat exogenous_sample_stat(std::string type,
         // Set the statistic equal to the average between the current value for
         // actor1 (sender) and the current value for actor2 (receiver)
         stat(m, i) = std::max(current_values(sender), current_values(receiver));
-      }
-    }
-
-    // Check if the statistic needs to be updated
-    if (counter < changetimes.n_elem)
-    {
-      if (time_points(m) >= changetimes(counter))
-      {
-        // Update all changes in between
-        while (counter < changetimes.n_elem &&
-               time_points(m) >= changetimes(counter))
-        {
-          // Iterate over actors
-          for (int k = 0; k < N; ++k)
-          {
-            // Find all the attribute values for actor k at the change timepoint
-            arma::uvec indices = arma::find(covariates.col(0) == k && covariates.col(1) == changetimes(counter));
-
-            // Update if a new value exists
-            if (indices.n_elem == 1)
-            {
-              current_values(k) = covariates(indices(0), 2);
-            }
-          }
-
-          // Update the counter
-          counter += 1;
-        }
       }
     }
 
@@ -1395,7 +1534,7 @@ arma::mat tie_sample_stat(const arma::mat &covariates,
             // Find all the attribute values for actor k before the first timepoint
             arma::uvec indices = arma::find(covariates.col(0) == sender &&
                                             covariates.col(1) == receiver &&
-                                            covariates.col(2) == changetimes(counter));            
+                                            covariates.col(2) == changetimes(counter));
 
             // Update if a new value exists
             if (indices.n_elem == 1)
@@ -1422,7 +1561,7 @@ arma::mat tie_sample_stat(const arma::mat &covariates,
 // =============================================================================
 
 arma::mat event_sample_stat(const arma::mat &covariates, const arma::mat &edgelist,
-                            const arma::mat &caseControls, int start, int stop, 
+                            const arma::mat &caseControls, int start, int stop,
                             Rcpp::String method, bool display_progress)
 {
 
@@ -1456,6 +1595,120 @@ arma::mat event_sample_stat(const arma::mat &covariates, const arma::mat &edgeli
   }
 
   return covRepeat;
+}
+
+// =============================================================================
+// FEtype statistic
+// =============================================================================
+arma::mat FEtype_sample_stat(const arma::mat &covariates,
+                             const arma::mat &edgelist,
+                             const arma::mat &caseControls,
+                             const arma::mat &riskset,
+                             int start, int stop,
+                             Rcpp::String method,
+                             bool display_progress)
+{
+  // Progress update
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating FEtype statistic" << std::endl;
+  }
+
+  // Time points: Depending on the method, get ...
+  arma::vec time_points;
+  if (method == "pt")
+  {
+    // ... the unique time points
+    time_points = arma::unique(edgelist.col(0));
+  }
+  else if (method == "pe")
+  {
+    // ... all event times
+    time_points = edgelist.col(0);
+  }
+  time_points = time_points.subvec(start, stop);
+
+  // Progress bar
+  Progress p(time_points.n_elem, display_progress);
+
+  // Initialize saving space
+  arma::mat stat(time_points.n_elem, caseControls.n_cols, arma::fill::zeros);
+
+  // Iterate over timepoints
+  for (arma::uword i = 0; i < time_points.n_elem; ++i)
+  {
+    // Iterate over caseControls
+    for (arma::uword j = 0; j < caseControls.n_cols; ++j)
+    {
+      int dyad = caseControls(i, j);
+      if (riskset(dyad, 2) == covariates(0, 0))
+      {
+        stat(i, j) = 1;
+      }
+    }
+
+    p.increment();
+  }
+
+  // Output
+  return (stat);
+}
+
+// =============================================================================
+// user statistic
+// =============================================================================
+arma::mat user_sample_stat(const arma::mat &covariates,
+                           const arma::mat &edgelist,
+                           const arma::mat &caseControls,
+                           int start, int stop, Rcpp::String method,
+                           bool display_progress)
+{
+  // Progress update
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Obtaining user-provided statistic" << std::endl;
+  }
+
+  // Event time points: Depending on the method, get ...
+  arma::vec event_times;
+  if (method == "pt")
+  {
+    // ... the unique time points
+    event_times = arma::unique(edgelist.col(0));
+  }
+  else if (method == "pe")
+  {
+    // ... all event times
+    event_times = edgelist.col(0);
+  }
+  event_times = event_times.subvec(start, stop);
+
+  // Extract the correct rows from the covariates matrix
+  arma::mat sliced_covar = covariates.rows(start, stop);
+
+  // Initialize saving space
+  arma::mat stat(caseControls.n_rows, caseControls.n_cols, arma::fill::zeros);
+
+  // Loop over timepoints
+  for (arma::uword i = 0; i < event_times.n_elem; ++i)
+  {
+    // Iterate over caseControls
+    for (arma::uword j = 0; j < caseControls.n_cols; ++j)
+    {
+      // Extract the dyad
+      int dyad = caseControls(i, j);
+      // Save the user stat at the correct place
+      stat(i, j) = sliced_covar(i, dyad);
+    }
+  }
+
+  // Check dimensions of input matrices
+  if (stat.n_rows != event_times.n_elem)
+  {
+    throw std::invalid_argument("Invalid dimensions: mismatch between 'userStat' covariate object and number of event times.");
+  }
+
+  return (stat);
 }
 
 // =============================================================================
@@ -1649,9 +1902,9 @@ arma::cube sample_stats(Rcpp::CharacterVector effects,
       break;
 
     // FEtype
-    /*case 2:
-        stats.slice(i) = calculate_FEtype(covariates[i], edgelist, riskset, start, stop, method);
-        break;*/
+    case 2:
+      stats.slice(i) = FEtype_sample_stat(covariates[i], edgelist, caseControls, riskset, start, stop, method, display_progress);
+      break;
 
     // send
     case 11:
@@ -1708,9 +1961,9 @@ arma::cube sample_stats(Rcpp::CharacterVector effects,
 
     // event
     case 19:
-        // Compute statistic
-        stats.slice(i) = event_sample_stat(covariates[i], edgelist, caseControls, start, stop, method, display_progress);
-        break;
+      // Compute statistic
+      stats.slice(i) = event_sample_stat(covariates[i], edgelist, caseControls, start, stop, method, display_progress);
+      break;
 
     // inertia
     case 101:
@@ -1847,74 +2100,73 @@ arma::cube sample_stats(Rcpp::CharacterVector effects,
     // otp
     case 131:
       // Compute statistic
-      stats.slice(i) = triad_sample_stat(1, inertia, caseControls, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = triad_sample_stat(1, inertia, caseControls, riskset, risksetMatrix, scaling(i), consider_type(i), display_progress);
       break;
 
     // itp
     case 132:
       // Compute statistic
-      stats.slice(i) = triad_sample_stat(2, inertia, caseControls, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = triad_sample_stat(2, inertia, caseControls, riskset, risksetMatrix, scaling(i), consider_type(i), display_progress);
       break;
 
     // osp
     case 133:
       // Compute statistic
-      stats.slice(i) = triad_sample_stat(3, inertia, caseControls, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = triad_sample_stat(3, inertia, caseControls, riskset, risksetMatrix, scaling(i), consider_type(i), display_progress);
       break;
 
     // isp
     case 134:
       // Compute statistic
-      stats.slice(i) = triad_sample_stat(4, inertia, caseControls, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = triad_sample_stat(4, inertia, caseControls, riskset, risksetMatrix, scaling(i), consider_type(i), display_progress);
       break;
 
     // sp
-    /*
     case 135:
-        // Compute statistic
-        stats.slice(i) = calculate_triad(5, inertia, risksetMatrix, scaling(i), consider_type(i), display_progress);
-        break;*/
+      // Compute statistic
+      stats.slice(i) = triad_sample_stat(5, inertia, caseControls, riskset, risksetMatrix, scaling(i), consider_type(i), display_progress);
+      break;
 
     // psABBA
     case 141:
       // Compute statistic
-      stats.slice(i) = pshift_sample_stat("AB-BA", caseControls, events, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = pshift_sample_stat("AB-BA", caseControls, events, riskset, risksetMatrix, directed, consider_type(i), display_progress);
       break;
 
     // psABBY
     case 142:
       // Compute statistic
-      stats.slice(i) = pshift_sample_stat("AB-BY", caseControls, events, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = pshift_sample_stat("AB-BY", caseControls, events, riskset, risksetMatrix, directed, consider_type(i), display_progress);
       break;
 
     // psABXA
     case 143:
       // Compute statistic
-      stats.slice(i) = pshift_sample_stat("AB-XA", caseControls, events, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = pshift_sample_stat("AB-XA", caseControls, events, riskset, risksetMatrix, directed, consider_type(i), display_progress);
       break;
 
     // psABXB
     case 144:
       // Compute statistic
-      stats.slice(i) = pshift_sample_stat("AB-XB", caseControls, events, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = pshift_sample_stat("AB-XB", caseControls, events, riskset, risksetMatrix, directed, consider_type(i), display_progress);
       break;
 
     // psABXY
     case 145:
       // Compute statistic
-      stats.slice(i) = pshift_sample_stat("AB-XY", caseControls, events, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = pshift_sample_stat("AB-XY", caseControls, events, riskset, risksetMatrix, directed, consider_type(i), display_progress);
       break;
 
     // psABAY
     case 146:
       // Compute statistic
-      stats.slice(i) = pshift_sample_stat("AB-AY", caseControls, events, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = pshift_sample_stat("AB-AY", caseControls, events, riskset, risksetMatrix, directed, consider_type(i), display_progress);
       break;
 
     // psABAB
     case 147:
       // Compute statistic
-      stats.slice(i) = pshift_sample_stat("AB-AB", caseControls, events, riskset, risksetMatrix, consider_type(i), display_progress);
+      stats.slice(i) = pshift_sample_stat("AB-AB", caseControls, events, riskset, risksetMatrix, directed, consider_type(i), display_progress);
       break;
 
     // rrankSend
@@ -1960,9 +2212,9 @@ arma::cube sample_stats(Rcpp::CharacterVector effects,
       break;
 
     // userStat
-    /*case 888:
-        stats.slice(i) = get_userstat(covariates[i], edgelist, start, stop, display_progress, method);
-        break;*/
+    case 888:
+      stats.slice(i) = user_sample_stat(covariates[i], edgelist, caseControls, start, stop, method, display_progress);
+      break;
 
     // interact
     case 999:

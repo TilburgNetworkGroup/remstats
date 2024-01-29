@@ -126,3 +126,38 @@ if (at_home()) {
   attributes(expected_stats) <- NULL
   expect_true(identical(expected_stats, combined_stats$receiver_stats))
 }
+
+
+# --- Check for the tie-oriented caseControl model
+reh <- remify::remify(edgelist, model = "tie", actors = 1:6)
+
+# Create example remstats objects
+rs1 <- tomstats_sample(reh = reh, effects = ~ inertia() + reciprocity() + otp())
+rs2 <- tomstats_sample(reh = reh, effects = ~ outdegreeSender() + reciprocity())
+rs3 <- tomstats_sample(reh = reh, effects = ~ reciprocity())
+
+# Combine remstats objects
+expect_warning(combined_stats <- bind_remstats(rs1, rs2, rs3))
+
+# Check dimensions
+expect_equal(dim(combined_stats), c(4, 3, 5))
+
+# Check model attribute
+expect_equal(attr(combined_stats, "model"), "tie")
+
+# Check formula attribute
+expect_equal(attr(combined_stats, "formula"), "Combined remstats object")
+
+# Check riskset attribute
+expect_equal(attr(combined_stats, "riskset"), attr(rs1, "riskset"))
+
+# Check adjmat attribute
+expect_equal(attr(combined_stats, "adjmat"), attr(rs1, "adjmat"))
+
+# Check statistics
+if (at_home()) {
+	expected_stats <- abind::abind(rs1, rs2[, , "outdegreeSender"], along = 3)
+	attributes(combined_stats) <- NULL
+	attributes(expected_stats) <- NULL
+	expect_true(identical(expected_stats, combined_stats))
+}

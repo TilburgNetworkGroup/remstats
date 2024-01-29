@@ -2296,7 +2296,7 @@ arma::mat get_userstat(const arma::mat &covariates, const arma::mat &edgelist,
   // Progress update
   if (display_progress)
   {
-    Rcpp::Rcout << "Calculating userstat statistic" << std::endl;
+    Rcpp::Rcout << "Obtaining user0provided statistic" << std::endl;
   }
 
   // Event time points: Depending on the method, get ...

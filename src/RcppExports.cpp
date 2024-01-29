@@ -537,8 +537,8 @@ RcppExport SEXP _remstats_reciprocity_sample_stat(SEXP inertiaSEXP, SEXP caseCon
     return rcpp_result_gen;
 }
 // creates_pshift
-bool creates_pshift(std::string type, int event, int actorA, int actorB, int prev_event_type, arma::mat riskset, bool consider_type);
-static SEXP _remstats_creates_pshift_try(SEXP typeSEXP, SEXP eventSEXP, SEXP actorASEXP, SEXP actorBSEXP, SEXP prev_event_typeSEXP, SEXP risksetSEXP, SEXP consider_typeSEXP) {
+bool creates_pshift(std::string type, int event, int actorA, int actorB, int prev_event_type, arma::mat riskset, bool directed, bool consider_type);
+static SEXP _remstats_creates_pshift_try(SEXP typeSEXP, SEXP eventSEXP, SEXP actorASEXP, SEXP actorBSEXP, SEXP prev_event_typeSEXP, SEXP risksetSEXP, SEXP directedSEXP, SEXP consider_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
@@ -547,16 +547,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type actorB(actorBSEXP);
     Rcpp::traits::input_parameter< int >::type prev_event_type(prev_event_typeSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
     Rcpp::traits::input_parameter< bool >::type consider_type(consider_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(creates_pshift(type, event, actorA, actorB, prev_event_type, riskset, consider_type));
+    rcpp_result_gen = Rcpp::wrap(creates_pshift(type, event, actorA, actorB, prev_event_type, riskset, directed, consider_type));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_creates_pshift(SEXP typeSEXP, SEXP eventSEXP, SEXP actorASEXP, SEXP actorBSEXP, SEXP prev_event_typeSEXP, SEXP risksetSEXP, SEXP consider_typeSEXP) {
+RcppExport SEXP _remstats_creates_pshift(SEXP typeSEXP, SEXP eventSEXP, SEXP actorASEXP, SEXP actorBSEXP, SEXP prev_event_typeSEXP, SEXP risksetSEXP, SEXP directedSEXP, SEXP consider_typeSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_creates_pshift_try(typeSEXP, eventSEXP, actorASEXP, actorBSEXP, prev_event_typeSEXP, risksetSEXP, consider_typeSEXP));
+        rcpp_result_gen = PROTECT(_remstats_creates_pshift_try(typeSEXP, eventSEXP, actorASEXP, actorBSEXP, prev_event_typeSEXP, risksetSEXP, directedSEXP, consider_typeSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -577,8 +578,8 @@ RcppExport SEXP _remstats_creates_pshift(SEXP typeSEXP, SEXP eventSEXP, SEXP act
     return rcpp_result_gen;
 }
 // pshift_sample_stat
-arma::mat pshift_sample_stat(std::string type, const arma::mat& caseControls, Rcpp::List events, const arma::mat& riskset, const arma::mat& risksetMatrix, bool consider_type, bool display_progress);
-static SEXP _remstats_pshift_sample_stat_try(SEXP typeSEXP, SEXP caseControlsSEXP, SEXP eventsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP) {
+arma::mat pshift_sample_stat(std::string type, const arma::mat& caseControls, Rcpp::List events, const arma::mat& riskset, const arma::mat& risksetMatrix, bool directed, bool consider_type, bool display_progress);
+static SEXP _remstats_pshift_sample_stat_try(SEXP typeSEXP, SEXP caseControlsSEXP, SEXP eventsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP directedSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
@@ -586,17 +587,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type events(eventsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
     Rcpp::traits::input_parameter< bool >::type consider_type(consider_typeSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(pshift_sample_stat(type, caseControls, events, riskset, risksetMatrix, consider_type, display_progress));
+    rcpp_result_gen = Rcpp::wrap(pshift_sample_stat(type, caseControls, events, riskset, risksetMatrix, directed, consider_type, display_progress));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_pshift_sample_stat(SEXP typeSEXP, SEXP caseControlsSEXP, SEXP eventsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP) {
+RcppExport SEXP _remstats_pshift_sample_stat(SEXP typeSEXP, SEXP caseControlsSEXP, SEXP eventsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP directedSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_pshift_sample_stat_try(typeSEXP, caseControlsSEXP, eventsSEXP, risksetSEXP, risksetMatrixSEXP, consider_typeSEXP, display_progressSEXP));
+        rcpp_result_gen = PROTECT(_remstats_pshift_sample_stat_try(typeSEXP, caseControlsSEXP, eventsSEXP, risksetSEXP, risksetMatrixSEXP, directedSEXP, consider_typeSEXP, display_progressSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -826,8 +828,8 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*degree_sample_stat)(int,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,bool,bool)");
         signatures.insert("arma::mat(*inertia_sample_stat)(const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,bool,bool)");
         signatures.insert("arma::mat(*reciprocity_sample_stat)(const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,bool,bool)");
-        signatures.insert("bool(*creates_pshift)(std::string,int,int,int,int,arma::mat,bool)");
-        signatures.insert("arma::mat(*pshift_sample_stat)(std::string,const arma::mat&,Rcpp::List,const arma::mat&,const arma::mat&,bool,bool)");
+        signatures.insert("bool(*creates_pshift)(std::string,int,int,int,int,arma::mat,bool,bool)");
+        signatures.insert("arma::mat(*pshift_sample_stat)(std::string,const arma::mat&,Rcpp::List,const arma::mat&,const arma::mat&,bool,bool,bool)");
         signatures.insert("arma::mat(*recency_sample_stat)(std::string,const arma::mat&,const arma::mat&,const arma::mat&,int,int,bool,Rcpp::String,bool)");
         signatures.insert("arma::mat(*rrank_sample_stat)(int,const arma::mat&,const arma::mat&,const arma::mat&,int,int,int,int,bool,Rcpp::String,bool)");
         signatures.insert("arma::mat(*exogenous_sample_stat)(std::string,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,int,int,std::string,bool)");
@@ -875,8 +877,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_degree_sample_stat", (DL_FUNC) &_remstats_degree_sample_stat, 7},
     {"_remstats_inertia_sample_stat", (DL_FUNC) &_remstats_inertia_sample_stat, 6},
     {"_remstats_reciprocity_sample_stat", (DL_FUNC) &_remstats_reciprocity_sample_stat, 6},
-    {"_remstats_creates_pshift", (DL_FUNC) &_remstats_creates_pshift, 7},
-    {"_remstats_pshift_sample_stat", (DL_FUNC) &_remstats_pshift_sample_stat, 7},
+    {"_remstats_creates_pshift", (DL_FUNC) &_remstats_creates_pshift, 8},
+    {"_remstats_pshift_sample_stat", (DL_FUNC) &_remstats_pshift_sample_stat, 8},
     {"_remstats_recency_sample_stat", (DL_FUNC) &_remstats_recency_sample_stat, 9},
     {"_remstats_rrank_sample_stat", (DL_FUNC) &_remstats_rrank_sample_stat, 11},
     {"_remstats_exogenous_sample_stat", (DL_FUNC) &_remstats_exogenous_sample_stat, 10},
