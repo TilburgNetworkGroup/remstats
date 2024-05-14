@@ -61,10 +61,6 @@
 #' @importFrom stats IQR
 #' @importFrom stats quantile
 boxplot.tomstats <- function(x, effect, by = "timepoints", subset = NULL, outliers = TRUE, ...) {
-    # Check if 'x' is a 'tomstats' object
-    if (!("tomstats" %in% class(x))) {
-        stop("Expected a tie-oriented remstats object")
-    }
 
     # Figure out which statistic to plot
     if (is.character(effect)) {
@@ -215,10 +211,6 @@ boxplot.tomstats <- function(x, effect, by = "timepoints", subset = NULL, outlie
 #' @importFrom stats IQR
 #' @importFrom stats quantile
 boxplot.aomstats <- function(x, effect, model, by = "timepoints", subset = NULL, outliers = TRUE, ...) {
-    # Check if 'x' is a 'tomstats' object
-    if (!("aomstats" %in% class(x))) {
-        stop("Expected an actor-oriented remstats object")
-    }
 
     # Figure out the model
     model <- match.arg(model, c("sender", "receiver"))
@@ -376,10 +368,6 @@ boxplot.aomstats <- function(x, effect, model, by = "timepoints", subset = NULL,
 #' @importFrom grDevices rainbow
 #' @importFrom stats quantile
 plot.aomstats <- function(x, effect, subset = NULL, ...) {
-    # Check if 'x' is a 'aomstats' object
-    if (!("aomstats" %in% class(x))) {
-        stop("Expected an actor-oriented remstats object")
-    }
 
     # Figure out which statistic to plot
     if (is.character(effect)) {
@@ -475,10 +463,6 @@ plot.aomstats <- function(x, effect, subset = NULL, ...) {
 #' @importFrom grDevices rainbow
 #' @importFrom stats quantile
 plot.tomstats <- function(x, effect, subset = NULL, ...) {
-    # Check if 'x' is a 'tomstats' object
-    if (!("tomstats" %in% class(x))) {
-        stop("Expected a tie-oriented remstats object")
-    }
 
     # Figure out which statistic to plot
     if (is.character(effect)) {

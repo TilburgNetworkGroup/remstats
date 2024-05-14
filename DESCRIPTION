@@ -9,12 +9,12 @@ Authors@R:
             given = "Giuseppe",
             family = "Arena",
             role = c("aut", "cre"),
-            email = "g.arena@tilburguniversity.edu"),
+            email = "g.arena@tilburguniversity.edu",
+            comment = c(ORCID = "0000-0001-5204-3326")),
         person(
             given = "Marlyne",
             family = "Meijerink-Bosman",
-            role = c("aut"),
-            email = "m.l.meijerink@tilburguniversity.edu"),
+            role = "aut"),
         person(
             given = "Diana",
             family = "Karimova",
@@ -29,7 +29,7 @@ Authors@R:
             given = "Mahdi",
             family = "Shafiee Kamalabad",
             role = "ctb",
-            email = "m.shafiee@tilburguniversity.edu"),
+            email = "m.shafieekamalabad@uu.nl"),
         person(
             given = "Fabio",
             family = "Generoso Vieira",

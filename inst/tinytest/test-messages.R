@@ -562,3 +562,103 @@ expect_error(
     remstats(reh = reh, tie_effects = ~ inertia),
     pattern = "functions"
 )
+
+# plot.R ------------------------------------------------
+
+# Load data
+data(history)
+
+# Prepare data for 'tomstats'
+reh_tie <- remify::remify(edgelist = history[,1:3], model = "tie")
+# Compute effects
+stats_tie <- remstats(reh_tie, tie_effects = ~ inertia())
+
+# Prepare data for 'aomstats'
+reh_actor <- remify::remify(edgelist = history[,1:3], model = "actor")
+# Compute effects
+stats_actor <- remstats(reh_actor, sender_effects = ~ outdegreeSender(), receiver_effects = ~ indegreeReceiver())
+
+
+# errors for 'boxplot.tomstats'
+
+expect_error(
+    boxplot(x = stats_tie, effect = TRUE),
+    pattern = "Expected"
+)
+
+expect_error(
+    boxplot(x = stats_tie, effect = 3),
+    pattern = "'effect'"
+)
+
+expect_error(
+    boxplot(x = stats_tie, effect = "reciprocity"),
+    pattern = "reciprocity"
+)
+
+
+# errors for 'boxplot.aomstats'
+
+expect_error(
+    boxplot(x = stats_actor, model = "sender", effect = TRUE),
+    pattern = "Expected"
+)
+
+expect_error(
+    boxplot(x = stats_actor, model = "sender", effect = 3),
+    pattern = "'effect'"
+)
+
+expect_error(
+    boxplot(x = stats_actor, model = "receiver", effect = 3),
+    pattern = "'effect'"
+)
+
+expect_error(
+    boxplot(x = stats_actor, model = "sender", effect = "outdegreeReceiver"),
+    pattern = "outdegreeReceiver"
+)
+
+expect_error(
+    boxplot(x = stats_actor, model = "receiver", effect = "outdegreeSender"),
+    pattern = "outdegreeSender"
+)
+
+expect_error(
+    boxplot(x = stats_actor, model = "receiver", effect = "indegreeReceiver", by = "actors"),
+    pattern = "'by' = 'actors'"
+)
+
+# errors for 'plot.aomstats'
+
+expect_error(
+    plot(x = stats_actor, effect = TRUE),
+    pattern = "Expected"
+)
+
+expect_error(
+    plot(x = stats_actor, effect = "indegreeReceiver"),
+    pattern = "indegreeReceiver"
+)
+
+expect_error(
+    plot(x = stats_actor, effect = 3),
+    pattern = "'effect'"
+)
+
+# errors for 'plot.tomstats'
+
+expect_error(
+    plot(x = stats_tie, effect = TRUE),
+    pattern = "Expected"
+)
+
+expect_error(
+    plot(x = stats_tie, effect = "reciprocity"),
+    pattern = "reciprocity"
+)
+
+expect_error(
+    plot(x = stats_tie, effect = 3),
+    pattern = "'effect'"
+)
