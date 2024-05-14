@@ -32,9 +32,7 @@ arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed)
   arma::uword N = actorID.n_elem;
   arma::uword C = typeID.n_elem;
 
-  switch (directed)
-  {
-  case 0:
+  if(!directed)
   { // for undirected network
     arma::uword i, j, c;
     arma::uword col_index = 0;
@@ -56,9 +54,7 @@ arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed)
     }
     return riskset;
   }
-
-  case 1:
-  { // for directed network
+  else{ // for directed network
     arma::uword i, j, c;
     arma::mat riskset(N * N * C, 4);
     arma::uvec indices_to_shed(N * C); // this is the vector where to store the indices of selfedges to remove at the end of the function
@@ -85,7 +81,6 @@ arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed)
     riskset.shed_rows(indices_to_shed);
     riskset.col(3) = arma::linspace(0, riskset.n_rows - 1, riskset.n_rows);
     return riskset;
-  }
   }
 }
 

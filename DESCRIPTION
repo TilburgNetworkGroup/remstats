@@ -2,19 +2,19 @@ Package: remstats
 Type: Package
 Title: Computes Statistics for Relational Event History Data
 Version: 3.2.2
-Date: 2023-12-14
+Date: 2024-05-14
 Authors@R: 
     c(
         person(
-            given = "Marlyne",
-            family = "Meijerink-Bosman",
-            role = c("aut", "cre"),
-            email = "m.l.meijerink@tilburguniversity.edu"),
-        person(
             given = "Giuseppe",
             family = "Arena",
-            role = "ctb",
+            role = c("aut", "cre"),
             email = "g.arena@tilburguniversity.edu"),
+        person(
+            given = "Marlyne",
+            family = "Meijerink-Bosman",
+            role = c("aut"),
+            email = "m.l.meijerink@tilburguniversity.edu"),
         person(
             given = "Diana",
             family = "Karimova",
