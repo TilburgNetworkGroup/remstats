@@ -51,7 +51,8 @@ Compatible with `remify` version 3.2.0.
 
 # remstats 3.1.8
 **Date**: October 25, 2023
-Works with remify >= 3.1.0.
+
+* Works with remify >= 3.1.0.
 
 **Fixed** 
 
@@ -59,7 +60,8 @@ Works with remify >= 3.1.0.
 
 # remstats 3.1.7
 **Date**: October 9, 2023
-Works with remify >= 3.1.0.
+
+* Works with remify >= 3.1.0.
 
 **New features**
 
@@ -73,7 +75,8 @@ Works with remify >= 3.1.0.
 
 # remstats 3.1.6
 **Date**: October 6, 2023
-Works with remify >= 3.1.0.
+
+* Works with remify >= 3.1.0.
 
 **New features**
 
@@ -81,7 +84,8 @@ Works with remify >= 3.1.0.
 
 # remstats 3.1.5
 **Date**: September 5, 2023
-Works with remify >= 3.1.0. 
+
+* Works with remify >= 3.1.0. 
 
 **Bug fixes**
 
@@ -89,7 +93,8 @@ Works with remify >= 3.1.0.
 
 # remstats 3.1.4
 **Date**: August 28, 2023
-Works with remify >= 3.1.0. 
+
+* Works with remify >= 3.1.0. 
 
 **Bug fixes** 
 
@@ -97,7 +102,8 @@ Works with remify >= 3.1.0.
 
 # remstats 3.1.3
 **Date**: July 13, 2023
-Works with remify >= 3.1.0. 
+
+* Works with remify >= 3.1.0. 
 
 **New features**
 
@@ -105,7 +111,8 @@ Works with remify >= 3.1.0.
 
 # remstats 3.1.2
 **Date**: July 6, 2023
-Works with remify >= 3.1.0. 
+
+* Works with remify >= 3.1.0. 
 
 **New features**
 
@@ -142,7 +149,9 @@ Works with remify >= 3.1.0.
 # remstats 3.1.0
 **Date**: June 1, 2023
 
-**IMPORTANT**: remstats 3.1.0 works with remify >= 3.0.0. **Make sure remify is updated.** If earlier versions of remify are in use, remstats 3.1.0 will break down.
+**IMPORTANT**: remstats 3.1.0 
+
+* Works with remify >= 3.0.0. **Make sure remify is updated.** If earlier versions of remify are in use, remstats 3.1.0 will break down.
 
 **New features**
 
@@ -199,7 +208,9 @@ Works with remify >= 3.1.0.
 # remstats 3.0.0
 **Date**: December 22, 2021
 
-IMPORTANT: remstats 3.0.0 works with remify >= 2.0.0. Make sure remify is updated. If earlier versions of remify are in use, remstats 3.0.0 will break down. 
+**IMPORTANT:** remstats 3.0.0 
+
+* Works with remify >= 2.0.0. **Make sure remify is updated**. If earlier versions of remify are in use, remstats 3.0.0 will break down. 
 
 **Major changes**
 
