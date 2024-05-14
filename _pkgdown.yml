@@ -1,174 +1,172 @@
-url: ~
+url: https://tilburgnetworkgroup.github.io/remstats/
 template:
   bslib:
     version: 5
     boothswatch: yeti
-    base_font: {google: "Open Sans"}
-    heading_font: {google: "Open Sans"}
+    base_font:
+      google: Open Sans
+    heading_font:
+      google: Open Sans
     bs-theme: light
-
 navbar:
-  title: "remstats"
+  title: remstats
   left:
-    - icon: fa-home fa-lg
-      href: index.html
-    - text: "Vignettes"
-      href: articles/index.html
-    - text: "Functions"
-      href: reference/index.html
-    - text: "News"
-      href: news/index.html
-    - text: "Other Packages"
-      menu:
-        - text: "remify"
-          href: https://github.com/TilburgNetworkGroup/remify
-        - text: "remstimate"
-          href: https://tilburgnetworkgroup.github.io/remstimate/
-        - text: "remulate"
-          href: https://github.com/TilburgNetworkGroup/remulate     
-        - text: "bremory"
-          href: https://github.com/TilburgNetworkGroup/bremory
-        - text: "remx"
-          href: https://github.com/TilburgNetworkGroup/remx
-    - text: "remverse"
-      href: https://github.com/TilburgNetworkGroup/remverse
+  - icon: fa-home fa-lg
+    href: index.html
+  - text: Vignettes
+    href: articles/index.html
+  - text: Functions
+    href: reference/index.html
+  - text: News
+    href: news/index.html
+  - text: Other Packages
+    menu:
+    - text: remify
+      href: https://github.com/TilburgNetworkGroup/remify
+    - text: remstimate
+      href: https://tilburgnetworkgroup.github.io/remstimate/
+    - text: remulate
+      href: https://github.com/TilburgNetworkGroup/remulate
+    - text: bremory
+      href: https://github.com/TilburgNetworkGroup/bremory
+    - text: remx
+      href: https://github.com/TilburgNetworkGroup/remx
+  - text: remverse
+    href: https://github.com/TilburgNetworkGroup/remverse
   right:
-   - icon: fa-twitter
-     href: https://twitter.com/TiUNetworkGroup
-   - icon: fa-github
-     href: https://github.com/TilburgNetworkGroup/remstats
-
+  - icon: fa-twitter
+    href: https://twitter.com/TiUNetworkGroup
+  - icon: fa-github
+    href: https://github.com/TilburgNetworkGroup/remstats
 articles:
-  - title: ""
-    desc: >
-      This vignette provides a brief introduction to computing statistics for relational event history data with the **remstats** package. 
-    contents:
-      - remstats
-
-
+- title: ''
+  desc: "This vignette provides a brief introduction to computing statistics for relational
+    event history data with the **remstats** package. \n"
+  contents: remstats
 reference:
-  - title: "Remstats"
-    desc: >
-      Compute statistics for modeling relational events with a tie-oriented or actor-oriented approach.
-    contents:
-      - remstats
-      - print.remstats
-      - summary.remstats
-      - tomstats
-      - aomstats
-      - boxplot.aomstats
-      - boxplot.tomstats
-      - plot.aomstats
-      - plot.tomstats
-      - bind_remstats
-  - title: "Tie-oriented statistics"
-    desc: >
-      Overview of statistics in the tie-oriented model.
-    contents:
-      - tie_effects
-      - baseline
-      - intercept
-      - FEtype
-      - send
-      - receive
-      - tie
-      - same
-      - difference
-      - average
-      - minimum
-      - maximum
-      - event
-      - inertia
-      - reciprocity
-      - indegreeSender
-      - indegreeReceiver
-      - outdegreeSender
-      - outdegreeReceiver
-      - totaldegreeSender
-      - totaldegreeReceiver
-      - totaldegreeDyad
-      - degreeMin
-      - degreeMax
-      - degreeDiff
-      - otp
-      - itp
-      - osp
-      - isp
-      - sp
-      - spUnique
-      - psABBA
-      - psABBY
-      - psABXA
-      - psABXB
-      - psABXY
-      - psABAY
-      - psABAB
-      - rrankSend
-      - rrankReceive
-      - recencyContinue
-      - recencySendSender
-      - recencySendReceiver
-      - recencyReceiveSender
-      - recencyReceiveReceiver
-      - userStat
-  - title: "Actor-oriented statistics: sender model"
-    desc: >
-      Overview of statistics for the sender model in the actor-oriented modeling framework.
-    contents:
-      - actor_effects
-      - baseline
-      - intercept
-      - send
-      - indegreeSender
-      - outdegreeSender
-      - totaldegreeSender
-      - recencySendSender
-      - recencyReceiveSender
-      - psABA
-      - psABB
-      - psABX
-      - userStat
-  - title: "Actor-oriented statistics: receiver model"
-    desc: >
-      Overview of statistics for the receiver model in the actor-oriented modeling framework.
-    contents:
-      - actor_effects
-      - receive
-      - same
-      - difference
-      - average
-      - tie
-      - inertia
-      - reciprocity
-      - indegreeReceiver
-      - outdegreeReceiver
-      - totaldegreeReceiver
-      - otp
-      - itp
-      - osp
-      - isp
-      - rrankSend
-      - rrankReceive
-      - recencySendReceiver
-      - recencyReceiveReceiver
-      - recencyContinue
-      - psABBA
-      - psABAB
-      - psABXB
-      - psABXA
-      - psABAY
-      - psABBY
-      - psABXY
-      - userStat
-  - title: "Data"
-    desc: >
-      Simulted relational event history available inside remstats
-    contents:
-      - history
-      - info
-  - title: "Examples"
-    desc: >
-      Examples of simulated exogenous information on actors in a social network.
-    contents:
-      - both_male_wide
-      - both_male_long
+- title: Remstats
+  desc: |
+    Compute statistics for modeling relational events with a tie-oriented or actor-oriented approach.
+  contents:
+  - remstats
+  - print.remstats
+  - summary.remstats
+  - tomstats
+  - aomstats
+  - boxplot.aomstats
+  - boxplot.tomstats
+  - plot.aomstats
+  - plot.tomstats
+  - bind_remstats
+- title: Tie-oriented statistics
+  desc: |
+    Overview of statistics in the tie-oriented model.
+  contents:
+  - tie_effects
+  - baseline
+  - intercept
+  - FEtype
+  - send
+  - receive
+  - tie
+  - same
+  - difference
+  - average
+  - minimum
+  - maximum
+  - event
+  - inertia
+  - reciprocity
+  - indegreeSender
+  - indegreeReceiver
+  - outdegreeSender
+  - outdegreeReceiver
+  - totaldegreeSender
+  - totaldegreeReceiver
+  - totaldegreeDyad
+  - degreeMin
+  - degreeMax
+  - degreeDiff
+  - otp
+  - itp
+  - osp
+  - isp
+  - sp
+  - spUnique
+  - psABBA
+  - psABBY
+  - psABXA
+  - psABXB
+  - psABXY
+  - psABAY
+  - psABAB
+  - rrankSend
+  - rrankReceive
+  - recencyContinue
+  - recencySendSender
+  - recencySendReceiver
+  - recencyReceiveSender
+  - recencyReceiveReceiver
+  - userStat
+- title: 'Actor-oriented statistics: sender model'
+  desc: |
+    Overview of statistics for the sender model in the actor-oriented modeling framework.
+  contents:
+  - actor_effects
+  - baseline
+  - intercept
+  - send
+  - indegreeSender
+  - outdegreeSender
+  - totaldegreeSender
+  - recencySendSender
+  - recencyReceiveSender
+  - psABA
+  - psABB
+  - psABX
+  - userStat
+- title: 'Actor-oriented statistics: receiver model'
+  desc: |
+    Overview of statistics for the receiver model in the actor-oriented modeling framework.
+  contents:
+  - actor_effects
+  - receive
+  - same
+  - difference
+  - average
+  - tie
+  - inertia
+  - reciprocity
+  - indegreeReceiver
+  - outdegreeReceiver
+  - totaldegreeReceiver
+  - otp
+  - itp
+  - osp
+  - isp
+  - rrankSend
+  - rrankReceive
+  - recencySendReceiver
+  - recencyReceiveReceiver
+  - recencyContinue
+  - psABBA
+  - psABAB
+  - psABXB
+  - psABXA
+  - psABAY
+  - psABBY
+  - psABXY
+  - userStat
+- title: Data
+  desc: |
+    Simulted relational event history available inside remstats
+  contents:
+  - history
+  - info
+- title: Examples
+  desc: |
+    Examples of simulated exogenous information on actors in a social network.
+  contents:
+  - both_male_wide
+  - both_male_long
+

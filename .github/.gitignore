@@ -5,3 +5,4 @@
 *.so
 .vscode
 inst/doc
+*.html
