@@ -22,7 +22,7 @@ navbar:
   - text: Other Packages
     menu:
     - text: remify
-      href: https://github.com/TilburgNetworkGroup/remify
+      href: https://tilburgnetworkgroup.github.io/remify/
     - text: remstimate
       href: https://tilburgnetworkgroup.github.io/remstimate/
     - text: remulate
