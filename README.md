@@ -4,7 +4,7 @@
 
 ## **remstats**
 
-### _Compute statistics for relational event history data_
+### _Computes Statistics for Relational Event History Data_
 
 <!-- badges: start -->
 [![github-repo-status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
