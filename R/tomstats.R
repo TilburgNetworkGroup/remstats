@@ -374,9 +374,9 @@ tomstats2 <- function(
 		samp_num = NULL, # samp_num = 20
 		seed = NULL,
 		# deprecated passthrough
-		method <- "pt",
-		adjmat <- NULL,
-		get_adjmat <- FALSE,
+		method = "pt",
+		adjmat = NULL,
+		get_adjmat = FALSE,
 		attr_data,
 		attributes,
 		edgelist
