@@ -113,6 +113,51 @@ print.remstats <- function(x, ...) {
   }
 }
 
+
+#' @method print tomstats_sampled
+#' @export
+print.tomstats_sampled <- function(x, ...) {
+	if (!inherits(x, "remstats")) stop("Expected object of class 'remstats'")
+	
+	title <- "Relational Event Network Statistics"
+	method <- attr(x, "method")
+	method.fancy <- ifelse(method == "pt", "time point", "event")
+	
+	# sampled tie-oriented
+	model.title  <- "> Model: tie-oriented (sampled)"
+	method.title <- paste("> Computation method: per", method.fancy)
+	
+	dim.stats <- dim(x)
+	row.title <- ifelse(method == "pt", "time points x", "events x")
+	dim.long <- paste("> Dimensions:",
+										dim.stats[1], row.title,
+										dim.stats[2], "sampled dyads x",
+										dim.stats[3], "statistics")
+	
+	# sampling metadata (optional)
+	samp_num <- attr(x, "samp_num")
+	samp.scheme <- attr(x, "sampling_scheme")
+	samp.line <- NULL
+	if (!is.null(samp_num) || !is.null(samp.scheme)) {
+		samp.line <- paste0("> Sampling: ",
+												if (!is.null(samp.scheme)) samp.scheme else "TRUE",
+												if (!is.null(samp_num)) paste0(" (S=", samp_num, ")") else "")
+	}
+	
+	stats.title <- "> Statistics:"
+	stats.names <- dimnames(x)[[3]]
+	if (is.null(stats.names)) stats.names <- paste0("stat", seq_len(dim.stats[3]))
+	stats.names3 <- paste(vapply(seq_along(stats.names),
+															 function(i) paste0("\t >> ", i, ": ", stats.names[i]),
+															 character(1)),
+												collapse = "\n")
+	
+	cat(paste(c(title, model.title, method.title, dim.long, samp.line, stats.title, stats.names3),
+						collapse = "\n"))
+	invisible(x)
+}
+
+
 #' Relational Event Network Statistics Summaries
 #'
 #' Produce summaries of each statistic from a \code{\link{remstats}} object.
@@ -140,7 +185,8 @@ summary.remstats <- function(object, ...) {
     stop("Expected object of class 'remstats'")
   }
 
-  model <- ifelse(any(class(object) == "tomstats"), "tie-oriented", "actor-oriented")
+  model <- ifelse(inherits(object, "tomstats") || inherits(object, "tomstats_sampled"),
+  								"tie-oriented", "actor-oriented")
 
   if (model == "tie-oriented") {
     out <- apply(object, 3, function(y) {

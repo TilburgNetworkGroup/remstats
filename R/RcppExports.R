@@ -25,6 +25,50 @@ compute_stats_tie <- function(effects, edgelist, riskset, risksetMatrix, inertia
     .Call(`_remstats_compute_stats_tie`, effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method)
 }
 
+calculate_FEtype_sampled <- function(covariates, edgelist, riskset, start, stop, method, sample_map) {
+    .Call(`_remstats_calculate_FEtype_sampled`, covariates, edgelist, riskset, start, stop, method, sample_map)
+}
+
+calculate_exo_actor_sampled <- function(type, edgelist, riskset, covariates, start, stop, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_exo_actor_sampled`, type, edgelist, riskset, covariates, start, stop, display_progress, method, sample_map)
+}
+
+calculate_pshift_sampled <- function(type, edgelist, risksetMatrix, riskset, start, stop, directed, consider_type, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_pshift_sampled`, type, edgelist, risksetMatrix, riskset, start, stop, directed, consider_type, display_progress, method, sample_map)
+}
+
+calculate_rrank_sampled <- function(type, edgelist, risksetMatrix, riskset, start, stop, consider_type, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_rrank_sampled`, type, edgelist, risksetMatrix, riskset, start, stop, consider_type, display_progress, method, sample_map)
+}
+
+calculate_inertia_sampled <- function(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_inertia_sampled`, edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method, sample_map)
+}
+
+calculate_reciprocity_sampled <- function(edgelist, weights, risksetMatrix, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_reciprocity_sampled`, edgelist, weights, risksetMatrix, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map)
+}
+
+calculate_degree_actor_sampled <- function(type, edgelist, weights, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_degree_actor_sampled`, type, edgelist, weights, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map)
+}
+
+calculate_degree_dyad_sampled <- function(type, edgelist, weights, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_degree_dyad_sampled`, type, edgelist, weights, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map)
+}
+
+calculate_triad_sampled <- function(type, edgelist, weights, riskset, risksetMatrix, memory, memory_value, start, stop, scaling, consider_type, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_triad_sampled`, type, edgelist, weights, riskset, risksetMatrix, memory, memory_value, start, stop, scaling, consider_type, display_progress, method, sample_map)
+}
+
+get_userstat_sampled <- function(covariatesSEXP, edgelist, start, stop, display_progress, method, sample_map) {
+    .Call(`_remstats_get_userstat_sampled`, covariatesSEXP, edgelist, start, stop, display_progress, method, sample_map)
+}
+
+compute_stats_tie_sampled <- function(effects, edgelist, weights, riskset, risksetMatrix, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method, sample_map) {
+    .Call(`_remstats_compute_stats_tie_sampled`, effects, edgelist, weights, riskset, risksetMatrix, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method, sample_map)
+}
+
 combine_stats <- function(array_list, keep_list) {
     .Call(`_remstats_combine_stats`, array_list, keep_list)
 }

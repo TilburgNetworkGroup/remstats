@@ -269,6 +269,237 @@ RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP,
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// calculate_FEtype_sampled
+arma::mat calculate_FEtype_sampled(const arma::mat& covariates, const arma::mat& edgelist, const arma::mat& riskset, int start, int stop, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_FEtype_sampled(SEXP covariatesSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_FEtype_sampled(covariates, edgelist, riskset, start, stop, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calculate_exo_actor_sampled
+arma::mat calculate_exo_actor_sampled(std::string type, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& covariates, int start, int stop, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_exo_actor_sampled(SEXP typeSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP covariatesSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_exo_actor_sampled(type, edgelist, riskset, covariates, start, stop, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calculate_pshift_sampled
+arma::mat calculate_pshift_sampled(std::string type, const arma::mat& edgelist, const arma::mat& risksetMatrix, const arma::mat& riskset, int start, int stop, bool directed, bool consider_type, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_pshift_sampled(SEXP typeSEXP, SEXP edgelistSEXP, SEXP risksetMatrixSEXP, SEXP risksetSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
+    Rcpp::traits::input_parameter< bool >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_pshift_sampled(type, edgelist, risksetMatrix, riskset, start, stop, directed, consider_type, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calculate_rrank_sampled
+arma::mat calculate_rrank_sampled(int type, const arma::mat& edgelist, const arma::mat& risksetMatrix, const arma::mat& riskset, int start, int stop, bool consider_type, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_rrank_sampled(SEXP typeSEXP, SEXP edgelistSEXP, SEXP risksetMatrixSEXP, SEXP risksetSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_rrank_sampled(type, edgelist, risksetMatrix, riskset, start, stop, consider_type, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calculate_inertia_sampled
+arma::mat calculate_inertia_sampled(const arma::mat& edgelist, const arma::vec& weights, const arma::mat& risksetMatrix, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_inertia_sampled(SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetMatrixSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_inertia_sampled(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calculate_reciprocity_sampled
+arma::mat calculate_reciprocity_sampled(const arma::mat& edgelist, const arma::vec& weights, const arma::mat& risksetMatrix, const arma::mat& riskset, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool consider_type, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_reciprocity_sampled(SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetMatrixSEXP, SEXP risksetSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_reciprocity_sampled(edgelist, weights, risksetMatrix, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calculate_degree_actor_sampled
+arma::mat calculate_degree_actor_sampled(int type, const arma::mat& edgelist, const arma::vec& weights, const arma::mat& riskset, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool consider_type, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_degree_actor_sampled(SEXP typeSEXP, SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_degree_actor_sampled(type, edgelist, weights, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calculate_degree_dyad_sampled
+arma::mat calculate_degree_dyad_sampled(int type, const arma::mat& edgelist, const arma::vec& weights, const arma::mat& riskset, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool consider_type, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_degree_dyad_sampled(SEXP typeSEXP, SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_degree_dyad_sampled(type, edgelist, weights, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calculate_triad_sampled
+arma::mat calculate_triad_sampled(int type, const arma::mat& edgelist, const arma::vec& weights, const arma::mat& riskset, const arma::mat& risksetMatrix, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, Rcpp::String scaling, bool consider_type, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_triad_sampled(SEXP typeSEXP, SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type scaling(scalingSEXP);
+    Rcpp::traits::input_parameter< bool >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_triad_sampled(type, edgelist, weights, riskset, risksetMatrix, memory, memory_value, start, stop, scaling, consider_type, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_userstat_sampled
+arma::mat get_userstat_sampled(SEXP covariatesSEXP, const arma::mat& edgelist, int start, int stop, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_get_userstat_sampled(SEXP covariatesSEXPSEXP, SEXP edgelistSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type covariatesSEXP(covariatesSEXPSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_userstat_sampled(covariatesSEXP, edgelist, start, stop, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_stats_tie_sampled
+arma::cube compute_stats_tie_sampled(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::vec& weights, const arma::mat& riskset, const arma::mat& risksetMatrix, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_compute_stats_tie_sampled(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type effects(effectsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type covariates(covariatesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type interactions(interactionsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type scaling(scalingSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector& >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_stats_tie_sampled(effects, edgelist, weights, riskset, risksetMatrix, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method, sample_map));
+    return rcpp_result_gen;
+END_RCPP
+}
 // combine_stats
 arma::cube combine_stats(const Rcpp::List& array_list, const Rcpp::List& keep_list);
 RcppExport SEXP _remstats_combine_stats(SEXP array_listSEXP, SEXP keep_listSEXP) {
@@ -315,6 +546,17 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_convert_to_risksetMatrix", (DL_FUNC) &_remstats_convert_to_risksetMatrix, 3},
     {"_remstats_calculate_inertia", (DL_FUNC) &_remstats_calculate_inertia, 9},
     {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 16},
+    {"_remstats_calculate_FEtype_sampled", (DL_FUNC) &_remstats_calculate_FEtype_sampled, 7},
+    {"_remstats_calculate_exo_actor_sampled", (DL_FUNC) &_remstats_calculate_exo_actor_sampled, 9},
+    {"_remstats_calculate_pshift_sampled", (DL_FUNC) &_remstats_calculate_pshift_sampled, 11},
+    {"_remstats_calculate_rrank_sampled", (DL_FUNC) &_remstats_calculate_rrank_sampled, 10},
+    {"_remstats_calculate_inertia_sampled", (DL_FUNC) &_remstats_calculate_inertia_sampled, 10},
+    {"_remstats_calculate_reciprocity_sampled", (DL_FUNC) &_remstats_calculate_reciprocity_sampled, 12},
+    {"_remstats_calculate_degree_actor_sampled", (DL_FUNC) &_remstats_calculate_degree_actor_sampled, 12},
+    {"_remstats_calculate_degree_dyad_sampled", (DL_FUNC) &_remstats_calculate_degree_dyad_sampled, 12},
+    {"_remstats_calculate_triad_sampled", (DL_FUNC) &_remstats_calculate_triad_sampled, 14},
+    {"_remstats_get_userstat_sampled", (DL_FUNC) &_remstats_get_userstat_sampled, 7},
+    {"_remstats_compute_stats_tie_sampled", (DL_FUNC) &_remstats_compute_stats_tie_sampled, 17},
     {"_remstats_combine_stats", (DL_FUNC) &_remstats_combine_stats, 2},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}

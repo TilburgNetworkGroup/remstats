@@ -16,6 +16,11 @@ Authors@R:
             family = "Meijerink-Bosman",
             role = "aut"),
         person(
+            given = "Joris",
+            family = "Mulder",
+            role = "aut",
+            email = "j.mulder3@tilburguniversity.edu"),
+        person(
             given = "Diana",
             family = "Karimova",
             role = "ctb"),
@@ -35,12 +40,7 @@ Authors@R:
             given = "Roger",
             family = "Leenders",
             role = "ctb",
-            email = "r.t.a.j.leenders@tilburguniversity.edu"),
-        person(
-            given = "Joris",
-            family = "Mulder",
-            role = "ctb",
-            email = "j.mulder3@tilburguniversity.edu")
+            email = "r.t.a.j.leenders@tilburguniversity.edu")
     )
 Maintainer: Giuseppe Arena <g.arena@uva.nl>
 Description: Computes a variety of statistics for relational event models. Relational event models enable researchers to investigate both exogenous and endogenous factors influencing the evolution of a time-ordered sequence of events. These models are categorized into tie-oriented models (Butts, C., 2008, <doi:10.1111/j.1467-9531.2008.00203.x>), where the probability of a dyad interacting next is modeled in a single step, and actor-oriented models (Stadtfeld, C., & Block, P., 2017, <doi:10.15195/v4.a14>), which first model the probability of a sender initiating an interaction and subsequently the probability of the sender's choice of receiver. The package is designed to compute a variety of statistics that summarize exogenous and endogenous influences on the event stream for both types of models.  
