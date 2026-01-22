@@ -651,16 +651,26 @@ arma::mat calculate_pshift_sampled(std::string type,
 		
 		// event_indices at row i
 		arma::uvec event_indices;
-		if (method == "pt")
-		{
-			double next_time = (i < (M - 1)) ? time_points(i + 1) : current_time;
-			event_indices = arma::find(edgelist.col(0) >= current_time &&
-				edgelist.col(0) < next_time);
-		}
-		else // pe
-		{
-			event_indices.set_size(1);
-			event_indices(0) = start + i;
+		double previous_time = 0.0;
+		if (i > 0) previous_time = time_points(i - 1);
+		
+		if (method == "pt") {
+			event_indices = arma::find(edgelist.col(0) >= previous_time &&
+				edgelist.col(0) < current_time);
+		} else { // pe
+			if (i == 0) {
+				event_indices = arma::find(edgelist.col(0) < current_time);
+				if (event_indices.n_elem > 0) {
+					arma::uword last_event = arma::max(event_indices);
+					event_indices.set_size(1);
+					event_indices(0) = last_event;
+				} else {
+					event_indices.reset(); // empty
+				}
+			} else {
+				event_indices.set_size(1);
+				event_indices(0) = start + i - 1;
+			}
 		}
 		
 		std::vector<int> marked;
