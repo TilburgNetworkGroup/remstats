@@ -55,7 +55,7 @@ stats_decay <- remstats(
 )
 
 f <- function(time, time_event) {
-  exp(-(time - time_event) * (log(2) / 5)) * (log(2) / 5)
+  exp(-(time - time_event) * (log(2) / 5)) #* (log(2) / 5)
 }
 
 inertia_decay <- rbind(
@@ -391,3 +391,4 @@ itp <- rbind(
   c(0, 0, f(9, 5), 0)
 )
 expect_equal(receiver_statsD[, , "itp"], itp)
+

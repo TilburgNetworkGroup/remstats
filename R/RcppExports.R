@@ -41,8 +41,8 @@ calculate_rrank_sampled <- function(type, edgelist, risksetMatrix, riskset, star
     .Call(`_remstats_calculate_rrank_sampled`, type, edgelist, risksetMatrix, riskset, start, stop, consider_type, display_progress, method, sample_map)
 }
 
-calculate_inertia_sampled <- function(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method, sample_map) {
-    .Call(`_remstats_calculate_inertia_sampled`, edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method, sample_map)
+calculate_inertia_sampled <- function(edgelist, weights, risksetMatrix, riskset, memory, memory_value, start, stop, display_progress, method, sample_map) {
+    .Call(`_remstats_calculate_inertia_sampled`, edgelist, weights, risksetMatrix, riskset, memory, memory_value, start, stop, display_progress, method, sample_map)
 }
 
 calculate_reciprocity_sampled <- function(edgelist, weights, risksetMatrix, riskset, memory, memory_value, start, stop, consider_type, display_progress, method, sample_map) {

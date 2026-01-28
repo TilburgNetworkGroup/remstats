@@ -347,14 +347,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // calculate_inertia_sampled
-arma::mat calculate_inertia_sampled(const arma::mat& edgelist, const arma::vec& weights, const arma::mat& risksetMatrix, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
-RcppExport SEXP _remstats_calculate_inertia_sampled(SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetMatrixSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
+arma::mat calculate_inertia_sampled(const arma::mat& edgelist, const arma::vec& weights, const arma::mat& risksetMatrix, const arma::mat& riskset, Rcpp::String memory, const arma::vec& memory_value, int start, int stop, bool display_progress, Rcpp::String method, const arma::imat& sample_map);
+RcppExport SEXP _remstats_calculate_inertia_sampled(SEXP edgelistSEXP, SEXP weightsSEXP, SEXP risksetMatrixSEXP, SEXP risksetSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP, SEXP methodSEXP, SEXP sample_mapSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type riskset(risksetSEXP);
     Rcpp::traits::input_parameter< Rcpp::String >::type memory(memorySEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
@@ -362,7 +363,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
     Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
     Rcpp::traits::input_parameter< const arma::imat& >::type sample_map(sample_mapSEXP);
-    rcpp_result_gen = Rcpp::wrap(calculate_inertia_sampled(edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method, sample_map));
+    rcpp_result_gen = Rcpp::wrap(calculate_inertia_sampled(edgelist, weights, risksetMatrix, riskset, memory, memory_value, start, stop, display_progress, method, sample_map));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -550,7 +551,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_calculate_exo_actor_sampled", (DL_FUNC) &_remstats_calculate_exo_actor_sampled, 9},
     {"_remstats_calculate_pshift_sampled", (DL_FUNC) &_remstats_calculate_pshift_sampled, 11},
     {"_remstats_calculate_rrank_sampled", (DL_FUNC) &_remstats_calculate_rrank_sampled, 10},
-    {"_remstats_calculate_inertia_sampled", (DL_FUNC) &_remstats_calculate_inertia_sampled, 10},
+    {"_remstats_calculate_inertia_sampled", (DL_FUNC) &_remstats_calculate_inertia_sampled, 11},
     {"_remstats_calculate_reciprocity_sampled", (DL_FUNC) &_remstats_calculate_reciprocity_sampled, 12},
     {"_remstats_calculate_degree_actor_sampled", (DL_FUNC) &_remstats_calculate_degree_actor_sampled, 12},
     {"_remstats_calculate_degree_dyad_sampled", (DL_FUNC) &_remstats_calculate_degree_dyad_sampled, 12},

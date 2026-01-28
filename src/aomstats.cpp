@@ -118,7 +118,7 @@ arma::vec update_decay_weights(double previous_time,
         arma::uword event = event_indices(j);
         double event_time = edgelist(event, 0);
         double event_weight = weights(event);
-        double decay_weight = event_weight * exp(-(previous_time - event_time) * (log(2) / mem_val)) * (log(2) / mem_val);
+        double decay_weight = event_weight * exp(-(previous_time - event_time) * (log(2) / mem_val)); //* (log(2) / mem_val);
 
         decay_weights(event) = decay_weight;
     }

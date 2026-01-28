@@ -227,6 +227,20 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   if (get_adjmat) {
     attr(statistics, "adjmat") <- adjmat
   }
+  rs <- attr(statistics, "riskset")  # data.frame with sender/receiver/id
+  
+  sender   <- as.character(rs$sender)
+  receiver <- as.character(rs$receiver)
+  
+  keys <- paste0(sender, "|", receiver)
+  
+  idx <- seq_along(keys)
+  if (!is.null(rs$id) && all(rs$id == idx)) idx <- rs$id
+  
+  dyad_keys <- stats::setNames(idx, keys)
+  
+  attr(statistics, "dyad_keys") <- dyad_keys
+  
 
   # Output
   statistics
@@ -382,7 +396,6 @@ tomstats2 <- function(
 		edgelist
 ) {
 	#remove not needed arguments
-
 	
 	if (!is.null(adjmat)) {
 		warning(
@@ -390,7 +403,7 @@ tomstats2 <- function(
 			call. = FALSE
 		)
 	}
-	
+
 	if (!identical(method, "pt")) {
 		warning(
 			"`method` is deprecated and fixed to 'pt' and will be removed in a future release.",
@@ -504,8 +517,11 @@ tomstats2 <- function(
 		if (directed) paste0(s,"|",r) else ifelse(s <= r, paste0(s,"|",r), paste0(r,"|",s))
 	}
 	riskset_named <- modify_riskset(riskset, reh, actors, types)
-	rs_key <- paste0(riskset_named$sender, "|", riskset_named$receiver)
-	key_to_base <- setNames(seq_len(nrow(riskset_named)), rs_key)
+	a1 <- if ("sender" %in% names(riskset_named)) riskset_named$sender else riskset_named$actor1
+	a2 <- if ("receiver" %in% names(riskset_named)) riskset_named$receiver else riskset_named$actor2
+	
+	rs_key <- paste0(a1, "|", a2)
+	key_to_base <- setNames(riskset_named$id, rs_key)  # use id, not row index
 	
 	# ---- sample_map, case_pos, pi, log_pi ----
 	sample_map <- matrix(NA_integer_, nrow = M, ncol = samp_num)
@@ -580,7 +596,7 @@ tomstats2 <- function(
 	attr(statistics, "model") <- "tie"
 	attr(statistics, "formula") <- form
 	attr(statistics, "riskset") <- riskset_out
-	attr(statistics, "riskset_active") <- sample_map
+	attr(statistics, "riskset_sampled") <- sample_map + 1
 	attr(statistics, "samp_num") <- samp_num
 	attr(statistics, "events_mult") <- case_mult
 	attr(statistics, "subset") <- data.frame(start = start0 + 1L, stop = stop0 + 1L)
@@ -590,7 +606,7 @@ tomstats2 <- function(
 	attr(statistics, "sampling") <- TRUE
 	attr(statistics, "samp_num") <- samp_num
 	attr(statistics, "dyad_keys") <- key_to_base
-	attr(statistics, "sample_map") <- sample_map
+	attr(statistics, "sample_map") <- sample_map + 1
 	attr(statistics, "case_pos") <- case_pos
 	attr(statistics, "pi") <- pi
 	attr(statistics, "log_pi") <- log_pi

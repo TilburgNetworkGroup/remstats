@@ -78,6 +78,24 @@ Endogenous statistics:
  \item \code{\link{recencyContinue}()}
  \item \code{\link{FEtype}()}
 }
+
+\strong{Directed vs. undirected availability}
+The set of available effects depends on whether events are directed.
+Use \code{\link{tie_effects}(directed = TRUE)} or
+\code{\link{tie_effects}(directed = FALSE)} to obtain the authoritative list
+for the current package version.
+
+For undirected events (\code{directed = FALSE}), the available tie-model effects are:
+\itemize{
+  \item \code{\link{baseline}}, \code{\link{FEtype}}
+  \item \code{\link{tie}}, \code{\link{same}}, \code{\link{difference}},
+        \code{\link{average}}, \code{\link{minimum}}, \code{\link{maximum}}
+  \item \code{\link{event}}, \code{\link{userStat}}
+  \item \code{\link{inertia}}, \code{\link{totaldegreeDyad}},
+        \code{\link{degreeMin}}, \code{\link{degreeMax}}, \code{\link{degreeDiff}}
+  \item \code{\link{sp}}, \code{\link{psABAY}}, \code{\link{psABAB}},
+        \code{\link{recencyContinue}}
+}
 }
 \examples{
 # List of available effects 
