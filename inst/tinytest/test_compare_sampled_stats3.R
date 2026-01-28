@@ -12,7 +12,7 @@ history[4,] <- history[5,]
 history <- history[1:75,]
 
 # take subset for test
-start1 <- 1
+start1 <- 3
 stop1 <- 60
 
 samp_num <- 5

@@ -1309,193 +1309,193 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 
 
 
-// indegree of the sender of each sampled dyad (same memory semantics as reciprocity)
-// sample_map is interpreted as riskset row indices (0-based), NOT dyad_id.
-//
-// riskset columns: sender, receiver, type, dyad_id (dyad_id may be non-contiguous; not used here)
-static inline arma::mat indegree_sender_sampled(const arma::mat &edgelist,
-                                                const arma::vec &weights,
-                                                const arma::mat &riskset,
-                                                Rcpp::String memory,
-                                                const arma::vec &memory_value,
-                                                int start, int stop,
-                                                bool consider_type,
-                                                Rcpp::String method,
-                                                const arma::imat &sample_map,
-                                                int N, int C)
-{
-	// ---- checks ----
-	if (riskset.n_cols < 3)
-		Rcpp::stop("indegree_sender_sampled: riskset must have >=3 cols (sender, receiver, type).");
-	
-	if (!(method == "pt" || method == "pe"))
-		Rcpp::stop("indegree_sender_sampled: method must be 'pt' or 'pe'.");
-	
-	if (!(memory == "full" || memory == "window" || memory == "interval" || memory == "decay"))
-		Rcpp::stop("indegree_sender_sampled: memory must be full/window/interval/decay.");
-	
-	if ((arma::uword)edgelist.n_rows != (arma::uword)weights.n_elem)
-		Rcpp::stop("indegree_sender_sampled: weights length must equal edgelist.n_rows.");
-	
-	if (consider_type && C <= 0)
-		Rcpp::stop("indegree_sender_sampled: C must be > 0 when consider_type=TRUE.");
-	
-	// ---- time points ----
-	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
-	else                time_points = edgelist.col(0);
-	
-	if (start < 0) start = 0;
-	if (stop  < start) return arma::mat(0, sample_map.n_cols, arma::fill::zeros);
-	if ((arma::uword)stop >= time_points.n_elem) stop = (int)time_points.n_elem - 1;
-	
-	time_points = time_points.subvec((arma::uword)start, (arma::uword)stop);
-	
-	const arma::uword M = time_points.n_elem;
-	const arma::uword S = sample_map.n_cols;
-	arma::mat out(M, S, arma::fill::zeros);
-	if (M == 0 || S == 0) return out;
-	
-	// ---- state layout ----
-	const int K = consider_type ? C : 1;
-	
-	auto key = [&](int actor, int et) -> size_t {
-		return (size_t)actor * (size_t)K + (size_t)(consider_type ? et : 0);
-	};
-	
-	// indegree state per actor (and per type if consider_type)
-	const size_t SZ = (size_t)N * (size_t)K;
-	std::vector<double> state(SZ, 0.0);
-	
-	// ---- decay bookkeeping ----
-	std::vector<double> last_t;
-	double lambda = 0.0;
-	if (memory == "decay") {
-		if (memory_value.n_elem < 1)
-			Rcpp::stop("indegree_sender_sampled: decay requires memory_value length 1 (half-life).");
-		double half_life = memory_value(0);
-		if (half_life <= 0)
-			Rcpp::stop("indegree_sender_sampled: decay half-life must be > 0.");
-		lambda = std::log(2.0) / half_life;
-		last_t.assign(SZ, NAN);
-	}
-	
-	auto decay_touch = [&](size_t idx, double t_now) {
-		double &lt = last_t[idx];
-		if (std::isnan(lt)) { lt = t_now; return; }
-		double dt = t_now - lt;
-		if (dt > 0) state[idx] *= std::exp(-lambda * dt);
-		lt = t_now;
-	};
-	
-	// ---- window / interval queues ----
-	std::vector<std::deque<std::pair<double,double>>> q;
-	std::vector<double> qsum;
-	double win_len = 0.0, int_min = 0.0, int_max = 0.0;
-	
-	if (memory == "window") {
-		if (memory_value.n_elem < 1)
-			Rcpp::stop("indegree_sender_sampled: window requires memory_value length 1.");
-		win_len = memory_value(0);
-		if (win_len < 0)
-			Rcpp::stop("indegree_sender_sampled: window length must be >= 0.");
-		q.resize(SZ);
-		qsum.assign(SZ, 0.0);
-	} else if (memory == "interval") {
-		if (memory_value.n_elem < 2)
-			Rcpp::stop("indegree_sender_sampled: interval requires memory_value length 2 (min,max).");
-		int_min = memory_value(0);
-		int_max = memory_value(1);
-		if (int_min < 0 || int_max < int_min)
-			Rcpp::stop("indegree_sender_sampled: invalid interval memory_value.");
-		q.resize(SZ);
-	}
-	
-	auto update = [&](arma::uword ev) {
-		double t = edgelist(ev, 0);
-		int receiver = (int)edgelist(ev, 2);
-		int et = (edgelist.n_cols > 3) ? (int)edgelist(ev, 3) : 0;
-		double w = weights(ev);
-		
-		if (receiver < 0 || receiver >= N) return;
-		if (consider_type && (et < 0 || et >= C)) return;
-		
-		size_t idx = key(receiver, et);
-		
-		if (memory == "full") state[idx] += w;
-		else if (memory == "decay") { decay_touch(idx, t); state[idx] += w * lambda; }
-		else if (memory == "window") { q[idx].push_back({t,w}); qsum[idx] += w; }
-		else { q[idx].push_back({t,w}); } // interval
-	};
-	
-	auto query = [&](int actor, int et, double now) -> double {
-		if (actor < 0 || actor >= N) return 0.0;
-		if (consider_type && (et < 0 || et >= C)) return 0.0;
-		
-		size_t idx = key(actor, et);
-		
-		if (memory == "full") return state[idx];
-		if (memory == "decay") { decay_touch(idx, now); return state[idx]; }
-		
-		if (memory == "window") {
-			double cutoff = now - win_len;
-			auto &dq = q[idx];
-			while (!dq.empty() && dq.front().first < cutoff) {
-				qsum[idx] -= dq.front().second;
-				dq.pop_front();
-			}
-			return qsum[idx];
-		}
-		
-		// interval
-		auto &dq = q[idx];
-		double oldest = now - int_max;
-		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
-		double upper = now - int_min;
-		double acc = 0.0;
-		for (auto &tw : dq) {
-			if (tw.first < upper) acc += tw.second;
-			else break;
-		}
-		return acc;
-	};
-	
-	// ---- init from events before first selected time ----
-	arma::uword ev_ptr = 0;
-	double first_t = time_points(0);
-	while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < first_t) {
-		update(ev_ptr++);
-	}
-	
-	// ---- main loop ----
-	for (arma::uword m = 0; m < M; ++m) {
-		double now = time_points(m);
-		
-		if (method == "pt") {
-			while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < now) {
-				update(ev_ptr++);
-			}
-		}
-		
-		for (arma::uword s = 0; s < S; ++s) {
-			int r = (int)sample_map(m, s); // riskset row (0-based)
-			if (r < 0 || (arma::uword)r >= riskset.n_rows)
-				Rcpp::stop("indegree_sender_sampled: sample_map row out of bounds.");
-			
-			int sender = (int)riskset((arma::uword)r, 0);
-			int et = consider_type ? (int)riskset((arma::uword)r, 2) : 0;
-			
-			out(m, s) = query(sender, et, now);
-		}
-		
-		if (method == "pe") {
-			arma::uword ev = (arma::uword)start + m;
-			if (ev < (arma::uword)edgelist.n_rows) update(ev);
-		}
-	}
-	
-	return out;
-}
+// // indegree of the sender of each sampled dyad (same memory semantics as reciprocity)
+// // sample_map is interpreted as riskset row indices (0-based), NOT dyad_id.
+// //
+// // riskset columns: sender, receiver, type, dyad_id (dyad_id may be non-contiguous; not used here)
+// static inline arma::mat indegree_sender_sampled(const arma::mat &edgelist,
+//                                                 const arma::vec &weights,
+//                                                 const arma::mat &riskset,
+//                                                 Rcpp::String memory,
+//                                                 const arma::vec &memory_value,
+//                                                 int start, int stop,
+//                                                 bool consider_type,
+//                                                 Rcpp::String method,
+//                                                 const arma::imat &sample_map,
+//                                                 int N, int C)
+// {
+// 	// ---- checks ----
+// 	if (riskset.n_cols < 3)
+// 		Rcpp::stop("indegree_sender_sampled: riskset must have >=3 cols (sender, receiver, type).");
+// 	
+// 	if (!(method == "pt" || method == "pe"))
+// 		Rcpp::stop("indegree_sender_sampled: method must be 'pt' or 'pe'.");
+// 	
+// 	if (!(memory == "full" || memory == "window" || memory == "interval" || memory == "decay"))
+// 		Rcpp::stop("indegree_sender_sampled: memory must be full/window/interval/decay.");
+// 	
+// 	if ((arma::uword)edgelist.n_rows != (arma::uword)weights.n_elem)
+// 		Rcpp::stop("indegree_sender_sampled: weights length must equal edgelist.n_rows.");
+// 	
+// 	if (consider_type && C <= 0)
+// 		Rcpp::stop("indegree_sender_sampled: C must be > 0 when consider_type=TRUE.");
+// 	
+// 	// ---- time points ----
+// 	arma::vec time_points;
+// 	if (method == "pt") time_points = arma::unique(edgelist.col(0));
+// 	else                time_points = edgelist.col(0);
+// 	
+// 	if (start < 0) start = 0;
+// 	if (stop  < start) return arma::mat(0, sample_map.n_cols, arma::fill::zeros);
+// 	if ((arma::uword)stop >= time_points.n_elem) stop = (int)time_points.n_elem - 1;
+// 	
+// 	time_points = time_points.subvec((arma::uword)start, (arma::uword)stop);
+// 	
+// 	const arma::uword M = time_points.n_elem;
+// 	const arma::uword S = sample_map.n_cols;
+// 	arma::mat out(M, S, arma::fill::zeros);
+// 	if (M == 0 || S == 0) return out;
+// 	
+// 	// ---- state layout ----
+// 	const int K = consider_type ? C : 1;
+// 	
+// 	auto key = [&](int actor, int et) -> size_t {
+// 		return (size_t)actor * (size_t)K + (size_t)(consider_type ? et : 0);
+// 	};
+// 	
+// 	// indegree state per actor (and per type if consider_type)
+// 	const size_t SZ = (size_t)N * (size_t)K;
+// 	std::vector<double> state(SZ, 0.0);
+// 	
+// 	// ---- decay bookkeeping ----
+// 	std::vector<double> last_t;
+// 	double lambda = 0.0;
+// 	if (memory == "decay") {
+// 		if (memory_value.n_elem < 1)
+// 			Rcpp::stop("indegree_sender_sampled: decay requires memory_value length 1 (half-life).");
+// 		double half_life = memory_value(0);
+// 		if (half_life <= 0)
+// 			Rcpp::stop("indegree_sender_sampled: decay half-life must be > 0.");
+// 		lambda = std::log(2.0) / half_life;
+// 		last_t.assign(SZ, NAN);
+// 	}
+// 	
+// 	auto decay_touch = [&](size_t idx, double t_now) {
+// 		double &lt = last_t[idx];
+// 		if (std::isnan(lt)) { lt = t_now; return; }
+// 		double dt = t_now - lt;
+// 		if (dt > 0) state[idx] *= std::exp(-lambda * dt);
+// 		lt = t_now;
+// 	};
+// 	
+// 	// ---- window / interval queues ----
+// 	std::vector<std::deque<std::pair<double,double>>> q;
+// 	std::vector<double> qsum;
+// 	double win_len = 0.0, int_min = 0.0, int_max = 0.0;
+// 	
+// 	if (memory == "window") {
+// 		if (memory_value.n_elem < 1)
+// 			Rcpp::stop("indegree_sender_sampled: window requires memory_value length 1.");
+// 		win_len = memory_value(0);
+// 		if (win_len < 0)
+// 			Rcpp::stop("indegree_sender_sampled: window length must be >= 0.");
+// 		q.resize(SZ);
+// 		qsum.assign(SZ, 0.0);
+// 	} else if (memory == "interval") {
+// 		if (memory_value.n_elem < 2)
+// 			Rcpp::stop("indegree_sender_sampled: interval requires memory_value length 2 (min,max).");
+// 		int_min = memory_value(0);
+// 		int_max = memory_value(1);
+// 		if (int_min < 0 || int_max < int_min)
+// 			Rcpp::stop("indegree_sender_sampled: invalid interval memory_value.");
+// 		q.resize(SZ);
+// 	}
+// 	
+// 	auto update = [&](arma::uword ev) {
+// 		double t = edgelist(ev, 0);
+// 		int receiver = (int)edgelist(ev, 2);
+// 		int et = (edgelist.n_cols > 3) ? (int)edgelist(ev, 3) : 0;
+// 		double w = weights(ev);
+// 		
+// 		if (receiver < 0 || receiver >= N) return;
+// 		if (consider_type && (et < 0 || et >= C)) return;
+// 		
+// 		size_t idx = key(receiver, et);
+// 		
+// 		if (memory == "full") state[idx] += w;
+// 		else if (memory == "decay") { decay_touch(idx, t); state[idx] += w * lambda; }
+// 		else if (memory == "window") { q[idx].push_back({t,w}); qsum[idx] += w; }
+// 		else { q[idx].push_back({t,w}); } // interval
+// 	};
+// 	
+// 	auto query = [&](int actor, int et, double now) -> double {
+// 		if (actor < 0 || actor >= N) return 0.0;
+// 		if (consider_type && (et < 0 || et >= C)) return 0.0;
+// 		
+// 		size_t idx = key(actor, et);
+// 		
+// 		if (memory == "full") return state[idx];
+// 		if (memory == "decay") { decay_touch(idx, now); return state[idx]; }
+// 		
+// 		if (memory == "window") {
+// 			double cutoff = now - win_len;
+// 			auto &dq = q[idx];
+// 			while (!dq.empty() && dq.front().first < cutoff) {
+// 				qsum[idx] -= dq.front().second;
+// 				dq.pop_front();
+// 			}
+// 			return qsum[idx];
+// 		}
+// 		
+// 		// interval
+// 		auto &dq = q[idx];
+// 		double oldest = now - int_max;
+// 		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
+// 		double upper = now - int_min;
+// 		double acc = 0.0;
+// 		for (auto &tw : dq) {
+// 			if (tw.first < upper) acc += tw.second;
+// 			else break;
+// 		}
+// 		return acc;
+// 	};
+// 	
+// 	// ---- init from events before first selected time ----
+// 	arma::uword ev_ptr = 0;
+// 	double first_t = time_points(0);
+// 	while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < first_t) {
+// 		update(ev_ptr++);
+// 	}
+// 	
+// 	// ---- main loop ----
+// 	for (arma::uword m = 0; m < M; ++m) {
+// 		double now = time_points(m);
+// 		
+// 		if (method == "pt") {
+// 			while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < now) {
+// 				update(ev_ptr++);
+// 			}
+// 		}
+// 		
+// 		for (arma::uword s = 0; s < S; ++s) {
+// 			int r = (int)sample_map(m, s); // riskset row (0-based)
+// 			if (r < 0 || (arma::uword)r >= riskset.n_rows)
+// 				Rcpp::stop("indegree_sender_sampled: sample_map row out of bounds.");
+// 			
+// 			int sender = (int)riskset((arma::uword)r, 0);
+// 			int et = consider_type ? (int)riskset((arma::uword)r, 2) : 0;
+// 			
+// 			out(m, s) = query(sender, et, now);
+// 		}
+// 		
+// 		if (method == "pe") {
+// 			arma::uword ev = (arma::uword)start + m;
+// 			if (ev < (arma::uword)edgelist.n_rows) update(ev);
+// 		}
+// 	}
+// 	
+// 	return out;
+// }
 
 
 
@@ -1772,65 +1772,212 @@ arma::mat calculate_reciprocity_sampled(const arma::mat &edgelist,
 
 
 
-// build dyad_id -> sender map once (use in multiple stats)
-static inline std::vector<int> sender_by_dyad_from_riskset(const arma::mat &riskset,
-                                                           arma::uword D)
-{
-	if (riskset.n_cols < 4) Rcpp::stop("riskset must have >=4 cols (sender, receiver, type, dyad_id).");
-	std::vector<int> sender_by_dyad(D, -1);
-	for (arma::uword r = 0; r < riskset.n_rows; ++r) {
-		int d = static_cast<int>(riskset(r, 3));
-		if (d < 0 || static_cast<arma::uword>(d) >= D) continue;
-		sender_by_dyad[static_cast<arma::uword>(d)] = static_cast<int>(riskset(r, 0));
-	}
-	return sender_by_dyad;
-}
+// // build dyad_id -> sender map once (use in multiple stats)
+// static inline std::vector<int> sender_by_dyad_from_riskset(const arma::mat &riskset,
+//                                                            arma::uword D)
+// {
+// 	if (riskset.n_cols < 4) Rcpp::stop("riskset must have >=4 cols (sender, receiver, type, dyad_id).");
+// 	std::vector<int> sender_by_dyad(D, -1);
+// 	for (arma::uword r = 0; r < riskset.n_rows; ++r) {
+// 		int d = static_cast<int>(riskset(r, 3));
+// 		if (d < 0 || static_cast<arma::uword>(d) >= D) continue;
+// 		sender_by_dyad[static_cast<arma::uword>(d)] = static_cast<int>(riskset(r, 0));
+// 	}
+// 	return sender_by_dyad;
+// }
 
-static inline arma::mat normalize_inertia_sampled_prop(const arma::mat &stat_in,   // MxS (already inertia)
-                                                       const arma::mat &inertia,   // MxS (same as stat_in)
-                                                       const arma::mat &riskset,
-                                                       const arma::imat &sample_map,
-                                                       arma::uword D,
-                                                       int N)
+#include <deque>
+#include <cmath>
+
+// (keep it static inline)
+static inline arma::mat normalize_inertia_sampled_prop(
+		const arma::mat &stat_in,          // MxS (already raw inertia or raw reciprocity)
+		const arma::mat &edgelist,         // full edgelist (0-based actors, col0=time, col1=sender, col2=receiver, col3=type optional)
+		const arma::vec &weights,
+		const arma::mat &riskset,          // cols: sender, receiver, type, dyad_id (sender/type used here)
+		Rcpp::String memory,               // full/window/interval/decay
+		const arma::vec &memory_value,     // decay: [half_life], window: [L], interval: [min,max]
+		int start, int stop,               // 0-based indices into time_points (same convention as your sampled stats)
+		bool consider_type,
+		Rcpp::String method,               // "pt" or "pe" (you said pe is unused, but keep it consistent)
+		const arma::imat &sample_map,      // MxS riskset row indices (0-based)
+		int N)
 {
 	const arma::uword M = stat_in.n_rows;
 	const arma::uword S = stat_in.n_cols;
-	
 	arma::mat out = stat_in;
 	
-	std::vector<int> sender_by_dyad = sender_by_dyad_from_riskset(riskset, D);
+	if (M == 0 || S == 0) return out;
+	if (N <= 1) Rcpp::stop("normalize_inertia_sampled_prop: N must be > 1.");
 	
-	std::vector<double> deg_out(static_cast<size_t>(N), 0.0);
+	// Determine number of types if needed
+	int C = 1;
+	if (consider_type) {
+		if (riskset.n_cols < 3) Rcpp::stop("normalize_inertia_sampled_prop: riskset needs type column.");
+		C = static_cast<int>(arma::max(riskset.col(2))) + 1;
+		if (C <= 0) C = 1;
+	}
+	const int K = consider_type ? C : 1;
 	
-	for (arma::uword m = 0; m < M; ++m) {
-		std::fill(deg_out.begin(), deg_out.end(), 0.0);
+	auto key = [&](int sender, int et) -> size_t {
+		return static_cast<size_t>(sender) * static_cast<size_t>(K) + static_cast<size_t>(consider_type ? et : 0);
+	};
+	
+	// --- state for outdegree(sender[,type]) ---
+	const size_t SZ = static_cast<size_t>(N) * static_cast<size_t>(K);
+	std::vector<double> full_sum;
+	std::vector<std::deque<std::pair<double,double>>> q;
+	std::vector<double> qsum;
+	std::vector<double> dec_state, dec_last_t;
+	
+	double win_len = 0.0, int_min = 0.0, int_max = 0.0, half_life = 0.0, lambda = 0.0;
+	
+	if (memory == "full") {
+		full_sum.assign(SZ, 0.0);
+	} else if (memory == "window") {
+		if (memory_value.n_elem < 1) Rcpp::stop("normalize_inertia_sampled_prop: window needs memory_value[1].");
+		win_len = memory_value(0);
+		q.resize(SZ);
+		qsum.assign(SZ, 0.0);
+	} else if (memory == "interval") {
+		if (memory_value.n_elem < 2) Rcpp::stop("normalize_inertia_sampled_prop: interval needs memory_value[2].");
+		int_min = memory_value(0);
+		int_max = memory_value(1);
+		q.resize(SZ);
+	} else if (memory == "decay") {
+		if (memory_value.n_elem < 1) Rcpp::stop("normalize_inertia_sampled_prop: decay needs memory_value[1].");
+		half_life = memory_value(0);
+		if (half_life <= 0) Rcpp::stop("normalize_inertia_sampled_prop: half_life must be > 0.");
+		lambda = std::log(2.0) / half_life;
+		dec_state.assign(SZ, 0.0);
+		dec_last_t.assign(SZ, NAN);
+	} else {
+		Rcpp::stop("normalize_inertia_sampled_prop: unknown memory.");
+	}
+	
+	auto decay_touch = [&](size_t idx, double t_eval) {
+		double &lt = dec_last_t[idx];
+		if (std::isnan(lt)) { lt = t_eval; return; }
+		double dt = t_eval - lt;
+		if (dt > 0) dec_state[idx] *= std::exp(-lambda * dt);
+		lt = t_eval;
+	};
+	
+	auto prune_window = [&](size_t idx, double t_eval) {
+		auto &dq = q[idx];
+		double cutoff = t_eval - win_len;
+		while (!dq.empty() && dq.front().first < cutoff) {
+			qsum[idx] -= dq.front().second;
+			dq.pop_front();
+		}
+	};
+	
+	auto prune_interval = [&](size_t idx, double t_eval) {
+		auto &dq = q[idx];
+		double oldest = t_eval - int_max;
+		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
+	};
+	
+	auto add_event = [&](arma::uword ev) {
+		const double t = edgelist(ev, 0);
+		const int sender = static_cast<int>(edgelist(ev, 1));
+		int et = 0;
+		if (consider_type) {
+			et = (edgelist.n_cols > 3) ? static_cast<int>(edgelist(ev, 3)) : 0;
+			if (et < 0 || et >= C) return;
+		}
+		if (sender < 0 || sender >= N) return;
 		
-		// compute sampled outdegree per sender at row m
-		for (arma::uword s = 0; s < S; ++s) {
-			arma::uword d = sample_map(m, s);
-			if (d >= D) Rcpp::stop("normalize_inertia_sampled_prop: sample_map out of bounds.");
-			int a1 = sender_by_dyad[d];
-			if (a1 < 0 || a1 >= N) Rcpp::stop("normalize_inertia_sampled_prop: invalid sender mapping.");
-			deg_out[static_cast<size_t>(a1)] += inertia(m, s);
+		const size_t idx = key(sender, et);
+		const double w = weights(ev);
+		
+		if (memory == "full") {
+			full_sum[idx] += w;
+		} else if (memory == "window") {
+			q[idx].push_back({t, w});
+			qsum[idx] += w;
+		} else if (memory == "interval") {
+			q[idx].push_back({t, w});
+		} else { // decay
+			decay_touch(idx, t);
+			dec_state[idx] += w;
+		}
+	};
+	
+	auto query_deg = [&](int sender, int et, double t_eval) -> double {
+		if (sender < 0 || sender >= N) return 0.0;
+		if (consider_type && (et < 0 || et >= C)) return 0.0;
+		
+		const size_t idx = key(sender, et);
+		
+		if (memory == "full") return full_sum[idx];
+		
+		if (memory == "window") {
+			prune_window(idx, t_eval);
+			return qsum[idx];
 		}
 		
-		// divide each sampled dyad by its sender outdegree
-		for (arma::uword s = 0; s < S; ++s) {
-			arma::uword d = sample_map(m, s);
-			int a1 = sender_by_dyad[d];
-			double denom = deg_out[static_cast<size_t>(a1)];
-			
-			if (denom > 0.0 && std::isfinite(denom)) {
-				out(m, s) = out(m, s) / denom;
-			} else {
-				// match original spirit: replace NaN with 1/(N-1)
-				out(m, s) = 1.0 / (static_cast<double>(N) - 1.0);
+		if (memory == "interval") {
+			prune_interval(idx, t_eval);
+			double upper = t_eval - int_min;
+			double acc = 0.0;
+			const auto &dq = q[idx];
+			for (const auto &tw : dq) {
+				if (tw.first < upper) acc += tw.second;
+				else break;
 			}
+			return acc;
+		}
+		
+		// decay
+		decay_touch(idx, t_eval);
+		return dec_state[idx];
+	};
+	
+	// --- build the same time_points the sampled stat used ---
+	arma::vec time_points;
+	if (method == "pt") time_points = arma::unique(edgelist.col(0));
+	else if (method == "pe") time_points = edgelist.col(0);
+	else Rcpp::stop("normalize_inertia_sampled_prop: method must be 'pt' or 'pe'.");
+	
+	time_points = time_points.subvec(static_cast<arma::uword>(start), static_cast<arma::uword>(stop));
+	if (time_points.n_elem != M) {
+		Rcpp::stop("normalize_inertia_sampled_prop: time_points length mismatch with stat_in.");
+	}
+	
+	// initialize with events before first selected time
+	arma::uword ev_ptr = 0;
+	const double first_t = time_points(0);
+	while (ev_ptr < static_cast<arma::uword>(edgelist.n_rows) && edgelist(ev_ptr, 0) < first_t) {
+		add_event(ev_ptr++);
+	}
+	
+	// main loop: advance to < now, evaluate denom at prev, scale each sampled dyad
+	for (arma::uword m = 0; m < M; ++m) {
+		const double now  = time_points(m);
+		const double prev = (m == 0 ? time_points(0) : time_points(m - 1));
+		
+		while (ev_ptr < static_cast<arma::uword>(edgelist.n_rows) && edgelist(ev_ptr, 0) < now) {
+			add_event(ev_ptr++);
+		}
+		
+		for (arma::uword s = 0; s < S; ++s) {
+			const int r = sample_map(m, s);
+			if (r < 0 || static_cast<arma::uword>(r) >= riskset.n_rows)
+				Rcpp::stop("normalize_inertia_sampled_prop: sample_map row out of bounds.");
+			
+			const int sender = static_cast<int>(riskset(static_cast<arma::uword>(r), 0));
+			const int et = consider_type ? static_cast<int>(riskset(static_cast<arma::uword>(r), 2)) : 0;
+			
+			const double denom = query_deg(sender, et, prev);
+			if (denom > 0.0 && std::isfinite(denom)) out(m, s) = out(m, s) / denom;
+			else out(m, s) = 1.0 / (static_cast<double>(N) - 1.0);
 		}
 	}
 	
 	return out;
 }
+
 
 static inline arma::mat standardize_rows_sampled(const arma::mat &x)
 {
@@ -1862,11 +2009,16 @@ static inline arma::vec past_events_denom(const arma::mat &edgelist,
                                           bool display_progress,
                                           Rcpp::String method)
 {
-	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
-	else if (method == "pe") time_points = edgelist.col(0);
+	// --- build full time grid, then subset (need full grid for pt "prev" when start>0) ---
+	arma::vec time_points_all;
+	if (method == "pt")      time_points_all = arma::sort(arma::unique(edgelist.col(0)));
+	else if (method == "pe") time_points_all = edgelist.col(0);
 	else Rcpp::stop("past_events_denom: method must be 'pt' or 'pe'.");
-	time_points = time_points.subvec(start, stop);
+	
+	if (start < 0 || stop < start || stop >= (int)time_points_all.n_elem)
+		Rcpp::stop("past_events_denom: invalid start/stop.");
+	
+	arma::vec time_points = time_points_all.subvec((arma::uword)start, (arma::uword)stop);
 	
 	const arma::uword M = time_points.n_elem;
 	arma::vec den(M, arma::fill::zeros);
@@ -1883,8 +2035,16 @@ static inline arma::vec past_events_denom(const arma::mat &edgelist,
 	std::deque<std::pair<double,double>> q;
 	double qsum = 0.0;
 	double win_len = 0.0, int_min = 0.0, int_max = 0.0;
-	if (memory == "window") win_len = memory_value(0);
-	if (memory == "interval") { int_min = memory_value(0); int_max = memory_value(1); }
+	
+	if (memory == "window") {
+		if (memory_value.n_elem < 1) Rcpp::stop("past_events_denom: window needs memory_value[1].");
+		win_len = memory_value(0);
+	}
+	if (memory == "interval") {
+		if (memory_value.n_elem < 2) Rcpp::stop("past_events_denom: interval needs memory_value[2].");
+		int_min = memory_value(0);
+		int_max = memory_value(1);
+	}
 	
 	auto decay_touch = [&](double t_now){
 		if (std::isnan(last_t)) { last_t = t_now; return; }
@@ -1894,14 +2054,14 @@ static inline arma::vec past_events_denom(const arma::mat &edgelist,
 	};
 	
 	auto add_event = [&](arma::uword ev){
-		double t = edgelist(ev, 0);
-		double w = weights(ev);
+		const double t = edgelist(ev, 0);
+		const double w = weights(ev);
 		
 		if (memory == "full") {
 			state += w;
 		} else if (memory == "decay") {
 			decay_touch(t);
-			state += w * lambda;
+			state += w;
 		} else if (memory == "window") {
 			q.push_back({t,w});
 			qsum += w;
@@ -1912,44 +2072,75 @@ static inline arma::vec past_events_denom(const arma::mat &edgelist,
 		}
 	};
 	
-	auto query = [&](double now)->double{
+	auto query = [&](double t_eval)->double{
 		if (memory == "full") return state;
-		if (memory == "decay") { decay_touch(now); return state; }
+		
+		if (memory == "decay") {
+			decay_touch(t_eval);
+			return state;
+		}
 		
 		if (memory == "window") {
-			double cutoff = now - win_len;
-			while (!q.empty() && q.front().first < cutoff) { qsum -= q.front().second; q.pop_front(); }
+			const double cutoff = t_eval - win_len;
+			while (!q.empty() && q.front().first < cutoff) {
+				qsum -= q.front().second;
+				q.pop_front();
+			}
 			return qsum;
 		}
 		
 		// interval
-		double oldest = now - int_max;
+		const double oldest = t_eval - int_max;
 		while (!q.empty() && q.front().first < oldest) q.pop_front();
-		double upper = now - int_min;
+		
+		const double upper = t_eval - int_min;
 		double acc = 0.0;
-		for (auto &tw : q) { if (tw.first < upper) acc += tw.second; else break; }
+		for (const auto &tw : q) {
+			if (tw.first < upper) acc += tw.second;
+			else break;
+		}
 		return acc;
 	};
 	
-	if (memory == "decay") lambda = std::log(2.0) / memory_value(0);
+	if (memory == "decay") {
+		if (memory_value.n_elem < 1) Rcpp::stop("past_events_denom: decay needs memory_value[1].");
+		if (memory_value(0) <= 0) Rcpp::stop("past_events_denom: half_life must be > 0.");
+		lambda = std::log(2.0) / memory_value(0);
+	}
 	
-	// init from events strictly before first timepoint
-	double first_t = time_points(0);
-	while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr,0) < first_t) add_event(ev_ptr++);
-
+	// init from events strictly before first selected timepoint
+	const double first_t = time_points(0);
+	while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr,0) < first_t)
+		add_event(ev_ptr++);
+	
 	Progress p(M, display_progress);
 	
 	for (arma::uword m = 0; m < M; ++m) {
-		double now = time_points(m);
+		const double now = time_points(m);
 		
 		if (method == "pt") {
-			while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr,0) < now) add_event(ev_ptr++);
+			// bring state up to "just before now" (events strictly earlier than now)
+			while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr,0) < now)
+				add_event(ev_ptr++);
 		}
 		
-		den(m) = query(now);
+		// pt semantics: evaluate denom using past up to *previous* timepoint
+		double eval_t;
+		if (method == "pt") {
+			if (m == 0) {
+				eval_t = (start == 0) ? time_points_all(0) : time_points_all((arma::uword)(start - 1));
+			} else {
+				eval_t = time_points(m - 1);
+			}
+		} else {
+			eval_t = now;
+		}
+		
+		den(m) = query(eval_t);
 		
 		if (method == "pe") {
-			arma::uword ev = (arma::uword)start + m;
+			// pe semantics: add current event after evaluating
+			const arma::uword ev = (arma::uword)start + m;
 			if (ev < (arma::uword)edgelist.n_rows) add_event(ev);
 		}
 		
@@ -1958,6 +2149,7 @@ static inline arma::vec past_events_denom(const arma::mat &edgelist,
 	
 	return den;
 }
+
 
 static inline arma::mat normalize_degree_sampled_prop_node(arma::mat x,
                                                            const arma::mat &edgelist,
@@ -1969,24 +2161,28 @@ static inline arma::mat normalize_degree_sampled_prop_node(arma::mat x,
                                                            Rcpp::String method,
                                                            int N)
 {
-	if (N <= 0) Rcpp::stop("normalize_degree_sampled_prop_node: N must be > 0.");
-	
 	arma::vec den = past_events_denom(edgelist, weights, memory, memory_value,
                                    start, stop, display_progress, method);
 	
-	if (den.n_elem != x.n_rows)
-		Rcpp::stop("normalize_degree_sampled_prop_node: denominator length mismatch.");
-	
-	const double fallback = 1.0 / static_cast<double>(N);
-	
 	for (arma::uword m = 0; m < x.n_rows; ++m) {
 		double d = den(m);
-		if (std::isfinite(d) && d > 0) x.row(m) /= d;
-		else x.row(m).fill(fallback);
+		if (std::isfinite(d) && d > 0) {
+			x.row(m) /= d;
+		} else {
+			// full path: division by 0 -> NaN, later replaced with 0
+			x.row(m).zeros();
+		}
 	}
 	
-	x.replace(arma::datum::nan, fallback);
-	x.replace(arma::datum::inf, fallback);
+	// full path: NaN -> 0 (not 1/N)
+	x.replace(arma::datum::nan, 0.0);
+	x.replace(arma::datum::inf, 0.0);
+	
+	// full path: only if start==0, set first row to 1/N
+	if (start == 0 && x.n_rows > 0) {
+		x.row(0).fill(1.0 / static_cast<double>(N));
+	}
+	
 	return x;
 }
 
@@ -2046,24 +2242,28 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 	if ((arma::uword)edgelist.n_rows != (arma::uword)weights.n_elem)
 		Rcpp::stop("calculate_degree_actor_sampled: weights length must equal edgelist.n_rows.");
 	
-	// ---- time points ----
-	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
-	else                time_points = edgelist.col(0);
+	// ---- time points (keep full grid to get correct prev at window start) ----
+	arma::vec time_points_all;
+	if (method == "pt") time_points_all = arma::sort(arma::unique(edgelist.col(0)));
+	else                time_points_all = edgelist.col(0);
 	
 	if (start < 0) start = 0;
 	if (stop < start) {
 		arma::mat out0(0, sample_map.n_cols, arma::fill::zeros);
 		return out0;
 	}
-	if ((arma::uword)stop >= time_points.n_elem) stop = (int)time_points.n_elem - 1;
+	if ((arma::uword)stop >= time_points_all.n_elem) stop = (int)time_points_all.n_elem - 1;
 	
-	time_points = time_points.subvec((arma::uword)start, (arma::uword)stop);
+	arma::vec time_points = time_points_all.subvec((arma::uword)start, (arma::uword)stop);
 	
 	const arma::uword M = time_points.n_elem;
 	const arma::uword S = sample_map.n_cols;
 	arma::mat out(M, S, arma::fill::zeros);
 	if (M == 0 || S == 0) return out;
+	
+	// prev time for the first row in the sliced window (pt semantics: (prev, now])
+	double prev0 = time_points(0);
+	if (method == "pt" && start > 0) prev0 = time_points_all((arma::uword)start - 1);
 	
 	// ---- infer N and C from riskset ----
 	int max_actor = (int)arma::max(arma::max(riskset.cols(0, 1)));
@@ -2140,17 +2340,17 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 		else { q[idx].push_back({t, w}); } // interval
 	};
 	
-	auto query_state = [&](int actor, int et, double now) -> double {
+	auto query_state = [&](int actor, int et, double t_eval) -> double {
 		if (actor < 0 || actor >= N) return 0.0;
 		if (consider_type && (et < 0 || et >= C)) return 0.0;
 		
 		size_t idx = key(actor, et);
 		
 		if (memory == "full") return state[idx];
-		if (memory == "decay") { decay_touch(idx, now); return state[idx]; }
+		if (memory == "decay") { decay_touch(idx, t_eval); return state[idx]; }
 		
 		if (memory == "window") {
-			double cutoff = now - win_len;
+			double cutoff = t_eval - win_len;
 			auto &dq = q[idx];
 			while (!dq.empty() && dq.front().first < cutoff) {
 				qsum[idx] -= dq.front().second;
@@ -2161,9 +2361,9 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 		
 		// interval
 		auto &dq = q[idx];
-		double oldest = now - int_max;
+		double oldest = t_eval - int_max;
 		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
-		double upper = now - int_min;
+		double upper = t_eval - int_min;
 		double acc = 0.0;
 		for (auto &tw : dq) {
 			if (tw.first < upper) acc += tw.second;
@@ -2189,10 +2389,10 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 		}
 	};
 	
-	// ---- init from events before first selected time ----
+	// ---- init from events before first selected now ----
 	arma::uword ev_ptr = 0;
-	double first_t = time_points(0);
-	while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < first_t) {
+	double first_now = time_points(0);
+	while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < first_now) {
 		update_with_event(ev_ptr++);
 	}
 	
@@ -2200,13 +2400,12 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 	
 	// ---- main loop ----
 	for (arma::uword m = 0; m < M; ++m) {
-		double now = time_points(m);
-		double prev = (m == 0 ? time_points(0) : time_points(m - 1));
+		double now  = time_points(m);
+		double prev = (m == 0 ? prev0 : time_points(m - 1));
 		
-		if (method == "pt") {
-			while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < now) {
-				update_with_event(ev_ptr++);
-			}
+		// advance state to include all events strictly before now
+		while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < now) {
+			update_with_event(ev_ptr++);
 		}
 		
 		for (arma::uword s = 0; s < S; ++s) {
@@ -2225,6 +2424,7 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 			out(m, s) = query_state(actor, et, prev);
 		}
 		
+		// pe is effectively unused in your pipeline, but kept for completeness
 		if (method == "pe") {
 			arma::uword ev = (arma::uword)start + m;
 			if (ev < (arma::uword)edgelist.n_rows) update_with_event(ev);
@@ -2235,6 +2435,7 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 	
 	return out;
 }
+
 
 
 // [[Rcpp::export]]
@@ -2825,8 +3026,10 @@ arma::cube compute_stats_tie_sampled(Rcpp::CharacterVector effects,
 				stats.slice(i) = in; // MxS
 				
 				if (scaling(i) == "prop") {
-					arma::uword D = static_cast<arma::uword>(risksetMatrix.max() + 1);
-					stats.slice(i) = normalize_inertia_sampled_prop(stats.slice(i), in, riskset, sample_map, D, N);
+					stats.slice(i) = normalize_inertia_sampled_prop(
+						stats.slice(i), edgelist, weights, riskset,
+						memory, memory_value, start, stop,
+						consider_type(i), method, sample_map, N);
 				} else if (scaling(i) == "std") {
 					stats.slice(i) = standardize_rows_sampled(stats.slice(i));
 				}
@@ -2835,25 +3038,35 @@ arma::cube compute_stats_tie_sampled(Rcpp::CharacterVector effects,
 			
 			// reciprocity
 		case 102: {
-			arma::mat rec = calculate_reciprocity_sampled(edgelist, weights,
-                                                 risksetMatrix, riskset,
-                                                 memory, memory_value,
-                                                 start, stop,
-                                                 consider_type(i),
-                                                 display_progress, method,
-                                                 sample_map);
+			arma::mat rec = calculate_reciprocity_sampled(
+				edgelist, weights,
+				risksetMatrix, riskset,
+				memory, memory_value,
+				start, stop,
+				consider_type(i),
+				display_progress, method,
+				sample_map
+			);
+			
 			if (scaling(i) == "prop") {
-				int N = risksetMatrix.n_rows;
-				int C = risksetMatrix.n_cols / N;
-				arma::mat denom = indegree_sender_sampled(edgelist, weights, riskset,
-                                              memory, memory_value,
-                                              start, stop,
-                                              consider_type(i),
-                                              method, sample_map,
-                                              N, C);
+				const int N = risksetMatrix.n_rows;
+				
+				// denominator = indegreeSender (matches normalize_reciprocity() in full code)
+				arma::mat denom = calculate_degree_actor_sampled(
+					/*type=*/1,
+					edgelist, weights, riskset,
+					memory, memory_value,
+					start, stop,
+					consider_type(i),
+					/*display_progress=*/false,
+					method,
+					sample_map
+				);
+				
 				rec /= denom;
 				rec.replace(arma::datum::inf, 1.0 / (N - 1.0));
 				rec.replace(arma::datum::nan, 1.0 / (N - 1.0));
+				
 			} else if (scaling(i) == "std") {
 				rec = standardize_rows_sampled(rec);
 			}
@@ -2861,7 +3074,6 @@ arma::cube compute_stats_tie_sampled(Rcpp::CharacterVector effects,
 			stats.slice(i) = rec;
 			break;
 		}
-			
 			
 			// indegreeSender
 		case 111: {
@@ -2891,7 +3103,6 @@ arma::cube compute_stats_tie_sampled(Rcpp::CharacterVector effects,
 			}
 			break;
 		}
-			
 			
 			// indegreeReceiver
 		case 112: {

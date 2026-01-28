@@ -83,30 +83,34 @@ check_sampled_equals_full <- function(effects,
 }
 
 tests <- list(
-	inertia_recip = ~ inertia() + reciprocity()
-	# degrees       = ~ indegreeSender() + outdegreeSender() + indegreeReceiver() + outdegreeReceiver(),
-	# triads        = ~ otp() + itp() + isp() + osp(),
-	# recency       = ~ recencySendReceiver() + recencyReceiveReceiver() + recencyContinue(),
-	# pshifts       = ~ psABBA() + psABXY() + psABAY(),
-	# exo_send_receive   = ~ 1 + send("extraversion", info) + receive("extraversion", info),
-	# exo_send_receive_2 = ~ 1 + send("agreeableness", info) + receive("agreeableness", info),
-	# exo_same_diff      = ~ 1 + same("sex", info) + difference("age", info),
-	# exo_aggregate      = ~ 1 + average("extraversion", info) + minimum("age", info) + maximum("age", info),
-	# 
-	# dyad_tie_wide = function() {
-	# 	data(both_male_wide, package = "remstats")
-	# 	check_sampled_equals_full(
-	# 		~ tie(variable = "both_male", attr_dyads = both_male_wide),
-	# 		attr_dyads = both_male_wide
-	# 	)
-	# },
-	# dyad_tie_long = function() {
-	# 	data(both_male_long, package = "remstats")
-	# 	check_sampled_equals_full(
-	# 		~ tie(variable = "both_male", attr_dyads = both_male_long),
-	# 		attr_dyads = both_male_long
-	# 	)
-	# }
+	inertia_recip = ~ inertia() + reciprocity(),
+	inertia_recip_prop = ~ inertia(scaling="prop") + reciprocity(scaling="prop"),
+	degrees       = ~ indegreeSender() + outdegreeSender() + indegreeReceiver() + outdegreeReceiver(),
+	degrees_prop  = ~ indegreeSender(scaling="prop") + outdegreeSender(scaling="prop") + indegreeReceiver(scaling="prop") + outdegreeReceiver(scaling="prop"),
+	triads        = ~ otp() + itp() + isp() + osp(),
+	# scaling = 'std' (use ccs correction)
+	# add tests when events have types.
+	recency       = ~ recencySendReceiver() + recencyReceiveReceiver() + recencyContinue(),
+	pshifts       = ~ psABBA() + psABXY() + psABAY(),
+	exo_send_receive   = ~ 1 + send("extraversion", info) + receive("extraversion", info),
+	exo_send_receive_2 = ~ 1 + send("agreeableness", info) + receive("agreeableness", info),
+	exo_same_diff      = ~ 1 + same("sex", info) + difference("age", info),
+	exo_aggregate      = ~ 1 + average("extraversion", info) + minimum("age", info) + maximum("age", info),
+
+	dyad_tie_wide = function() {
+		data(both_male_wide, package = "remstats")
+		check_sampled_equals_full(
+			~ tie(variable = "both_male", attr_dyads = both_male_wide),
+			attr_dyads = both_male_wide
+		)
+	},
+	dyad_tie_long = function() {
+		data(both_male_long, package = "remstats")
+		check_sampled_equals_full(
+			~ tie(variable = "both_male", attr_dyads = both_male_long),
+			attr_dyads = both_male_long
+		)
+	}
 )
 
 for (nm in names(tests)) {
@@ -117,7 +121,7 @@ for (nm in names(tests)) {
 	}
 }
 
-m <- 2
+m <- 1
 dim(ts_samp)
 dim(ts_full)
 head(history)
