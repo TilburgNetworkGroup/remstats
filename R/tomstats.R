@@ -512,16 +512,22 @@ tomstats2 <- function(
 	
 	# map observed (sender,receiver) -> base dyad id
 	directed <- isTRUE(attr(reh, "directed"))
-	make_key <- function(s, r) {
-		s <- as.character(s); r <- as.character(r)
-		if (directed) paste0(s,"|",r) else ifelse(s <= r, paste0(s,"|",r), paste0(r,"|",s))
+	typed <- !is.null(types) && "type" %in% names(ed)
+	make_key <- function(a1, a2, ty = NULL) {
+		if (!directed) { lo <- pmin(a1,a2); hi <- pmax(a1,a2) } else { lo <- a1; hi <- a2 }
+		if (typed) paste(lo, hi, ty, sep="|") else paste(lo, hi, sep="|")
 	}
 	riskset_named <- modify_riskset(riskset, reh, actors, types)
 	a1 <- if ("sender" %in% names(riskset_named)) riskset_named$sender else riskset_named$actor1
 	a2 <- if ("receiver" %in% names(riskset_named)) riskset_named$receiver else riskset_named$actor2
 	
-	rs_key <- paste0(a1, "|", a2)
-	key_to_base <- setNames(riskset_named$id, rs_key)  # use id, not row index
+	# riskset mapping
+	rs_key <- make_key(a1, a2, riskset_named$type)
+	key_to_base <- setNames(riskset_named$id, rs_key)
+	
+	# riskset is the C++ base riskset matrix with columns (..., id) in col 4
+	# ids should be 0..D_base-1
+	stopifnot(max(riskset[,4]) == nrow(riskset) - 1L)
 	
 	# ---- sample_map, case_pos, pi, log_pi ----
 	sample_map <- matrix(NA_integer_, nrow = M, ncol = samp_num)
@@ -531,7 +537,7 @@ tomstats2 <- function(
 	
 	for (m in seq_len(M)) {
 		ev_idx <- events_by_row[[m]]
-		keys <- make_key(ed$actor1[ev_idx], ed$actor2[ev_idx])
+		keys <- make_key(ed$actor1[ev_idx], ed$actor2[ev_idx], ed$type[ev_idx])
 		cases_all <- as.integer(unname(key_to_base[keys]) - 1L)
 		tab <- table(cases_all)
 		cases <- as.integer(names(tab))          # unique case dyads (0-based)

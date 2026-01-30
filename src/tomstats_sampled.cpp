@@ -1096,6 +1096,7 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
                                     Rcpp::String memory,
                                     const arma::vec &memory_value,
                                     int start, int stop,
+                                    bool directed,
                                     bool display_progress,
                                     Rcpp::String method,
                                     const arma::imat &sample_map)
@@ -1103,6 +1104,7 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 	if (display_progress) {
 		Rcpp::Rcout << "Calculating inertia statistic (sampled)" << std::endl;
 	}
+	if (display_progress) Rcpp::Rcout << "directed=" << directed << "\n";
 	
 	// time points
 	arma::vec time_points;
@@ -1118,6 +1120,10 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 	int C = risksetMatrix.n_cols / N;
 	const arma::uword D = static_cast<arma::uword>(risksetMatrix.max() + 1);
 	
+	if (D != riskset.n_rows) {
+		Rcpp::stop("calculate_inertia_sampled: D (risksetMatrix max+1) != riskset.n_rows; dyad-id universe mismatch.");
+	}
+	
 	arma::mat out(M, S, arma::fill::zeros);
 	if (M == 0 || S == 0) return out;
 	
@@ -1125,12 +1131,15 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 	auto event_time = [&](arma::uword ev) -> double { return edgelist(ev, 0); };
 	
 	auto dyad_of_event = [&](arma::uword ev) -> int {
-		int a1 = static_cast<int>(edgelist(ev, 1));
-		int a2 = static_cast<int>(edgelist(ev, 2));
-		int et = 0;
-		if (C > 1) et = static_cast<int>(edgelist(ev, 3));
-		int dyad = static_cast<int>(risksetMatrix(a1, a2 + N * et));
-		return dyad;
+		int a1 = (int)edgelist(ev, 1);
+		int a2 = (int)edgelist(ev, 2);
+		int et = (C > 1) ? (int)edgelist(ev, 3) : 0;
+		
+		int d;
+		if (!directed && a1 > a2) std::swap(a1, a2);
+		d = (int)risksetMatrix(a1, a2 + N * et);
+		
+		return d;
 	};
 	
 	// --- state ---
@@ -1181,7 +1190,7 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 	auto prune_window = [&](arma::uword d, double t_eval) {
 		auto &q = win_q[d];
 		double cutoff = t_eval - win_len;
-		while (!q.empty() && q.front().first < cutoff) {
+		while (!q.empty() && q.front().first <= cutoff) {
 			win_sum[d] -= q.front().second;
 			q.pop_front();
 		}
@@ -1200,7 +1209,7 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 	auto prune_interval = [&](arma::uword d, double t_eval) {
 		auto &q = int_q[d];
 		double oldest_allowed = t_eval - int_max;
-		while (!q.empty() && q.front().first < oldest_allowed) q.pop_front();
+		while (!q.empty() && q.front().first <= oldest_allowed) q.pop_front(); // <= not <
 	};
 	
 	auto update_interval = [&](arma::uword ev) {
@@ -1249,43 +1258,44 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 		
 		// For pt: ensure all events with time < prev have been processed.
 		// For pe: the ev_ptr logic below still holds; we always advance to < prev for emission.
-		while (ev_ptr < static_cast<arma::uword>(edgelist.n_rows) && event_time(ev_ptr) < now) {
-			if (memory == "full") update_full(ev_ptr);
+		while (ev_ptr < (arma::uword)edgelist.n_rows && event_time(ev_ptr) < now) {
+			
+			// normal update
+			if (memory == "interval") update_interval(ev_ptr);
 			else if (memory == "window") update_window(ev_ptr);
-			else if (memory == "interval") update_interval(ev_ptr);
-			else if (memory == "decay") update_decay(ev_ptr);
-			ev_ptr++;
+			else if (memory == "full") update_full(ev_ptr);
+			else update_decay(ev_ptr);
+			
+			++ev_ptr;
 		}
 		
 		// emit only sampled dyads, evaluated at prev
 		for (arma::uword s = 0; s < S; ++s) {
-			arma::uword r = sample_map(m, s);
-			if (r >= (arma::uword)riskset.n_rows) Rcpp::stop("calculate_inertia_sampled: sample_map row out of bounds.");
-			
-			int d_int = (int)riskset(r, 3);
-			if (d_int < 0 || (arma::uword)d_int >= D) Rcpp::stop("calculate_inertia_sampled: dyad_id out of bounds.");
-			arma::uword d = (arma::uword)d_int;
+			arma::uword d = (arma::uword) sample_map(m, s);   // dyad id (0-based)
+			if (d >= D) Rcpp::stop("calculate_inertia_sampled: dyad id out of bounds.");
 			
 			if (memory == "full") {
 				out(m, s) = full_sum[d];
+				
 			} else if (memory == "window") {
 				prune_window(d, prev);
 				out(m, s) = win_sum[d];
+				
 			} else if (memory == "interval") {
 				prune_interval(d, prev);
 				double upper = prev - int_min;
 				double acc = 0.0;
-				const auto &q = int_q[d];
-				for (const auto &tw : q) {
-					if (tw.first < upper) acc += tw.second;
-					else break;
+				for (const auto &tw : int_q[d]) {
+					if (tw.first <= upper) acc += tw.second;
 				}
-				out(m, s) = acc;
+				out(m,s) = acc;
+
 			} else { // decay
 				decay_touch(d, prev);
 				out(m, s) = dec_state[d];
 			}
 		}
+		
 		
 		// For pe: add the current event AFTER emitting row m so it becomes past for subsequent rows.
 		// This keeps the "< prev" invariant for the next iteration once prev moves forward.
@@ -2362,11 +2372,11 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 		// interval
 		auto &dq = q[idx];
 		double oldest = t_eval - int_max;
-		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
+		while (!dq.empty() && dq.front().first <= oldest) dq.pop_front();
 		double upper = t_eval - int_min;
 		double acc = 0.0;
 		for (auto &tw : dq) {
-			if (tw.first < upper) acc += tw.second;
+			if (tw.first <= upper) acc += tw.second;
 			else break;
 		}
 		return acc;
@@ -2600,7 +2610,7 @@ arma::mat calculate_triad_sampled(int type,                      // 1..5 as in c
 		if (memory == "window") {
 			double cutoff = now - win_len;
 			double &s = qsum[dyad];
-			while (!dq.empty() && dq.front().first < cutoff) {
+			while (!dq.empty() && dq.front().first <= cutoff) {
 				s -= dq.front().second;
 				dq.pop_front();
 			}
@@ -2609,11 +2619,11 @@ arma::mat calculate_triad_sampled(int type,                      // 1..5 as in c
 		
 		// interval
 		double oldest = now - int_max;
-		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
+		while (!dq.empty() && dq.front().first <= oldest) dq.pop_front();
 		double upper = now - int_min;
 		double acc = 0.0;
 		for (auto &tw : dq) {
-			if (tw.first < upper) acc += tw.second;
+			if (tw.first <= upper) acc += tw.second;
 			else break;
 		}
 		return acc;
@@ -3020,6 +3030,7 @@ arma::cube compute_stats_tie_sampled(Rcpp::CharacterVector effects,
 				arma::mat in = calculate_inertia_sampled(edgelist, weights, risksetMatrix, riskset,
                                              memory, memory_value,
                                              start, stop,
+                                             directed,
                                              display_progress, method,
                                              sample_map);
 				

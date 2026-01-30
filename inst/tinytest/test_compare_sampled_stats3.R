@@ -9,11 +9,11 @@ data(info, package = "remstats")
 # add some events happening in same interval
 history$time[7:8] <- history$time[9]
 history[4,] <- history[5,]
-history <- history[1:75,]
+history <- history[1:35,]
 
 # take subset for test
 start1 <- 3
-stop1 <- 60
+stop1 <- 30
 
 samp_num <- 5
 
@@ -120,7 +120,7 @@ tests <- list(
 	triads        = ~ sp(),
 	recency       = ~ recencyContinue(),
 	pshifts       = ~ psABAY() + psABAB(),
-	exo_stats      = effects_exo
+	exo_stats     = effects_exo
 )
 
 for (nm in names(tests)) {

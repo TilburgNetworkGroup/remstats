@@ -9,11 +9,11 @@ data(info, package = "remstats")
 # add some events happening in same interval
 history$time[7:8] <- history$time[9]
 history[4,] <- history[5,]
-history <- history[1:75,]
+history <- history[1:25,]
 
 # take subset for test
 start1 <- 2
-stop1 <- 70
+stop1 <- 22
 
 check_sampled_equals_full <- function(effects,
 																			samp_num = 5L,

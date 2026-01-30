@@ -1,6 +1,9 @@
 # tests of whethed the case-control sampled versions of tomstats yields the same stats are the full analysis
 # for the sampled dyads.
-# here this is tested a dyadic ("tie") model with active riskset, directed events, time-sensitive (not ordinal) model
+# here this is tested a dyadic ("tie") model with manual riskset, directed events, time-sensitive (not ordinal) model
+# memroy decay
+# with event types
+# manual riskset
 
 data(history, package = "remstats")
 data(info, package = "remstats")
@@ -8,11 +11,12 @@ data(info, package = "remstats")
 # add some events happening in same interval
 history$time[7:8] <- history$time[9]
 history[4,] <- history[5,]
-history <- history[1:25,]
+history <- history[1:22,]
+colnames(history)[4] <- "type"
 
 # take subset for test
-start1 <- 3
-stop1 <- 10
+start1 <- 2
+stop1 <- 18
 
 check_sampled_equals_full <- function(effects,
 																			samp_num = 5L,
@@ -20,23 +24,24 @@ check_sampled_equals_full <- function(effects,
 																			tol = 1e-12,
 																			attr_dyads = NULL) {
 
-	reh <- remify::remify2(edgelist = history, model = "tie", riskset = "active")
+	reh <- remify::remify2(edgelist = history, model = "tie", riskset = "manual", directed = FALSE,
+												 manual.riskset = history[,2:3])
 
 	ts_samp <- remstats::tomstats2(
-		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads,
+		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_val = 1000,
 		sampling = TRUE, samp_num = samp_num, seed = seed, start = start1, stop = stop1
 	)
 
 	# reproducibility (same seed/args)
 	ts_samp2 <- remstats::tomstats2(
-		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads,
+		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_val = 1000,
 		sampling = TRUE, samp_num = samp_num, seed = seed, start = start1, stop = stop1
 	)
 	expect_equal(ts_samp, ts_samp2, tol = tol)
 	expect_equal(attr(ts_samp, "sample_map"), attr(ts_samp2, "sample_map"))
 
 	ts_full <- remstats::tomstats2(
-		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads,
+		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_val = 1000,
 		sampling = FALSE, start = start1, stop = stop1
 	)
 
@@ -81,31 +86,41 @@ check_sampled_equals_full <- function(effects,
 	invisible(TRUE)
 }
 
-tests <- list(
-	inertia_recip = ~ inertia() + reciprocity(),
-	degrees       = ~ indegreeSender() + outdegreeSender() + indegreeReceiver() + outdegreeReceiver(),
-	triads        = ~ otp() + itp() + isp() + osp(),
-	recency       = ~ recencySendReceiver() + recencyReceiveReceiver() + recencyContinue(),
-	pshifts       = ~ psABBA() + psABXY() + psABAY(),
-	exo_send_receive   = ~ 1 + send("extraversion", info) + receive("extraversion", info),
-	exo_send_receive_2 = ~ 1 + send("agreeableness", info) + receive("agreeableness", info),
-	exo_same_diff      = ~ 1 + same("sex", info) + difference("age", info),
-	exo_aggregate      = ~ 1 + average("extraversion", info) + minimum("age", info) + maximum("age", info),
+effects_exo <- ~
+	same("sex", info) +
+	difference("age", info) +
+	average("extraversion", info) +
+	minimum("age", info) +
+	maximum("age", info)
 
-	dyad_tie_wide = function() {
+# Optional: dyad covariates shipped with remstats (skip if not present)
+dyad_cov_tests <- function() {
+	if (exists("both_male_wide", where = asNamespace("remstats"), inherits = FALSE)) {
 		data(both_male_wide, package = "remstats")
 		check_sampled_equals_full(
 			~ tie(variable = "both_male", attr_dyads = both_male_wide),
+			samp_num = samp_num, seed = seed, tol = tol,
 			attr_dyads = both_male_wide
 		)
-	},
-	dyad_tie_long = function() {
+	}
+	if (exists("both_male_long", where = asNamespace("remstats"), inherits = FALSE)) {
 		data(both_male_long, package = "remstats")
 		check_sampled_equals_full(
 			~ tie(variable = "both_male", attr_dyads = both_male_long),
+			samp_num = samp_num, seed = seed, tol = tol,
 			attr_dyads = both_male_long
 		)
 	}
+	invisible(TRUE)
+}
+
+tests <- list(
+	inertia_recip = ~ inertia(),
+	degrees       = ~ totaldegreeDyad() + degreeMin() + degreeMax() + degreeDiff(),
+	triads        = ~ sp(),
+	recency       = ~ recencyContinue(),
+	pshifts       = ~ psABAY() + psABAB(),
+	exo_stats     = effects_exo
 )
 
 for (nm in names(tests)) {
@@ -116,14 +131,16 @@ for (nm in names(tests)) {
 	}
 }
 
-m <- 4
+m <- 50
 dim(ts_samp)
 dim(ts_full)
 head(history)
-head(reh$edgelist)
-riskset
-sample_map[m,]
+head(reh$edgelist_id)
+riskset[sample_map[m,],]
 ts_samp[m,,]
 ts_full[m,sample_map[m,],]
+
+exp(- (345 - 238) * log(2) / 1000) * 1.33
+exp(- (317 - 238) * log(2) / 1000) * 1.33
 
 
