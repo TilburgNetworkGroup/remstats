@@ -24,20 +24,20 @@ check_sampled_equals_full <- function(effects,
 	reh <- remify::remify2(edgelist = history, model = "tie", riskset = "active")
 	
 	ts_samp <- remstats::tomstats2(
-		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_val = 1000,
+		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_value = 1000,
 		sampling = TRUE, samp_num = samp_num, seed = seed, start = start1, stop = stop1
 	)
 	
 	# reproducibility (same seed/args)
 	ts_samp2 <- remstats::tomstats2(
-		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_val = 1000,
+		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_value = 1000,
 		sampling = TRUE, samp_num = samp_num, seed = seed, start = start1, stop = stop1
 	)
 	expect_equal(ts_samp, ts_samp2, tol = tol)
 	expect_equal(attr(ts_samp, "sample_map"), attr(ts_samp2, "sample_map"))
 	
 	ts_full <- remstats::tomstats2(
-		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_val = 1000,
+		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_value = 1000,
 		sampling = FALSE, start = start1, stop = stop1
 	)
 	
@@ -121,16 +121,15 @@ for (nm in names(tests)) {
 	}
 }
 
-m <- 1
-dim(ts_samp)
-dim(ts_full)
-head(history)
-head(reh$edgelist_id)
-riskset[sample_map[m,],]
-ts_samp[m,,]
-ts_full[m,sample_map[m,],]
-
-exp(- (345 - 238) * log(2) / 1000) * 1.33
-exp(- (317 - 238) * log(2) / 1000) * 1.33
+# m <- 1
+# dim(ts_samp)
+# dim(ts_full)
+# head(history)
+# head(reh$edgelist_id)
+# ts_samp[m,,]
+# ts_full[m,sample_map[m,],]
+# 
+# exp(- (345 - 238) * log(2) / 1000) * 1.33
+# exp(- (317 - 238) * log(2) / 1000) * 1.33
 
 

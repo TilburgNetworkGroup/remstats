@@ -163,27 +163,21 @@ userstat_actor_test <- function(start1,stop1) {
 		samp_num = 5L, seed = 1L, tol = 1e-12
 	)
 }
-userstat_actor_test(start1,stop1)
 
 
 
-
-dim(ts_samp)
-dim(ts_full)
-m <- 31
-head(history)
-head(reh$edgelist)
-riskset[sample_map[m,],]
-ts_samp[m,,]
-ts_full[m,sample_map[m,],]
-
-
-exp(-(3 - 2) * log(2) / 3) * 1.64
-exp(-(3 - 1) * log(2) / 3) * 1.33
-
-
-ev_idx <- events_by_row[[5]]
-c(ed$actor1[ev_idx], ed$actor2[ev_idx])
-keys <- make_key(ed$actor1[ev_idx], ed$actor2[ev_idx])
-key_to_base[keys]   # should be 26
+# dim(ts_samp)
+# dim(ts_full)
+# m <- 31
+# head(history)
+# head(reh$edgelist)
+# 
+# 
+# exp(-(3 - 2) * log(2) / 3) * 1.64
+# exp(-(3 - 1) * log(2) / 3) * 1.33
+# 
+# ev_idx <- events_by_row[[5]]
+# c(ed$actor1[ev_idx], ed$actor2[ev_idx])
+# keys <- make_key(ed$actor1[ev_idx], ed$actor2[ev_idx])
+# key_to_base[keys]   # should be 26
 

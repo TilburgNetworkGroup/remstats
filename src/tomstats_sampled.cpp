@@ -424,11 +424,12 @@ arma::mat calculate_recency_sampled(std::string type,
 {
 	if (display_progress) Rcpp::Rcout << "Calculating " << type << " statistic (sampled)" << std::endl;
 	
-	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
-	else if (method == "pe") time_points = edgelist.col(0);
+	arma::vec tp_all;
+	if (method == "pt") tp_all = arma::sort(arma::unique(edgelist.col(0)));
+	else if (method == "pe") tp_all = edgelist.col(0);
 	else Rcpp::stop("calculate_recency_sampled: unknown method.");
-	time_points = time_points.subvec(start, stop);
+	
+	arma::vec time_points = tp_all.subvec((arma::uword)start, (arma::uword)stop);
 	
 	const arma::uword M = time_points.n_elem;
 	const arma::uword S = sample_map.n_cols;
@@ -443,7 +444,7 @@ arma::mat calculate_recency_sampled(std::string type,
 	lastActive.fill(arma::datum::inf);
 	
 	// initialize from past
-	double first_time = edgelist(start, 0);
+	double first_time = time_points(0);
 	arma::uvec event_indices = arma::find(edgelist.col(0) < first_time);
 	
 	auto update_from_event = [&](arma::uword event)
@@ -937,11 +938,12 @@ arma::mat calculate_rrank_sampled(int type,
 {
 	if (type != 1 && type != 2) Rcpp::stop("calculate_rrank_sampled: type must be 1 (send) or 2 (receive).");
 	
-	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
-	else if (method == "pe") time_points = edgelist.col(0);
+	arma::vec tp_all;
+	if (method == "pt") tp_all = arma::sort(arma::unique(edgelist.col(0)));
+	else if (method == "pe") tp_all = edgelist.col(0);
 	else Rcpp::stop("calculate_rrank_sampled: method must be 'pt' or 'pe'.");
-	time_points = time_points.subvec(start, stop);
+	
+	arma::vec time_points = tp_all.subvec((arma::uword)start, (arma::uword)stop);
 	
 	const arma::uword M = time_points.n_elem;
 	const arma::uword S = sample_map.n_cols;
@@ -985,7 +987,7 @@ arma::mat calculate_rrank_sampled(int type,
 	std::vector<double> lastTime(D, 0.0);
 	
 	// init from past
-	double first_time = edgelist(start, 0);
+	double first_time = time_points(0);
 	arma::uvec event_indices = arma::find(edgelist.col(0) < first_time);
 	
 	for (arma::uword m = 0; m < event_indices.n_elem; ++m) {
@@ -1108,7 +1110,7 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 	
 	// time points
 	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
+	if (method == "pt") time_points = arma::sort(arma::unique(edgelist.col(0)));
 	else if (method == "pe") time_points = edgelist.col(0);
 	else Rcpp::stop("calculate_inertia_sampled: method must be 'pt' or 'pe'.");
 	time_points = time_points.subvec(start, stop);
@@ -1249,15 +1251,24 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 		ev_ptr++;
 	}
 	
+	// full sorted unique time points
+	arma::vec tp_all = arma::sort(arma::unique(edgelist.col(0)));
+	
 	Progress p(M, display_progress);
 	
 	for (arma::uword m = 0; m < M; ++m) {
 		//double now = time_points(m);
-		double prev = (m == 0 ? time_points(0) : time_points(m - 1)); // piecewise-constant over (prev, now]
+		// double prev = (m == 0 ? time_points(0) : time_points(m - 1)); // piecewise-constant over (prev, now]
+		// double now = time_points(m);
 		double now = time_points(m);
 		
-		// For pt: ensure all events with time < prev have been processed.
-		// For pe: the ev_ptr logic below still holds; we always advance to < prev for emission.
+		double prev;
+		if (m > 0) {
+			prev = time_points(m - 1);
+		} else {
+			prev = (start > 0) ? tp_all((arma::uword)start - 1) : now;
+		}
+		
 		while (ev_ptr < (arma::uword)edgelist.n_rows && event_time(ev_ptr) < now) {
 			
 			// normal update
@@ -1530,7 +1541,7 @@ arma::mat calculate_reciprocity_sampled(const arma::mat &edgelist,
 	
 	// time points
 	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
+	if (method == "pt") time_points = arma::sort(arma::unique(edgelist.col(0)));
 	else if (method == "pe") time_points = edgelist.col(0);
 	else Rcpp::stop("calculate_reciprocity_sampled: method must be 'pt' or 'pe'.");
 	
@@ -1737,11 +1748,19 @@ arma::mat calculate_reciprocity_sampled(const arma::mat &edgelist,
 		++ev_ptr;
 	}
 	
+	arma::vec tp_all = arma::sort(arma::unique(edgelist.col(0)));
+	
 	Progress p(M, display_progress);
 	
 	for (arma::uword m = 0; m < M; ++m) {
-		double now  = time_points(m);
-		double prev = (m == 0 ? time_points(0) : time_points(m - 1)); // inertia convention
+		double now = time_points(m);
+		
+		double prev;
+		if (m > 0) {
+			prev = time_points(m - 1);
+		} else {
+			prev = (start > 0) ? tp_all((arma::uword)start - 1) : now;
+		}
 		
 		// mirror inertia: advance state with events < now
 		while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < now) {
@@ -1946,11 +1965,13 @@ static inline arma::mat normalize_inertia_sampled_prop(
 	
 	// --- build the same time_points the sampled stat used ---
 	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
-	else if (method == "pe") time_points = edgelist.col(0);
-	else Rcpp::stop("normalize_inertia_sampled_prop: method must be 'pt' or 'pe'.");
+	arma::vec tp_all;
+
+	if (method == "pt") tp_all = arma::sort(arma::unique(edgelist.col(0)));
+	else if (method == "pe") tp_all = edgelist.col(0);
+	else Rcpp::stop("method must be 'pt' or 'pe'");
 	
-	time_points = time_points.subvec(static_cast<arma::uword>(start), static_cast<arma::uword>(stop));
+	time_points = tp_all.subvec((arma::uword)start, (arma::uword)stop);
 	if (time_points.n_elem != M) {
 		Rcpp::stop("normalize_inertia_sampled_prop: time_points length mismatch with stat_in.");
 	}
@@ -1965,7 +1986,13 @@ static inline arma::mat normalize_inertia_sampled_prop(
 	// main loop: advance to < now, evaluate denom at prev, scale each sampled dyad
 	for (arma::uword m = 0; m < M; ++m) {
 		const double now  = time_points(m);
-		const double prev = (m == 0 ? time_points(0) : time_points(m - 1));
+		double prev;
+		if (m > 0) {
+			prev = time_points(m - 1);
+		} else {
+			// previous global timepoint before start (pt only; you said you never use pe)
+			prev = (start > 0) ? tp_all((arma::uword)start - 1) : time_points(0);
+		}
 		
 		while (ev_ptr < static_cast<arma::uword>(edgelist.n_rows) && edgelist(ev_ptr, 0) < now) {
 			add_event(ev_ptr++);
@@ -2447,7 +2474,6 @@ arma::mat calculate_degree_actor_sampled(int type,                  // 1..6 as i
 }
 
 
-
 // [[Rcpp::export]]
 arma::mat calculate_degree_dyad_sampled(int type,                  // 1=min, 2=max, 3=diff(abs), 4=sum
                                         const arma::mat &edgelist,
@@ -2530,8 +2556,11 @@ arma::mat calculate_triad_sampled(int type,                      // 1..5 as in c
 	
 	// time points
 	arma::vec time_points;
-	if (method == "pt") time_points = arma::unique(edgelist.col(0));
-	else                time_points = edgelist.col(0);
+	arma::vec tp_all;
+	if (method == "pt") tp_all = arma::sort(arma::unique(edgelist.col(0)));
+	else                tp_all = edgelist.col(0);
+	time_points = tp_all;  // keep your existing variable
+	
 	time_points = time_points.subvec(start, stop);
 	
 	const arma::uword M = time_points.n_elem;
@@ -2658,7 +2687,8 @@ arma::mat calculate_triad_sampled(int type,                      // 1..5 as in c
 	
 	for (arma::uword m = 0; m < M; ++m) {
 		double now = time_points(m);
-		double prev = (m == 0 ? time_points(0) : time_points(m - 1));
+		double prev = (m > 0) ? time_points(m - 1)
+			: ((start > 0) ? tp_all((arma::uword)start - 1) : time_points(0));
 		
 		if (method == "pt") {
 			while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr,0) < now) {

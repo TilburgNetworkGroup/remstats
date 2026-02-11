@@ -115,15 +115,15 @@ for (nm in names(tests)) {
 		check_sampled_equals_full(tests[[nm]])
 	}
 }
-
-m <- 4
-dim(ts_samp)
-dim(ts_full)
-head(history)
-head(reh$edgelist)
-riskset
-sample_map[m,]
-ts_samp[m,,]
-ts_full[m,sample_map[m,],]
+# 
+# m <- 4
+# dim(ts_samp)
+# dim(ts_full)
+# head(history)
+# head(reh$edgelist)
+# riskset
+# sample_map[m,]
+# ts_samp[m,,]
+# ts_full[m,sample_map[m,],]
 
 

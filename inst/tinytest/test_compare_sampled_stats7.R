@@ -133,15 +133,15 @@ for (nm in names(tests)) {
 }
 
 
-dim(ts_samp)
-dim(ts_full)
-m <- 3
-#head(history)
-reh$edgelist[10:18,]
-ts_samp[m,,]
-sample_map[m,]
-riskset[sample_map[m,],]
-ts_full[m,sample_map[m,],]
+# dim(ts_samp)
+# dim(ts_full)
+# m <- 3
+# #head(history)
+# reh$edgelist[10:18,]
+# ts_samp[m,,]
+# sample_map[m,]
+# riskset[sample_map[m,],]
+# ts_full[m,sample_map[m,],]
 
 
 
