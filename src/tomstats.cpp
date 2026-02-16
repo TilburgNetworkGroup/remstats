@@ -1,11 +1,23 @@
 #define ARMA_64BIT_WORD 1
 #include "RcppArmadillo.h"
-#include <stdexcept> // std::runtime_error
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <map>
 #include <progress.hpp>
 #include <progress_bar.hpp>
-#include <iostream>
-#include <map>
+#include <sstream>
+#include <stdexcept> // std::runtime_error
 #include <string>
+#include <vector>
+
+
+
+double pearson_corr_vec(const std::vector<double>& x,
+                        const std::vector<double>& y);
+
+
 
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::interfaces(r, cpp)]]
@@ -1050,6 +1062,488 @@ arma::uvec pshift_event_indices(const arma::mat &edgelist,
   return event_indices;
 }
 
+
+
+// tempEquiv: Temporal equivalence (Pearson correlation of inertia profiles)
+arma::mat transform_inertia(const arma::mat &inertia,
+                            const arma::mat &risksetMatrix,
+                            bool display_progress);
+
+arma::mat calculate_tempEquiv(const arma::mat &inertia,
+                              const arma::mat &riskset,
+                              const arma::mat &risksetMatrix,
+                              bool directed,
+                              bool consider_type,
+                              bool display_progress,
+                              Rcpp::String method,
+                              Rcpp::String approach)
+{
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating tempEquiv statistic (redefined)" << std::endl;
+  }
+
+  // Only pt for now
+  if (method != "pt")
+  {
+    throw std::runtime_error("tempEquiv is currently implemented for method = 'pt' only");
+  }
+
+  // Approach
+  if (approach != "pearson" && approach != "l1")
+  {
+    throw std::runtime_error("tempEquiv: unknown approach (expected 'pearson' or 'l1')");
+  }
+
+  // Network info
+  const int N = static_cast<int>(risksetMatrix.n_rows);
+  const int C = static_cast<int>(risksetMatrix.n_cols / N);
+
+  // If not considering type, aggregate inertia across types first
+  arma::mat I = inertia;
+  if (!consider_type && C > 1)
+  {
+    I = transform_inertia(inertia, risksetMatrix, false);
+  }
+
+  // Output: (time_points x riskset_rows)
+  arma::mat out(I.n_rows, riskset.n_rows, arma::fill::zeros);
+
+  // Safety bound for dyad columns
+  const int Dcols = static_cast<int>(I.n_cols);
+
+  // Convert risksetMatrix cell -> safe dyad column index in I
+  auto safe_dyad = [&](double v) -> int {
+    if (!std::isfinite(v)) return -1;
+    int d = static_cast<int>(v);
+    if (d < 0 || d >= Dcols) return -1;
+    return d;
+  };
+
+  auto idx_directed = [&](int s, int r, int c) -> int {
+    return safe_dyad(risksetMatrix(s, r + (N * c)));
+  };
+
+  auto idx_undirected = [&](int a, int b, int c) -> int {
+    int s = a, r = b;
+    if (r < s) std::swap(s, r);
+    return safe_dyad(risksetMatrix(s, r + (N * c)));
+  };
+
+  // For consider_type == FALSE (aggregated inertia), find any existing dyad index across types.
+  // After transform_inertia, values are identical across types (per direction),
+  // so any available dyad column is fine.
+  auto idx_any_type_directed = [&](int s, int r) -> int {
+    for (int c = 0; c < C; ++c)
+    {
+      int d = safe_dyad(risksetMatrix(s, r + (N * c)));
+      if (d >= 0) return d;
+    }
+    return -1;
+  };
+
+  auto idx_any_type_undirected = [&](int a, int b) -> int {
+    int s = a, r = b;
+    if (r < s) std::swap(s, r);
+    for (int c = 0; c < C; ++c)
+    {
+      int d = safe_dyad(risksetMatrix(s, r + (N * c)));
+      if (d >= 0) return d;
+    }
+    return -1;
+  };
+
+  // Detect whether actor IDs in riskset are 1-based or 0-based
+  // (riskset is the "long" riskset with 4 columns; first two columns are actors)
+  double max_ab = std::max(riskset.col(0).max(), riskset.col(1).max());
+  int actor_offset = (max_ab >= N) ? 1 : 0;
+
+  // Detect whether type IDs in riskset are 1-based or 0-based
+  int type_offset = 0;
+  if (riskset.n_cols >= 3)
+  {
+    double max_type = riskset.col(2).max();
+    type_offset = (max_type >= C) ? 1 : 0;
+  }
+
+  Progress p(I.n_rows, display_progress);
+
+  for (arma::uword t = 0; t < I.n_rows; ++t)
+  {
+    // For L1 approach: compute ONE max inertia per event (global over all dyads at time t)
+    double maxI_event = 0.0;
+    if (approach == "l1")
+    {
+    maxI_event = arma::max(I.row(t));
+	if (!std::isfinite(maxI_event) || maxI_event < 0.0) maxI_event = 0.0;
+    }
+
+    // Optimization: tempEquiv(i,j) == tempEquiv(j,i) even for directed networks.
+    // In the directed riskset, dyad IDs equal riskset row indices (see get_riskset).
+    // So we can compute each unordered pair once and assign to both dyad rows.
+    std::vector<char> done(riskset.n_rows, 0);
+
+    for (arma::uword drow = 0; drow < riskset.n_rows; ++drow)
+    {
+      if (done[drow])
+      {
+        continue;
+      }
+
+      // dyad endpoints for this riskset row
+      int i = static_cast<int>(riskset(drow, 0)) - actor_offset;
+      int j = static_cast<int>(riskset(drow, 1)) - actor_offset;
+
+      // Type for this dyad row (if applicable)
+      int c0 = 0;
+      if (C > 1)
+      {
+        c0 = static_cast<int>(riskset(drow, 2)) - type_offset;
+      }
+
+      // Guard
+      if (i < 0 || i >= N || j < 0 || j >= N || c0 < 0 || c0 >= C)
+      {
+        out(t, drow) = 0.0;
+        done[drow] = 1;
+        continue;
+      }
+
+      // By definition: tempEquiv(i,i,t) == 1
+      if (i == j)
+      {
+        out(t, drow) = 1.0;
+        done[drow] = 1;
+        continue;
+      }
+
+      std::vector<double> x; // profile of i
+      std::vector<double> y; // profile of j
+
+      // Helper to append components for one actor "a" (to vector v), excluding the other actor "b".
+      // Directed: outgoing a->k (k != a,b) stacked on incoming k->a (k != a,b).
+      // Undirected: only a--k (k != a,b) (which corresponds to "row with a as sender" in your wording).
+      auto append_profile = [&](int a, int b, std::vector<double>& v, int c_or_neg1, double maxI) {
+        if (directed)
+        {
+          // Outgoing part: a -> k
+          for (int k = 0; k < N; ++k)
+          {
+            if (k == a || k == b) continue;
+            int col = (c_or_neg1 >= 0) ? idx_directed(a, k, c_or_neg1) : idx_any_type_directed(a, k);
+            double val = (col >= 0) ? I(t, col) : 0.0;
+            if (approach == "l1") val = (maxI > 0.0) ? (val / maxI) : 0.0;
+            v.push_back(val);
+          }
+
+          // Incoming part: k -> a
+          for (int k = 0; k < N; ++k)
+          {
+            if (k == a || k == b) continue;
+            int col = (c_or_neg1 >= 0) ? idx_directed(k, a, c_or_neg1) : idx_any_type_directed(k, a);
+            double val = (col >= 0) ? I(t, col) : 0.0;
+            if (approach == "l1") val = (maxI > 0.0) ? (val / maxI) : 0.0;
+            v.push_back(val);
+          }
+        }
+        else
+        {
+          // Undirected: only one part (a--k), excluding k==a,b
+          for (int k = 0; k < N; ++k)
+          {
+            if (k == a || k == b) continue;
+            int col = (c_or_neg1 >= 0) ? idx_undirected(a, k, c_or_neg1) : idx_any_type_undirected(a, k);
+            double val = (col >= 0) ? I(t, col) : 0.0;
+            if (approach == "l1") val = (maxI > 0.0) ? (val / maxI) : 0.0;
+            v.push_back(val);
+          }
+        }
+      };
+
+      if (consider_type)
+      {
+        // IMPORTANT: per spec, do NOT concatenate across types.
+        // Compute tempEquiv using only the type corresponding to this dyad row.
+        double maxI = (approach == "l1") ? maxI_event : 0.0;
+        append_profile(i, j, x, c0, maxI);
+        append_profile(j, i, y, c0, maxI);
+      }
+      else
+      {
+        // Aggregated (already transformed): use any dyad column that exists.
+        double maxI = (approach == "l1") ? maxI_event : 0.0;
+        append_profile(i, j, x, -1, maxI);
+        append_profile(j, i, y, -1, maxI);
+      }
+
+      double val = 0.0;
+      if (approach == "pearson")
+      {
+        try
+        {
+          val = pearson_corr_vec(x, y);
+        }
+        catch (const std::exception &e)
+		{
+			const std::string what = e.what();
+			// Requested behavior: undefined correlation / zero variance -> NA
+			if (what.find("undefined correlation") != std::string::npos ||
+				what.find("zero variance") != std::string::npos)
+			{
+			  val = NA_REAL;
+			}
+			else
+			{
+			  // Provide context for non-variance failures
+			  std::string msg = "tempEquiv: correlation failed at time_row=" +
+								std::to_string(static_cast<long long>(t)) +
+								", dyad_row=" + std::to_string(static_cast<long long>(drow)) +
+								", i=" + std::to_string(i) +
+								", j=" + std::to_string(j) +
+								", type=" + std::to_string(c0) +
+								". Cause: " + what;
+			  throw std::runtime_error(msg);
+			}
+		}
+      }
+      else
+      {
+        // L1 similarity of normalized profiles
+        if (x.size() != y.size())
+        {
+          throw std::runtime_error("tempEquiv: profile length mismatch in L1 approach");
+        }
+        const double m = static_cast<double>(x.size());
+        if (m <= 0.0)
+        {
+          val = 1.0;
+        }
+        else
+        {
+          double l1 = 0.0;
+          for (size_t u = 0; u < x.size(); ++u)
+          {
+            l1 += std::abs(x[u] - y[u]);
+          }
+          // similarity in [0,1]
+          val = 1.0 - (l1 / m);
+          if (val < 0.0) val = 0.0;
+          if (val > 1.0) val = 1.0;
+        }
+      }
+
+      out(t, drow) = val;
+      done[drow] = 1;
+
+      if (directed)
+      {
+        // Assign symmetric counterpart (j,i) for the same type (if present in risk set)
+        int dyad2 = safe_dyad(risksetMatrix(j, i + (N * c0)));
+        if (dyad2 >= 0 && dyad2 < static_cast<int>(riskset.n_rows))
+        {
+          out(t, dyad2) = val;
+          done[static_cast<size_t>(dyad2)] = 1;
+        }
+      }
+    }
+
+    p.increment();
+  }
+
+  return out;
+}
+
+
+
+
+// overlap: proportion of shared interaction partners based on inertia > 0
+// Definition (per user spec):
+// For dyad (i,j) at time t, define partner sets:
+//  P(i) = { k != i,j : inertia indicates i and k have a past (in any direction if directed) }
+//  P(j) = { k != i,j : inertia indicates j and k have a past (in any direction if directed) }
+// overlap(i,j,t) = |P(i) ∩ P(j)| / |P(i) ∪ P(j)|
+// If |P(i) ∪ P(j)| == 0, overlap is defined as 0.
+// Symmetric: overlap(i,j) == overlap(j,i) (also for directed networks).
+arma::mat calculate_overlap(const arma::mat &inertia,
+                            const arma::mat &riskset,
+                            const arma::mat &risksetMatrix,
+                            bool directed,
+                            bool consider_type,
+                            bool display_progress,
+                            Rcpp::String method)
+{
+  if (display_progress)
+  {
+    Rcpp::Rcout << "Calculating overlap statistic" << std::endl;
+  }
+
+  // Only pt for now (same timing semantics as inertia used elsewhere)
+  if (method != "pt")
+  {
+    throw std::runtime_error("overlap is currently implemented for method = 'pt' only");
+  }
+
+  // Network info
+  const int N = static_cast<int>(risksetMatrix.n_rows);
+  const int C = static_cast<int>(risksetMatrix.n_cols / N);
+
+  // If not considering type, aggregate inertia across types first
+  arma::mat I = inertia;
+  if (!consider_type && C > 1)
+  {
+    I = transform_inertia(inertia, risksetMatrix, false);
+  }
+
+  arma::mat out(I.n_rows, riskset.n_rows, arma::fill::zeros);
+
+  const int Dcols = static_cast<int>(I.n_cols);
+
+  auto safe_dyad = [&](double v) -> int {
+    if (!std::isfinite(v)) return -1;
+    int d = static_cast<int>(v);
+    if (d < 0 || d >= Dcols) return -1;
+    return d;
+  };
+
+  auto idx_directed = [&](int s, int r, int c) -> int {
+    return safe_dyad(risksetMatrix(s, r + (N * c)));
+  };
+
+  auto idx_undirected = [&](int a, int b, int c) -> int {
+    int s = a, r = b;
+    if (r < s) std::swap(s, r);
+    return safe_dyad(risksetMatrix(s, r + (N * c)));
+  };
+
+  auto idx_any_type_directed = [&](int s, int r) -> int {
+    for (int c = 0; c < C; ++c)
+    {
+      int d = safe_dyad(risksetMatrix(s, r + (N * c)));
+      if (d >= 0) return d;
+    }
+    return -1;
+  };
+
+  auto idx_any_type_undirected = [&](int a, int b) -> int {
+    int s = a, r = b;
+    if (r < s) std::swap(s, r);
+    for (int c = 0; c < C; ++c)
+    {
+      int d = safe_dyad(risksetMatrix(s, r + (N * c)));
+      if (d >= 0) return d;
+    }
+    return -1;
+  };
+
+  // Detect whether actor IDs in riskset are 1-based or 0-based
+  double max_ab = std::max(riskset.col(0).max(), riskset.col(1).max());
+  int actor_offset = (max_ab >= N) ? 1 : 0;
+
+  // Detect whether type IDs in riskset are 1-based or 0-based
+  int type_offset = 0;
+  if (riskset.n_cols >= 3)
+  {
+    double max_type = riskset.col(2).max();
+    type_offset = (max_type >= C) ? 1 : 0;
+  }
+
+  Progress p(I.n_rows, display_progress);
+
+  for (arma::uword t = 0; t < I.n_rows; ++t)
+  {
+    std::vector<char> done(riskset.n_rows, 0);
+
+    for (arma::uword drow = 0; drow < riskset.n_rows; ++drow)
+    {
+      if (done[drow]) continue;
+
+      int i = static_cast<int>(riskset(drow, 0)) - actor_offset;
+      int j = static_cast<int>(riskset(drow, 1)) - actor_offset;
+
+      int c0 = 0;
+      if (C > 1)
+      {
+        c0 = static_cast<int>(riskset(drow, 2)) - type_offset;
+      }
+
+      if (i < 0 || i >= N || j < 0 || j >= N || c0 < 0 || c0 >= C)
+      {
+        out(t, drow) = 0.0;
+        done[drow] = 1;
+        continue;
+      }
+
+      if (i == j)
+      {
+        out(t, drow) = 1.0;
+        done[drow] = 1;
+        continue;
+      }
+
+      int inter_cnt = 0;
+      int union_cnt = 0;
+
+      for (int k = 0; k < N; ++k)
+      {
+        if (k == i || k == j) continue;
+
+        bool has_i = false;
+        bool has_j = false;
+
+        if (directed)
+        {
+          int col_ik = consider_type ? idx_directed(i, k, c0) : idx_any_type_directed(i, k);
+          int col_ki = consider_type ? idx_directed(k, i, c0) : idx_any_type_directed(k, i);
+          int col_jk = consider_type ? idx_directed(j, k, c0) : idx_any_type_directed(j, k);
+          int col_kj = consider_type ? idx_directed(k, j, c0) : idx_any_type_directed(k, j);
+
+          has_i = ((col_ik >= 0 && I(t, col_ik) > 0.0) || (col_ki >= 0 && I(t, col_ki) > 0.0));
+          has_j = ((col_jk >= 0 && I(t, col_jk) > 0.0) || (col_kj >= 0 && I(t, col_kj) > 0.0));
+        }
+        else
+        {
+          int col_ik = consider_type ? idx_undirected(i, k, c0) : idx_any_type_undirected(i, k);
+          int col_jk = consider_type ? idx_undirected(j, k, c0) : idx_any_type_undirected(j, k);
+
+          has_i = (col_ik >= 0 && I(t, col_ik) > 0.0);
+          has_j = (col_jk >= 0 && I(t, col_jk) > 0.0);
+        }
+
+        if (has_i || has_j) union_cnt++;
+        if (has_i && has_j) inter_cnt++;
+      }
+
+      double val = 0.0;
+      if (union_cnt > 0)
+      {
+        val = static_cast<double>(inter_cnt) / static_cast<double>(union_cnt);
+      }
+      else
+      {
+        val = 0.0;
+      }
+
+      out(t, drow) = val;
+      done[drow] = 1;
+
+      if (directed)
+      {
+        int dyad2 = safe_dyad(risksetMatrix(j, i + (N * c0)));
+        if (dyad2 >= 0 && dyad2 < static_cast<int>(riskset.n_rows))
+        {
+          out(t, dyad2) = val;
+          done[static_cast<size_t>(dyad2)] = 1;
+        }
+      }
+    }
+
+    p.increment();
+  }
+
+  return out;
+}
+
+
 arma::mat calculate_pshift(std::string type, const arma::mat &edgelist,
                            const arma::mat &risksetMatrix,
                            int start, int stop, bool directed,
@@ -1062,6 +1556,34 @@ arma::mat calculate_pshift(std::string type, const arma::mat &edgelist,
   {
     Rcpp::Rcout << "Calculating pshift " << type << " statistic" << std::endl;
   }
+
+  // Composite pshift: psABYAB is defined as psABAY + psABXB.
+  // Implemented as AB-AY + AB-XB using the same consider_type setting.
+  if (type == "ABY-AB")
+  {
+    // Avoid double progress bars: only show outer progress.
+    arma::mat a = calculate_pshift("AB-AY", edgelist, risksetMatrix, start, stop,
+                                  directed, consider_type, false, method);
+    arma::mat b = calculate_pshift("AB-XB", edgelist, risksetMatrix, start, stop,
+                                  directed, consider_type, false, method);
+    // Sum the two binary components and then dichotomize:
+    // any positive value -> 1, otherwise 0.
+    arma::mat res = a + b;
+    res.for_each( [](arma::mat::elem_type &val) { val = (val > 0.0) ? 1.0 : 0.0; } );
+    return res;
+  }
+  
+	// psABABY = psABAY + psABBY
+	if (type == "AB-ABY")
+	{
+    arma::mat a = calculate_pshift("AB-AY", edgelist, risksetMatrix, start, stop,
+                                 directed, consider_type, false, method);
+    arma::mat b = calculate_pshift("AB-BY", edgelist, risksetMatrix, start, stop,
+                                 directed, consider_type, false, method);
+    arma::mat res = a + b;
+    res.for_each( [](arma::mat::elem_type &val) { val = (val > 0.0) ? 1.0 : 0.0; } );
+    return res;
+	}
 
   // Time points: Depending on the method, get ...
   arma::vec time_points;
@@ -2372,6 +2894,7 @@ int getEffectNumber(Rcpp::String effect)
   // Endogenous stats
   effectsMap["inertia"] = 101;
   effectsMap["reciprocity"] = 102;
+  effectsMap["tempEquiv"] = 103;
 
   effectsMap["indegreeSender"] = 111;
   effectsMap["indegreeReceiver"] = 112;
@@ -2390,6 +2913,7 @@ int getEffectNumber(Rcpp::String effect)
   effectsMap["osp"] = 133;
   effectsMap["isp"] = 134;
   effectsMap["sp"] = 135;
+  effectsMap["overlap"] = 136;
 
   effectsMap["psABBA"] = 141;
   effectsMap["psABBY"] = 142;
@@ -2398,6 +2922,8 @@ int getEffectNumber(Rcpp::String effect)
   effectsMap["psABXY"] = 145;
   effectsMap["psABAY"] = 146;
   effectsMap["psABAB"] = 147;
+  effectsMap["psABYAB"] = 148;
+  effectsMap["psABABY"] = 149;
 
   effectsMap["rrankSend"] = 151;
   effectsMap["rrankReceive"] = 152;
@@ -2526,6 +3052,7 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector effects,
                              const arma::vec &memory_value,
                              Rcpp::CharacterVector &scaling,
                              Rcpp::LogicalVector &consider_type,
+                             Rcpp::CharacterVector &approach,
                              int start, int stop,
                              bool directed,
                              bool display_progress,
@@ -2662,6 +3189,12 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector effects,
       }
       break;
 
+    // tempEquiv
+    case 103:
+      // Compute statistic (pt only for now)
+      stats.slice(i) = calculate_tempEquiv(inertia, riskset, risksetMatrix, directed, consider_type(i), display_progress, method, approach(i));
+      break;
+
     // indegreeSender
     case 111:
       // Compute statistic
@@ -2737,6 +3270,24 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector effects,
       {
         stats.slice(i) = normalize_degree(stats.slice(i), inertia, N, effect, start);
       }
+      // timeMax scaling: divide by the maximum value at each time point so the statistic lies in [0,1].
+      // If the maximum is 0 (e.g., at the first time point), the whole row stays 0.
+      if (scaling(i) == "timeMax")
+      {
+        arma::mat &S = stats.slice(i);
+        for (arma::uword r = 0; r < S.n_rows; ++r)
+        {
+          const double m = arma::max(S.row(r));
+          if (std::isfinite(m) && m > 0.0)
+          {
+            S.row(r) /= m;
+          }
+          else
+          {
+            S.row(r).zeros();
+          }
+        }
+      }
       break;
 
     // degreeMin
@@ -2802,6 +3353,24 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector effects,
       stats.slice(i) = calculate_triad(5, inertia, risksetMatrix, scaling(i), consider_type(i), display_progress);
       break;
 
+    // overlap
+    case 136:
+    {
+      arma::mat tmp = calculate_overlap(inertia, riskset, risksetMatrix,
+                                        directed, consider_type(i),
+                                        display_progress, method);
+      if (tmp.n_rows != stats.n_rows || tmp.n_cols != stats.n_cols)
+      {
+        std::ostringstream ss;
+        ss << "overlap: dimension mismatch: got (" << tmp.n_rows << "," << tmp.n_cols
+           << ") expected (" << stats.n_rows << "," << stats.n_cols << ")";
+        throw std::runtime_error(ss.str());
+      }
+      stats.slice(i) = tmp;
+    }
+      break;
+
+
     // psABBA
     case 141:
       // Compute statistic
@@ -2842,6 +3411,18 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector effects,
     case 147:
       // Compute statistic
       stats.slice(i) = calculate_pshift("AB-AB", edgelist, risksetMatrix, start, stop, directed, consider_type(i), display_progress, method);
+      break;
+
+
+    // psABYAB
+    case 148:
+      // Compute statistic
+      stats.slice(i) = calculate_pshift("ABY-AB", edgelist, risksetMatrix, start, stop, directed, consider_type(i), display_progress, method);
+      break;
+
+	// psABABY  ( = psABAY + psABBY )
+    case 149:
+      stats.slice(i) = calculate_pshift("AB-ABY", edgelist, risksetMatrix, start, stop, directed, consider_type(i), display_progress, method);
       break;
 
     // rrankSend
@@ -2903,7 +3484,23 @@ arma::cube compute_stats_tie(Rcpp::CharacterVector effects,
       break;
     }
 
-    // Standardize
+    // timeMax scaling: scale each time row by its maximum value at that time.
+    // Defined for both directed and undirected: for each time row rr,
+    // divide by max(stats[rr, ]) if that maximum is > 0.
+    if (scaling(i) == "timeMax") 
+	{
+      // Work on a temporary copy then assign back (safer with Armadillo slice proxy)
+      arma::mat tmp = stats.slice(i);
+      for (arma::uword rr = 0; rr < tmp.n_rows; ++rr)
+      {
+        double m = arma::max(tmp.row(rr));
+        if (!std::isfinite(m) || m <= 0.0) continue; // leave row as-is (all zeros)
+        tmp.row(rr) /= m;
+      }
+      stats.slice(i) = tmp;
+    }
+
+    // Standardize (existing behaviour)
     if (scaling(i) == "std" || scaling(i) == "std_abs" || scaling(i) == "std_unique")
     {
       stats.slice(i) = standardize(stats.slice(i));

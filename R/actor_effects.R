@@ -107,6 +107,7 @@ actor_effects <- function(step = NULL) {
             "recencyContinue",
             "psABBA",
             "psABAB",
+            "psABYAB",
             "psABXB",
             "psABXA",
             "psABAY",

@@ -57,6 +57,8 @@
 #'  \item \code{\link{psABXY}()}
 #'  \item \code{\link{psABAY}()}
 #'  \item \code{\link{psABAB}()}
+#'  \item \code{\link{psABYAB}()}
+#'  \item \code{\link{psABABY}()}
 #'  \item \code{\link{rrankSend}()}
 #'  \item \code{\link{rrankReceive}()}
 #'  \item \code{\link{recencySendSender}()}
@@ -65,6 +67,8 @@
 #'  \item \code{\link{recencyReceiveReceiver}()}
 #'  \item \code{\link{recencyContinue}()}
 #'  \item \code{\link{FEtype}()}
+#'  \item \code{\link{overlap}()}
+#'  \item \code{\link{tempEquiv}()}
 #' }
 #'
 #' @examples 
@@ -123,9 +127,10 @@ tie_effects <- function(directed = NULL, endogenous = NULL) {
         "totaldegreeDyad", "degreeDiff", "degreeMin", "degreeMax",
         "inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp",
         "psABBA", "psABBY", "psABXA", "psABXB", "psABXY",
-        "psABAY", "psABAB", "rrankSend", "rrankReceive",
+        "psABAY", "psABAB", "psABYAB", "psABABY", "rrankSend", "rrankReceive",
         "recencySendSender", "recencySendReceiver", "recencyReceiveSender",
-        "recencyReceiveReceiver", "recencyContinue", "FEtype"
+        "recencyReceiveReceiver", "recencyContinue", "FEtype",
+        "tempEquiv", "overlap"
       ))]
     }
   }

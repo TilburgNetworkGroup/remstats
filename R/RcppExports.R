@@ -21,12 +21,16 @@ calculate_inertia <- function(edgelist, weights, risksetMatrix, memory, memory_v
     .Call(`_remstats_calculate_inertia`, edgelist, weights, risksetMatrix, memory, memory_value, start, stop, display_progress, method)
 }
 
-compute_stats_tie <- function(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method) {
-    .Call(`_remstats_compute_stats_tie`, effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method)
+compute_stats_tie <- function(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, approach, start, stop, directed, display_progress, method) {
+    .Call(`_remstats_compute_stats_tie`, effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, approach, start, stop, directed, display_progress, method)
 }
 
 combine_stats <- function(array_list, keep_list) {
     .Call(`_remstats_combine_stats`, array_list, keep_list)
+}
+
+pearson_corr_vec_cpp <- function(x, y) {
+    .Call(`_remstats_pearson_corr_vec_cpp`, x, y)
 }
 
 # Register entry points for exported C++ functions

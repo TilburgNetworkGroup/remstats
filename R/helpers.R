@@ -181,11 +181,30 @@ prepare_tomstats <- function(
   })
   consider_type <- append(consider_type, rep(TRUE, length(effects_int)), length(consider_type))
 
-  # Check consider_type info
-  if (nrow(types) == 1 & any(!consider_type)) {
-    warning("'consider_type' is FALSE is not supported with only one event type in the risk set: setting to TRUE.")
+  # Prepare approach info (for effects that support it; currently tempEquiv)
+  approach <- sapply(effects, function(x) {
+    ifelse("approach" %in% names(x), x$approach, "none")
+  })
+  approach <- append(approach, rep("none", length(effects_int)), length(approach))
+
+  # # Check consider_type info
+  # if (nrow(types) == 1 & any(!consider_type)) {
+  #   warning("'consider_type' is FALSE is not supported with only one event type in the risk set: setting to TRUE.")
+  # }
+  
+  
+  # If there is only one event type, consider_type is meaningless.
+  # Force it to TRUE everywhere to avoid inconsistent behaviour and warnings.
+  if (nrow(types) == 1 && any(!consider_type)) {
+      consider_type[] <- TRUE
+      # Keep effects list consistent with the vector we pass to C++
+      for (k in seq_along(effects)) {
+          effects[[k]]$consider_type <- TRUE
+        }
   }
 
+  # timeMax scaling is supported for both undirected and directed reh objects
+  
   # Check correct scaling inertia statistic
   if (!attr(reh, "directed")) {
     if (any(sapply(effects, function(x) x$effect == "inertia"))) {
@@ -211,6 +230,7 @@ prepare_tomstats <- function(
     memory_value = memory_value,
     scaling = scaling,
     consider_type = consider_type,
+    approach = approach,
     covar = covar,
     interactions = interactions,
     start = start,
@@ -350,6 +370,8 @@ all_tie_effects <- function() {
     "psABXY",
     "psABAY",
     "psABAB",
+    "psABYAB",
+    "psABABY",
     "rrankSend",
     "rrankReceive",
     "recencyContinue",
@@ -357,6 +379,8 @@ all_tie_effects <- function() {
     "recencySendReceiver",
     "recencyReceiveSender",
     "recencyReceiveReceiver",
+    "tempEquiv",
+    "overlap",
     "userStat",
     "interact"
   )
@@ -430,6 +454,19 @@ add_variable_names <- function(statistics, effectNames, effects, interactions) {
   })
   if (any(unique_effects)) {
     dimnames(statistics)[[3]][unique_effects] <- paste0(dimnames(statistics)[[3]][unique_effects], ".unique")
+  }
+
+  # Rename tempEquiv based on approach
+  temp_idx <- which(sapply(effects, function(x) identical(x$effect, "tempEquiv")))
+  if (length(temp_idx) > 0) {
+    for (k in temp_idx) {
+      app <- if (!is.null(effects[[k]]$approach)) effects[[k]]$approach else "pearson"
+      if (identical(app, "l1")) {
+        dimnames(statistics)[[3]][k] <- "tempEquivL1"
+      } else {
+        dimnames(statistics)[[3]][k] <- "tempEquivPearson"
+      }
+    }
   }
 
   # Add .TypeAgg

@@ -4,7 +4,10 @@
 \alias{totaldegreeDyad}
 \title{totaldegreeDyad}
 \usage{
-totaldegreeDyad(scaling = c("none", "prop", "std"), consider_type = TRUE)
+totaldegreeDyad(
+  scaling = c("none", "prop", "std", "timeMax"),
+  consider_type = TRUE
+)
 }
 \arguments{
 \item{scaling}{the method for scaling the degree statistic. Default is
@@ -26,9 +29,9 @@ Specifies the statistic for a 'totaldegreeDyad' effect.
 \details{
 The 'totaldegreeDyad' effect refers to the tendency of pairs of actors
 (dyads) to increase their interaction rate as the total degree (number of
-interactions) of both actors in the pair goes up. To calculate this effect
+interactions) of both actors in the pair goes up over time. To calculate this effect
 for a specific pair (i,j) at a given timepoint (t), we sum the degrees of
-the two actors in the dyad (i,j).
+the two actors in the dyad (i,j) across all events up to \code{t}.
 
 Additionally, there is an optional scaling method, which can be chosen using
 the 'scaling' method. When the 'prop' scaling method is applied, the degree
@@ -38,6 +41,12 @@ events in which at least one actor in the dyad was involved. For the first
 timepoint, where no events have previously occurred, it is assumed that each
 actor is equally likely to be involved in an event. In this case, the
 statistic is set to 1 divided by the total number of actors (N).
+When \code{"timeMax"}, the total degree is divided by the maximum total degree 
+at that time for the dyads at risk. 
+This yields causes the effect to be constrained to the unity 
+interval, with 1 for the dyad(s) with the highest total degree and \code{p} 
+for the others dyads, where \code{p} is the fraction of the total degree of 
+the highest dyad that the dyad at hand has accumulated.
 
 The totaldegreeDyad effect is defined for the tie-oriented model and is
 applicable to both directed and undirected events.

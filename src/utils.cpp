@@ -1,4 +1,6 @@
 #include <RcppArmadillo.h>
+#include <cmath>
+#include <vector>
 
 // [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
@@ -172,6 +174,7 @@ using namespace Rcpp;
 // Function to combine statistic arrays. 
 // *array_list: list with 3-dimensional statistics arrays 
 // *keep_list: list with R (!) indices of the slices to keep per array
+
 // [[Rcpp::export]]
 arma::cube combine_stats(const Rcpp::List& array_list, 
     const Rcpp::List& keep_list) {
@@ -226,4 +229,82 @@ arma::cube combine_stats(const Rcpp::List& array_list,
     return combined_array;      
 }
 
+
+
+// tempEquiv helper: Pearson correlation with explicit undefined-handling rules
+double pearson_corr_vec(const std::vector<double>& x, const std::vector<double>& y)
+{
+  const size_t n = x.size();
+  if (n != y.size())
+    throw std::runtime_error("pearson_corr_vec: x and y have different lengths");
+
+  if (n < 2) return 0.0;
+
+  for (size_t i = 0; i < n; ++i)
+    if (!std::isfinite(x[i]) || !std::isfinite(y[i]))
+      throw std::runtime_error("pearson_corr_vec: non-finite value encountered in profiles");
+
+  bool identical = true;
+  for (size_t i = 0; i < n; ++i)
+    if (x[i] != y[i]) { identical = false; break; }
+
+  if (identical) return 1.0;
+
+  double mx = 0.0, my = 0.0;
+  for (size_t i = 0; i < n; ++i) { mx += x[i]; my += y[i]; }
+  mx /= static_cast<double>(n);
+  my /= static_cast<double>(n);
+
+  double sxx = 0.0, syy = 0.0, sxy = 0.0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    const double dx = x[i] - mx;
+    const double dy = y[i] - my;
+    sxx += dx * dx;
+    syy += dy * dy;
+    sxy += dx * dy;
+  }
+
+	if (sxx <= 0.0 || syy <= 0.0) {
+		Rcpp::Rcout << "DEBUG pearson_corr_vec: throwing zero-variance error\n";
+		throw std::runtime_error("pearson_corr_vec: undefined correlation (zero variance) for non-identical profiles");
+	}
+
+
+  const double denom = std::sqrt(sxx * syy);
+  if (!(denom > 0.0) || !std::isfinite(denom))
+    throw std::runtime_error("pearson_corr_vec: invalid denominator while computing correlation");
+
+  const double r = sxy / denom;
+  if (!std::isfinite(r))
+    throw std::runtime_error("pearson_corr_vec: non-finite correlation result");
+
+  return r;
+}
+
+
+
+// [[Rcpp::export]]
+double pearson_corr_vec_cpp(Rcpp::NumericVector x, Rcpp::NumericVector y)
+{
+  if (x.size() != y.size())
+    Rcpp::stop("pearson_corr_vec_cpp: x and y must have same length.");
+
+  std::vector<double> xv(x.begin(), x.end());
+  std::vector<double> yv(y.begin(), y.end());
+
+  try {
+	return pearson_corr_vec(xv, yv);
+	} catch (const std::exception& e) {
+	  const std::string what = e.what();
+	  // Undefined correlation due to zero variance -> return NA (requested behavior)
+	  if (what.find("undefined correlation") != std::string::npos ||
+		  what.find("zero variance") != std::string::npos)
+	  {
+		return NA_REAL;
+	  }
+	  // Other errors: propagate
+	  Rcpp::stop(std::string("pearson_corr_vec_cpp: ") + what);
+	}
+}
 

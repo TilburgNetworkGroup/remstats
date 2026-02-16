@@ -49,7 +49,7 @@ URL: https://tilburgnetworkgroup.github.io/remstats/
 BugReports: https://github.com/TilburgNetworkGroup/remstats/issues
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends: 
     R (>= 4.0.0) 
 Imports: 

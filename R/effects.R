@@ -1098,9 +1098,9 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' @details
 #' The 'totaldegreeDyad' effect refers to the tendency of pairs of actors
 #' (dyads) to increase their interaction rate as the total degree (number of
-#' interactions) of both actors in the pair goes up. To calculate this effect
+#' interactions) of both actors in the pair goes up over time. To calculate this effect
 #' for a specific pair (i,j) at a given timepoint (t), we sum the degrees of
-#' the two actors in the dyad (i,j).
+#' the two actors in the dyad (i,j) across all events up to \code{t}.
 #'
 #' Additionally, there is an optional scaling method, which can be chosen using
 #' the 'scaling' method. When the 'prop' scaling method is applied, the degree
@@ -1110,6 +1110,12 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' timepoint, where no events have previously occurred, it is assumed that each
 #' actor is equally likely to be involved in an event. In this case, the
 #' statistic is set to 1 divided by the total number of actors (N).
+#' When \code{"timeMax"}, the total degree is divided by the maximum total degree 
+#' at that time for the dyads at risk. 
+#' This yields causes the effect to be constrained to the unity 
+#' interval, with 1 for the dyad(s) with the highest total degree and \code{p} 
+#' for the others dyads, where \code{p} is the fraction of the total degree of 
+#' the highest dyad that the dyad at hand has accumulated.
 #'
 #' The totaldegreeDyad effect is defined for the tie-oriented model and is
 #' applicable to both directed and undirected events.
@@ -1122,7 +1128,7 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' remstats(reh = reh_tie, tie_effects = effects)
 #'
 #' @export
-totaldegreeDyad <- function(scaling = c("none", "prop", "std"),
+totaldegreeDyad <- function(scaling = c("none", "prop", "std", "timeMax"),
                             consider_type = TRUE) {
   # Match scaling
   if ("as.is" %in% scaling) {
@@ -1900,6 +1906,82 @@ psABAB <- function(consider_type = TRUE) {
   return(call_args)
 }
 
+
+#' psABYAB
+#'
+#' Specifies the statistic for the composite pshift ABY-AB effect.
+#' 
+#' Dyads AB triggers have value 1:
+#' * if A interacted with C != B
+#' * if B interacted with C != B
+#' In other words, after A or B speaks with some third actor, they then turn to 
+#' each other.
+#' 
+#' This effect is available for directed and undirected events. In the undirected
+#' case, it is identical to psABABY.
+#'
+#' @inheritParams psABBA
+#'
+#' @details
+#' Composite participation shift defined as \code{psABAY()} + \code{psABXB()}.
+#' The supplied \code{consider_type} argument is used for both components.
+#'
+#' @returns List with all information required by `remstats::remstats()` to
+#' compute the statistic.
+#'
+#' @examples
+#' reh <- remify::remify(history, model = "tie")
+#' effects <- ~ psABYAB()
+#' remstats(reh = reh, tie_effects = effects)
+#'
+#' @export
+psABYAB <- function(consider_type = TRUE) {
+  call_args <- list()
+  call_args$consider_type <- consider_type
+  call_args$effect <- "psABYAB"
+  return(call_args)
+}
+
+
+
+
+#' psABABY
+#'
+#' Specifies the statistic for the composite pshift AB-ABY effect.
+#' The event AB triggers the following dyads to have value 1:
+#' * dyads from A to C != B
+#' * dyads from B to C != C
+#' In other words, after A speaks with B, one of them shofts the interaction 
+#' to a third party.
+#' 
+#' This effect is available for directed and undirected events. In the undirected
+#' case, it is identical to psABYAB.
+#'
+#' @inheritParams psABBA
+#'
+#' @details
+#' Composite participation shift defined as \code{psABAY()} + \code{psABBY()}.
+#' The supplied \code{consider_type} argument is used for both components.
+#'
+#' @returns List with all information required by `remstats::remstats()` to
+#' compute the statistic.
+#'
+#' @examples
+#' reh <- remify::remify(history, model = "tie")
+#' effects <- ~ psABABY()
+#' remstats(reh = reh, tie_effects = effects)
+#'
+#' @export
+psABABY <- function(consider_type = TRUE) {
+  call_args <- list()
+  call_args$consider_type <- consider_type
+  call_args$effect <- "psABABY"
+  return(call_args)
+}
+
+
+
+
 #' psABA
 #'
 #' Specifies the statistic for a participation shift AB-A in the sender step of
@@ -2253,4 +2335,85 @@ userStat <- function(x, variableName = NULL) {
     variable = variableName,
     scaling = "none"
   )
+}
+
+
+
+
+#' tempEquiv
+#'
+#' Temporal structural equivalence effect
+#' 
+#' Temporal structural equivalence: for any point in time, this effect measures 
+#' the extent to which actors in a dyad are equivalent in their interaction history.
+#' 
+#' This takes the vector of inertia for the two actors in the dyad (within the 
+#' riskset) and either calculates the L1 distance or the pearson correlation 
+#' between them. The L1 distance is transformed to an equivalence as 1 - L1/m, 
+#' with m the length of the vector. 
+#' The L1 measure is calculated on the inertias after they have been divided by 
+#' the highest inertia across all dyads at that time point. As a result, the 
+#' measure is within the unity interval, with 0 being perfect dissimilarity and 
+#' 1 for perfect temporal structural equivalence.
+#' 
+#' Note that the pearson correlation is not always defined. 
+#'
+#' @param consider_type logical; whether to compute per type.
+#' @param scaling character; scaling method.
+#' @param approach either "l1" (usually best) or "pearson"
+#' @export
+tempEquiv <- function(consider_type = TRUE,
+                      approach = c("l1", "pearson"),
+                      scaling = c("none", "std", "std_abs", "std_unique")) {
+  
+  # Match scaling
+  if ("as.is" %in% scaling) {
+    warning("use 'scaling' is 'none' instead of 'as.is'")
+    scaling <- "none"
+  } else {
+    scaling <- match.arg(scaling)
+  }
+  
+  approach <- match.arg(approach)
+  
+  # Collect info
+  call_args <- list()
+  call_args$scaling <- scaling
+  call_args$consider_type <- consider_type
+  call_args$approach <- approach
+  call_args$effect <- "tempEquiv"
+  
+  return(call_args)
+}
+
+
+#' overlap
+#'
+#' Overlap effect: proportion of shared interaction partners.
+#' Symmetric: overlap(A,B) == overlap(B,A), also for directed networks.
+#' 
+#' The value is 0 when at least one of the actors in the dyad has not interacted 
+#' with anyone yet (because there are no shared partners at all).
+#'
+#' @param consider_type logical; whether to compute per type.
+#' @param scaling character; scaling method.
+#' @export
+overlap <- function(consider_type = TRUE,
+                    scaling = c("none", "std", "std_abs", "std_unique")) {
+  
+  # Match scaling
+  if ("as.is" %in% scaling) {
+    warning("use 'scaling' is 'none' instead of 'as.is'")
+    scaling <- "none"
+  } else {
+    scaling <- match.arg(scaling)
+  }
+  
+  # Collect info
+  call_args <- list()
+  call_args$scaling <- scaling
+  call_args$consider_type <- consider_type
+  call_args$effect <- "overlap"
+  
+  return(call_args)
 }

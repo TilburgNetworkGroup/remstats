@@ -186,6 +186,7 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   memory_value <- inputs$memory_value
   scaling <- inputs$scaling
   consider_type <- inputs$consider_type
+  approach <- inputs$approach
   covar <- inputs$covar
   interactions <- inputs$interactions
   start <- inputs$start
@@ -194,7 +195,7 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 
   # Compute the inertia building block
   if (is.null(adjmat)) {
-    if (any(grepl("degree", effectNames)) | any(effectNames %in% c("inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp"))) {
+    if (any(grepl("degree", effectNames)) | any(effectNames %in% c("inertia", "reciprocity", "otp", "itp", "osp", "isp", "sp", "tempEquiv", "overlap"))) {
       inertia <- calculate_inertia(edgelist, weights, risksetMatrix, memory,
         memory_value, start, stop, display_progress, method
       )
@@ -206,7 +207,7 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   # Compute statistics
   statistics <- compute_stats_tie(effectNames, edgelist, riskset, 
     risksetMatrix, inertia, covar, interactions, memory, memory_value, scaling, 
-    consider_type, start, stop, attr(reh, "directed"), display_progress, method)
+    consider_type, approach, start, stop, attr(reh, "directed"), display_progress, method)
 
   # Add variable names to the statistics dimnames
   statistics <- add_variable_names(

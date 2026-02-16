@@ -55,7 +55,7 @@ RcppExport SEXP _remstats_compute_stats_sender(SEXP effectsSEXP, SEXP edgelistSE
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+        (Rf_error)("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -101,7 +101,7 @@ RcppExport SEXP _remstats_compute_stats_receiver(SEXP effectsSEXP, SEXP edgelist
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+        (Rf_error)("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -137,7 +137,7 @@ RcppExport SEXP _remstats_get_riskset(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP di
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+        (Rf_error)("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -173,7 +173,7 @@ RcppExport SEXP _remstats_convert_to_risksetMatrix(SEXP risksetSEXP, SEXP NSEXP,
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+        (Rf_error)("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -215,14 +215,14 @@ RcppExport SEXP _remstats_calculate_inertia(SEXP edgelistSEXP, SEXP weightsSEXP,
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+        (Rf_error)("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
 }
 // compute_stats_tie
-arma::cube compute_stats_tie(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, int start, int stop, bool directed, bool display_progress, Rcpp::String method);
-static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP inertiaSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
+arma::cube compute_stats_tie(Rcpp::CharacterVector effects, const arma::mat& edgelist, const arma::mat& riskset, const arma::mat& risksetMatrix, const arma::mat& inertia, const Rcpp::List& covariates, const Rcpp::List& interactions, Rcpp::String memory, const arma::vec& memory_value, Rcpp::CharacterVector& scaling, Rcpp::LogicalVector& consider_type, Rcpp::CharacterVector& approach, int start, int stop, bool directed, bool display_progress, Rcpp::String method);
+static SEXP _remstats_compute_stats_tie_try(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP inertiaSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP approachSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type effects(effectsSEXP);
@@ -236,20 +236,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type memory_value(memory_valueSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type scaling(scalingSEXP);
     Rcpp::traits::input_parameter< Rcpp::LogicalVector& >::type consider_type(consider_typeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type approach(approachSEXP);
     Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
     Rcpp::traits::input_parameter< Rcpp::String >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_stats_tie(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, start, stop, directed, display_progress, method));
+    rcpp_result_gen = Rcpp::wrap(compute_stats_tie(effects, edgelist, riskset, risksetMatrix, inertia, covariates, interactions, memory, memory_value, scaling, consider_type, approach, start, stop, directed, display_progress, method));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP inertiaSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
+RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP, SEXP risksetSEXP, SEXP risksetMatrixSEXP, SEXP inertiaSEXP, SEXP covariatesSEXP, SEXP interactionsSEXP, SEXP memorySEXP, SEXP memory_valueSEXP, SEXP scalingSEXP, SEXP consider_typeSEXP, SEXP approachSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP directedSEXP, SEXP display_progressSEXP, SEXP methodSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_remstats_compute_stats_tie_try(effectsSEXP, edgelistSEXP, risksetSEXP, risksetMatrixSEXP, inertiaSEXP, covariatesSEXP, interactionsSEXP, memorySEXP, memory_valueSEXP, scalingSEXP, consider_typeSEXP, startSEXP, stopSEXP, directedSEXP, display_progressSEXP, methodSEXP));
+        rcpp_result_gen = PROTECT(_remstats_compute_stats_tie_try(effectsSEXP, edgelistSEXP, risksetSEXP, risksetMatrixSEXP, inertiaSEXP, covariatesSEXP, interactionsSEXP, memorySEXP, memory_valueSEXP, scalingSEXP, consider_typeSEXP, approachSEXP, startSEXP, stopSEXP, directedSEXP, display_progressSEXP, methodSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -264,7 +265,7 @@ RcppExport SEXP _remstats_compute_stats_tie(SEXP effectsSEXP, SEXP edgelistSEXP,
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+        (Rf_error)("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -281,6 +282,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pearson_corr_vec_cpp
+double pearson_corr_vec_cpp(Rcpp::NumericVector x, Rcpp::NumericVector y);
+RcppExport SEXP _remstats_pearson_corr_vec_cpp(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(pearson_corr_vec_cpp(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 // validate (ensure exported C++ functions exist before calling them)
 static int _remstats_RcppExport_validate(const char* sig) { 
@@ -291,7 +304,7 @@ static int _remstats_RcppExport_validate(const char* sig) {
         signatures.insert("arma::mat(*get_riskset)(arma::uvec,arma::uvec,bool)");
         signatures.insert("arma::mat(*convert_to_risksetMatrix)(arma::mat,int,int)");
         signatures.insert("arma::mat(*calculate_inertia)(const arma::mat&,const arma::vec&,const arma::mat&,Rcpp::String,const arma::vec&,int,int,bool,Rcpp::String)");
-        signatures.insert("arma::cube(*compute_stats_tie)(Rcpp::CharacterVector,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const Rcpp::List&,const Rcpp::List&,Rcpp::String,const arma::vec&,Rcpp::CharacterVector&,Rcpp::LogicalVector&,int,int,bool,bool,Rcpp::String)");
+        signatures.insert("arma::cube(*compute_stats_tie)(Rcpp::CharacterVector,const arma::mat&,const arma::mat&,const arma::mat&,const arma::mat&,const Rcpp::List&,const Rcpp::List&,Rcpp::String,const arma::vec&,Rcpp::CharacterVector&,Rcpp::LogicalVector&,Rcpp::CharacterVector&,int,int,bool,bool,Rcpp::String)");
     }
     return signatures.find(sig) != signatures.end();
 }
@@ -314,8 +327,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_remstats_get_riskset", (DL_FUNC) &_remstats_get_riskset, 3},
     {"_remstats_convert_to_risksetMatrix", (DL_FUNC) &_remstats_convert_to_risksetMatrix, 3},
     {"_remstats_calculate_inertia", (DL_FUNC) &_remstats_calculate_inertia, 9},
-    {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 16},
+    {"_remstats_compute_stats_tie", (DL_FUNC) &_remstats_compute_stats_tie, 17},
     {"_remstats_combine_stats", (DL_FUNC) &_remstats_combine_stats, 2},
+    {"_remstats_pearson_corr_vec_cpp", (DL_FUNC) &_remstats_pearson_corr_vec_cpp, 2},
     {"_remstats_RcppExport_registerCCallable", (DL_FUNC) &_remstats_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };
