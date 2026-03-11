@@ -11,7 +11,7 @@ event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 
 # Statistics
 edgelist$type <- event_types
-reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+reh <- remify::remify2(edgelist, model = "tie", riskset = "active")
 effects <- ~
 	FEtype() + 
 	outdegreeSender() + outdegreeReceiver() +
@@ -1040,7 +1040,7 @@ edgelist <- data.frame(
 
 event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 edgelist$type <- event_types
-reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+reh <- remify::remify2(edgelist, model = "tie", riskset = "active")
 
 # Selection of effects that have unique underlying cpp functions
 effects <- ~ FEtype() + inertia(consider_type = FALSE) + 

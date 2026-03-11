@@ -165,6 +165,9 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
     reh <- edgelist
   }
 
+  if (!("remify" %in% class(reh))) stop("Expected a reh object of class remify")
+  reh <- normalize_reh(reh)
+
   # Prepare all required inputs
   inputs <- prepare_tomstats(
     effects = effects, reh = reh,
@@ -206,7 +209,7 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   # Compute statistics
   statistics <- compute_stats_tie(effectNames, edgelist, riskset, 
     risksetMatrix, inertia, covar, interactions, memory, memory_value, scaling, 
-    consider_type, start, stop, attr(reh, "directed"), display_progress, method)
+    consider_type, start, stop, reh$meta$directed, display_progress, method)
 
   # Add variable names to the statistics dimnames
   statistics <- add_variable_names(
@@ -445,6 +448,7 @@ tomstats2 <- function(
 	}else{
 	
 	# ---- sampling mode checks ----
+	reh <- normalize_reh(reh)  # class already checked above in non-sampling dispatch
 	if (!is.null(adjmat) || isTRUE(get_adjmat)) {
 		stop("sampling=TRUE: 'adjmat' and 'get_adjmat' are disabled (by design).")
 	}
@@ -511,7 +515,7 @@ tomstats2 <- function(
 	if (samp_num > D_base) stop("samp_num cannot exceed base riskset size.")
 	
 	# map observed (sender,receiver) -> base dyad id
-	directed <- isTRUE(attr(reh, "directed"))
+	directed <- isTRUE(reh$meta$directed)
 	typed <- !is.null(types) && "type" %in% names(ed)
 	make_key <- function(a1, a2, ty = NULL) {
 		if (!directed) { lo <- pmin(a1,a2); hi <- pmax(a1,a2) } else { lo <- a1; hi <- a2 }
@@ -586,7 +590,7 @@ tomstats2 <- function(
 		consider_type = consider_type,
 		start = start0,
 		stop = stop0,
-		directed = attr(reh, "directed"),
+		directed = reh$meta$directed,
 		display_progress = display_progress,
 		method = method,
 		sample_map = sample_map

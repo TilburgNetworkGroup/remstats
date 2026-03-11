@@ -1145,10 +1145,13 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 	};
 	
 	// --- state ---
+	// Use dense vectors only for full/decay (O(D) doubles = cheap even at D=1M).
+	// For window/interval use sparse unordered_map so we never allocate D deque
+	// objects upfront — critical when D is in the millions.
 	std::vector<double> full_sum;
-	std::vector<std::deque<std::pair<double,double>>> win_q;
-	std::vector<double> win_sum;
-	std::vector<std::deque<std::pair<double,double>>> int_q;
+	std::unordered_map<int, std::deque<std::pair<double,double>>> win_q;
+	std::unordered_map<int, double> win_sum;
+	std::unordered_map<int, std::deque<std::pair<double,double>>> int_q;
 	std::vector<double> dec_state, dec_last_t;
 	
 	// parse memory_value
@@ -1163,20 +1166,18 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 		if (memory_value.n_elem < 1) Rcpp::stop("calculate_inertia_sampled: window requires memory_value length 1.");
 		win_len = memory_value(0);
 		if (win_len < 0) Rcpp::stop("calculate_inertia_sampled: window length must be >= 0.");
-		win_q.resize(D);
-		win_sum.assign(D, 0.0);
+		// sparse maps: entries created on first event for each dyad
 	} else if (memory == "interval") {
 		if (memory_value.n_elem < 2) Rcpp::stop("calculate_inertia_sampled: interval requires memory_value length 2 (min,max).");
 		int_min = memory_value(0);
 		int_max = memory_value(1);
 		if (int_min < 0 || int_max < int_min) Rcpp::stop("calculate_inertia_sampled: invalid interval memory_value.");
-		int_q.resize(D);
+		// sparse maps: entries created on first event for each dyad
 	} else if (memory == "decay") {
 		if (memory_value.n_elem < 1) Rcpp::stop("calculate_inertia_sampled: decay requires memory_value length 1 (half-life).");
 		half_life = memory_value(0);
 		if (half_life <= 0) Rcpp::stop("calculate_inertia_sampled: decay half-life must be > 0.");
 		lambda = std::log(2.0) / half_life;
-		
 		dec_state.assign(D, 0.0);
 		dec_last_t.assign(D, NAN);
 	} else {
@@ -1189,8 +1190,10 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 		if (d >= 0) full_sum[static_cast<arma::uword>(d)] += weights(ev);
 	};
 	
-	auto prune_window = [&](arma::uword d, double t_eval) {
-		auto &q = win_q[d];
+	auto prune_window = [&](int d, double t_eval) {
+		auto it = win_q.find(d);
+		if (it == win_q.end()) return;
+		auto &q = it->second;
 		double cutoff = t_eval - win_len;
 		while (!q.empty() && q.front().first <= cutoff) {
 			win_sum[d] -= q.front().second;
@@ -1201,26 +1204,26 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 	auto update_window = [&](arma::uword ev) {
 		int d = dyad_of_event(ev);
 		if (d < 0) return;
-		arma::uword du = static_cast<arma::uword>(d);
 		double t = event_time(ev);
 		double w = weights(ev);
-		win_q[du].push_back({t, w});
-		win_sum[du] += w;
+		win_q[d].push_back({t, w});
+		win_sum[d] += w;
 	};
 	
-	auto prune_interval = [&](arma::uword d, double t_eval) {
-		auto &q = int_q[d];
+	auto prune_interval = [&](int d, double t_eval) {
+		auto it = int_q.find(d);
+		if (it == int_q.end()) return;
+		auto &q = it->second;
 		double oldest_allowed = t_eval - int_max;
-		while (!q.empty() && q.front().first <= oldest_allowed) q.pop_front(); // <= not <
+		while (!q.empty() && q.front().first <= oldest_allowed) q.pop_front();
 	};
 	
 	auto update_interval = [&](arma::uword ev) {
 		int d = dyad_of_event(ev);
 		if (d < 0) return;
-		arma::uword du = static_cast<arma::uword>(d);
 		double t = event_time(ev);
 		double w = weights(ev);
-		int_q[du].push_back({t, w});
+		int_q[d].push_back({t, w});
 	};
 	
 	auto decay_touch = [&](arma::uword d, double t_eval) {
@@ -1282,28 +1285,33 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
 		
 		// emit only sampled dyads, evaluated at prev
 		for (arma::uword s = 0; s < S; ++s) {
-			arma::uword d = (arma::uword) sample_map(m, s);   // dyad id (0-based)
-			if (d >= D) Rcpp::stop("calculate_inertia_sampled: dyad id out of bounds.");
+			int d = sample_map(m, s);   // dyad id (0-based), signed for map lookup
+			if (d < 0 || static_cast<arma::uword>(d) >= D)
+				Rcpp::stop("calculate_inertia_sampled: dyad id out of bounds.");
 			
 			if (memory == "full") {
-				out(m, s) = full_sum[d];
+				out(m, s) = full_sum[static_cast<arma::uword>(d)];
 				
 			} else if (memory == "window") {
 				prune_window(d, prev);
-				out(m, s) = win_sum[d];
+				auto it = win_sum.find(d);
+				out(m, s) = (it != win_sum.end()) ? it->second : 0.0;
 				
 			} else if (memory == "interval") {
 				prune_interval(d, prev);
 				double upper = prev - int_min;
 				double acc = 0.0;
-				for (const auto &tw : int_q[d]) {
-					if (tw.first <= upper) acc += tw.second;
+				auto it = int_q.find(d);
+				if (it != int_q.end()) {
+					for (const auto &tw : it->second) {
+						if (tw.first <= upper) acc += tw.second;
+					}
 				}
-				out(m,s) = acc;
+				out(m, s) = acc;
 
 			} else { // decay
-				decay_touch(d, prev);
-				out(m, s) = dec_state[d];
+				decay_touch(static_cast<arma::uword>(d), prev);
+				out(m, s) = dec_state[static_cast<arma::uword>(d)];
 			}
 		}
 		

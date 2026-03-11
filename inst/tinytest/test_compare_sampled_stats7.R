@@ -3,6 +3,8 @@
 # here this is tested a dyadic ("tie") model with active riskset, directed events, time-sensitive (not ordinal) model
 # Model: tie, manual riskset, time likelihood, undirected events, exponential memory decay
 
+library(tinytest)
+
 data(history, package = "remstats")
 data(info, package = "remstats")
 

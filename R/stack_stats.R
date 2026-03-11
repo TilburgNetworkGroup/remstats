@@ -58,11 +58,11 @@ stack_stats.tomstats <- function(stats,reh) {
 
   # Create the binary response variable
   stat_glm$obs <- unlist(lapply(subset_idx[1]:subset_idx[2], function(e) {
-  	if(reh$meta$riskset == "active"){ #let's also store the manual riskset in 'reh$index$dyadIDactive'
-	    obs_dyads <- reh$index$dyadIDactive[[e]]
+  	if(reh$meta$riskset == "active"){ #let's also store the manual riskset in 'reh$ids$dyad_active'
+	    obs_dyads <- reh$ids$dyad_active[[e]]
   	  tabulate(obs_dyads, nbins = D_remstats)
   	}else if(reh$meta$riskset == "full"){
-  		obs_dyads <- reh$index$dyadID[[e]]
+  		obs_dyads <- reh$ids$dyad[[e]]
   		tabulate(obs_dyads, nbins = D_remstats)
   	}
   }))
@@ -104,11 +104,11 @@ stack_stats.tomstats <- function(stats,reh) {
 	
 	# Create the binary response variable
 	stat_glm$obs <- unlist(lapply(subset_idx[1]:subset_idx[2], function(e) {
-		if(reh$meta$riskset == "active"){ #let's also store the manual riskset in 'reh$index$dyadIDactive'
-			obs_dyads <- reh$index$dyadIDactive[[e]]
+		if(reh$meta$riskset == "active"){ #let's also store the manual riskset in 'reh$ids$dyad_active'
+			obs_dyads <- reh$ids$dyad_active[[e]]
 			tabulate(obs_dyads, nbins = D_remstats)
 		}else if(reh$meta$riskset == "full"){
-			obs_dyads <- reh$index$dyadID[[e]]
+			obs_dyads <- reh$ids$dyad[[e]]
 			tabulate(obs_dyads, nbins = D_remstats)
 		}
 	}))

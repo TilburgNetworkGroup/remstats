@@ -25,7 +25,7 @@ info2 <- data.frame(
 info <- rbind(info, info2)
 
 # Statistics
-reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+reh <- remify::remify2(edgelist, model = "tie", riskset = "active")
 effects <-	~ send(variable = "x1") + receive(variable = "x1") + 
   average(variable = "x1") + difference(variable = "x1") +
   maximum(variable = "x1") + minimum(variable = "x1") +
@@ -146,7 +146,7 @@ edgelist <- data.frame(
   actor2 = c(2, 3, 1, 3, 2)
 )
 
-reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+reh <- remify::remify2(edgelist, model = "tie", riskset = "active")
 
 # Method = "pt"
 # Selection of effects that have unique underlying cpp functions

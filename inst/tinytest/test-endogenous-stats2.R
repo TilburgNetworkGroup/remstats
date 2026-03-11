@@ -8,7 +8,7 @@ edgelist <- data.frame(
 )
 
 # Statistics
-reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
+reh <- remify::remify2(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
 effects <- ~ degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
   inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
@@ -204,7 +204,7 @@ edgelist <- data.frame(
   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 )
 
-reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
+reh <- remify::remify2(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
 
 # Selection of effects that have unique underlying cpp functions

@@ -4,6 +4,8 @@
 # memroy decay
 # with event types
 
+library(tinytest)
+
 data(history, package = "remstats")
 data(info, package = "remstats")
 
@@ -121,14 +123,14 @@ for (nm in names(tests)) {
 	}
 }
 
-m <- 1
-dim(ts_samp)
-dim(ts_full)
-head(history)
-head(reh$edgelist_id)
-riskset[sample_map[m,],]
-ts_samp[m,,]
-ts_full[m,sample_map[m,],]
+# m <- 1
+# dim(ts_samp)
+# dim(ts_full)
+# head(history)
+# head(reh$edgelist_id)
+# riskset[sample_map[m,],]
+# ts_samp[m,,]
+# ts_full[m,sample_map[m,],]
 
 # exp(- (345 - 238) * log(2) / 1000) * 1.33
 # exp(- (317 - 238) * log(2) / 1000) * 1.33

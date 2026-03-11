@@ -11,7 +11,7 @@ event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 
 # Statistics
 edgelist$type <- event_types
-reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
+reh <- remify::remify2(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
 effects <- ~ FEtype() + 
   degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +

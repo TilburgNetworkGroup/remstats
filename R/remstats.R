@@ -250,7 +250,7 @@ remstats <- function(
         stop("Expected a 'reh' object of class remify")
     }
 
-    if (attr(reh, "model") == "tie") {
+    if (reh$meta$model == "tie") {
         out <- tomstats(
             effects = tie_effects, 
             reh = reh,
@@ -267,7 +267,7 @@ remstats <- function(
         )
     }
 
-    if (attr(reh, "model") == "actor") {
+    if (reh$meta$model == "actor") {
         out <- aomstats(
             reh = reh, 
             sender_effects = sender_effects,
@@ -540,7 +540,7 @@ remstats2 <- function(
 		stop("Expected a 'reh' object of class remify")
 	}
 	
-	if (attr(reh, "model") == "tie") {
+	if (reh$meta$model == "tie") {
 		out <- tomstats2(
 			effects = tie_effects, 
 			reh = reh,
@@ -557,7 +557,7 @@ remstats2 <- function(
 		)
 	}
 	
-	if (attr(reh, "model") == "actor") {
+	if (reh$meta$model == "actor") {
 		out <- aomstats(
 			reh = reh, 
 			sender_effects = sender_effects,

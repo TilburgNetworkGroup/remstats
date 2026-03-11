@@ -8,7 +8,7 @@ edgelist <- data.frame(
 )
 
 # Statistics
-reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+reh <- remify::remify2(edgelist, model = "tie", riskset = "active")
 effects <- ~
   outdegreeSender() + outdegreeReceiver() +
   indegreeSender() + indegreeReceiver() +
@@ -534,7 +534,7 @@ edgelist <- data.frame(
 	actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 )
 
-reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+reh <- remify::remify2(edgelist, model = "tie", riskset = "active")
 
 # Selection of effects that have unique underlying cpp functions
 effects <- ~ outdegreeSender() + inertia() + reciprocity() +

@@ -1,3 +1,44 @@
+# Dual-compatibility normalizer for remify objects.
+#
+# Patches a reh object so that reh$meta and reh$ids are always populated,
+# regardless of whether the object was produced by the old remify::remify()
+# (which stores everything in attr()) or the new remify2() (which stores
+# everything in named list elements). All downstream helpers can then safely
+# use reh$meta$X and reh$ids$X without inline ternaries everywhere.
+normalize_reh <- function(reh) {
+  if (!is.null(reh$meta)) return(reh)  # already new-style, nothing to do
+
+  # Build reh$meta from attributes
+  reh$meta <- list(
+    model      = attr(reh, "model"),
+    directed   = attr(reh, "directed"),
+    ordinal    = attr(reh, "ordinal"),
+    weighted   = attr(reh, "weighted"),
+    with_type  = isTRUE(attr(reh, "with_type")),
+    riskset    = attr(reh, "riskset"),
+    origin     = attr(reh, "origin"),
+    dictionary = attr(reh, "dictionary")
+  )
+
+  # Build reh$ids from attributes / existing slots
+  if (is.null(reh$ids)) {
+    reh$ids <- list(
+      dyad        = attr(reh, "dyad"),
+      actor1      = attr(reh, "actor1"),
+      actor2      = attr(reh, "actor2"),
+      dyad_active = attr(reh, "dyad_active")
+    )
+    # Old remify stores these as columns on the edgelist_id matrix
+    if (is.null(reh$ids$dyad) && !is.null(reh$edgelist_id)) {
+      reh$ids$dyad   <- reh$edgelist_id[, "dyadID"]
+      reh$ids$actor1 <- reh$edgelist_id[, "actor1ID"]
+      reh$ids$actor2 <- reh$edgelist_id[, "actor2ID"]
+    }
+  }
+
+  reh
+}
+
 # Prepare tomstats inputs
 #
 # This function prepares all the necessary information prior to using the cpp
@@ -33,33 +74,34 @@ prepare_tomstats <- function(
   if (!("remify" %in% class(reh))) {
     stop("Expected a reh object of class remify")
   }
+  reh <- normalize_reh(reh)
 
   # Check if the reh object is prepared with the correct model argument
-  if (attr(reh, "model") != "tie") {
+  if (reh$meta$model != "tie") {
     stop("The reh object should be prepared with the model argument set to `tie' if tie_effects are computed")
   }
 
   # Extract relevant elements from the prepared remify::remify object
-  dyads <- unlist(attr(reh, "dyadID"))
-  actors <- attr(reh, "dictionary")$actors
-  types <- attr(reh, "dictionary")$types
+  dyads <- unlist(reh$ids$dyad)
+  actors <- reh$meta$dictionary$actors
+  types <- reh$meta$dictionary$types
 
   # Convert actor IDs to cpp indexing
   actors$actorID <- actors$actorID - 1
 
   # Origin
-  if (attr(reh, "ordinal")) {
-    if (length(attr(reh, "origin"))==0) {
-      attr(reh, "origin") <- reh$edgelist[1,1] - 1
+  if (reh$meta$ordinal) {
+    if (length(reh$meta$origin)==0) {
+      reh$meta$origin <- reh$edgelist[1,1] - 1
     }
   }
 
   # Prepare the edgelist for cpp processing
   edgelist <- reh$edgelist[,1:3]
-  edgelist$time <- cumsum(as.numeric(diff(c(attributes(reh)$origin, edgelist$time))))
-  edgelist$actor1 <- unlist(attributes(reh)$actor1ID) - 1
-  edgelist$actor2 <- unlist(attributes(reh)$actor2ID) - 1
-  if (!attr(reh, "directed")) {
+  edgelist$time <- cumsum(as.numeric(diff(c(reh$meta$origin, edgelist$time))))
+  edgelist$actor1 <- unlist(reh$ids$actor1) - 1
+  edgelist$actor2 <- unlist(reh$ids$actor2) - 1
+  if (!reh$meta$directed) {
     edgelist[, c(2, 3)] <- t(apply(edgelist, 1, function(x) sort(c(x[2], x[3]))))
   }
 
@@ -75,7 +117,7 @@ prepare_tomstats <- function(
   }
 
   # Prepare the event weights
-  if (attr(reh, "weighted")) {
+  if (reh$meta$weighted) {
     weights <- as.numeric(reh$edgelist$weight)
   } else {
     weights <- rep(1, nrow(edgelist))
@@ -85,13 +127,13 @@ prepare_tomstats <- function(
   prepR <- get_riskset(
     actorID = actors$actorID,
     typeID = types$typeID,
-    directed = attr(reh, "directed")
+    directed = reh$meta$directed
   )
 
   # Reduce risk set to "active" dyads only
-  if (attr(reh, "riskset") == "active") {
+  if (reh$meta$riskset == "active") {
     # Get dyadInfo
-    dyadIDactive <- unlist(attr(reh, "dyadIDactive"))
+    dyadIDactive <- unlist(reh$ids$dyad_active)
     dyadInfo <- data.frame(dyadIDactive, dyads)
     dyadInfo <- unique(dyadInfo[order(dyadIDactive), ])
 
@@ -124,17 +166,17 @@ prepare_tomstats <- function(
   # Prepare main effects
   check_formula(effects)
   form <- effects
-  effects <- parse_formula(form, "rem", attr(reh, "ordinal"))
+  effects <- parse_formula(form, "rem", reh$meta$ordinal)
   effectNames <- sapply(effects, function(x) x$effect)
 
   # Check correct specification effects
-  if (!attr(reh, "directed")) {
+  if (!reh$meta$directed) {
     if (!all(effectNames %in% tie_effects(directed = FALSE))) {
       stop("Attempting to request effects that are not (yet) defined for undirected events")
     }
   }
 
-  if (attr(reh, "directed")) {
+  if (reh$meta$directed) {
     if (!all(effectNames %in% tie_effects(directed = TRUE))) {
       stop("Attempting to request effects that are not (yet) defined for directed events")
     }
@@ -161,7 +203,7 @@ prepare_tomstats <- function(
   }
 
   # Prepare interaction effects
-  effects_int <- parse_int(form, "rem", effects, attr(reh, "ordinal"))
+  effects_int <- parse_int(form, "rem", effects, reh$meta$ordinal)
   effectNames <- append(effectNames, rep("interact", length(effects_int)), length(effectNames))
   interactions <- list()
   interactions[which(effectNames == "interact")] <- effects_int
@@ -187,7 +229,7 @@ prepare_tomstats <- function(
   }
 
   # Check correct scaling inertia statistic
-  if (!attr(reh, "directed")) {
+  if (!reh$meta$directed) {
     if (any(sapply(effects, function(x) x$effect == "inertia"))) {
       idx <- which(sapply(effects, function(x) x$effect == "inertia"))
       if (any(scaling[idx] == "prop")) {
@@ -696,7 +738,7 @@ parse_int <- function(formula, type, effects, ordinal = FALSE) {
 modify_riskset <- function(riskset, reh, actors, types) {
   riskset <- as.data.frame(riskset)
 
-  if (attr(reh, "directed")) {
+  if (reh$meta$directed) {
     colnames(riskset) <- c("sender", "receiver", "type", "id")
     riskset$sender <- actors$actorName[match(riskset$sender, actors$actorID)]
     riskset$receiver <- actors$actorName[match(riskset$receiver, actors$actorID)]
@@ -848,6 +890,7 @@ process_covariate <- function(
 }
 
 validate_aomstats_arguments <- function(attr_actors, reh) {
+  reh <- normalize_reh(reh)
   # Check if the deprecated "id" column is used in attr_actors
   if (!is.null(attr_actors) & "id" %in% colnames(attr_actors) & !("name" %in% colnames(attr_actors))) {
     colnames(attr_actors) <- ifelse(colnames(attr_actors) == "id", "name", colnames(attr_actors))
@@ -859,7 +902,7 @@ validate_aomstats_arguments <- function(attr_actors, reh) {
     stop("Invalid argument: 'reh' must be a remify object.")
   }
 
-  model <- attr(reh, "model")
+  model <- reh$meta$model
   # Check the reh model
   if (is.null(model) || model != "actor") {
     stop("Invalid argument: 'reh' object should be prepared with the model argument set to 'actor' if effects for the actor-oriented model are computed.")
@@ -869,17 +912,18 @@ validate_aomstats_arguments <- function(attr_actors, reh) {
 }
 
 prepare_aomstats_edgelist <- function(reh) {
+  reh <- normalize_reh(reh)
   # Extract the edgelist
   edgelist <- reh$edgelist
 
   # Transform to cpp indexing
-  edgelist[, 2] <- unlist(attributes(reh)$actor1ID) - 1
-  edgelist[, 3] <- unlist(attributes(reh)$actor2ID) - 1
+  edgelist[, 2] <- unlist(reh$ids$actor1) - 1
+  edgelist[, 3] <- unlist(reh$ids$actor2) - 1
 
   # Origin
-  if (attr(reh, "ordinal")) {
-  	if (length(attr(reh, "origin"))==0) {
-  		attr(reh, "origin") <- edgelist[1,1] - 1
+  if (reh$meta$ordinal) {
+  	if (length(reh$meta$origin)==0) {
+  		reh$meta$origin <- edgelist[1,1] - 1
   	}
   }
 
@@ -887,7 +931,7 @@ prepare_aomstats_edgelist <- function(reh) {
   edgelist[, 1] <- cumsum(
     as.numeric(
       diff(
-        c(attributes(reh)$origin, edgelist[, 1])
+        c(reh$meta$origin, edgelist[, 1])
       )
     )
   )
@@ -899,8 +943,9 @@ prepare_aomstats_edgelist <- function(reh) {
 }
 
 prepare_aomstats_actors <- function(reh) {
+  reh <- normalize_reh(reh)
   # Extract the actors
-  actors <- attr(reh, "dictionary")$actors
+  actors <- reh$meta$dictionary$actors
 
   # Transform to cpp indexing
   actors$actorID <- actors$actorID - 1
@@ -909,7 +954,8 @@ prepare_aomstats_actors <- function(reh) {
 }
 
 prepare_aomstats_event_weights <- function(reh) {
-  if (!(attributes(reh)$weighted)) {
+  reh <- normalize_reh(reh)
+  if (!(reh$meta$weighted)) {
     weights <- rep(1, nrow(reh$edgelist))
   } else {
     weights <- reh$edgelist$weight
@@ -1198,7 +1244,7 @@ prep_tie <- function(variable, attr_dyads, scaling) {
 }
 
 tie_convert_wide_to_long <- function(x, variable, reh) {
-  actors <- attr(reh, "dictionary")$actors
+  actors <- reh$meta$dictionary$actors
 
   # Check actors in x
   if (is.null(rownames(x)) | is.null(colnames(x))) {
@@ -1223,7 +1269,7 @@ tie_convert_wide_to_long <- function(x, variable, reh) {
   x <- x[, order(as.numeric(colnames(x)))]
 
   # Undirected events
-  if (!attr(reh, "directed")) {
+  if (!reh$meta$directed) {
     if (!isSymmetric(x)) {
       if (all(is.na(x[upper.tri(x)]))) {
         x[upper.tri(x)] <- t(x)[upper.tri(x)]
@@ -1282,7 +1328,7 @@ parse_tie <- function(prepped_effect, reh, attr_dyads) {
     tie_convert_wide_to_long(x, prepped_effect$variable, reh)
     # return: converted matrix
   } else {
-    actors <- attr(reh, "dictionary")$actors
+    actors <- reh$meta$dictionary$actors
     x$actor1 <- actors$actorID[match(x$actor1, actors$actorName)] - 1
     x$actor2 <- actors$actorID[match(x$actor2, actors$actorName)] - 1
     as.matrix(x) # return

@@ -28,7 +28,7 @@ info <- rbind(info, info2)
 
 # Statistics
 edgelist$type <- event_types
-reh <- remify::remify(edgelist, model = "tie", directed = FALSE, riskset = "active")
+reh <- remify::remify2(edgelist, model = "tie", directed = FALSE, riskset = "active")
 effects <- ~ average(variable = "x1") + difference(variable = "x1") + 
   maximum(variable = "x1") + minimum(variable = "x1") +
   same(variable = "x2") 
