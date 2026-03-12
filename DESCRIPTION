@@ -1,20 +1,18 @@
 Package: remstats
 Type: Package
 Title: Computes Statistics for Relational Event History Data
-Version: 3.2.4
-Date: 2025-01-28
+Version: 3.2.5
+Date: 2026-03-12
 Authors@R: 
-    c(
-        person(
-            given = "Giuseppe",
-            family = "Arena",
-            role = c("aut", "cre"),
-            email = "g.arena@uva.nl",
-            comment = c(ORCID = "0000-0001-5204-3326")),
-        person(
+    c(person(
             given = "Marlyne",
             family = "Meijerink-Bosman",
             role = "aut"),
+        person(given = "Giuseppe",
+             family = "Arena",
+             role = c("aut","cre"),
+             email = "g.arena@uva.nl",
+             comment = c(ORCID = "0000-0001-5204-3326")),
         person(
             given = "Diana",
             family = "Karimova",
@@ -36,20 +34,19 @@ Authors@R:
             family = "Leenders",
             role = "ctb",
             email = "r.t.a.j.leenders@tilburguniversity.edu"),
-        person(
-            given = "Joris",
-            family = "Mulder",
-            role = "ctb",
-            email = "j.mulder3@tilburguniversity.edu")
+        person(given = "Joris",
+             family = "Mulder",
+             role = "ctb",
+             email = "j.mulder3@tilburguniversity.edu")
     )
-Maintainer: Giuseppe Arena <g.arena@uva.nl>
+Maintainer: Joris Mulder <j.mulder3@tilburguniversity.edu>
 Description: Computes a variety of statistics for relational event models. Relational event models enable researchers to investigate both exogenous and endogenous factors influencing the evolution of a time-ordered sequence of events. These models are categorized into tie-oriented models (Butts, C., 2008, <doi:10.1111/j.1467-9531.2008.00203.x>), where the probability of a dyad interacting next is modeled in a single step, and actor-oriented models (Stadtfeld, C., & Block, P., 2017, <doi:10.15195/v4.a14>), which first model the probability of a sender initiating an interaction and subsequently the probability of the sender's choice of receiver. The package is designed to compute a variety of statistics that summarize exogenous and endogenous influences on the event stream for both types of models.  
 License: MIT + file LICENSE
 URL: https://tilburgnetworkgroup.github.io/remstats/
 BugReports: https://github.com/TilburgNetworkGroup/remstats/issues
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends: 
     R (>= 4.0.0) 
 Imports: 

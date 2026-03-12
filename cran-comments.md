@@ -1,8 +1,8 @@
-# remstats 3.2.4
-Date: 2025-01-28
+# remstats 3.2.5
+Date: 2026-03-12
 
 ## Updated
-- Corresponding author email.
+- Updated calls to Rf_error
 
 ## Test environments
 - Local Windows 10, R version 4.3.1 
