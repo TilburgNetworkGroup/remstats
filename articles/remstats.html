@@ -8,7 +8,7 @@
 <title>remstats • remstats</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.9/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="remstats">
@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">remstats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,7 +93,7 @@ models.</p>
 intended to aid applied researchers in the application of relational
 event modeling. For preparing the relational event history,
 <code>remstats</code> assumes the prior application of
-<code><a href="https://rdrr.io/pkg/remify/man/remify.html" class="external-link">remify::remify()</a></code> (available on CRAN). Model estimation can
+<code><a href="https://tilburgnetworkgroup.github.io/remify/reference/remify.html" class="external-link">remify::remify()</a></code> (available on CRAN). Model estimation can
 subsequently be executed using <code>remstimate</code> (available on
 GitHub at github.com/TilburgNetworkGroup/remstimate).</p>
 <p>The following provides a brief introduction to computing statistics
@@ -114,7 +114,7 @@ explanation of the procedure for the actor-oriented model.</p>
 <span><span class="va">effects</span> <span class="op">&lt;-</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="../reference/send.html">send</a></span><span class="op">(</span><span class="st">"extraversion"</span>, <span class="va">info</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/inertia.html">inertia</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Prepare event history with the 'remify package'</span></span>
-<span><span class="va">rehObject</span> <span class="op">&lt;-</span> <span class="fu">remify</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/remify/man/remify.html" class="external-link">remify</a></span><span class="op">(</span>edgelist <span class="op">=</span> <span class="va">history</span>, model <span class="op">=</span> <span class="st">"tie"</span><span class="op">)</span></span>
+<span><span class="va">rehObject</span> <span class="op">&lt;-</span> <span class="fu">remify</span><span class="fu">::</span><span class="fu"><a href="https://tilburgnetworkgroup.github.io/remify/reference/remify.html" class="external-link">remify</a></span><span class="op">(</span>edgelist <span class="op">=</span> <span class="va">history</span>, model <span class="op">=</span> <span class="st">"tie"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compute statistics</span></span>
 <span><span class="va">statsObject</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/remstats.html">remstats</a></span><span class="op">(</span>reh <span class="op">=</span> <span class="va">rehObject</span>, tie_effects <span class="op">=</span> <span class="va">effects</span><span class="op">)</span></span>
@@ -160,7 +160,7 @@ statistics. In this example, we don’t want this, thus we set the weight
 to one for all events:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">history</span><span class="op">$</span><span class="va">weight</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
-<span><span class="va">reh</span> <span class="op">&lt;-</span> <span class="fu">remify</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/remify/man/remify.html" class="external-link">remify</a></span><span class="op">(</span>edgelist <span class="op">=</span> <span class="va">history</span>, model <span class="op">=</span> <span class="st">"tie"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">reh</span> <span class="op">&lt;-</span> <span class="fu">remify</span><span class="fu">::</span><span class="fu"><a href="https://tilburgnetworkgroup.github.io/remify/reference/remify.html" class="external-link">remify</a></span><span class="op">(</span>edgelist <span class="op">=</span> <span class="va">history</span>, model <span class="op">=</span> <span class="st">"tie"</span><span class="op">)</span></span></code></pre></div>
 <p>Besides the relational event history itself, relational event
 modeling often requires a second data object with exogenous information
 on the actors in the network. Information on the actors in the simulated
@@ -228,7 +228,7 @@ the timing of the events in the relational event history is exact
 <code><a href="../reference/remstats.html">remstats()</a></code> procedure assumes that the timing of the events
 in the relational event history is exact and the full likelihood is used
 in the estimation, unless the argument <code>ordinal</code> in
-<code><a href="https://rdrr.io/pkg/remify/man/remify.html" class="external-link">remify::remify()</a></code> is set to <code>TRUE</code>.</p>
+<code><a href="https://tilburgnetworkgroup.github.io/remify/reference/remify.html" class="external-link">remify::remify()</a></code> is set to <code>TRUE</code>.</p>
 <p>We can view the names of the statistics that are in the statistics
 object with:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -243,7 +243,7 @@ object with:</p>
 <p>Here, we see that, indeed, a baseline and inertia statistic are
 computed.</p>
 <p>Since we did not request anything special for the riskset in
-<code><a href="https://rdrr.io/pkg/remify/man/remify.html" class="external-link">remify::remify()</a></code>, it consists of every directed pair of
+<code><a href="https://tilburgnetworkgroup.github.io/remify/reference/remify.html" class="external-link">remify::remify()</a></code>, it consists of every directed pair of
 actors observed in the relational event history, which is 10*9 = 90
 pairs. These pairs are saved in the <code>riskset</code> attribute. We
 can ask for the first few lines of this riskset:</p>
@@ -315,7 +315,7 @@ statistic can be chosen.</p>
 <p>First, we prepare the event history for computing statistics for an
 actor-oriented model:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reh</span> <span class="op">&lt;-</span> <span class="fu">remify</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/remify/man/remify.html" class="external-link">remify</a></span><span class="op">(</span>edgelist <span class="op">=</span> <span class="va">history</span>, model <span class="op">=</span> <span class="st">"actor"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">reh</span> <span class="op">&lt;-</span> <span class="fu">remify</span><span class="fu">::</span><span class="fu"><a href="https://tilburgnetworkgroup.github.io/remify/reference/remify.html" class="external-link">remify</a></span><span class="op">(</span>edgelist <span class="op">=</span> <span class="va">history</span>, model <span class="op">=</span> <span class="st">"actor"</span><span class="op">)</span></span></code></pre></div>
 <p>To compute the outdegreeSender statistic for the sender activity rate
 step we supply it to the <code>sender_effects</code> argument of
 <code><a href="../reference/remstats.html">remstats()</a></code>:</p>
@@ -391,11 +391,11 @@ did not send any prior events.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Giuseppe Arena, Marlyne Meijerink-Bosman.</p>
+  <p>Developed by Marlyne Meijerink-Bosman, Giuseppe Arena.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

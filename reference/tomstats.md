@@ -1,0 +1,284 @@
+# tomstats
+
+Computes statistics for modeling relational event history data with the
+tie-oriented relational event model.
+
+## Usage
+
+``` r
+tomstats(
+  effects,
+  reh,
+  attr_actors = NULL,
+  attr_dyads = NULL,
+  method = c("pt", "pe"),
+  memory = c("full", "window", "decay", "interval"),
+  memory_value = NA,
+  start = 1,
+  stop = Inf,
+  display_progress = FALSE,
+  adjmat = NULL,
+  get_adjmat = FALSE,
+  attr_data,
+  attributes,
+  edgelist
+)
+```
+
+## Arguments
+
+- effects:
+
+  an object of class
+  `"`[`formula`](https://rdrr.io/r/stats/formula.html)`"` (or one that
+  can be coerced to that class): a symbolic description of the effects
+  in the model for which statistics are computed, see 'Details' for the
+  available effects and their corresponding statistics
+
+- reh:
+
+  an object of class
+  `"`[`remify`](https://tilburgnetworkgroup.github.io/remify/reference/remify.html)`"`
+  characterizing the relational event history.
+
+- attr_actors:
+
+  optionally, an object of class
+  `"`[`data.frame`](https://rdrr.io/r/base/data.frame.html)`"` that
+  contains exogenous attributes for actors (see Details).
+
+- attr_dyads:
+
+  optionally, an object of class `data.frame` or `matrix` containing
+  attribute information for dyads (see Details).
+
+- method:
+
+  Specifies the method for managing simultaneous events, i.e., events
+  occurring at the same time. The default 'method' is 'pt' (per
+  timepoint), where statistics are computed once for each unique
+  timepoint in the edgelist. Alternatively, you can choose 'pe' (per
+  event), where statistics are computed once for each unique event
+  observed in the edgelist.
+
+- memory:
+
+  The memory to be used. See \`Details'.
+
+- memory_value:
+
+  Numeric value indicating the memory parameter. See \`Details'.
+
+- start:
+
+  an optional integer value, specifying the index of the first time or
+  event in the relational event history for which statistics must be
+  computed (see 'Details')
+
+- stop:
+
+  an optional integer value, specifying the index of the last time or
+  event in the relational event history for which statistics must be
+  computed (see 'Details')
+
+- display_progress:
+
+  should a progress bar for the computation of the endogenous statistics
+  be shown (TRUE) or not (FALSE)?
+
+- adjmat:
+
+  optionally, a previously computed adjacency matrix with on the rows
+  the time points and on the columns the risk set entries
+
+- get_adjmat:
+
+  whether the adjmat computed by tomstats should be outputted as an
+  attribute of the statistics.
+
+- attr_data:
+
+  deprecated, please use "attr_actors" instead
+
+- attributes:
+
+  deprecated, please use "attr_data" instead
+
+- edgelist:
+
+  deprecated, please use "reh" instead
+
+## Value
+
+An object of class 'tomstats'. Array with the computed statistics, where
+rows refer to time points, columns refer to potential relational event
+(i.e., potential edges) in the risk set and slices refer to statistics.
+The 'tomstats' object has the following attributes:
+
+- `model`:
+
+  Type of model that is estimated.
+
+- `formula`:
+
+  Model formula, obtained from the formula inputted to 'tie_effects'.
+
+- `riskset`:
+
+  The risk set used to construct the statistics.
+
+- `adjmat`:
+
+  \[Optional\], if "get_adjmat = TRUE", the matrix with the accumulated
+  event weights for each time point (on the rows) and each dyad (in the
+  columns).
+
+## Effects
+
+The statistics to be computed are defined symbolically and should be
+supplied to the `effects` argument in the form `~ effects`. The terms
+are separated by + operators. For example:
+`effects = ~ inertia() + otp()`. Interactions between two effects can be
+included with \* operators. For example: `effects = ~ inertia()*otp()`.
+A list of available effects can be obtained with
+[`tie_effects()`](https://tilburgnetworkgroup.github.io/remstats/reference/tie_effects.md).
+
+The majority of the statistics can be scaled in some way, see the
+documentation of the `scaling` argument in the separate effect functions
+for more information on this.
+
+The majority of the statistics can account for the event type included
+as a dependent variable, see the documentation of the `consider_type`
+argument in the separate effect functions for more information on this.
+
+Note that events in the relational event history can be directed or
+undirected. Some statistics are only defined for either directed or
+undirected events (see the documentation of the statistics). Note that
+undirected events are only available for the tie-oriented model.
+
+## attr_actors
+
+For the computation of the *exogenous* statistics an attributes object
+with the exogenous covariate information has to be supplied to the
+`attr_actors` argument in either
+[`remstats()`](https://tilburgnetworkgroup.github.io/remstats/reference/remstats.md)
+or in the separate effect functions supplied to the `..._effects`
+arguments (e.g., see
+[`send`](https://tilburgnetworkgroup.github.io/remstats/reference/send.md)).
+This `attr_actors` object should be constructed as follows: A dataframe
+with rows referring to the attribute value of actor *i* at timepoint
+*t*. A \`name\` column is required that contains the actor name
+(corresponding to the actor names in the relational event history). A
+\`time\` column is required that contains the time when attributes
+change (set to zero if none of the attributes vary over time).
+Subsequent columns contain the attributes that are called in the
+specifications of exogenous statistics (column name corresponding to the
+string supplied to the `variable` argument in the effect function). Note
+that the procedure for the exogenous effects \`tie' and \`event'
+deviates from this, here the exogenous covariate information has to be
+specified in a different way, see
+[`tie`](https://tilburgnetworkgroup.github.io/remstats/reference/tie.md)
+and
+[`event`](https://tilburgnetworkgroup.github.io/remstats/reference/event.md).
+
+## attr_dyads
+
+For the computation of the *dyad exogenous* statistics with
+[`tie()`](https://tilburgnetworkgroup.github.io/remstats/reference/tie.md),
+an attributes object with the exogenous covariates information per dyad
+has to be supplied. This is a `data.frame` or `matrix` containing
+attribute information for dyads. If `attr_dyads` is a `data.frame`, the
+first two columns should represent "actor1" and "actor2" (for directed
+events, "actor1" corresponds to the sender, and "actor2" corresponds to
+the receiver). Additional columns can represent dyads' exogenous
+attributes. If attributes vary over time, include a column named "time".
+If `attr_dyads` is a `matrix`, the rows correspond to "actor1", columns
+to "actor2", and cells contain dyads' exogenous attributes.
+
+## Memory
+
+The default \`memory\` setting is \`"full"\`, which implies that at each
+time point \$t\$ the entire event history before \$t\$ is included in
+the computation of the statistics. Alternatively, when \`memory\` is set
+to \`"window"\`, only the past event history within a given time window
+is considered (see Mulders & Leenders, 2019). This length of this time
+window is set by the \`memory_value\` parameter. For example, when
+\`memory_value = 100\` and \`memory = "window"\`, at time point \$t\$
+only the past events that happened at most 100 time units ago are
+included in the computation of the statistics. A third option is to set
+\`memory\` to \`"interval"\`. In this case, the past event history
+within a given time interval is considered. For example, when
+\`"memory_value" = c(50, 100)\` and \`memory = "window"\`, at time point
+\$t\$ only the past events that happened between 50 and 100 time units
+ago are included in the computation of the statistics. Finally, the
+fourth option is to set \`memory\` to \`"decay"\`. In this case, the
+weight of the past event in the computation of the statistics depend on
+the elapsed time between \$t\$ and the past event. This weight is
+determined based on an exponential decay function with half-life
+parameter \`memory_value\` (see Brandes et al., 2009).
+
+## Event weights
+
+Note that if the relational event history contains a column that is
+named “weight”, it is assumed that these affect the endogenous
+statistics. These affect the computation of all endogenous statistics
+with a few exceptions that follow logically from their definition (e.g.,
+the recenyContinue statistic does depend on time since the event and not
+on event weights).
+
+## Subset the event history using 'start' and 'stop'
+
+It is possible to compute statistics for a segment of the relational
+event sequence, based on the entire event history. This is done by
+specifying the 'start' and 'stop' values as the indices for the first
+and last event times for which statistics are needed. For instance,
+setting 'start = 5' and 'stop = 5' calculates statistics for the 5th
+event in the relational event sequence, considering events 1-4 in the
+history. Note that in cases of simultaneous events with the 'method' set
+to 'pt' (per timepoint), 'start' and 'stop' should correspond to the
+indices of the first and last *unique* event timepoints for which
+statistics are needed. For example, if 'start = 5' and 'stop = 5',
+statistics are computed for the 5th unique timepoint in the relational
+event sequence, considering all events occurring at unique timepoints
+1-4.
+
+## Adjacency matrix
+
+Optionally, a previously computed adjacency matrix can be supplied. Note
+that the endogenous statistics will be computed based on this adjacency
+matrix. Hence, supplying a previously computed adjacency matrix can
+reduce computation time but the user should be absolutely sure the
+adjacency matrix is accurate.
+
+## References
+
+Butts, C. T. (2008). A relational event framework for social action.
+Sociological Methodology, 38(1), 155–200.
+[doi:10.1111/j.1467-9531.2008.00203.x](https://doi.org/10.1111/j.1467-9531.2008.00203.x)
+
+## Examples
+
+``` r
+library(remstats)
+
+# Load data
+data(history)
+data(info)
+
+# Prepare data
+reh <- remify::remify(edgelist = history, model = "tie")
+
+# Compute effects
+effects <- ~ inertia():send("extraversion") + otp()
+tomstats(effects, reh = reh, attr_actors = info)
+#> Relational Event Network Statistics
+#> > Model: tie-oriented
+#> > Computation method: per time point
+#> > Dimensions: 115 time points x 90 dyads x 5 statistics
+#> > Statistics:
+#>   >> 1: baseline
+#>   >> 2: inertia
+#>   >> 3: send_extraversion
+#>   >> 4: otp
+#>   >> 5: inertia:send_extraversion
+```
