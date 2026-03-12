@@ -10,9 +10,7 @@ Authors@R:
             role = "aut"),
         person(given = "Giuseppe",
              family = "Arena",
-             role = c("aut","cre"),
-             email = "g.arena@uva.nl",
-             comment = c(ORCID = "0000-0001-5204-3326")),
+             role = c("ctb")),
         person(
             given = "Diana",
             family = "Karimova",
@@ -36,7 +34,7 @@ Authors@R:
             email = "r.t.a.j.leenders@tilburguniversity.edu"),
         person(given = "Joris",
              family = "Mulder",
-             role = "ctb",
+             role = c("aut", "cre"),
              email = "j.mulder3@tilburguniversity.edu")
     )
 Maintainer: Joris Mulder <j.mulder3@tilburguniversity.edu>
