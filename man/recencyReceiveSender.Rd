@@ -4,12 +4,18 @@
 \alias{recencyReceiveSender}
 \title{recencyReceiveSender}
 \usage{
-recencyReceiveSender(consider_type = TRUE)
+recencyReceiveSender(consider_type = "ignore")
 }
 \arguments{
-\item{consider_type}{logical, indicates whether to compute the recency
-separately for each event type (TRUE, default) or regardless of event types
-(FALSE).}
+\item{consider_type}{character. Controls how event types are handled:
+\code{"ignore"} (default): aggregate over all event types (one statistic);
+\code{"separate"}: compute C type-specific statistics, where the type-c
+statistic for a dyad reflects past type-c events on that actor pair
+;
+\code{"interact"}: compute C^2 statistics capturing past-event-type x
+dyad-type interactions (only meaningful with \code{ext=TRUE}).
+Also accepts \code{FALSE} (-> \code{"ignore"}) and \code{TRUE}
+(-> \code{"separate"}) for backward compatibility.}
 }
 \value{
 List with all information required by `remstats::remstats()` to 

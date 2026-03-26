@@ -241,8 +241,9 @@ void update_inertia(arma::uvec event_indices, int i,
     {
       event_type = edgelist(event, 3);
     }
-    arma::uword dyad = risksetMatrix(actor1, actor2 + (N * event_type));
-    inertia(i, dyad) += weights(event);
+    int dyad_id = (int)risksetMatrix(actor1, actor2 + (N * event_type));
+    if (dyad_id < 0) continue;  // skip events not in riskset (sentinel = -999)
+    inertia(i, (arma::uword)dyad_id) += weights(event);
   }
 }
 
@@ -367,10 +368,10 @@ arma::mat transform_inertia(const arma::mat &inertia,
                             const arma::mat &risksetMatrix,
                             bool display_progress)
 {
-  if (display_progress)
-  {
-    Rcpp::Rcout << "Aggregate inertia over event types" << std::endl;
-  }
+  // if (display_progress)
+  // {
+  //   Rcpp::Rcout << "Aggregate inertia over event types" << std::endl;
+  // }
 
   // Initialize
   arma::mat new_inertia(inertia.n_rows, inertia.n_cols);

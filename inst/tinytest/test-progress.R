@@ -25,7 +25,7 @@ effects <- ~
 output <- capture.output(
   stats <- remstats(reh, tie_effects = effects, display_progress = TRUE)
 )
-expect_true(all(grepl("Calculating", output[-1])))
+expect_true(all(grepl("Calculating", output)))
 
 # TODO(actor-model): actor-oriented model progress test pending aomstats implementation
 # reh <- remify2(edgelist, model = "actor")

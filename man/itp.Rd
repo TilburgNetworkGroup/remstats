@@ -4,7 +4,7 @@
 \alias{itp}
 \title{itp}
 \usage{
-itp(unique = FALSE, scaling = c("none", "std"), consider_type = TRUE)
+itp(unique = FALSE, scaling = c("none", "std"), consider_type = "ignore")
 }
 \arguments{
 \item{unique}{A logical value indicating whether to sum the minimum of
@@ -15,9 +15,15 @@ create a new, unique two-path (TRUE). See details for more information.}
 is "none", which means the statistic is not scaled. Alternatively, you can
 set it to "std" to request standardization of the raw counts per time point.}
 
-\item{consider_type}{A logical value indicating whether to count the
-two-paths separately for each event type (TRUE, default) or sum across
-different event types (FALSE).}
+\item{consider_type}{character. Controls how event types are handled:
+\code{"ignore"} (default): aggregate over all event types (one statistic);
+\code{"separate"}: compute C type-specific statistics, where the type-c
+statistic for a dyad reflects past type-c events on that actor pair
+;
+\code{"interact"}: compute C^2 statistics capturing past-event-type x
+dyad-type interactions (only meaningful with \code{ext=TRUE}).
+Also accepts \code{FALSE} (-> \code{"ignore"}) and \code{TRUE}
+(-> \code{"separate"}) for backward compatibility.}
 }
 \value{
 List with all information required by `remstats::remstats()` to compute the statistic.

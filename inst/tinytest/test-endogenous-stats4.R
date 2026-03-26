@@ -1,39 +1,38 @@
 # Condition 4: Undirected events with types, tie-oriented model with active riskset
 
-# Small edgelist
+library(tinytest)
+
 edgelist <- data.frame(
   time = 1:10,
   actor1 = c(1, 2, 1, 2, 3, 4, 2, 2, 2, 4),
-  actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
+  actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1),
+  type = c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 )
+reh <- remify::remify2(edgelist, model = "tie", directed = FALSE, riskset = "active")
 
-event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
-
-# Statistics
-edgelist$type <- event_types
-reh <- remify::remify2(edgelist, model = "tie", directed = FALSE, 
-  riskset = "active")
-effects <- ~ FEtype() + 
+# ── "ignore" (default) ───────────────────────────────────────────────────────
+effects_ig <- ~ FEtype() +
   degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
-  inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY() +
-  inertia(consider_type = FALSE) + degreeDiff(consider_type = FALSE) + 
-  degreeMin(consider_type = FALSE) + degreeMax(consider_type = FALSE) +
-  totaldegreeDyad(consider_type = FALSE) +
-  sp(consider_type = FALSE) + sp(unique = TRUE, consider_type = FALSE) +
-  psABAB(consider_type = FALSE) + psABAY(consider_type = FALSE)
-stats <- remstats(reh, tie_effects = effects)
+  inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
+
+stats <- remstats(reh, tie_effects = effects_ig)
 riskset <- attr(stats, "riskset")
 
+# No type suffixes
+expect_false(any(grepl("\\.1$|\\.2$|TypeAgg", dimnames(stats)[[3]])))
+
 # baseline
-expect_equal(stats[, , "baseline"], matrix(1, nrow = nrow(edgelist), ncol = nrow(riskset)))
+expect_equal(stats[, , "baseline"],
+  matrix(1, nrow = nrow(edgelist), ncol = nrow(riskset)))
 
 # FEtype
-FEtype <- cbind(matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)), 
-	matrix(1, nrow = nrow(edgelist), ncol = sum(riskset$type == 2)))
+FEtype <- cbind(
+  matrix(0, nrow = nrow(edgelist), ncol = sum(riskset$type == 1)),
+  matrix(1, nrow = nrow(edgelist), ncol = sum(riskset$type == 2)))
 expect_equal(stats[, , "FEtype_2"], FEtype)
 
-# degreeMin.TypeAgg
-degreeMin.TypeAgg <- rbind(
+# degreeMin (ignore = aggregate)
+degreeMin.ig <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 1, 0, 0, 0, 0, 1, 0, 0),
   c(1, 1, 0, 1, 0, 1, 1, 1, 0),
@@ -45,25 +44,10 @@ degreeMin.TypeAgg <- rbind(
   c(4, 4, 1, 5, 1, 4, 4, 5, 1),
   c(4, 4, 2, 6, 2, 4, 4, 6, 2)
 )
-expect_equal(stats[, , "degreeMin.TypeAgg"], degreeMin.TypeAgg)
+expect_equal(stats[, , "degreeMin"], degreeMin.ig)
 
-# degreeMin
-degreeMin <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 1, 0, 0, 0, 0, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 0, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 0, 1, 0, 0),
-  c(1, 1, 0, 1, 0, 1, 1, 1, 0),
-  c(2, 2, 0, 2, 0, 1, 1, 1, 0),
-  c(2, 2, 0, 2, 0, 1, 1, 1, 1),
-  c(2, 2, 0, 2, 0, 2, 2, 2, 1),
-  c(2, 2, 0, 3, 0, 2, 2, 2, 1),
-  c(2, 2, 1, 3, 1, 2, 2, 2, 1)
-)
-expect_equal(stats[, , "degreeMin"], degreeMin)
-
-# degreeMax.TypeAgg
-degreeMax.TypeAgg <- rbind(
+# degreeMax (ignore)
+degreeMax.ig <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 1, 1, 1, 0, 1, 1, 1, 1),
   c(2, 2, 2, 1, 1, 2, 2, 1, 1),
@@ -75,33 +59,13 @@ degreeMax.TypeAgg <- rbind(
   c(5, 6, 4, 6, 5, 5, 6, 6, 6),
   c(6, 6, 4, 6, 6, 6, 6, 6, 6)
 )
-expect_equal(stats[, , "degreeMax.TypeAgg"], degreeMax.TypeAgg)
+expect_equal(stats[, , "degreeMax"], degreeMax.ig)
 
-# degreeMax
-degreeMax <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(1, 1, 1, 1, 0, 0, 0, 0, 0),
-  c(2, 2, 2, 1, 1, 0, 0, 0, 0),
-  c(2, 2, 2, 1, 1, 1, 1, 1, 1),
-  c(2, 2, 2, 1, 1, 1, 2, 2, 2),
-  c(2, 2, 2, 2, 2, 1, 2, 2, 2),
-  c(2, 2, 2, 2, 2, 1, 3, 3, 3),
-  c(2, 2, 2, 2, 2, 2, 3, 3, 3),
-  c(3, 3, 2, 3, 3, 2, 3, 3, 3),
-  c(4, 3, 2, 4, 4, 2, 3, 3, 3)
-)
-expect_equal(stats[, , "degreeMax"], degreeMax)
+# degreeDiff (ignore)
+expect_equal(stats[, , "degreeDiff"], degreeMax.ig - degreeMin.ig)
 
-# degreeDiff
-degreeDiff.TypeAgg <- degreeMax.TypeAgg - degreeMin.TypeAgg
-expect_equal(stats[, , "degreeDiff.TypeAgg"], degreeDiff.TypeAgg)
-
-# degreeDiff
-degreeDiff <- degreeMax - degreeMin
-expect_equal(stats[, , "degreeDiff"], degreeDiff)
-
-# totaldegreeDyad.TypeAgg
-totaldegreeDyad.TypeAgg <- rbind(
+# totaldegreeDyad (ignore)
+totaldegreeDyad.ig <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 2, 1, 1, 0, 1, 2, 1, 1),
   c(3, 3, 2, 2, 1, 3, 3, 2, 1),
@@ -113,25 +77,10 @@ totaldegreeDyad.TypeAgg <- rbind(
   c(9, 10, 5, 11, 6, 9, 10, 11, 7),
   c(10, 10, 6, 12, 8, 10, 10, 12, 8)
 )
-expect_equal(stats[, , "totaldegreeDyad.TypeAgg"], totaldegreeDyad.TypeAgg)
+expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad.ig)
 
-# totaldegreeDyad
-totaldegreeDyad <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(1, 2, 1, 1, 0, 0, 0, 0, 0),
-  c(3, 3, 2, 2, 1, 0, 0, 0, 0),
-  c(3, 3, 2, 2, 1, 1, 2, 1, 1),
-  c(3, 3, 2, 2, 1, 2, 3, 3, 2),
-  c(4, 4, 2, 4, 2, 2, 3, 3, 2),
-  c(4, 4, 2, 4, 2, 2, 4, 4, 4),
-  c(4, 4, 2, 4, 2, 4, 5, 5, 4),
-  c(5, 5, 2, 6, 3, 4, 5, 5, 4),
-  c(6, 5, 3, 7, 5, 4, 5, 5, 4)
-)
-expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
-
-# inertia.TypeAgg
-inertia.TypeAgg <- rbind(
+# inertia (ignore)
+inertia.ig <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 1, 0, 0, 0, 0, 1, 0, 0),
   c(1, 1, 0, 0, 0, 1, 1, 0, 0),
@@ -143,25 +92,10 @@ inertia.TypeAgg <- rbind(
   c(2, 2, 0, 3, 0, 2, 2, 3, 1),
   c(2, 2, 0, 3, 1, 2, 2, 3, 1)
 )
-expect_equal(stats[, , "inertia.TypeAgg"], inertia.TypeAgg)
+expect_equal(stats[, , "inertia"], inertia.ig)
 
-# inertia
-inertia <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 1, 0, 0, 0, 0, 0, 0, 0),
-  c(1, 1, 0, 0, 0, 0, 0, 0, 0),
-  c(1, 1, 0, 0, 0, 0, 1, 0, 0),
-  c(1, 1, 0, 0, 0, 0, 1, 1, 0),
-  c(1, 1, 0, 1, 0, 0, 1, 1, 0),
-  c(1, 1, 0, 1, 0, 0, 1, 1, 1),
-  c(1, 1, 0, 1, 0, 1, 1, 1, 1),
-  c(1, 1, 0, 2, 0, 1, 1, 1, 1),
-  c(1, 1, 0, 2, 1, 1, 1, 1, 1)
-)
-expect_equal(stats[, , "inertia"], inertia)
-
-# sp.TypeAgg
-sp.TypeAgg <- rbind(
+# sp (ignore)
+sp.ig <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 1, 0, 0, 0, 1, 0),
@@ -173,25 +107,10 @@ sp.TypeAgg <- rbind(
   c(2, 2, 1, 2, 1, 2, 2, 2, 0),
   c(2, 2, 2, 3, 1, 2, 2, 3, 1)
 )
-expect_equal(stats[, , "sp.TypeAgg"], sp.TypeAgg)
+expect_equal(stats[, , "sp"], sp.ig)
 
-# sp
-sp <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 1, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 1, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 1, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 1, 1, 1, 0),
-  c(1, 1, 0, 1, 0, 1, 1, 1, 0),
-  c(1, 1, 1, 1, 0, 1, 1, 1, 0)
-)
-expect_equal(stats[, , "sp"], sp)
-
-# sp.unique.TypeAgg
-sp.unique.TypeAgg <- rbind(
+# sp.unique (ignore)
+sp.unique.ig <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 0, 0, 0, 0, 0, 0, 0, 0),
   c(0, 0, 0, 1, 0, 0, 0, 1, 0),
@@ -203,25 +122,10 @@ sp.unique.TypeAgg <- rbind(
   c(1, 1, 1, 1, 1, 1, 1, 1, 0),
   c(1, 1, 2, 2, 1, 1, 1, 2, 1)
 )
-expect_equal(stats[, , "sp.unique.TypeAgg"], sp.unique.TypeAgg)
+expect_equal(stats[, , "sp.unique"], sp.unique.ig)
 
-# sp.unique
-sp.unique <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 1, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 1, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 1, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 1, 1, 1, 0),
-  c(1, 1, 0, 1, 0, 1, 1, 1, 0),
-  c(1, 1, 1, 1, 0, 1, 1, 1, 0)
-)
-expect_equal(stats[, , "sp.unique"], sp.unique)
-
-# psABAB.TypeAgg
-psABAB.TypeAgg <- rbind(
+# psABAB (ignore)
+psABAB.ig <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(0, 1, 0, 0, 0, 0, 1, 0, 0),
   c(1, 0, 0, 0, 0, 1, 0, 0, 0),
@@ -233,25 +137,10 @@ psABAB.TypeAgg <- rbind(
   c(0, 0, 0, 1, 0, 0, 0, 1, 0),
   c(0, 0, 0, 0, 1, 0, 0, 0, 0)
 )
-expect_equal(stats[, , "psABAB.TypeAgg"], psABAB.TypeAgg)
+expect_equal(stats[, , "psABAB"], psABAB.ig)
 
-# psABAB
-psABAB <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 1, 0, 0, 0, 0, 0, 0, 0),
-  c(1, 0, 0, 0, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 0, 0, 0, 1, 0, 0),
-  c(0, 0, 0, 0, 0, 0, 0, 1, 0),
-  c(0, 0, 0, 1, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 0, 0, 0, 0, 0, 1),
-  c(0, 0, 0, 0, 0, 1, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 0, 1, 0, 0, 0, 0)
-)
-expect_equal(stats[, , "psABAB"], psABAB)
-
-# psABAY.TypeAgg
-psABAY.TypeAgg <- rbind(
+# psABAY (ignore)
+psABAY.ig <- rbind(
   matrix(0, ncol = nrow(riskset)),
   c(1, 0, 1, 1, 0, 1, 0, 1, 1),
   c(0, 1, 1, 1, 1, 0, 1, 1, 0),
@@ -263,36 +152,56 @@ psABAY.TypeAgg <- rbind(
   c(1, 1, 0, 0, 1, 1, 1, 0, 1),
   c(1, 0, 1, 1, 0, 1, 0, 1, 1)
 )
-expect_equal(stats[, , "psABAY.TypeAgg"], psABAY.TypeAgg)
+expect_equal(stats[, , "psABAY"], psABAY.ig)
 
-# psABAY
-psABAY <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(1, 0, 1, 1, 0, 0, 0, 0, 0),
-  c(0, 1, 1, 1, 1, 0, 0, 0, 0),
-  c(0, 0, 0, 0, 0, 1, 0, 1, 1),
-  c(0, 0, 0, 0, 0, 1, 1, 0, 1),
-  c(1, 1, 0, 0, 1, 0, 0, 0, 0),
-  c(0, 0, 0, 0, 0, 0, 1, 1, 0),
-  c(0, 0, 0, 0, 0, 0, 1, 1, 0),
-  c(1, 1, 0, 0, 1, 0, 0, 0, 0),
-  c(1, 0, 1, 1, 0, 0, 0, 0, 0)
+# ── "separate" ───────────────────────────────────────────────────────────────
+stats_sep <- remstats(reh, tie_effects = ~
+  inertia(consider_type = "separate") +
+  degreeMin(consider_type = "separate"))
+
+expect_true(all(c("inertia.1","inertia.2",
+                  "degreeMin.1","degreeMin.2") %in% dimnames(stats_sep)[[3]]))
+
+# inertia.1 + inertia.2 = inertia (ignore)
+expect_equal(stats_sep[,,"inertia.1"] + stats_sep[,,"inertia.2"],
+  inertia.ig, info = "separate inertia sums to ignore")
+
+# degreeMin.1: type-1-only degreeMin (non-additive — min is not linear)
+degreeMin.1 <- rbind(
+	matrix(0, ncol = nrow(riskset)),
+	c(0, 1, 0, 0, 0, 0, 1, 0, 0),
+	c(1, 1, 0, 1, 0, 1, 1, 1, 0),
+	c(1, 1, 0, 1, 0, 1, 1, 1, 0),
+	c(1, 1, 0, 1, 0, 1, 1, 1, 0),
+	c(2, 2, 0, 2, 0, 2, 2, 2, 0),
+	c(2, 2, 0, 2, 0, 2, 2, 2, 0),
+	c(2, 2, 0, 2, 0, 2, 2, 2, 0),
+	c(2, 2, 0, 3, 0, 2, 2, 3, 0),
+	c(2, 2, 1, 3, 1, 2, 2, 3, 1)
 )
-expect_equal(stats[, , "psABAY"], psABAY)
+expect_equal(stats_sep[,,"degreeMin.1"], degreeMin.1, info = "degreeMin.1 correct")
 
-# test standardization
+# inertia.1: type-1 events only, same value for both dyad types of same actor pair
+inertia.1 <- rbind(
+  matrix(0, ncol = nrow(riskset)),
+  c(0, 1, 0, 0, 0, 0, 1, 0, 0),
+  c(1, 1, 0, 0, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 0, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 0, 0, 1, 1, 0, 0),
+  c(1, 1, 0, 1, 0, 1, 1, 1, 0),
+  c(1, 1, 0, 1, 0, 1, 1, 1, 0),
+  c(1, 1, 0, 1, 0, 1, 1, 1, 0),
+  c(1, 1, 0, 2, 0, 1, 1, 2, 0),
+  c(1, 1, 0, 2, 1, 1, 1, 2, 0)
+)
+expect_equal(stats_sep[,,"inertia.1"], inertia.1, info = "inertia.1 correct")
+
+# ── Standardization ──────────────────────────────────────────────────────────
 std_effects <- ~
   degreeMin(scaling = "std") + degreeMax(scaling = "std") +
   degreeDiff(scaling = "std") + totaldegreeDyad(scaling = "std") +
-  inertia(scaling = "std") + 
-  sp(scaling = "std") + sp(scaling = "std", unique = TRUE) +
-  degreeMin(consider_type = FALSE, scaling = "std") + 
-  degreeMax(consider_type = FALSE, scaling = "std") +
-  degreeDiff(consider_type = FALSE, scaling = "std") +
-  totaldegreeDyad(consider_type = FALSE, scaling = "std") +
-  inertia(consider_type = FALSE, scaling = "std") + 
-  sp(consider_type = FALSE, scaling = "std") +
-  sp(consider_type = FALSE, scaling = "std", unique = TRUE) 
+  inertia(scaling = "std") +
+  sp(scaling = "std") + sp(scaling = "std", unique = TRUE)
 std_stats <- remstats(reh, tie_effects = std_effects)
 
 sapply(2:dim(std_stats)[3], function(p) {
@@ -303,33 +212,26 @@ sapply(2:dim(std_stats)[3], function(p) {
   expect_equal(std_stats[, , stat_name], scaled_original)
 })
 
-# test proportional scaling
-prop_effects <- ~ inertia(scaling = "prop") + 
-  inertia(consider_type = FALSE, scaling = "std")
-expect_error(remstats(reh, tie_effects = prop_effects),
+# ── Proportional scaling ─────────────────────────────────────────────────────
+# inertia prop scaling not defined for undirected
+prop_effects_err <- ~ inertia(scaling = "prop")
+expect_error(remstats(reh, tie_effects = prop_effects_err),
   pattern = "not defined")
 
-prop_effects <- ~ degreeMin(scaling = "prop") + 
-  degreeMax(scaling = "prop") +
-  totaldegreeDyad(scaling = "prop") +
-  degreeMin(consider_type = FALSE, scaling = "prop") + 
-  degreeMax(consider_type = FALSE, scaling = "prop") +
-  totaldegreeDyad(consider_type = FALSE, scaling = "prop")
+prop_effects <- ~
+  degreeMin(scaling = "prop") + degreeMax(scaling = "prop") +
+  totaldegreeDyad(scaling = "prop")
 prop_stats <- remstats(reh, tie_effects = prop_effects)
 
-sapply(c(2:3, 5:6), function(p) {
+# degreeMin, degreeMax: scaled by (m-1)
+sapply(2:3, function(p) {
   stat_name <- dimnames(prop_stats)[[3]][p]
-  scaled_original <- stats[,,stat_name] / (1:nrow(stats)-1)
-  scaled_original[1,] <- 1/4
-  expect_equal(prop_stats[,,stat_name], scaled_original)
+  scaled_original <- stats[,, stat_name] / (1:nrow(stats) - 1)
+  scaled_original[1, ] <- 1/4
+  expect_equal(prop_stats[,, stat_name], scaled_original)
 })
 
-# totaldegreeDyad
+# totaldegreeDyad: scaled by 2*(m-1)
 prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
-prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 1/4
-expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)
-
-# totaldegreeDyad
-prop_totaldegreeDyad <- stats[,,"totaldegreeDyad"] / (2*(1:nrow(stats)-1))
-prop_totaldegreeDyad[1,] <- prop_totaldegreeDyad[1,] <- 1/4
+prop_totaldegreeDyad[1,] <- 1/4
 expect_equal(prop_stats[,,"totaldegreeDyad"], prop_totaldegreeDyad)

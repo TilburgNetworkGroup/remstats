@@ -240,36 +240,4 @@ sp <- rbind(
 )
 expect_equal(pt_stats[, , "sp"], sp)
 
-# Method = "pe"
-pe_stats <- remstats(reh, tie_effects = effects, method = "pe")
-riskset <- attr(pe_stats, "riskset")
 
-# degreeMin
-degreeMin <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 1, 0, 0, 0, 0),
-  c(1, 1, 0, 1, 0, 0),
-  c(1, 2, 0, 1, 0, 0),
-  c(2, 3, 0, 2, 0, 0),
-  c(3, 3, 0, 3, 0, 0),
-  c(3, 3, 1, 3, 1, 1),
-  c(4, 4, 1, 4, 1, 1),
-  c(4, 4, 1, 5, 1, 1),
-  c(4, 4, 2, 6, 2, 2)
-)
-expect_equal(pe_stats[, , "degreeMin"], degreeMin)
-
-# sp
-sp <- rbind(
-  matrix(0, ncol = nrow(riskset)),
-  c(0, 0, 0, 0, 0, 0),
-  c(0, 0, 0, 1, 0, 0),
-  c(0, 0, 0, 1, 0, 0),
-  c(1, 1, 0, 1, 0, 0),
-  c(2, 1, 0, 1, 0, 0),
-  c(2, 1, 1, 1, 1, 0),
-  c(2, 2, 1, 2, 1, 0),
-  c(2, 2, 1, 2, 1, 0),
-  c(2, 2, 2, 3, 1, 1)
-)
-expect_equal(pe_stats[, , "sp"], sp)

@@ -920,7 +920,7 @@ static inline std::vector<int> rank_times_desc(const std::vector<double>& times)
 	for (int pos = 0; pos < n; ++pos) {
 		int i = idx[pos];
 		if (times[i] == 0.0) rank[i] = 0;
-		else rank[i] = n - pos; // highest time -> n
+		else rank[i] = pos + 1; // highest time -> rank 1
 	}
 	return rank;
 }
@@ -965,90 +965,90 @@ arma::mat calculate_rrank_sampled(int type,
 		et_by_dyad[d] = (riskset.n_cols >= 3) ? static_cast<int>(riskset(r, 2)) : 0;
 	}
 	
-	// Build admissible dyads per "row-group":
-	// if consider_type: group = (sender, et)
-	// else: group = (sender) pooling types
+	// Build groups over ALL N-1 receivers per sender — matches full path which
+	// ranks over all possible receivers, not just riskset dyads.
 	int N = risksetMatrix.n_rows;
 	int C = risksetMatrix.n_cols / N;
 	const int K = consider_type ? C : 1;
-	
-	// group key -> list of dyad_ids
-	// key = sender*K + (consider_type?et:0)
-	std::vector<std::vector<int>> group_dyads(static_cast<size_t>(N * K));
-	for (arma::uword d = 0; d < D; ++d) {
-		int a1 = a1_by_dyad[d];
-		if (a1 < 0) continue;
-		int et = consider_type ? et_by_dyad[d] : 0;
-		if (consider_type && (et < 0 || et >= C)) continue;
-		group_dyads[static_cast<size_t>(a1 * K + et)].push_back(static_cast<int>(d));
-	}
-	
-	// last time per dyad_id (and if consider_type=FALSE we still store per dyad; pooling happens via group)
-	std::vector<double> lastTime(D, 0.0);
-	
-	// init from past
-	double first_time = time_points(0);
-	arma::uvec event_indices = arma::find(edgelist.col(0) < first_time);
-	
-	for (arma::uword m = 0; m < event_indices.n_elem; ++m) {
-		arma::uword ev = event_indices(m);
-		double t = edgelist(ev, 0);
-		int sender = static_cast<int>(edgelist(ev, 1));
-		int receiver = static_cast<int>(edgelist(ev, 2));
-		int et = (C > 1) ? static_cast<int>(edgelist(ev, 3)) : 0;
-		
-		int a_from = (type == 1) ? sender : receiver;
-		int a_to   = (type == 1) ? receiver : sender;
-		
-		// update matching dyad(s)
-		if (consider_type) {
-			int d = risksetMatrix(a_from, a_to + et * N);
-			if (d >= 0) lastTime[static_cast<arma::uword>(d)] = t;
-		} else {
-			for (int k = 0; k < C; ++k) {
-				int d = risksetMatrix(a_from, a_to + k * N);
-				if (d >= 0) lastTime[static_cast<arma::uword>(d)] = t;
+
+	// lastTime indexed by (a_from, a_to, et): size N*N*K
+	// Matches full path's N x N x C lastTime cube.
+	std::vector<double> lastTime(static_cast<size_t>(N * N * K), 0.0);
+	auto lt_idx = [&](int a_from, int a_to, int et) -> size_t {
+		return static_cast<size_t>(a_from * N * K + a_to * K + (consider_type ? et : 0));
+	};
+
+	// group_receivers[a*K+et] = all receivers for sender a, type et
+	std::vector<std::vector<int>> group_receivers(static_cast<size_t>(N * K));
+	for (int a = 0; a < N; ++a) {
+		for (int c = 0; c < K; ++c) {
+			group_receivers[static_cast<size_t>(a * K + c)].reserve(static_cast<size_t>(N - 1));
+			for (int r = 0; r < N; ++r) {
+				if (r == a) continue;
+				group_receivers[static_cast<size_t>(a * K + c)].push_back(r);
 			}
 		}
 	}
-	
+
+	// init from past
+	double first_time = time_points(0);
+	arma::uvec event_indices = arma::find(edgelist.col(0) < first_time);
+
+	for (arma::uword m = 0; m < event_indices.n_elem; ++m) {
+		arma::uword ev = event_indices(m);
+		double t = edgelist(ev, 0);
+		int sender   = static_cast<int>(edgelist(ev, 1));
+		int receiver = static_cast<int>(edgelist(ev, 2));
+		int et = (C > 1) ? static_cast<int>(edgelist(ev, 3)) : 0;
+
+		int a_from = (type == 1) ? sender : receiver;
+		int a_to   = (type == 1) ? receiver : sender;
+
+		if (consider_type) {
+			lastTime[lt_idx(a_from, a_to, et)] = t;
+		} else {
+			// pool across types: use et=0 slot (K=1 so only one slot)
+			lastTime[lt_idx(a_from, a_to, 0)] = t;
+		}
+	}
+
 	Progress p(M, display_progress);
-	
-	// per-row cache: group_key -> ranks vector aligned with group_dyads list indices
+
+	// per-row cache: group_key -> ranks vector aligned with group_receivers list
 	for (arma::uword i = 0; i < M; ++i) {
-		
+
 		std::unordered_map<int, std::vector<int>> rank_cache;
 		rank_cache.reserve(static_cast<size_t>(S * 2));
-		
-		auto get_rank_for = [&](int a1, int et, int dyad_id) -> int {
-			int g = a1 * K + et;
+
+		auto get_rank_for = [&](int a1, int et, int a2) -> int {
+			int g = a1 * K + (consider_type ? et : 0);
 			auto it = rank_cache.find(g);
 			if (it == rank_cache.end()) {
-				const auto& dyads = group_dyads[static_cast<size_t>(g)];
+				const auto& recvs = group_receivers[static_cast<size_t>(g)];
 				std::vector<double> times;
-				times.reserve(dyads.size());
-				for (int d : dyads) times.push_back(lastTime[static_cast<arma::uword>(d)]);
+				times.reserve(recvs.size());
+				for (int r : recvs) times.push_back(lastTime[lt_idx(a1, r, consider_type ? et : 0)]);
 				std::vector<int> ranks = rank_times_desc(times);
 				it = rank_cache.emplace(g, std::move(ranks)).first;
 			}
-			// find dyad_id position within group list (linear; you can preindex if needed)
-			const auto& dyads = group_dyads[static_cast<size_t>(g)];
-			for (size_t pos = 0; pos < dyads.size(); ++pos) {
-				if (dyads[pos] == dyad_id) return it->second[pos];
+			// find receiver position within group list
+			const auto& recvs = group_receivers[static_cast<size_t>(g)];
+			for (size_t pos = 0; pos < recvs.size(); ++pos) {
+				if (recvs[pos] == a2) return it->second[pos];
 			}
 			return 0;
 		};
-		
-		// emit sampled
+
+		// emit sampled — sample_map contains riskset row indices (0-based)
 		for (arma::uword s = 0; s < S; ++s) {
-			int d = static_cast<int>(sample_map(i, s));
-			if (d < 0 || static_cast<arma::uword>(d) >= D) Rcpp::stop("calculate_rrank_sampled: sample_map out of bounds.");
-			
-			int a1 = a1_by_dyad[static_cast<arma::uword>(d)];
-			int et = consider_type ? et_by_dyad[static_cast<arma::uword>(d)] : 0;
-			if (a1 < 0) Rcpp::stop("calculate_rrank_sampled: dyad not found in riskset mapping.");
-			
-			int rk = get_rank_for(a1, et, d);
+			arma::uword r = static_cast<arma::uword>(sample_map(i, s));
+			if (r >= riskset.n_rows) Rcpp::stop("calculate_rrank_sampled: sample_map row out of bounds.");
+
+			int a1 = static_cast<int>(riskset(r, 0));
+			int a2 = static_cast<int>(riskset(r, 1));
+			int et = consider_type ? static_cast<int>(riskset(r, 2)) : 0;
+
+			int rk = get_rank_for(a1, et, a2);
 			out(i, s) = (rk > 0) ? (1.0 / static_cast<double>(rk)) : 0.0;
 		}
 		
@@ -1061,25 +1061,21 @@ arma::mat calculate_rrank_sampled(int type,
 			event_indices.set_size(1);
 			event_indices(0) = start + i;
 		}
-		
+
 		for (arma::uword m = 0; m < event_indices.n_elem; ++m) {
 			arma::uword ev = event_indices(m);
 			double t = edgelist(ev, 0);
-			int sender = static_cast<int>(edgelist(ev, 1));
+			int sender   = static_cast<int>(edgelist(ev, 1));
 			int receiver = static_cast<int>(edgelist(ev, 2));
 			int et = (C > 1) ? static_cast<int>(edgelist(ev, 3)) : 0;
-			
+
 			int a_from = (type == 1) ? sender : receiver;
 			int a_to   = (type == 1) ? receiver : sender;
-			
+
 			if (consider_type) {
-				int d = risksetMatrix(a_from, a_to + et * N);
-				if (d >= 0) lastTime[static_cast<arma::uword>(d)] = t;
+				lastTime[lt_idx(a_from, a_to, et)] = t;
 			} else {
-				for (int k = 0; k < C; ++k) {
-					int d = risksetMatrix(a_from, a_to + k * N);
-					if (d >= 0) lastTime[static_cast<arma::uword>(d)] = t;
-				}
+				lastTime[lt_idx(a_from, a_to, 0)] = t;
 			}
 		}
 		
@@ -1088,6 +1084,7 @@ arma::mat calculate_rrank_sampled(int type,
 	
 	return out;
 }
+
 
 
 // [[Rcpp::export]]
@@ -1099,433 +1096,269 @@ arma::mat calculate_inertia_sampled(const arma::mat &edgelist,
                                     const arma::vec &memory_value,
                                     int start, int stop,
                                     bool directed,
+                                    bool consider_type,
                                     bool display_progress,
                                     Rcpp::String method,
                                     const arma::imat &sample_map)
 {
-	if (display_progress) {
+	if (display_progress)
 		Rcpp::Rcout << "Calculating inertia statistic (sampled)" << std::endl;
-	}
-	if (display_progress) Rcpp::Rcout << "directed=" << directed << "\n";
-	
-	// time points
+
+	if (riskset.n_cols < 4)
+		Rcpp::stop("calculate_inertia_sampled: riskset must have >=4 cols (sender, receiver, type, dyad_id).");
+	if (start < 0) Rcpp::stop("calculate_inertia_sampled: start must be >= 0.");
+	if (stop < start) Rcpp::stop("calculate_inertia_sampled: stop must be >= start.");
+
 	arma::vec time_points;
 	if (method == "pt") time_points = arma::sort(arma::unique(edgelist.col(0)));
 	else if (method == "pe") time_points = edgelist.col(0);
 	else Rcpp::stop("calculate_inertia_sampled: method must be 'pt' or 'pe'.");
-	time_points = time_points.subvec(start, stop);
-	
+	if ((arma::uword)stop >= time_points.n_elem)
+		Rcpp::stop("calculate_inertia_sampled: stop out of bounds.");
+	time_points = time_points.subvec((arma::uword)start, (arma::uword)stop);
+
 	const arma::uword M = time_points.n_elem;
 	const arma::uword S = sample_map.n_cols;
-	
-	int N = risksetMatrix.n_rows;
-	int C = risksetMatrix.n_cols / N;
-	const arma::uword D = static_cast<arma::uword>(risksetMatrix.max() + 1);
-	
-	if (D != riskset.n_rows) {
-		Rcpp::stop("calculate_inertia_sampled: D (risksetMatrix max+1) != riskset.n_rows; dyad-id universe mismatch.");
-	}
-	
 	arma::mat out(M, S, arma::fill::zeros);
 	if (M == 0 || S == 0) return out;
-	
-	// --- event pointer helpers ---
-	auto event_time = [&](arma::uword ev) -> double { return edgelist(ev, 0); };
-	
-	auto dyad_of_event = [&](arma::uword ev) -> int {
-		int a1 = (int)edgelist(ev, 1);
-		int a2 = (int)edgelist(ev, 2);
-		int et = (C > 1) ? (int)edgelist(ev, 3) : 0;
-		
-		int d;
-		if (!directed && a1 > a2) std::swap(a1, a2);
-		d = (int)risksetMatrix(a1, a2 + N * et);
-		
-		return d;
-	};
-	
-	// --- state ---
-	// Use dense vectors only for full/decay (O(D) doubles = cheap even at D=1M).
-	// For window/interval use sparse unordered_map so we never allocate D deque
-	// objects upfront — critical when D is in the millions.
-	std::vector<double> full_sum;
-	std::unordered_map<int, std::deque<std::pair<double,double>>> win_q;
-	std::unordered_map<int, double> win_sum;
-	std::unordered_map<int, std::deque<std::pair<double,double>>> int_q;
-	std::vector<double> dec_state, dec_last_t;
-	
-	// parse memory_value
-	double win_len = NA_REAL;
-	double int_min = NA_REAL, int_max = NA_REAL;
-	double half_life = NA_REAL;
-	double lambda = NA_REAL;
-	
-	if (memory == "full") {
-		full_sum.assign(D, 0.0);
-	} else if (memory == "window") {
-		if (memory_value.n_elem < 1) Rcpp::stop("calculate_inertia_sampled: window requires memory_value length 1.");
+
+	const int N = (int)risksetMatrix.n_rows;
+	const int C = (int)(risksetMatrix.n_cols / N);
+	const arma::uword D = static_cast<arma::uword>(risksetMatrix.max() + 1);
+
+	// Build dyad_id -> (a1, a2, et) lookup from riskset
+	std::vector<int> a1_by_d(D, -1), a2_by_d(D, -1), et_by_d(D, 0);
+	for (arma::uword r = 0; r < riskset.n_rows; ++r) {
+		int d = (int)riskset(r, 3);
+		if (d < 0 || (arma::uword)d >= D) continue;
+		a1_by_d[(arma::uword)d] = (int)riskset(r, 0);
+		a2_by_d[(arma::uword)d] = (int)riskset(r, 1);
+		et_by_d[(arma::uword)d] = (int)riskset(r, 2);
+	}
+
+	// Collect unique sampled dyad IDs
+	std::unordered_set<int> sampled_dyads;
+	sampled_dyads.reserve((size_t)(M * S / 4 + 1));
+	for (arma::uword m = 0; m < M; ++m) {
+		for (arma::uword s = 0; s < S; ++s) {
+			arma::uword r = (arma::uword)sample_map(m, s);
+			if (r >= riskset.n_rows)
+				Rcpp::stop("calculate_inertia_sampled: sample_map row out of bounds.");
+			int d = (int)riskset(r, 3);
+			if (d < 0 || (arma::uword)d >= D)
+				Rcpp::stop("calculate_inertia_sampled: dyad_id out of bounds.");
+			sampled_dyads.insert(d);
+		}
+	}
+
+	// For each sampled dyad, find which typed dyad IDs to track and sum.
+	// consider_type=TRUE:  track only the dyad itself.
+	// consider_type=FALSE: track all same-actor-pair typed siblings.
+	//                      Mirrors transform_inertia() in the full (non-sampling) path.
+	std::unordered_map<int, std::vector<int>> siblings_of_sampled;
+	siblings_of_sampled.reserve(sampled_dyads.size() * 2);
+	std::unordered_set<int> tracked;
+	tracked.reserve(sampled_dyads.size() * 2);
+
+	for (int d : sampled_dyads) {
+		int a1 = a1_by_d[(arma::uword)d], a2 = a2_by_d[(arma::uword)d];
+		if (a1 < 0 || a2 < 0)
+			Rcpp::stop("calculate_inertia_sampled: sampled dyad not found in riskset.");
+		std::vector<int> sibs;
+		if (consider_type) {
+			sibs.push_back(d);
+			tracked.insert(d);
+		} else {
+			sibs.reserve((size_t)C);
+			int lo = directed ? a1 : (a1 < a2 ? a1 : a2);
+			int hi = directed ? a2 : (a1 < a2 ? a2 : a1);
+			for (int k = 0; k < C; ++k) {
+				int ds = (int)risksetMatrix(lo, hi + k * N);
+				if (ds >= 0) {
+					sibs.push_back(ds);
+					tracked.insert(ds);
+				}
+			}
+		}
+		siblings_of_sampled.emplace(d, std::move(sibs));
+	}
+
+	// Compact index for tracked dyads
+	std::unordered_map<int, int> idx_of_d;
+	idx_of_d.reserve(tracked.size() * 2);
+	int Q = 0;
+	for (int d : tracked) idx_of_d.emplace(d, Q++);
+
+	// Parse memory parameters
+	double win_len = 0.0, int_min = 0.0, int_max = 0.0,
+	       half_life = 0.0, lambda = 0.0;
+	if (memory == "window") {
+		if (memory_value.n_elem < 1)
+			Rcpp::stop("calculate_inertia_sampled: window requires memory_value length 1.");
 		win_len = memory_value(0);
 		if (win_len < 0) Rcpp::stop("calculate_inertia_sampled: window length must be >= 0.");
-		// sparse maps: entries created on first event for each dyad
 	} else if (memory == "interval") {
-		if (memory_value.n_elem < 2) Rcpp::stop("calculate_inertia_sampled: interval requires memory_value length 2 (min,max).");
-		int_min = memory_value(0);
-		int_max = memory_value(1);
-		if (int_min < 0 || int_max < int_min) Rcpp::stop("calculate_inertia_sampled: invalid interval memory_value.");
-		// sparse maps: entries created on first event for each dyad
+		if (memory_value.n_elem < 2)
+			Rcpp::stop("calculate_inertia_sampled: interval requires memory_value length 2.");
+		int_min = memory_value(0); int_max = memory_value(1);
+		if (int_min < 0 || int_max < int_min)
+			Rcpp::stop("calculate_inertia_sampled: invalid interval memory_value.");
 	} else if (memory == "decay") {
-		if (memory_value.n_elem < 1) Rcpp::stop("calculate_inertia_sampled: decay requires memory_value length 1 (half-life).");
+		if (memory_value.n_elem < 1)
+			Rcpp::stop("calculate_inertia_sampled: decay requires memory_value length 1.");
 		half_life = memory_value(0);
 		if (half_life <= 0) Rcpp::stop("calculate_inertia_sampled: decay half-life must be > 0.");
 		lambda = std::log(2.0) / half_life;
-		dec_state.assign(D, 0.0);
-		dec_last_t.assign(D, NAN);
-	} else {
+	} else if (memory != "full") {
 		Rcpp::stop("calculate_inertia_sampled: unknown memory (full/window/interval/decay).");
 	}
-	
-	// update functions
-	auto update_full = [&](arma::uword ev) {
-		int d = dyad_of_event(ev);
-		if (d >= 0) full_sum[static_cast<arma::uword>(d)] += weights(ev);
+
+	// State — size Q only (tracked dyads, not all D)
+	std::vector<double> full_sum;
+	std::vector<std::deque<std::pair<double,double>>> q_ev;
+	std::vector<double> win_sum;
+	std::vector<double> dec_state, dec_last_t;
+
+	if (memory == "full") {
+		full_sum.assign((size_t)Q, 0.0);
+	} else if (memory == "window") {
+		q_ev.resize((size_t)Q);
+		win_sum.assign((size_t)Q, 0.0);
+	} else if (memory == "interval") {
+		q_ev.resize((size_t)Q);
+	} else {
+		dec_state.assign((size_t)Q, 0.0);
+		dec_last_t.assign((size_t)Q, NAN);
+	}
+
+	auto decay_touch = [&](int qi, double t_eval) {
+		double &lt = dec_last_t[(size_t)qi];
+		if (std::isnan(lt)) { lt = t_eval; return; }
+		double dt = t_eval - lt;
+		if (dt > 0) dec_state[(size_t)qi] *= std::exp(-lambda * dt);
+		lt = t_eval;
 	};
-	
-	auto prune_window = [&](int d, double t_eval) {
-		auto it = win_q.find(d);
-		if (it == win_q.end()) return;
-		auto &q = it->second;
-		double cutoff = t_eval - win_len;
-		while (!q.empty() && q.front().first <= cutoff) {
-			win_sum[d] -= q.front().second;
-			q.pop_front();
+
+	// Update state from one event — only for tracked dyads
+	auto update_with_event = [&](arma::uword ev) {
+		int a1 = (int)edgelist(ev, 1);
+		int a2 = (int)edgelist(ev, 2);
+		int et = (C > 1) ? (int)edgelist(ev, 3) : 0;
+		if (!directed && a1 > a2) std::swap(a1, a2);
+		int d = (int)risksetMatrix(a1, a2 + et * N);
+		if (d < 0) return;
+		auto it = idx_of_d.find(d);
+		if (it == idx_of_d.end()) return;
+		int qi = it->second;
+		double t = edgelist(ev, 0);
+		double w = weights(ev);
+		if (memory == "full") {
+			full_sum[(size_t)qi] += w;
+		} else if (memory == "window") {
+			q_ev[(size_t)qi].push_back({t, w});
+			win_sum[(size_t)qi] += w;
+		} else if (memory == "interval") {
+			q_ev[(size_t)qi].push_back({t, w});
+		} else {
+			decay_touch(qi, t);
+			dec_state[(size_t)qi] += w;
 		}
 	};
-	
-	auto update_window = [&](arma::uword ev) {
-		int d = dyad_of_event(ev);
-		if (d < 0) return;
-		double t = event_time(ev);
-		double w = weights(ev);
-		win_q[d].push_back({t, w});
-		win_sum[d] += w;
+
+	auto prune_window = [&](int qi, double t_eval) {
+		auto &dq = q_ev[(size_t)qi];
+		double cutoff = t_eval - win_len;
+		while (!dq.empty() && dq.front().first < cutoff) {
+			win_sum[(size_t)qi] -= dq.front().second;
+			dq.pop_front();
+		}
 	};
-	
-	auto prune_interval = [&](int d, double t_eval) {
-		auto it = int_q.find(d);
-		if (it == int_q.end()) return;
-		auto &q = it->second;
-		double oldest_allowed = t_eval - int_max;
-		while (!q.empty() && q.front().first <= oldest_allowed) q.pop_front();
+
+	auto prune_interval = [&](int qi, double t_eval) {
+		auto &dq = q_ev[(size_t)qi];
+		double oldest = t_eval - int_max;
+		while (!dq.empty() && dq.front().first <= oldest) dq.pop_front();
 	};
-	
-	auto update_interval = [&](arma::uword ev) {
-		int d = dyad_of_event(ev);
-		if (d < 0) return;
-		double t = event_time(ev);
-		double w = weights(ev);
-		int_q[d].push_back({t, w});
+
+	auto query_state = [&](int d, double t_eval) -> double {
+		auto it = idx_of_d.find(d);
+		if (it == idx_of_d.end()) return 0.0;
+		int qi = it->second;
+		if (memory == "full") {
+			return full_sum[(size_t)qi];
+		} else if (memory == "window") {
+			prune_window(qi, t_eval);
+			return win_sum[(size_t)qi];
+		} else if (memory == "interval") {
+			prune_interval(qi, t_eval);
+			double upper = t_eval - int_min;
+			double acc = 0.0;
+			const auto &dq = q_ev[(size_t)qi];
+			for (const auto &tw : dq) {
+				if (tw.first <= upper) acc += tw.second;
+				else break;
+			}
+			return acc;
+		} else {
+			decay_touch(qi, t_eval);
+			return dec_state[(size_t)qi];
+		}
 	};
-	
-	auto decay_touch = [&](arma::uword d, double t_eval) {
-		if (std::isnan(dec_last_t[d])) { dec_last_t[d] = t_eval; return; }
-		double dt = t_eval - dec_last_t[d];
-		if (dt > 0) dec_state[d] *= std::exp(-lambda * dt);
-		dec_last_t[d] = t_eval;
-	};
-	
-	auto update_decay = [&](arma::uword ev) {
-		int d = dyad_of_event(ev);
-		if (d < 0) return;
-		arma::uword du = static_cast<arma::uword>(d);
-		double t = event_time(ev);
-		decay_touch(du, t);
-		dec_state[du] += weights(ev); // non-normalized
-	};
-	
-	// --- initialize event pointer to include history before first selected time ---
+
+	// Initialize from events before first selected time
 	arma::uword ev_ptr = 0;
 	double first_t = time_points(0);
-	
-	while (ev_ptr < static_cast<arma::uword>(edgelist.n_rows) && event_time(ev_ptr) < first_t) {
-		if (memory == "full") update_full(ev_ptr);
-		else if (memory == "window") update_window(ev_ptr);
-		else if (memory == "interval") update_interval(ev_ptr);
-		else if (memory == "decay") update_decay(ev_ptr);
-		ev_ptr++;
+	while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < first_t) {
+		update_with_event(ev_ptr);
+		++ev_ptr;
 	}
-	
-	// full sorted unique time points
+
 	arma::vec tp_all = arma::sort(arma::unique(edgelist.col(0)));
-	
 	Progress p(M, display_progress);
-	
+
 	for (arma::uword m = 0; m < M; ++m) {
-		//double now = time_points(m);
-		// double prev = (m == 0 ? time_points(0) : time_points(m - 1)); // piecewise-constant over (prev, now]
-		// double now = time_points(m);
 		double now = time_points(m);
-		
 		double prev;
 		if (m > 0) {
 			prev = time_points(m - 1);
 		} else {
 			prev = (start > 0) ? tp_all((arma::uword)start - 1) : now;
 		}
-		
-		while (ev_ptr < (arma::uword)edgelist.n_rows && event_time(ev_ptr) < now) {
-			
-			// normal update
-			if (memory == "interval") update_interval(ev_ptr);
-			else if (memory == "window") update_window(ev_ptr);
-			else if (memory == "full") update_full(ev_ptr);
-			else update_decay(ev_ptr);
-			
+
+		// Advance state with events < now
+		while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < now) {
+			update_with_event(ev_ptr);
 			++ev_ptr;
 		}
-		
-		// emit only sampled dyads, evaluated at prev
-		for (arma::uword s = 0; s < S; ++s) {
-			int d = sample_map(m, s);   // dyad id (0-based), signed for map lookup
-			if (d < 0 || static_cast<arma::uword>(d) >= D)
-				Rcpp::stop("calculate_inertia_sampled: dyad id out of bounds.");
-			
-			if (memory == "full") {
-				out(m, s) = full_sum[static_cast<arma::uword>(d)];
-				
-			} else if (memory == "window") {
-				prune_window(d, prev);
-				auto it = win_sum.find(d);
-				out(m, s) = (it != win_sum.end()) ? it->second : 0.0;
-				
-			} else if (memory == "interval") {
-				prune_interval(d, prev);
-				double upper = prev - int_min;
-				double acc = 0.0;
-				auto it = int_q.find(d);
-				if (it != int_q.end()) {
-					for (const auto &tw : it->second) {
-						if (tw.first <= upper) acc += tw.second;
-					}
-				}
-				out(m, s) = acc;
 
-			} else { // decay
-				decay_touch(static_cast<arma::uword>(d), prev);
-				out(m, s) = dec_state[static_cast<arma::uword>(d)];
-			}
+		// Emit: sum sibling inertia for each sampled position, evaluated at prev
+		for (arma::uword s = 0; s < S; ++s) {
+			arma::uword r = (arma::uword)sample_map(m, s);
+			if (r >= riskset.n_rows)
+				Rcpp::stop("calculate_inertia_sampled: sample_map row out of bounds.");
+			int d = (int)riskset(r, 3);
+			const auto it = siblings_of_sampled.find(d);
+			if (it == siblings_of_sampled.end()) { out(m, s) = 0.0; continue; }
+			double acc = 0.0;
+			for (int ds : it->second) acc += query_state(ds, prev);
+			out(m, s) = acc;
 		}
-		
-		
-		// For pe: add the current event AFTER emitting row m so it becomes past for subsequent rows.
-		// This keeps the "< prev" invariant for the next iteration once prev moves forward.
+
+		// pe: add current event after emitting
 		if (method == "pe") {
-			arma::uword ev = static_cast<arma::uword>(start) + m;
-			if (ev < static_cast<arma::uword>(edgelist.n_rows)) {
-				if (memory == "full") update_full(ev);
-				else if (memory == "window") update_window(ev);
-				else if (memory == "interval") update_interval(ev);
-				else if (memory == "decay") update_decay(ev);
+			arma::uword ev = (arma::uword)start + m;
+			if (ev < (arma::uword)edgelist.n_rows) {
+				update_with_event(ev);
 				if (ev >= ev_ptr) ev_ptr = ev + 1;
 			}
 		}
-		
+
 		p.increment();
-		(void)now; // silence unused warning if any compilers complain
+		(void)now;
 	}
-	
+
 	return out;
 }
-
-
-
-// // indegree of the sender of each sampled dyad (same memory semantics as reciprocity)
-// // sample_map is interpreted as riskset row indices (0-based), NOT dyad_id.
-// //
-// // riskset columns: sender, receiver, type, dyad_id (dyad_id may be non-contiguous; not used here)
-// static inline arma::mat indegree_sender_sampled(const arma::mat &edgelist,
-//                                                 const arma::vec &weights,
-//                                                 const arma::mat &riskset,
-//                                                 Rcpp::String memory,
-//                                                 const arma::vec &memory_value,
-//                                                 int start, int stop,
-//                                                 bool consider_type,
-//                                                 Rcpp::String method,
-//                                                 const arma::imat &sample_map,
-//                                                 int N, int C)
-// {
-// 	// ---- checks ----
-// 	if (riskset.n_cols < 3)
-// 		Rcpp::stop("indegree_sender_sampled: riskset must have >=3 cols (sender, receiver, type).");
-// 	
-// 	if (!(method == "pt" || method == "pe"))
-// 		Rcpp::stop("indegree_sender_sampled: method must be 'pt' or 'pe'.");
-// 	
-// 	if (!(memory == "full" || memory == "window" || memory == "interval" || memory == "decay"))
-// 		Rcpp::stop("indegree_sender_sampled: memory must be full/window/interval/decay.");
-// 	
-// 	if ((arma::uword)edgelist.n_rows != (arma::uword)weights.n_elem)
-// 		Rcpp::stop("indegree_sender_sampled: weights length must equal edgelist.n_rows.");
-// 	
-// 	if (consider_type && C <= 0)
-// 		Rcpp::stop("indegree_sender_sampled: C must be > 0 when consider_type=TRUE.");
-// 	
-// 	// ---- time points ----
-// 	arma::vec time_points;
-// 	if (method == "pt") time_points = arma::unique(edgelist.col(0));
-// 	else                time_points = edgelist.col(0);
-// 	
-// 	if (start < 0) start = 0;
-// 	if (stop  < start) return arma::mat(0, sample_map.n_cols, arma::fill::zeros);
-// 	if ((arma::uword)stop >= time_points.n_elem) stop = (int)time_points.n_elem - 1;
-// 	
-// 	time_points = time_points.subvec((arma::uword)start, (arma::uword)stop);
-// 	
-// 	const arma::uword M = time_points.n_elem;
-// 	const arma::uword S = sample_map.n_cols;
-// 	arma::mat out(M, S, arma::fill::zeros);
-// 	if (M == 0 || S == 0) return out;
-// 	
-// 	// ---- state layout ----
-// 	const int K = consider_type ? C : 1;
-// 	
-// 	auto key = [&](int actor, int et) -> size_t {
-// 		return (size_t)actor * (size_t)K + (size_t)(consider_type ? et : 0);
-// 	};
-// 	
-// 	// indegree state per actor (and per type if consider_type)
-// 	const size_t SZ = (size_t)N * (size_t)K;
-// 	std::vector<double> state(SZ, 0.0);
-// 	
-// 	// ---- decay bookkeeping ----
-// 	std::vector<double> last_t;
-// 	double lambda = 0.0;
-// 	if (memory == "decay") {
-// 		if (memory_value.n_elem < 1)
-// 			Rcpp::stop("indegree_sender_sampled: decay requires memory_value length 1 (half-life).");
-// 		double half_life = memory_value(0);
-// 		if (half_life <= 0)
-// 			Rcpp::stop("indegree_sender_sampled: decay half-life must be > 0.");
-// 		lambda = std::log(2.0) / half_life;
-// 		last_t.assign(SZ, NAN);
-// 	}
-// 	
-// 	auto decay_touch = [&](size_t idx, double t_now) {
-// 		double &lt = last_t[idx];
-// 		if (std::isnan(lt)) { lt = t_now; return; }
-// 		double dt = t_now - lt;
-// 		if (dt > 0) state[idx] *= std::exp(-lambda * dt);
-// 		lt = t_now;
-// 	};
-// 	
-// 	// ---- window / interval queues ----
-// 	std::vector<std::deque<std::pair<double,double>>> q;
-// 	std::vector<double> qsum;
-// 	double win_len = 0.0, int_min = 0.0, int_max = 0.0;
-// 	
-// 	if (memory == "window") {
-// 		if (memory_value.n_elem < 1)
-// 			Rcpp::stop("indegree_sender_sampled: window requires memory_value length 1.");
-// 		win_len = memory_value(0);
-// 		if (win_len < 0)
-// 			Rcpp::stop("indegree_sender_sampled: window length must be >= 0.");
-// 		q.resize(SZ);
-// 		qsum.assign(SZ, 0.0);
-// 	} else if (memory == "interval") {
-// 		if (memory_value.n_elem < 2)
-// 			Rcpp::stop("indegree_sender_sampled: interval requires memory_value length 2 (min,max).");
-// 		int_min = memory_value(0);
-// 		int_max = memory_value(1);
-// 		if (int_min < 0 || int_max < int_min)
-// 			Rcpp::stop("indegree_sender_sampled: invalid interval memory_value.");
-// 		q.resize(SZ);
-// 	}
-// 	
-// 	auto update = [&](arma::uword ev) {
-// 		double t = edgelist(ev, 0);
-// 		int receiver = (int)edgelist(ev, 2);
-// 		int et = (edgelist.n_cols > 3) ? (int)edgelist(ev, 3) : 0;
-// 		double w = weights(ev);
-// 		
-// 		if (receiver < 0 || receiver >= N) return;
-// 		if (consider_type && (et < 0 || et >= C)) return;
-// 		
-// 		size_t idx = key(receiver, et);
-// 		
-// 		if (memory == "full") state[idx] += w;
-// 		else if (memory == "decay") { decay_touch(idx, t); state[idx] += w * lambda; }
-// 		else if (memory == "window") { q[idx].push_back({t,w}); qsum[idx] += w; }
-// 		else { q[idx].push_back({t,w}); } // interval
-// 	};
-// 	
-// 	auto query = [&](int actor, int et, double now) -> double {
-// 		if (actor < 0 || actor >= N) return 0.0;
-// 		if (consider_type && (et < 0 || et >= C)) return 0.0;
-// 		
-// 		size_t idx = key(actor, et);
-// 		
-// 		if (memory == "full") return state[idx];
-// 		if (memory == "decay") { decay_touch(idx, now); return state[idx]; }
-// 		
-// 		if (memory == "window") {
-// 			double cutoff = now - win_len;
-// 			auto &dq = q[idx];
-// 			while (!dq.empty() && dq.front().first < cutoff) {
-// 				qsum[idx] -= dq.front().second;
-// 				dq.pop_front();
-// 			}
-// 			return qsum[idx];
-// 		}
-// 		
-// 		// interval
-// 		auto &dq = q[idx];
-// 		double oldest = now - int_max;
-// 		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
-// 		double upper = now - int_min;
-// 		double acc = 0.0;
-// 		for (auto &tw : dq) {
-// 			if (tw.first < upper) acc += tw.second;
-// 			else break;
-// 		}
-// 		return acc;
-// 	};
-// 	
-// 	// ---- init from events before first selected time ----
-// 	arma::uword ev_ptr = 0;
-// 	double first_t = time_points(0);
-// 	while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < first_t) {
-// 		update(ev_ptr++);
-// 	}
-// 	
-// 	// ---- main loop ----
-// 	for (arma::uword m = 0; m < M; ++m) {
-// 		double now = time_points(m);
-// 		
-// 		if (method == "pt") {
-// 			while (ev_ptr < (arma::uword)edgelist.n_rows && edgelist(ev_ptr, 0) < now) {
-// 				update(ev_ptr++);
-// 			}
-// 		}
-// 		
-// 		for (arma::uword s = 0; s < S; ++s) {
-// 			int r = (int)sample_map(m, s); // riskset row (0-based)
-// 			if (r < 0 || (arma::uword)r >= riskset.n_rows)
-// 				Rcpp::stop("indegree_sender_sampled: sample_map row out of bounds.");
-// 			
-// 			int sender = (int)riskset((arma::uword)r, 0);
-// 			int et = consider_type ? (int)riskset((arma::uword)r, 2) : 0;
-// 			
-// 			out(m, s) = query(sender, et, now);
-// 		}
-// 		
-// 		if (method == "pe") {
-// 			arma::uword ev = (arma::uword)start + m;
-// 			if (ev < (arma::uword)edgelist.n_rows) update(ev);
-// 		}
-// 	}
-// 	
-// 	return out;
-// }
-
 
 
 // [[Rcpp::export]]
@@ -1719,7 +1552,7 @@ arma::mat calculate_reciprocity_sampled(const arma::mat &edgelist,
 	auto prune_interval = [&](int qi, double t_eval) {
 		auto &dq = q_ev[(size_t)qi];
 		double oldest = t_eval - int_max;
-		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
+		while (!dq.empty() && dq.front().first <= oldest) dq.pop_front();
 	};
 	
 	auto query_state = [&](int d, double t_eval) -> double {
@@ -1738,7 +1571,7 @@ arma::mat calculate_reciprocity_sampled(const arma::mat &edgelist,
 			double acc = 0.0;
 			const auto &dq = q_ev[(size_t)qi];
 			for (const auto &tw : dq) {
-				if (tw.first < upper) acc += tw.second;
+				if (tw.first <= upper) acc += tw.second;
 				else break;
 			}
 			return acc;
@@ -1912,7 +1745,7 @@ static inline arma::mat normalize_inertia_sampled_prop(
 	auto prune_interval = [&](size_t idx, double t_eval) {
 		auto &dq = q[idx];
 		double oldest = t_eval - int_max;
-		while (!dq.empty() && dq.front().first < oldest) dq.pop_front();
+		while (!dq.empty() && dq.front().first <= oldest) dq.pop_front();
 	};
 	
 	auto add_event = [&](arma::uword ev) {
@@ -1960,7 +1793,7 @@ static inline arma::mat normalize_inertia_sampled_prop(
 			double acc = 0.0;
 			const auto &dq = q[idx];
 			for (const auto &tw : dq) {
-				if (tw.first < upper) acc += tw.second;
+				if (tw.first <= upper) acc += tw.second;
 				else break;
 			}
 			return acc;
@@ -2136,12 +1969,12 @@ static inline arma::vec past_events_denom(const arma::mat &edgelist,
 		
 		// interval
 		const double oldest = t_eval - int_max;
-		while (!q.empty() && q.front().first < oldest) q.pop_front();
+		while (!q.empty() && q.front().first <= oldest) q.pop_front();
 		
 		const double upper = t_eval - int_min;
 		double acc = 0.0;
 		for (const auto &tw : q) {
-			if (tw.first < upper) acc += tw.second;
+			if (tw.first <= upper) acc += tw.second;
 			else break;
 		}
 		return acc;
@@ -3069,6 +2902,7 @@ arma::cube compute_stats_tie_sampled(Rcpp::CharacterVector effects,
                                              memory, memory_value,
                                              start, stop,
                                              directed,
+                                             consider_type(i),
                                              display_progress, method,
                                              sample_map);
 				

@@ -1,3 +1,17 @@
+## remstats 3.2.4.9000
+
+### New features
+- `consider_type` argument now accepts `"ignore"` (default, aggregated), `"separate"` (C type-specific slices), and `"interact"` (C² past-type × dyad-type slices). `TRUE`/`FALSE` remain supported for backward compatibility.
+- `tomstats2()` sampled path now correctly computes type-specific statistics for `"separate"` and `"interact"` with both `ext=TRUE` and `ext=FALSE`.
+- `"interact"` is automatically coerced to `"separate"` with a warning when `extend_riskset_by_type = FALSE`.
+- `summary.remify()` now always shows event type count, `extend_riskset_by_type` status, and per-type dyad counts for active/manual risksets.
+
+### Bug fixes
+- Fixed operator precedence bug in `remify2` `getDyad2` affecting undirected risksets with even N.
+- Fixed `"separate"`/`"interact"` statistics for `ext=FALSE` active/manual risksets where type-specific values were incorrectly aggregated.
+- Removed `.TypeAgg` suffix from `"ignore"` statistics (plain name, e.g. `"inertia"` instead of `"inertia.TypeAgg"`).
+
+
 # remstats 3.2.2
 
 **Date**: May 14, 2024
