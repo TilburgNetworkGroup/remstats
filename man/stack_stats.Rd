@@ -7,26 +7,37 @@
 stack_stats(stats, reh)
 }
 \arguments{
-\item{stats}{A \code{remstats} or \code{tomstats} object containing
-statistics for the (active) risk set.}
+\item{stats}{A \code{tomstats} object (output of \code{remstats()} or
+\code{tomstats()}).}
 
-\item{reh}{A \code{remify} object containing event ordering, risk sets,
-and inter-event times.}
+\item{reh}{A \code{remify} object (output of \code{remify::remify2()}).}
 }
 \value{
 A list with elements:
 \describe{
-  \item{remstats_stack}{A data frame in stacked (long) format containing the
-    response \code{obs}, the statistics, and the offset \code{log_intevent}.}
-  \item{subset}{Integer vector of length two giving the first and last
-    event indices used for computing \code{stats}.}
-  \item{D}{}{Number of included dyads.}
-  \item{E}{}{Number of included events}
+  \item{remstats_stack}{Data frame in long format with columns: \code{event}
+    (event index), \code{dyad} (dyad index 1..D), all statistic columns,
+    \code{obs} (1 = observed event, 0 = non-event), and
+    \code{log_interevent} (log inter-event time; only for interval timing).}
+  \item{subset}{Integer vector of length 2: first and last event index.}
+  \item{D}{Number of dyads in the risk set.}
+  \item{E}{Number of events (time points).}
+  \item{ordinal}{Logical: whether the ordinal likelihood applies.}
 }
 }
 \description{
-Stack a \code{remstats} object (\code{tomstats}; \code{aomstats}) into long format for
-model fitting. Each row corresponds to one dyad in the risk set at one
-event time, with a response indicating the number of observed events for
-that dyad at that time and an offset given by the log inter-event time.
+Stack a \code{tomstats} object into long format suitable for fitting with
+standard R model functions. Each row corresponds to one dyad in the risk
+set at one event time point.
+}
+\details{
+For interval timing (\code{ordinal = FALSE}), the stacked data can be
+fitted with a Poisson GLM using \code{log_interevent} as an offset:
+\code{glm(obs ~ -1 + . - event - dyad - log_interevent,
+          offset = log_interevent, family = poisson, data = stacked$remstats_stack)}
+
+For ordinal timing (\code{ordinal = TRUE}), use conditional logistic
+regression stratified by event:
+\code{survival::clogit(obs ~ -1 + . - event - dyad +
+                       strata(event), data = stacked$remstats_stack)}
 }

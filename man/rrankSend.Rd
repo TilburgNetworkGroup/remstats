@@ -15,7 +15,7 @@ rrankSend(consider_type = "ignore")
 statistic for a dyad reflects past type-c events on that actor pair
 ;
 \code{"interact"}: compute C^2 statistics capturing past-event-type x
-dyad-type interactions (only meaningful with \code{ext=TRUE}).
+dyad-type interactions (only meaningful with \code{extend_riskset_by_type=TRUE} in remify object).
 Also accepts \code{FALSE} (-> \code{"ignore"}) and \code{TRUE}
 (-> \code{"separate"}) for backward compatibility.}
 }
