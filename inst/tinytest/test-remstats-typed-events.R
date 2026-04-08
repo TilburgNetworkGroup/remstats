@@ -160,11 +160,11 @@ reh_full_F <- remify2(edgelist, model = "tie", riskset = "full",
 expect_true(reh_full_T$meta$with_type_riskset)
 expect_false(reh_full_F$meta$with_type_riskset)
 
-stats_TT_full <- remstats(reh_full_T, tie_effects = ~ inertia(consider_type = "separate"))
-stats_TT_full_int <- remstats(reh_full_T, tie_effects = ~ inertia(consider_type = "interact"))
-stats_TF_full <- remstats(reh_full_T, tie_effects = ~ inertia(consider_type = FALSE))
-stats_FT_full <- remstats(reh_full_F, tie_effects = ~ inertia(consider_type = "separate"))
-stats_FF_full <- remstats(reh_full_F, tie_effects = ~ inertia(consider_type = FALSE))
+stats_TT_full <- remstats(reh_full_T, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
+stats_TT_full_int <- remstats(reh_full_T, tie_effects = ~ inertia(consider_type = "interact"), start = 1)
+stats_TF_full <- remstats(reh_full_T, tie_effects = ~ inertia(consider_type = FALSE), start = 1)
+stats_FT_full <- remstats(reh_full_F, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
+stats_FF_full <- remstats(reh_full_F, tie_effects = ~ inertia(consider_type = FALSE), start = 1)
 
 # Shapes: baseline + inertia.social + inertia.work = 3; baseline + inertia.TypeAgg = 2
 expect_equal(dim(stats_TT_full), c(M, D_typed, 3L), info = "full TT shape")
@@ -219,11 +219,11 @@ reh_active_T <- remify2(edgelist, model = "tie", riskset = "active",
 reh_active_F <- remify2(edgelist, model = "tie", riskset = "active",
                         extend_riskset_by_type = FALSE)
 
-stats_TT_act <- remstats(reh_active_T, tie_effects = ~ inertia(consider_type = "separate"))
-stats_TT_act_int <- remstats(reh_active_T, tie_effects = ~ inertia(consider_type = "interact"))
-stats_TF_act <- remstats(reh_active_T, tie_effects = ~ inertia(consider_type = FALSE))
-stats_FT_act <- remstats(reh_active_F, tie_effects = ~ inertia(consider_type = "separate"))
-stats_FF_act <- remstats(reh_active_F, tie_effects = ~ inertia(consider_type = FALSE))
+stats_TT_act <- remstats(reh_active_T, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
+stats_TT_act_int <- remstats(reh_active_T, tie_effects = ~ inertia(consider_type = "interact"), start = 1)
+stats_TF_act <- remstats(reh_active_T, tie_effects = ~ inertia(consider_type = FALSE), start = 1)
+stats_FT_act <- remstats(reh_active_F, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
+stats_FF_act <- remstats(reh_active_F, tie_effects = ~ inertia(consider_type = FALSE), start = 1)
 
 rs_TT_act <- attr(stats_TT_act, "riskset")
 rs_FT_act <- attr(stats_FT_act, "riskset")
@@ -285,11 +285,11 @@ reh_manual_F <- suppressWarnings(
           manual.riskset = manual_rs, extend_riskset_by_type = FALSE)
 )
 
-stats_TT_man <- remstats(reh_manual_T, tie_effects = ~ inertia(consider_type = "separate"))
-stats_TT_man_int <- remstats(reh_manual_T, tie_effects = ~ inertia(consider_type = "interact"))
-stats_TF_man <- remstats(reh_manual_T, tie_effects = ~ inertia(consider_type = FALSE))
-stats_FT_man <- remstats(reh_manual_F, tie_effects = ~ inertia(consider_type = "separate"))
-stats_FF_man <- remstats(reh_manual_F, tie_effects = ~ inertia(consider_type = FALSE))
+stats_TT_man <- remstats(reh_manual_T, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
+stats_TT_man_int <- remstats(reh_manual_T, tie_effects = ~ inertia(consider_type = "interact"), start = 1)
+stats_TF_man <- remstats(reh_manual_T, tie_effects = ~ inertia(consider_type = FALSE), start = 1)
+stats_FT_man <- remstats(reh_manual_F, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
+stats_FF_man <- remstats(reh_manual_F, tie_effects = ~ inertia(consider_type = FALSE), start = 1)
 
 rs_TT_man <- attr(stats_TT_man, "riskset")
 rs_FT_man <- attr(stats_FT_man, "riskset")
@@ -337,11 +337,11 @@ reh_undir_T <- remify2(edgelist, model = "tie", riskset = "full",
 reh_undir_F <- remify2(edgelist, model = "tie", riskset = "full",
                         directed = FALSE, extend_riskset_by_type = FALSE)
 
-stats_TT_undir <- remstats(reh_undir_T, tie_effects = ~ inertia(consider_type = "separate"))
-stats_TT_undir_int <- remstats(reh_undir_T, tie_effects = ~ inertia(consider_type = "interact"))
-stats_TF_undir <- remstats(reh_undir_T, tie_effects = ~ inertia(consider_type = FALSE))
-stats_FT_undir <- remstats(reh_undir_F, tie_effects = ~ inertia(consider_type = "separate"))
-stats_FF_undir <- remstats(reh_undir_F, tie_effects = ~ inertia(consider_type = FALSE))
+stats_TT_undir <- remstats(reh_undir_T, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
+stats_TT_undir_int <- remstats(reh_undir_T, tie_effects = ~ inertia(consider_type = "interact"), start = 1)
+stats_TF_undir <- remstats(reh_undir_T, tie_effects = ~ inertia(consider_type = FALSE), start = 1)
+stats_FT_undir <- remstats(reh_undir_F, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
+stats_FF_undir <- remstats(reh_undir_F, tie_effects = ~ inertia(consider_type = FALSE), start = 1)
 
 rs_TT_undir <- attr(stats_TT_undir, "riskset")
 rs_FT_undir <- attr(stats_FT_undir, "riskset")
@@ -392,7 +392,7 @@ check_inertia_values(stats_TT_undir, stats_TF_undir, stats_FT_undir, stats_FF_un
 # ===========================================================================
 stats_mix <- remstats(reh_full_F,
   tie_effects = ~ inertia(consider_type = "interact") +
-                  outdegreeSender(consider_type = FALSE))
+                  outdegreeSender(consider_type = FALSE), start = 1)
 
 # baseline + inertia.social + inertia.work + outdegreeSender.TypeAgg = 4 slices
 expect_equal(dim(stats_mix), c(M, D_dyad, 4L), info = "mixed: shape")

@@ -27,7 +27,8 @@ check_sampled_equals_full <- function(effects,
 																			attr_dyads = NULL) {
 	
 	reh <- remify::remify2(edgelist = history, model = "tie",
-												 riskset = "full", ordinal = TRUE, directed = FALSE)
+												 riskset = "full", ordinal = TRUE, directed = FALSE,
+												 extend_riskset_by_type = TRUE)
 	
 	ts_samp <- remstats::tomstats2(
 		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, display_progress = TRUE,

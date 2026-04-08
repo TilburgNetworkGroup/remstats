@@ -11,7 +11,7 @@ edgelist <- data.frame(
 )
 event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 edgelist$type <- event_types
-reh <- remify::remify2(edgelist, model = "tie", riskset = "active")
+reh <- remify::remify2(edgelist, model = "tie", riskset = "active", extend_riskset_by_type = TRUE)
 
 # ── "ignore" (default) ───────────────────────────────────────────────────────
 # All effects with default consider_type = "ignore" produce one aggregated stat
@@ -33,7 +33,7 @@ effects_ig <- ~
   recencyReceiveSender() + recencyReceiveReceiver() +
   rrankSend() + rrankReceive()
 
-stats <- remstats(reh, tie_effects = effects_ig)
+stats <- remstats(reh, tie_effects = effects_ig, start = 1)
 riskset <- attr(stats, "riskset")
 
 # No type suffixes in dimnames
@@ -480,7 +480,7 @@ stats_sep <- remstats(reh, tie_effects = ~
   inertia(consider_type = "separate") +
   outdegreeSender(consider_type = "separate") +
   reciprocity(consider_type = "separate") +
-  itp(consider_type = "separate")
+  itp(consider_type = "separate"), start = 1
 )
 
 # Naming: .1 and .2 suffixes, no TypeAgg
@@ -532,7 +532,7 @@ expect_equal(stats_sep[,,"reciprocity.1"], reciprocity.1, info = "reciprocity.1 
 reh_false <- remify::remify2(edgelist, model = "tie", riskset = "active",
   extend_riskset_by_type = FALSE)
 stats_sep_false <- remstats(reh_false, tie_effects = ~
-  inertia(consider_type = "separate"))
+  inertia(consider_type = "separate"), start = 1)
 # For each untyped dyad d, stats_sep[,d,"inertia.1"] should equal
 # stats_sep_false[,d,"inertia.1"] (same actor pair)
 riskset_false <- attr(stats_sep_false, "riskset")
@@ -551,7 +551,7 @@ for (d in seq_len(nrow(riskset_false))) {
 # C^2 slices; only meaningful with ext=TRUE
 
 stats_int <- remstats(reh, tie_effects = ~
-  inertia(consider_type = "interact"))
+  inertia(consider_type = "interact"), start = 1)
 
 # Naming: .1.1, .1.2, .2.1, .2.2
 expect_true(all(c("inertia.1.1","inertia.1.2",
@@ -591,7 +591,7 @@ std_effects <- ~
   osp(scaling = "std") + otp(scaling = "std") +
   isp(scaling = "std", unique = TRUE) + itp(scaling = "std", unique = TRUE) +
   osp(scaling = "std", unique = TRUE) + otp(scaling = "std", unique = TRUE)
-std_stats <- remstats(reh, tie_effects = std_effects)
+std_stats <- remstats(reh, tie_effects = std_effects, start = 1)
 
 sapply(2:dim(std_stats)[3], function(p) {
   stat_name <- dimnames(std_stats)[[3]][p]
@@ -608,7 +608,7 @@ prop_effects <- ~
   totaldegreeSender(scaling = "prop") + totaldegreeReceiver(scaling = "prop") +
   totaldegreeDyad(scaling = "prop") +
   inertia(scaling = "prop") + reciprocity(scaling = "prop")
-prop_stats <- remstats(reh, tie_effects = prop_effects)
+prop_stats <- remstats(reh, tie_effects = prop_effects, start = 1)
 
 # in/out-degree sender/receiver: scaled by (m-1)
 sapply(2:5, function(p) {
@@ -648,12 +648,12 @@ edgelist2 <- data.frame(
   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1),
   type = c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 )
-reh2 <- remify::remify2(edgelist2, model = "tie", riskset = "active")
+reh2 <- remify::remify2(edgelist2, model = "tie", riskset = "active", extend_riskset_by_type = TRUE)
 effects2 <- ~ FEtype() + inertia() + itp()
-riskset2 <- attr(remstats(reh2, tie_effects = effects2), "riskset")
+riskset2 <- attr(remstats(reh2, tie_effects = effects2, start = 1), "riskset")
 
 # pt method
-pt_stats <- remstats(reh2, tie_effects = effects2, method = "pt")
+pt_stats <- remstats(reh2, tie_effects = effects2, method = "pt", start = 1)
 inertia.pt <- rbind(
   matrix(0, ncol = nrow(riskset2)),
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
@@ -679,7 +679,7 @@ itp.pt <- rbind(
 expect_equal(pt_stats[, , "itp"], itp.pt)
 
 # pe method
-pe_stats <- remstats(reh2, tie_effects = effects2, method = "pe")
+pe_stats <- remstats(reh2, tie_effects = effects2, method = "pe", start = 1)
 inertia.pe <- rbind(
   matrix(0, ncol = nrow(riskset2)),
   c(1, 0, 0, 0, 0, 0, 1, 0, 0, 0),

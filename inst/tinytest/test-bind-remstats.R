@@ -18,7 +18,7 @@ rs3 <- remstats(reh = reh, tie_effects = ~ reciprocity())
 expect_warning(combined_stats <- bind_remstats(rs1, rs2, rs3))
 
 # Check dimensions
-expect_equal(dim(combined_stats), c(4, 30, 5))
+expect_equal(dim(combined_stats), c(3, 30, 5))
 
 # Check model attribute
 expect_equal(attr(combined_stats, "model"), "tie")

@@ -11,7 +11,7 @@ tomstats2(
   attr_dyads = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
-  start = 1,
+  start = 2,
   stop = Inf,
   display_progress = FALSE,
   sampling = FALSE,
@@ -48,7 +48,7 @@ actors (see Details).}
 
 \item{start}{an optional integer value, specifying the index of the first
 time or event in the relational event history for which statistics must be 
-computed (see 'Details')}
+computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.}
 
 \item{stop}{an optional integer value, specifying the index of the last
 time or event in the relational event history for which statistics must be 

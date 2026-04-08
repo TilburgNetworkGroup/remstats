@@ -45,7 +45,7 @@ effects <- ~
     average(variable = "x1") + difference(variable = "x1") + 
     maximum(variable = "x1") + minimum(variable = "x1") +
     same(variable = "x2") 
-stats <- remstats(reh, tie_effects = effects, attr_actors = info)
+stats <- remstats(reh, tie_effects = effects, attr_actors = info, start = 1)
 slice_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
   start = 2, stop = 4)
 

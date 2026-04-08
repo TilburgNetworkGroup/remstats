@@ -30,7 +30,7 @@ reh <- remify::remify2(edgelist, model = "tie", directed = FALSE,
 effects <- ~ average(variable = "x1") + difference(variable = "x1") + 
   maximum(variable = "x1") + minimum(variable = "x1") +
   same(variable = "x2") 
-stats <- remstats(reh, tie_effects = effects, attr_actors = info)
+stats <- remstats(reh, tie_effects = effects, attr_actors = info, start = 1)
 riskset <- attr(stats, "riskset")
 
 # Baseline
@@ -92,7 +92,7 @@ std_effects <- ~
   difference(variable = "x1", scaling = "std") + 
   maximum(variable = "x1", scaling = "std") + 
   minimum(variable = "x1", scaling = "std") 
-std_stats <- remstats(reh, tie_effects = std_effects, attr_actors = info)
+std_stats <- remstats(reh, tie_effects = std_effects, attr_actors = info, start = 1)
 
 sapply(2:dim(std_stats)[3], function(p) {
   stat_name <- dimnames(std_stats)[[3]][p]

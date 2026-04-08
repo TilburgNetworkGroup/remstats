@@ -1411,6 +1411,230 @@ validate_aomstats_arguments <- function(attr_actors, reh) {
   return(attr_actors)
 }
 
+# Compute aomstats with per-effect consider_type handling.
+#
+# For effects with consider_type="ignore": single C++ call, single slice.
+# For effects with consider_type="separate": C filtered C++ calls per effect,
+#   LOCF expansion to full M rows, C named slices per effect.
+# Results are assembled in original effect order.
+#
+# [param] compute_fn     function(effect_names, edgelist, weights, start_0, stop_0)
+#                        returns array [M_in x N x P_in] — raw C++ output
+# [param] add_names_fn   function(st) adds dimnames to C++ output
+# [param] edgelist       full edgelist matrix [M x 3]
+# [param] weights        numeric vector length M
+# [param] event_type_ids integer vector length M, 1-based typeID per event
+# [param] types_df       data.frame: typeName, typeID (1-based)
+# [param] effects_names  character vector length P of base effect names
+# [param] consider_type  character vector length P: "ignore" or "separate"
+# [param] with_type      logical: are there event types?
+# [param] C              number of types
+# [param] subset_start   0-based start index
+# [param] subset_stop    0-based stop index
+#
+# [return] array [M_out x N x P_out] with correct dimnames[[3]]
+compute_aomstats_with_type <- function(compute_fn, add_names_fn,
+                                        edgelist, weights, event_type_ids,
+                                        types_df, effects_names, consider_type,
+                                        with_type, C, subset_start, subset_stop, N) {
+  M     <- nrow(edgelist)
+  M_out <- subset_stop - subset_start + 1L
+  out_rows <- (subset_start + 1L):(subset_stop + 1L)  # 1-based in full edgelist
+
+  # Indices of ignore and separate effects
+  ignore_idx   <- which(consider_type == "ignore" | !with_type | C <= 1L)
+  separate_idx <- which(consider_type == "separate" & with_type & C > 1L)
+
+  result_slices <- vector("list", length(effects_names))
+
+  # ── ignore effects: single C++ call ───────────────────────────────────────
+  if (length(ignore_idx) > 0L) {
+    ign_names <- effects_names[ignore_idx]
+    st_ign    <- compute_fn(ign_names, edgelist, weights,
+                             subset_start, subset_stop)
+    # Set dimnames directly from ign_names (not add_names_fn which expects all P)
+    dimnames(st_ign)[[3]] <- ign_names
+    #N <- dim(st_ign)[2]
+    # Store each ignore slice
+    for (k in seq_along(ignore_idx)) {
+      p  <- ignore_idx[k]
+      sl <- st_ign[, , k, drop=FALSE]
+      dimnames(sl)[[3]] <- ign_names[k]
+      result_slices[[p]] <- sl
+    }
+  }
+
+  # ── separate effects: one masked-weights C++ call per type ───────────────
+  # For each type c, zero out weights of non-type-c events and rerun the
+  # statistic. This is correct for all memory types (full, decay, window,
+  # interval) because the C++ engine sees only type-c events contributing
+  # to the history, so decay/window/interval are applied to the right events.
+  # The delta/increment approach that was here before is only correct for
+  # full memory (where deltas are 0/+1); it fails for decay memory because
+  # the delta at non-type-c events is non-zero due to the decay of past
+  # type-c events, and zeroing those deltas breaks the reconstruction.
+  if (length(separate_idx) > 0L) {
+
+    for (p in separate_idx) {
+      eff_name    <- effects_names[p]
+      type_slices <- vector("list", C)
+
+      for (ci in seq_len(C)) {
+        type_id   <- types_df$typeID[ci]
+        type_name <- types_df$typeName[ci]
+
+        # Zero weights for all events that are not type c
+        weights_c <- weights * (event_type_ids == type_id)
+
+        # Run C++ on full timeline with type-masked weights, then subset
+        st_c <- compute_fn(eff_name, edgelist, weights_c,
+                           subset_start, subset_stop)
+        st_c <- array(as.numeric(st_c), dim = c(M_out, N, 1L))
+
+        dimnames(st_c)[[3]] <- paste0(eff_name, ".", type_name)
+        type_slices[[ci]] <- st_c
+      }
+
+      result_slices[[p]] <- type_slices
+    }
+  }
+
+  # ── Assemble in original effect order ────────────────────────────────────
+  # Flatten: ignore slices stay as-is, separate become C slices each
+  final_slices <- list()
+  for (p in seq_along(result_slices)) {
+    sl <- result_slices[[p]]
+    if (is.array(sl)) {
+      final_slices[[length(final_slices) + 1L]] <- sl
+    } else if (is.list(sl)) {
+      # C type slices
+      for (ci in seq_len(C)) {
+        final_slices[[length(final_slices) + 1L]] <- sl[[ci]]
+      }
+    }
+  }
+
+  P_out  <- length(final_slices)
+  snames <- sapply(final_slices, function(s) dimnames(s)[[3]])
+  N_out  <- dim(final_slices[[1]])[2]
+  array(
+    unlist(lapply(final_slices, function(s) s[, , 1L])),
+    dim      = c(M_out, N_out, P_out),
+    dimnames = list(NULL, NULL, snames)
+  )
+}
+
+# Compute type-specific aomstats and expand to full sequence with LOCF.
+#
+# For each type c:
+#   1. Filter edgelist to type-c events only -> [M_c x 3]
+#   2. Call compute_stats_sender/receiver on filtered edgelist -> [M_c x N x P]
+#   3. Expand back to [M x N x P] using last-observation-carried-forward:
+#      between consecutive type-c events, stats are constant (no type-c
+#      event occurred). Before the first type-c event, stats are zero.
+#
+# Each base effect p produces C named slices: "effectname.typename"
+#
+# [param] compute_fn     function(edgelist, weights, subset_start, subset_stop)
+#                        returns [M_c x N x P] array with named dimnames[[3]]
+# [param] edgelist       full edgelist matrix [M x 3], 0-based actor IDs
+# [param] weights        numeric vector length M
+# [param] event_type_ids integer vector length M, 1-based typeID per event
+# [param] types_df       data.frame: typeName, typeID (1-based), C rows
+# [param] effect_names   character vector length P of base effect names
+# [param] M_out          number of output rows (after start/stop subsetting)
+# [param] start_0        0-based start index passed to C++
+# [param] stop_0         0-based stop index passed to C++
+#
+# [return] array [M_out x N x P*C] with type-split dimnames[[3]]
+compute_aom_type_separate <- function(compute_fn, edgelist, weights,
+                                       event_type_ids, types_df,
+                                       effect_names, M_out, start_0, stop_0) {
+  M <- nrow(edgelist)
+  C <- nrow(types_df)
+
+  # Output indices (1-based) in the full sequence
+  out_rows <- (start_0 + 1L):(stop_0 + 1L)  # 1-based positions in edgelist
+
+  new_slices <- list()
+
+  for (ci in seq_len(C)) {
+    type_id <- types_df$typeID[ci]   # 1-based
+    type_name <- types_df$typeName[ci]
+
+    # Filter to type-c events in the FULL sequence (for history)
+    keep_full <- event_type_ids == type_id   # logical length M
+    el_c      <- edgelist[keep_full, , drop=FALSE]
+    wts_c     <- weights[keep_full]
+    M_c       <- nrow(el_c)
+
+    if (M_c == 0L) {
+      # No events of this type — all slices are zero
+      for (p in seq_along(effect_names)) {
+        sl <- array(0, dim=c(M_out, ncol(edgelist), 1L))
+        # N comes from first successful call; defer — fill below
+        new_slices[[length(new_slices) + 1L]] <- list(
+          type=type_name, effect=effect_names[p], data=NULL)
+      }
+      next
+    }
+
+    # C++ start/stop within the filtered sequence:
+    # We want output rows corresponding to out_rows intersected with type-c
+    # positions. But we need ALL M_c rows to carry forward correctly,
+    # so call C++ on the full filtered sequence (start=1, stop=M_c).
+    st_c <- compute_fn(el_c, wts_c, 0L, M_c - 1L)  # [M_c x N x P]
+    N    <- dim(st_c)[2]
+    P    <- dim(st_c)[3]
+
+    # Positions in original sequence where type-c events occur (1-based)
+    type_c_pos <- which(keep_full)  # length M_c
+
+    # Expand st_c to full sequence [M x N x P] using LOCF
+    # Before first type-c event: zero (array init)
+    st_full <- array(0, dim=c(M, N, P))
+#    print(c(M, N, P))
+    for (k in seq_len(M_c)) {
+#    	print(st_c[k,,])
+#    	from <- type_c_pos[k]
+    	to   <- if (k < M_c) type_c_pos[k + 1L] - 1L else M
+    	print(c(from,to))
+    	for (row in from:to) {
+    		st_full[row, , ] <- st_c[k, , ]
+    	}
+    }
+
+    # Subset to output rows
+    st_out <- st_full[out_rows, , , drop=FALSE]  # [M_out x N x P]
+
+    for (p in seq_len(P)) {
+      slice_name <- paste0(dimnames(st_c)[[3]][p], ".", type_name)
+      sl <- st_out[, , p, drop=FALSE]
+      dimnames(sl)[[3]] <- slice_name
+      new_slices[[length(new_slices) + 1L]] <- sl
+    }
+  }
+
+  # Remove any NULL placeholders and get N from first real slice
+  valid <- Filter(Negate(is.null), new_slices)
+  # Handle zero-type case
+  valid <- lapply(new_slices, function(x) {
+    if (is.list(x) && is.null(x$data)) {
+      array(0, dim=c(M_out, dim(valid[[which(sapply(new_slices, is.array))]])[2], 1))
+    } else x
+  })
+  valid <- Filter(is.array, new_slices)
+
+  P_out  <- length(valid)
+  snames <- sapply(valid, function(s) dimnames(s)[[3]])
+  N_out  <- dim(valid[[1]])[2]
+  array(
+    unlist(lapply(valid, function(s) s[, , 1])),
+    dim      = c(M_out, N_out, P_out),
+    dimnames = list(NULL, NULL, snames)
+  )
+}
+
 prepare_aomstats_edgelist <- function(reh) {
   reh <- normalize_reh(reh)
   # Extract the edgelist

@@ -12,7 +12,7 @@ reh <- remify::remify2(edgelist, model = "tie", directed = FALSE,
   riskset = "active")
 effects <- ~ degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
   inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
-stats <- remstats(reh, tie_effects = effects)
+stats <- remstats(reh, tie_effects = effects, start = 1)
 riskset <- attr(stats, "riskset")
 
 # baseline
@@ -165,7 +165,7 @@ std_effects <- ~
   degreeDiff(scaling = "std") + totaldegreeDyad(scaling = "std") +
   inertia(scaling = "std") + sp(scaling = "std") + 
   sp(scaling = "std", unique = TRUE)
-std_stats <- remstats(reh, tie_effects = std_effects)
+std_stats <- remstats(reh, tie_effects = std_effects, start = 1)
 
 sapply(2:dim(std_stats)[3], function(p) {
   stat_name <- dimnames(std_stats)[[3]][p]
@@ -177,12 +177,12 @@ sapply(2:dim(std_stats)[3], function(p) {
 
 # test proportional scaling
 prop_effects <- ~ inertia(scaling = "prop")
-expect_error(remstats(reh, tie_effects = prop_effects),
+expect_error(remstats(reh, tie_effects = prop_effects, start = 1),
   pattern = "not defined")
 
 prop_effects <- ~ degreeMin(scaling = "prop") + degreeMax(scaling = "prop") + 
   totaldegreeDyad(scaling = "prop") 
-prop_stats <- remstats(reh, tie_effects = prop_effects)
+prop_stats <- remstats(reh, tie_effects = prop_effects, start = 1)
 
 sapply(2:3, function(p) {
   stat_name <- dimnames(prop_stats)[[3]][p]
@@ -211,7 +211,7 @@ reh <- remify::remify2(edgelist, model = "tie", directed = FALSE,
 effects <- ~ degreeMin() + sp() 
 
 # Method = "pt"
-pt_stats <- remstats(reh, tie_effects = effects)
+pt_stats <- remstats(reh, tie_effects = effects, start = 1)
 riskset <- attr(pt_stats, "riskset")
 
 # degreeMin

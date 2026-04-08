@@ -137,7 +137,7 @@
 tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
                      method = c("pt", "pe"), 
                      memory = c("full", "window", "decay", "interval"),
-                     memory_value = NA, start = 1, stop = Inf,
+                     memory_value = NA, start = 2, stop = Inf,
                      display_progress = FALSE,
                      adjmat = NULL, get_adjmat = FALSE,
                      attr_data, attributes, edgelist) {
@@ -455,7 +455,7 @@ tomstats2 <- function(
 		attr_dyads = NULL,
 		memory = c("full", "window", "decay", "interval"),
 		memory_value = NA,
-		start = 1,
+		start = 2,
 		stop = Inf,
 		display_progress = FALSE,
 		# new

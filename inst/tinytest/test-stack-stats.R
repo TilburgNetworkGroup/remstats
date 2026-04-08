@@ -16,7 +16,7 @@ effects <- ~ inertia(consider_type = FALSE) +
 # SECTION 1: Interval timing, active riskset
 # ---------------------------------------------------------------------------
 reh_int <- remify::remify2(edgelist = history_sub, model = "tie",
-                            riskset = "active")
+                            riskset = "active", extend_riskset_by_type = TRUE)
 
 ts_int <- remstats::tomstats2(effects, reh = reh_int,
                                attr_actors = info,
@@ -92,7 +92,7 @@ expect_equal(stacked_int$subset, c(2L, 30L),
 # SECTION 2: Ordinal timing, active riskset
 # ---------------------------------------------------------------------------
 reh_ord <- remify::remify2(edgelist = history_sub, model = "tie",
-                            riskset = "active", ordinal = TRUE)
+                            riskset = "active", ordinal = TRUE, extend_riskset_by_type = TRUE)
 
 ts_ord <- remstats::tomstats2(effects, reh = reh_ord,
                                attr_actors = info,
@@ -126,7 +126,7 @@ expect_true(all(df_ord$obs %in% c(0L, 1L)),
 # SECTION 3: Interval timing, full riskset
 # ---------------------------------------------------------------------------
 reh_full <- remify::remify2(edgelist = history_sub, model = "tie",
-                             riskset = "full")
+                             riskset = "full", extend_riskset_by_type = TRUE)
 
 ts_full <- remstats::tomstats2(effects, reh = reh_full,
                                 attr_actors = info,

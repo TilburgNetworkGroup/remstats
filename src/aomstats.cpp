@@ -1448,7 +1448,7 @@ void get_pshift(arma::mat &pshift,
     {
         arma::uword current_event = current_events(c);
         arma::uword next_sender = edgelist(current_event, 1);
-        int j = start + current_event;
+        int j = current_event - start;
 
         // Iterate over previous_events
         for (arma::uword p = 0; p < previous_events.n_elem; ++p)

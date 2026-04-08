@@ -1,8 +1,8 @@
 Package: remstats
 Type: Package
 Title: Computes Statistics for Relational Event History Data
-Version: 3.2.4.9000
-Date: 2026-03-26
+Version: 3.2.4.9001
+Date: 2026-03-30
 Authors@R: 
     c(
         person(
