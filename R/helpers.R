@@ -1432,6 +1432,114 @@ validate_aomstats_arguments <- function(attr_actors, reh) {
 # [param] subset_start   0-based start index
 # [param] subset_stop    0-based stop index
 #
+
+# Pshift effect names and their C++ type numbers (matching get_pshift in aomstats.cpp)
+PSHIFT_NAMES <- c("psABAB", "psABBA", "psABXB", "psABXA", "psABAY", "psABBY", "psABXY")
+PSHIFT_TYPE_NUM <- c(psABAB=1L, psABBA=2L, psABXB=3L, psABXA=4L,
+                     psABAY=5L, psABBY=6L, psABXY=7L)
+
+# Compute pshift.type_c for the ACTOR model (aomstats).
+# For each output row m, finds the last type-c event before m and applies the
+# pshift condition based on the current sender and the prev type-c sender/receiver.
+# edgelist: [M x 3] matrix, cols = (time, actor1_0based, actor2_0based)
+# event_type_ids: 1-based typeIDs, length M (same as nrow(edgelist))
+# type_id: 1-based typeID to filter on
+# Returns [M_out x N] matrix.
+compute_pshift_type_c_receiver <- function(pshift_num, edgelist, event_type_ids,
+                                            type_id, N, subset_start, subset_stop) {
+  M_out     <- subset_stop - subset_start + 1L
+  full_rows <- (subset_start + 1L):(subset_stop + 1L)  # 1-based rows in edgelist
+
+  type_c_rows <- which(event_type_ids == type_id)  # 1-based row positions of type-c events
+  k           <- findInterval(full_rows - 1L, type_c_rows)  # 0 = no type-c event before
+  has_prev    <- k > 0L
+  safe_k      <- pmax(k, 1L)
+
+  # 0-based actor IDs in edgelist -> +1 for 1-based indexing into result columns
+  prev_s <- ifelse(has_prev, edgelist[type_c_rows[safe_k], 2] + 1L, NA_integer_)
+  prev_r <- ifelse(has_prev, edgelist[type_c_rows[safe_k], 3] + 1L, NA_integer_)
+  curr_s <- edgelist[full_rows, 2] + 1L
+
+  result <- matrix(0, nrow = M_out, ncol = N)
+
+  if (pshift_num == 1L) {        # AB-AB: curr_s == prev_s -> prev_r
+    rows <- which(has_prev & curr_s == prev_s)
+    for (m in rows) result[m, prev_r[m]] <- 1
+
+  } else if (pshift_num == 2L) { # AB-BA: curr_s == prev_r -> prev_s
+    rows <- which(has_prev & curr_s == prev_r)
+    for (m in rows) result[m, prev_s[m]] <- 1
+
+  } else if (pshift_num == 3L) { # AB-XB: curr_s != prev_s AND != prev_r -> prev_r
+    rows <- which(has_prev & curr_s != prev_s & curr_s != prev_r)
+    for (m in rows) result[m, prev_r[m]] <- 1
+
+  } else if (pshift_num == 4L) { # AB-XA: curr_s != prev_s AND != prev_r -> prev_s
+    rows <- which(has_prev & curr_s != prev_s & curr_s != prev_r)
+    for (m in rows) result[m, prev_s[m]] <- 1
+
+  } else if (pshift_num == 5L) { # AB-AY: curr_s == prev_s -> all except prev_s, prev_r
+    rows <- which(has_prev & curr_s == prev_s)
+    for (m in rows) { result[m, ] <- 1; result[m, prev_s[m]] <- 0; result[m, prev_r[m]] <- 0 }
+
+  } else if (pshift_num == 6L) { # AB-BY: curr_s == prev_r -> all except prev_s, prev_r
+    rows <- which(has_prev & curr_s == prev_r)
+    for (m in rows) { result[m, ] <- 1; result[m, prev_s[m]] <- 0; result[m, prev_r[m]] <- 0 }
+
+  } else if (pshift_num == 7L) { # AB-XY: curr_s != prev_s AND != prev_r -> all except both
+    # No previous type-c event: treat as all-zeros (no type-c pattern has been established)
+    rows <- which(has_prev & curr_s != prev_s & curr_s != prev_r)
+    for (m in rows) { result[m, ] <- 1; result[m, prev_s[m]] <- 0; result[m, prev_r[m]] <- 0 }
+  }
+
+  result
+}
+
+# Compute pshift.type_c for the TIE model (tomstats2), untyped riskset.
+# For each output row m, finds the last type-c event and applies the pshift
+# condition for all D dyads (actor1_0based, actor2_0based).
+# edgelist: [M x 4] matrix, cols = (time, actor1_0based, actor2_0based, type_0based)
+# event_type_ids: 0-based typeIDs, length M
+# type_id: 0-based typeID to filter on
+# rs_a1, rs_a2: 0-based actor IDs for each of D dyads
+# Returns [M_out x D] matrix.
+compute_pshift_type_c_tie <- function(pshift_num, edgelist, event_type_ids,
+                                       type_id, rs_a1, rs_a2,
+                                       M_out, start, stop) {
+  D         <- length(rs_a1)
+  full_rows <- (start + 1L):(stop + 1L)  # 1-based rows in edgelist
+
+  type_c_rows <- which(event_type_ids == type_id)  # 1-based
+  k           <- findInterval(full_rows - 1L, type_c_rows)
+  has_prev    <- k > 0L
+
+  result <- matrix(0, nrow = M_out, ncol = D)
+
+  for (m in seq_len(M_out)) {
+    if (!has_prev[m]) next  # all zeros before first type-c event (psABXY also 0)
+    prev_s <- edgelist[type_c_rows[k[m]], 2]  # 0-based
+    prev_r <- edgelist[type_c_rows[k[m]], 3]  # 0-based
+
+    if (pshift_num == 1L) {        # AB-AB
+      result[m, rs_a1 == prev_s & rs_a2 == prev_r] <- 1
+    } else if (pshift_num == 2L) { # AB-BA
+      result[m, rs_a1 == prev_r & rs_a2 == prev_s] <- 1
+    } else if (pshift_num == 3L) { # AB-XB
+      result[m, rs_a1 != prev_s & rs_a1 != prev_r & rs_a2 == prev_r] <- 1
+    } else if (pshift_num == 4L) { # AB-XA
+      result[m, rs_a1 != prev_s & rs_a1 != prev_r & rs_a2 == prev_s] <- 1
+    } else if (pshift_num == 5L) { # AB-AY
+      result[m, rs_a1 == prev_s & rs_a2 != prev_r & rs_a2 != prev_s] <- 1
+    } else if (pshift_num == 6L) { # AB-BY
+      result[m, rs_a1 == prev_r & rs_a2 != prev_s & rs_a2 != prev_r] <- 1
+    } else if (pshift_num == 7L) { # AB-XY
+      result[m, rs_a1 != prev_s & rs_a1 != prev_r &
+                rs_a2 != prev_s & rs_a2 != prev_r] <- 1
+    }
+  }
+  result
+}
+
 # [return] array [M_out x N x P_out] with correct dimnames[[3]]
 compute_aomstats_with_type <- function(compute_fn, add_names_fn,
                                         edgelist, weights, event_type_ids,
@@ -1464,40 +1572,52 @@ compute_aomstats_with_type <- function(compute_fn, add_names_fn,
     }
   }
 
-  # ── separate effects: one masked-weights C++ call per type ───────────────
-  # For each type c, zero out weights of non-type-c events and rerun the
-  # statistic. This is correct for all memory types (full, decay, window,
-  # interval) because the C++ engine sees only type-c events contributing
-  # to the history, so decay/window/interval are applied to the right events.
-  # The delta/increment approach that was here before is only correct for
-  # full memory (where deltas are 0/+1); it fails for decay memory because
-  # the delta at non-type-c events is non-zero due to the decay of past
-  # type-c events, and zeroing those deltas breaks the reconstruction.
+  # ── separate effects ──────────────────────────────────────────────────────
+  # Two strategies depending on effect type:
+  #
+  # Pshift effects: R-level computation using last type-c event.
+  #   Masked-weights is wrong for pshifts because pshift_receiver ignores
+  #   weights entirely. Instead, for each output row we find the last type-c
+  #   event and apply the binary pshift condition directly.
+  #
+  # All other effects: masked-weights C++ call (correct for all memory types).
   if (length(separate_idx) > 0L) {
-
     for (p in separate_idx) {
       eff_name    <- effects_names[p]
       type_slices <- vector("list", C)
 
-      for (ci in seq_len(C)) {
-        type_id   <- types_df$typeID[ci]
-        type_name <- types_df$typeName[ci]
-
-        # Zero weights for all events that are not type c
-        weights_c <- weights * (event_type_ids == type_id)
-
-        # Run C++ on full timeline with type-masked weights, then subset
-        st_c <- compute_fn(eff_name, edgelist, weights_c,
-                           subset_start, subset_stop)
-        st_c <- array(as.numeric(st_c), dim = c(M_out, N, 1L))
-
-        dimnames(st_c)[[3]] <- paste0(eff_name, ".", type_name)
-        type_slices[[ci]] <- st_c
+      if (eff_name %in% PSHIFT_NAMES) {
+        # Pshift: R-level type-filtered computation
+        pshift_num <- PSHIFT_TYPE_NUM[eff_name]
+        for (ci in seq_len(C)) {
+          type_id   <- types_df$typeID[ci]
+          type_name <- types_df$typeName[ci]
+          st_c <- compute_pshift_type_c_receiver(
+            pshift_num, edgelist, event_type_ids, type_id,
+            N, subset_start, subset_stop
+          )
+          st_c <- array(st_c, dim = c(M_out, N, 1L))
+          dimnames(st_c)[[3]] <- paste0(eff_name, ".", type_name)
+          type_slices[[ci]] <- st_c
+        }
+      } else {
+        # Weighted-sum effects: masked-weights C++ call
+        for (ci in seq_len(C)) {
+          type_id   <- types_df$typeID[ci]
+          type_name <- types_df$typeName[ci]
+          weights_c <- weights * (event_type_ids == type_id)
+          st_c <- compute_fn(eff_name, edgelist, weights_c,
+                             subset_start, subset_stop)
+          st_c <- array(as.numeric(st_c), dim = c(M_out, N, 1L))
+          dimnames(st_c)[[3]] <- paste0(eff_name, ".", type_name)
+          type_slices[[ci]] <- st_c
+        }
       }
 
       result_slices[[p]] <- type_slices
     }
   }
+
 
   # ── Assemble in original effect order ────────────────────────────────────
   # Flatten: ignore slices stay as-is, separate become C slices each

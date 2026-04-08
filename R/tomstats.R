@@ -267,6 +267,38 @@ tomstats <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 
       # Add names (set directly to avoid length mismatch with interactions)
       dimnames(stats_c)[[3]] <- mp_effectNames
+
+      # Pshift effects: overwrite with correct type-c values.
+      # The masked-weights approach above does not affect pshifts because
+      # compute_stats_tie ignores weights for pshift computation. Instead,
+      # use R-level computation that finds the last type-c event per row.
+      ps_in_mp <- which(mp_effectNames %in% PSHIFT_NAMES)
+      if (length(ps_in_mp) > 0 && !is.null(inputs$prepR_untyped)) {
+        # Untyped riskset: actor1/actor2 in 0-based IDs (columns 1 and 2)
+        rs_a1 <- inputs$prepR_untyped[, 1]
+        rs_a2 <- inputs$prepR_untyped[, 2]
+        # event_type_ids_0based: 0-based typeID per event (length M)
+        event_type_ids_0 <- edgelist[, 4]
+        M_out_ps <- stop - start + 1L
+        for (ei in ps_in_mp) {
+          pshift_num <- PSHIFT_TYPE_NUM[mp_effectNames[ei]]
+          correct_vals <- compute_pshift_type_c_tie(
+            pshift_num, edgelist, event_type_ids_0, type_id_c,
+            rs_a1, rs_a2, M_out_ps, start, stop
+          )
+          # stats_c has D_typed columns; find columns for this type and overwrite
+          type_ids_riskset <- inputs$riskset[, 3]  # 0-based typeIDs per typed riskset row
+          type_rows_ci <- which(type_ids_riskset == type_id_c)
+          # Map untyped dyads to typed riskset positions for this type
+          key_untyped <- paste(rs_a1, rs_a2, sep = "|")
+          key_typed_c <- paste(inputs$riskset[type_rows_ci, 1],
+                               inputs$riskset[type_rows_ci, 2], sep = "|")
+          dst <- match(key_typed_c, key_untyped)
+          valid <- !is.na(dst)
+          stats_c[, type_rows_ci[valid], ei] <- correct_vals[, dst[valid]]
+        }
+      }
+
       stats_by_type[[ci]] <- stats_c
     }
   }
