@@ -1,3 +1,7 @@
+## remstats 4.0.0
+
+- Version ready for remverse
+
 ## remstats 3.2.4.9000
 
 ### New features

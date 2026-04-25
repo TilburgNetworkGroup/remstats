@@ -1,13 +1,13 @@
 # test-aomstats-typed.R
 #
-# Verifies aomstats() with typed events against the tomstats2() tie model
+# Verifies aomstats() with typed events against the tomstats() tie model
 # (extend_riskset_by_type = FALSE) as the ground truth, for multiple stats
 # and memory types.
 #
 # Design:
 #   For every valid (event m, receiver j) cell:
 #     aomstats$receiver_stats[m, j, stat] ==
-#       tomstats2[m, dyad_col(sender_m, j), stat]
+#       tomstats[m, dyad_col(sender_m, j), stat]
 #   For sender stats analogously (any reference receiver j != i).
 #
 # The dyad_col formula (1-based, derived from remify2 internals):
@@ -32,7 +32,7 @@ library(remstats)
 data(randomREH, package = "remify")
 el <- randomREH$edgelist[1:100, ]
 
-reh_actor <- remify2(
+reh_actor <- remify(
   edgelist = el,
   actors   = randomREH$actors,
   directed = TRUE,
@@ -41,7 +41,7 @@ reh_actor <- remify2(
 )
 
 # Tie model with untyped riskset (extend = FALSE) is the reference
-reh_tie <- remify2(
+reh_tie <- remify(
   edgelist               = el,
   actors                 = randomREH$actors,
   directed               = TRUE,
@@ -62,11 +62,11 @@ actor1_ids <- reh_actor$ids$actor1       # 1-based sender ID for every event
 dyad_col <- function(s, j, N) (s - 1L) * (N - 1L) + j - as.integer(j > s)
 
 # ---------------------------------------------------------------------------
-# Helper: check aomstats receiver_stats[,,stat] == tomstats2[,,stat]
+# Helper: check aomstats receiver_stats[,,stat] == tomstats[,,stat]
 #   for a random sample of events, all receivers per event.
 #
 # aom_arr : [M x N x P] from aomstats()$receiver_stats
-# tie_arr : [M x D x P] from tomstats2()
+# tie_arr : [M x D x P] from tomstats()
 # stat    : slice name (must exist in both arrays)
 # ---------------------------------------------------------------------------
 check_aom_tie_receiver <- function(aom_arr, tie_arr, stat,
@@ -89,7 +89,7 @@ check_aom_tie_receiver <- function(aom_arr, tie_arr, stat,
   }
 }
 
-# Helper: check aomstats sender_stats[,,stat] == tomstats2[,,stat]
+# Helper: check aomstats sender_stats[,,stat] == tomstats[,,stat]
 #   Sender stats are receiver-independent: for any reference receiver j != i,
 #   tie_arr[m, dyad_col(i, j), stat] carries the same value.
 #   We use j_ref = (i %% N) + 1  (cycles, never self-loops).
@@ -159,14 +159,14 @@ ts_s_sep <- aomstats(
                      indegreeSender(consider_type = "separate")
 )
 
-expect_equal(dim(ts_s_ig$sender_stats),  c(M, N, 2L),
+expect_equal(dim(ts_s_ig$sender_stats),  c(M, N, 3L),
              info = "sender ignore: dims [M x N x 2]")
-expect_equal(dim(ts_s_sep$sender_stats), c(M, N, 6L),
+expect_equal(dim(ts_s_sep$sender_stats), c(M, N, 7L),
              info = "sender separate: dims [M x N x 6]")
 
 expect_equal(
   dimnames(ts_s_ig$sender_stats)[[3]],
-  c("outdegreeSender", "indegreeSender"),
+  c("baseline","outdegreeSender", "indegreeSender"),
   info = "sender ignore: correct slice names"
 )
 
@@ -224,10 +224,10 @@ for (tp in types) {
 }
 
 # ===========================================================================
-# SECTION 3: Full memory — receiver ignore vs tomstats2
+# SECTION 3: Full memory — receiver ignore vs tomstats
 # ===========================================================================
 
-ts_tie_ig <- tomstats2(
+ts_tie_ig <- tomstats(
   ~ inertia() + indegreeReceiver() + outdegreeReceiver() + reciprocity(),
   reh = reh_tie, sampling = FALSE
 )
@@ -237,10 +237,10 @@ for (stat in rec_stats_ig) {
 }
 
 # ===========================================================================
-# SECTION 4: Full memory — receiver separate vs tomstats2 (consider_type=TRUE)
+# SECTION 4: Full memory — receiver separate vs tomstats (consider_type=TRUE)
 # ===========================================================================
 
-ts_tie_sep <- tomstats2(
+ts_tie_sep <- tomstats(
   ~ inertia(consider_type = TRUE) +
     indegreeReceiver(consider_type = TRUE) +
     outdegreeReceiver(consider_type = TRUE) +
@@ -259,7 +259,7 @@ for (stat in rec_stats_ig) {
 }
 
 # ===========================================================================
-# SECTION 5: Decay memory — receiver ignore vs tomstats2
+# SECTION 5: Decay memory — receiver ignore vs tomstats
 # ===========================================================================
 
 ts_ig_d <- aomstats(
@@ -269,7 +269,7 @@ ts_ig_d <- aomstats(
   memory = "decay", memory_value = 100
 )
 
-ts_tie_ig_d <- tomstats2(
+ts_tie_ig_d <- tomstats(
   ~ inertia() + indegreeReceiver() + outdegreeReceiver() + reciprocity(),
   reh = reh_tie, sampling = FALSE,
   memory = "decay", memory_value = 100
@@ -281,7 +281,7 @@ for (stat in rec_stats_ig) {
 }
 
 # ===========================================================================
-# SECTION 6: Decay memory — receiver separate vs tomstats2
+# SECTION 6: Decay memory — receiver separate vs tomstats
 # ===========================================================================
 
 ts_sep_d <- aomstats(
@@ -293,7 +293,7 @@ ts_sep_d <- aomstats(
   memory = "decay", memory_value = 100
 )
 
-ts_tie_sep_d <- tomstats2(
+ts_tie_sep_d <- tomstats(
   ~ inertia(consider_type = TRUE) +
     indegreeReceiver(consider_type = TRUE) +
     outdegreeReceiver(consider_type = TRUE) +
@@ -327,7 +327,7 @@ for (stat in rec_stats_ig) {
 # ===========================================================================
 
 # --- 7.1  Full memory -------------------------------------------------------
-ts_tie_s_ig <- tomstats2(
+ts_tie_s_ig <- tomstats(
   ~ outdegreeSender() + indegreeSender(),
   reh = reh_tie, sampling = FALSE
 )
@@ -338,7 +338,7 @@ for (stat in c("outdegreeSender", "indegreeSender")) {
 
 # Separate sums to ignore already checked in Section 2.2; spot-check values
 for (stat in c("outdegreeSender", "indegreeSender")) {
-  ts_tie_s_tp <- tomstats2(
+  ts_tie_s_tp <- tomstats(
     as.formula(paste0("~ ", stat, "(consider_type = TRUE)")),
     reh = reh_tie, sampling = FALSE
   )
@@ -358,7 +358,7 @@ ts_s_ig_d <- aomstats(
   sender_effects = ~ outdegreeSender() + indegreeSender(),
   memory = "decay", memory_value = 100
 )
-ts_tie_s_ig_d <- tomstats2(
+ts_tie_s_ig_d <- tomstats(
   ~ outdegreeSender() + indegreeSender(),
   reh = reh_tie, sampling = FALSE,
   memory = "decay", memory_value = 100
@@ -368,3 +368,4 @@ for (stat in c("outdegreeSender", "indegreeSender")) {
   check_aom_tie_sender(ts_s_ig_d$sender_stats, ts_tie_s_ig_d, stat,
                        n_events = 15L, seed = 5L)
 }
+

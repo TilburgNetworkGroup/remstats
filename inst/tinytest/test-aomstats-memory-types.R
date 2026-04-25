@@ -1,4 +1,4 @@
-# Spot-check: aomstats consider_type="separate" vs tomstats2 consider_type=TRUE
+# Spot-check: aomstats consider_type="separate" vs tomstats consider_type=TRUE
 #
 # Full event history (9915 events) so stats are rich, but start=9900 so only
 # ~15 output rows are computed. All receivers checked at all output rows.
@@ -21,10 +21,10 @@ library(tinytest)
 data(randomREH, package = "remify")
 el <- randomREH$edgelist
 
-reh_tie <- remify2(el, actors = randomREH$actors, directed = TRUE,
+reh_tie <- remify(el, actors = randomREH$actors, directed = TRUE,
                    origin = randomREH$origin, model = "tie",
                    extend_riskset_by_type = FALSE)
-reh_actor <- remify2(el, actors = randomREH$actors, directed = TRUE,
+reh_actor <- remify(el, actors = randomREH$actors, directed = TRUE,
                      origin = randomREH$origin, model = "actor")
 
 el_reh <- reh_tie$edgelist
@@ -38,7 +38,7 @@ tol   <- 1e-7
 run_check <- function(tie_formula, aom_formula, memory, memory_value, label) {
   cat("\n---", label, "---\n")
 
-  ts_tie <- tomstats2(
+  ts_tie <- tomstats(
     tie_formula, reh = reh_tie, sampling = FALSE,
     memory = memory, memory_value = memory_value,
     start = START
@@ -126,7 +126,7 @@ run_check(f_rr_tie,    f_rr_aom,    "full", NA, "full / rrank")
 run_check(f_rec_tie,   f_rec_aom,   "full", NA, "full / recency")
 
 # ---------------------------------------------------------------------------
-# Decay memory — primary regression test for the bug fix
+# Decay memory — primary regression test for the bug fix                     
 # ---------------------------------------------------------------------------
 run_check(f_base_tie,  f_base_aom,  "decay", 100, "decay / base")
 run_check(f_deg_tie,   f_deg_aom,   "decay", 100, "decay / degrees")
@@ -136,7 +136,7 @@ run_check(f_rr_tie,    f_rr_aom,    "decay", 100, "decay / rrank")
 run_check(f_rec_tie,   f_rec_aom,   "decay", 100, "decay / recency")
 
 # ---------------------------------------------------------------------------
-# Window and interval
+# Window and interval                                                        
 # ---------------------------------------------------------------------------
 run_check(f_base_tie, f_base_aom, "window",   1000,         "window / base")
 run_check(f_deg_tie,  f_deg_aom,  "window",   1000,         "window / degrees")

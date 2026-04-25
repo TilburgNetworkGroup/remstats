@@ -10,15 +10,11 @@ aomstats(
   receiver_effects = NULL,
   attr_actors = NULL,
   attr_dyads = NULL,
-  method = c("pt", "pe"),
   memory = c("full", "window", "decay", "interval"),
-  memory_value = Inf,
+  memory_value = NA,
   start = 2,
   stop = Inf,
-  display_progress = FALSE,
-  attr_data,
-  attributes,
-  edgelist
+  display_progress = FALSE
 )
 }
 \arguments{
@@ -42,16 +38,11 @@ actors (see Details).}
 \item{attr_dyads}{optionally, an object of class \code{data.frame} or 
 \code{matrix} containing attribute information for dyads (see Details).}
 
-\item{method}{Specifies the method for managing simultaneous events, i.e., 
-events occurring at the same time. The default 'method' is 'pt' (per 
-timepoint), where statistics are computed once for each unique timepoint in 
-the edgelist. Alternatively, you can choose 'pe' (per event), where 
-statistics are computed once for each unique event observed in the edgelist.}
-
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. See
-`Details'.}
+\item{memory_value}{Numeric value indicating the memory parameter. Default 
+is \code{NA}, which is only valid for \code{memory = "full"} (no memory
+parameter required). See `Details'.}
 
 \item{start}{an optional integer value, specifying the index of the first
 time or event in the relational event history for which statistics must be 
@@ -63,20 +54,21 @@ computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
-
-\item{attr_data}{deprecated, please use "attr_actors" instead}
-
-\item{attributes}{deprecated, please use "attr_data" instead}
-
-\item{edgelist}{deprecated, please use "reh" instead}
 }
 \value{
-An object of class 'aomstats'. List with in the first element the statistics for the sender activity rate step and in the second element the statistics for the receiver choice step. The 'aomstats' object has the 
-following attributes: 
+An object of class 'aomstats'. List with in the first element the
+statistics for the sender activity rate step and in the second element the
+statistics for the receiver choice step. Statistics are computed once per 
+unique time point (per-timepoint "pt" method), so the number of rows in the 
+output equals \code{reh$M} (the number of  unique time points), which may be 
+less than the total number of observed events when simultaneous events are 
+present. The 'aomstats' object has the following attributes: 
   \describe{
     \item{\code{model}}{Type of model that is estimated.}
-    \item{\code{formula}}{Model formula(s), obtained from the formula(s) inputted to 'sender_effects' and/or 'receiver_effects'.}
-    \item{\code{actors}}{The set of actors used to construct the statistics, obtained from the remify object inputted to 'reh'.}
+    \item{\code{formula}}{Model formula(s), obtained from the formula(s) 
+    inputted to 'sender_effects' and/or 'receiver_effects'.}
+    \item{\code{actors}}{The set of actors used to construct the statistics, 
+    obtained from the remify object inputted to 'reh'.}
   }
 }
 \description{

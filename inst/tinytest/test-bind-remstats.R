@@ -6,7 +6,7 @@ edgelist <- data.frame(
 )
 
 # --- Check for the tie-oriented model
-reh <- remify::remify2(edgelist, model = "tie", actors = 1:6)
+reh <- remify::remify(edgelist, model = "tie", actors = 1:6)
 
 # Create example remstats objects
 rs1 <- remstats(reh = reh, 

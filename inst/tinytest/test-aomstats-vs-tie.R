@@ -1,12 +1,12 @@
 # test-aomstats-vs-tie.R
 #
-# Direct comparison of aomstats() and tomstats2() at a single event.
+# Direct comparison of aomstats() and tomstats() at a single event.
 #
 # Strategy:
 #   - Fix on output row m = 99 (i.e. edgelist event 100, since aomstats
 #     starts at event 2 so output row m corresponds to edgelist row m+1).
 #   - Inspect the sender at that event, then pick 5 specific receivers.
-#   - Look up the corresponding dyad column in tomstats2 via the explicit
+#   - Look up the corresponding dyad column in tomstats via the explicit
 #     formula: d(s, j) = (s-1)*(N-1) + j - as.integer(j > s)   [1-based]
 #   - Compare values directly — no loops, no sampling, no automation.
 
@@ -19,11 +19,11 @@ el <- randomREH$edgelist[1:100, ]
 N  <- length(randomREH$actors)
 tol <- 1e-10
 
-reh_actor <- remify2(
+reh_actor <- remify(
   edgelist = el, actors = randomREH$actors,
   directed = TRUE, origin = randomREH$origin, model = "actor"
 )
-reh_tie <- remify2(
+reh_tie <- remify(
   edgelist = el, actors = randomREH$actors,
   directed = TRUE, origin = randomREH$origin, model = "tie",
   extend_riskset_by_type = FALSE
@@ -50,9 +50,9 @@ effects_sep <- ~ inertia(consider_type = "separate") +
                  reciprocity(consider_type = "separate")
 
 ts_aom  <- aomstats(reh = reh_actor, receiver_effects = effects)
-ts_tie  <- tomstats2(effects, reh = reh_tie, sampling = FALSE)
+ts_tie  <- tomstats(effects, reh = reh_tie, sampling = FALSE)
 ts_sep  <- aomstats(reh = reh_actor, receiver_effects = effects_sep)
-ts_tie_sep <- tomstats2(
+ts_tie_sep <- tomstats(
   ~ inertia(consider_type = TRUE) + indegreeReceiver(consider_type = TRUE) +
     outdegreeReceiver(consider_type = TRUE) + reciprocity(consider_type = TRUE),
   reh = reh_tie, sampling = FALSE
@@ -102,11 +102,11 @@ effects_tie_sep_d <- ~ inertia(consider_type = TRUE) +
 
 ts_aom_d     <- aomstats(reh = reh_actor, receiver_effects = effects_d,
                           memory = "decay", memory_value = 100)
-ts_tie_d     <- tomstats2(effects_d, reh = reh_tie, sampling = FALSE,
+ts_tie_d     <- tomstats(effects_d, reh = reh_tie, sampling = FALSE,
                            memory = "decay", memory_value = 100)
 ts_sep_d     <- aomstats(reh = reh_actor, receiver_effects = effects_sep_d,
                           memory = "decay", memory_value = 100)
-ts_tie_sep_d <- tomstats2(effects_tie_sep_d, reh = reh_tie, sampling = FALSE,
+ts_tie_sep_d <- tomstats(effects_tie_sep_d, reh = reh_tie, sampling = FALSE,
                            memory = "decay", memory_value = 100)
 
 for (j in receivers) {
@@ -140,7 +140,7 @@ for (j in receivers) {
 # ---------------------------------------------------------------------------
 ts_s  <- aomstats(reh = reh_actor,
                   sender_effects = ~ outdegreeSender() + indegreeSender())
-ts_s_tie <- tomstats2(~ outdegreeSender() + indegreeSender(),
+ts_s_tie <- tomstats(~ outdegreeSender() + indegreeSender(),
                        reh = reh_tie, sampling = FALSE)
 
 i <- sender_id

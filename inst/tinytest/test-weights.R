@@ -10,7 +10,7 @@ weights <- c(0.15, 0.25, 0.35, 0.45, 0.55)
 edgelist$weight <- weights
 
 # Test for tie-oriented model (weights are used in "adjmat", only need to test for one statistic)
-reh <- remify2(edgelist, model = "tie")
+reh <- remify(edgelist, model = "tie")
 effects <- ~ inertia()
 stats <- remstats(reh, tie_effects = effects, start = 1)
 riskset <- attr(stats, "riskset")
@@ -25,7 +25,7 @@ inertia <- rbind(
 expect_equal(stats[, , "inertia"], inertia)
 
 # TODO(actor-model): actor-oriented model weights test pending aomstats implementation
-# reh <- remify2(edgelist, model = "actor")
+# reh <- remify(edgelist, model = "actor")
 # sender_effects <- ~
 #   indegreeSender() + outdegreeSender() + totaldegreeSender()
 # receiver_effects <- ~

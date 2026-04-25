@@ -74,12 +74,19 @@
 #' the statistics for only the 5th event in the relational event sequence,
 #' based on the history that consists of events 1-4.
 #'
-#' @return An object of class 'aomstats'. List with in the first element the statistics for the sender activity rate step and in the second element the statistics for the receiver choice step. The 'aomstats' object has the 
-#' following attributes: 
+#' @return An object of class 'aomstats'. List with in the first element the
+#' statistics for the sender activity rate step and in the second element the
+#' statistics for the receiver choice step. Statistics are computed once per 
+#' unique time point (per-timepoint "pt" method), so the number of rows in the 
+#' output equals \code{reh$M} (the number of  unique time points), which may be 
+#' less than the total number of observed events when simultaneous events are 
+#' present. The 'aomstats' object has the following attributes: 
 #'   \describe{
 #'     \item{\code{model}}{Type of model that is estimated.}
-#'     \item{\code{formula}}{Model formula(s), obtained from the formula(s) inputted to 'sender_effects' and/or 'receiver_effects'.}
-#'     \item{\code{actors}}{The set of actors used to construct the statistics, obtained from the remify object inputted to 'reh'.}
+#'     \item{\code{formula}}{Model formula(s), obtained from the formula(s) 
+#'     inputted to 'sender_effects' and/or 'receiver_effects'.}
+#'     \item{\code{actors}}{The set of actors used to construct the statistics, 
+#'     obtained from the remify object inputted to 'reh'.}
 #'   }
 #'
 #' @examples
@@ -115,29 +122,14 @@ aomstats <- function(reh,
                      receiver_effects = NULL,
                      attr_actors = NULL,
                      attr_dyads = NULL,
-                     method = c("pt", "pe"),
                      memory = c("full", "window", "decay", "interval"),
-                     memory_value = Inf,
+                     memory_value = NA,
                      start = 2,
                      stop = Inf,
-                     display_progress = FALSE,
-                     attr_data, attributes, edgelist) {
+                     display_progress = FALSE) {
 
-  # Check if the deprecated argument "attributes" is used
-	if (!missing(attributes)) {
-    warning("Deprecated argument: Use 'attr_actors' instead of 'attributes'")
-    attr_actors <- attributes
-  }
-  if (!missing(attr_data)) {
-    warning("Deprecated argument: Use 'attr_actors' instead of 'attr_data'")
-    attr_actors <- attr_data
-  }
-  # Check if the deprecated argument "edgelist" is used
-  if (!missing(edgelist)) {
-    warning("Deprecated argument: Use 'reh' instead of 'edgelist'")
-    reh <- edgelist
-  }
-
+	method <- "pt"
+	
   # Validate remaining aomstats arguments
 	attr_actors <- validate_aomstats_arguments(attr_actors, reh)	
 
@@ -160,7 +152,7 @@ aomstats <- function(reh,
   }
 
   # Validate the method
-  method <- match.arg(method)
+  method <- "pt"
   N_actors <- nrow(actors)
 
   # Types info — needed for consider_type="separate" per effect
@@ -179,7 +171,7 @@ aomstats <- function(reh,
   sender_formula <- sender_effects
   if (!is.null(sender_formula)) {
     # Prepare sender_effects
-    temp <- prepare_sender_effects(sender_formula)
+    temp <- prepare_sender_effects(sender_formula, ordinal = reh$meta$ordinal)
     sender_effects <- temp$sender_effects
     sender_effects_names <- temp$sender_effects_names
     sender_interactions <- temp[[3]]
@@ -249,6 +241,9 @@ aomstats <- function(reh,
     # Extract consider_type per effect (default "ignore")
     r_consider_type <- sapply(receiver_effects, function(x) {
       ct <- if ("consider_type" %in% names(x)) x$consider_type else "ignore"
+      # backward compatibility
+      if (isTRUE(ct))  ct <- "separate"
+      if (isFALSE(ct)) ct <- "ignore"
       if (!ct %in% c("ignore", "separate"))
         stop("consider_type for receiver effects must be 'ignore' or 'separate'")
       ct

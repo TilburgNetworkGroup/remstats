@@ -15,10 +15,10 @@ effects <- ~ inertia(consider_type = FALSE) +
 # ---------------------------------------------------------------------------
 # SECTION 1: Interval timing, active riskset
 # ---------------------------------------------------------------------------
-reh_int <- remify::remify2(edgelist = history_sub, model = "tie",
+reh_int <- remify::remify(edgelist = history_sub, model = "tie",
                             riskset = "active", extend_riskset_by_type = TRUE)
 
-ts_int <- remstats::tomstats2(effects, reh = reh_int,
+ts_int <- remstats::tomstats(effects, reh = reh_int,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
                                start = 2, stop = 30,
@@ -91,10 +91,10 @@ expect_equal(stacked_int$subset, c(2L, 30L),
 # ---------------------------------------------------------------------------
 # SECTION 2: Ordinal timing, active riskset
 # ---------------------------------------------------------------------------
-reh_ord <- remify::remify2(edgelist = history_sub, model = "tie",
+reh_ord <- remify::remify(edgelist = history_sub, model = "tie",
                             riskset = "active", ordinal = TRUE, extend_riskset_by_type = TRUE)
 
-ts_ord <- remstats::tomstats2(effects, reh = reh_ord,
+ts_ord <- remstats::tomstats(effects, reh = reh_ord,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
                                start = 2, stop = 30,
@@ -125,10 +125,10 @@ expect_true(all(df_ord$obs %in% c(0L, 1L)),
 # ---------------------------------------------------------------------------
 # SECTION 3: Interval timing, full riskset
 # ---------------------------------------------------------------------------
-reh_full <- remify::remify2(edgelist = history_sub, model = "tie",
+reh_full <- remify::remify(edgelist = history_sub, model = "tie",
                              riskset = "full", extend_riskset_by_type = TRUE)
 
-ts_full <- remstats::tomstats2(effects, reh = reh_full,
+ts_full <- remstats::tomstats(effects, reh = reh_full,
                                 attr_actors = info,
                                 memory = "decay", memory_value = 1000,
                                 start = 2, stop = 30,
@@ -151,7 +151,7 @@ expect_true("log_interevent" %in% colnames(df_full),
 # ---------------------------------------------------------------------------
 # SECTION 4: start/stop subsetting respected
 # ---------------------------------------------------------------------------
-ts_sub <- remstats::tomstats2(effects, reh = reh_int,
+ts_sub <- remstats::tomstats(effects, reh = reh_int,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
                                start = 5, stop = 20,
@@ -174,7 +174,7 @@ expect_equal(sum(stacked_sub$remstats_stack$obs), stacked_sub$E,
 # ---------------------------------------------------------------------------
 samp_num <- 5L
 
-ts_samp <- remstats::tomstats2(effects, reh = reh_int,
+ts_samp <- remstats::tomstats(effects, reh = reh_int,
                                 attr_actors = info,
                                 memory = "decay", memory_value = 1000,
                                 start = 2, stop = 30,
@@ -240,7 +240,7 @@ expect_equal(stacked_samp$subset, c(2L, 30L),
 # ---------------------------------------------------------------------------
 # SECTION 6: Sampled tomstats — ordinal
 # ---------------------------------------------------------------------------
-ts_samp_ord <- remstats::tomstats2(effects, reh = reh_ord,
+ts_samp_ord <- remstats::tomstats(effects, reh = reh_ord,
                                     attr_actors = info,
                                     memory = "decay", memory_value = 1000,
                                     start = 2, stop = 30,

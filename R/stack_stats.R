@@ -173,3 +173,94 @@ stack_stats.tomstats_sampled <- function(stats, reh) {
     ordinal = ordinal
   )
 }
+
+
+#' @export
+#' @method stack_stats aomstats
+stack_stats.aomstats <- function(stats, reh) {
+	
+	if (!inherits(reh, "remify")) stop("'reh' must be a remify object.")
+	
+	# ── Dimensions ───────────────────────────────────────────────────────────────
+	subset_idx <- as.integer(unlist(attr(stats, "subset")))  # [start, stop]
+	E  <- subset_idx[2] - subset_idx[1] + 1L
+	N  <- reh$N
+	
+	# ── Ordinal flag ─────────────────────────────────────────────────────────────
+	ordinal <- isTRUE(reh$meta$ordinal)
+	
+	# ── Observed sender/receiver per event ───────────────────────────────────────
+	# ids$actor1 and ids$actor2 are 1-based
+	obs_sender   <- reh$ids$actor1[ subset_idx[1]:subset_idx[2] ]
+	obs_receiver <- reh$ids$actor2[ subset_idx[1]:subset_idx[2] ]
+	
+	# ── Inter-event times (interval only) ────────────────────────────────────────
+	if (!ordinal) {
+		iet <- reh$intereventTime[ subset_idx[1]:subset_idx[2] ]
+		log_iet <- log(iet)
+	}
+	
+	# ── Receiver riskset (list indexed by 1-based sender ID) ─────────────────────
+	rec_riskset <- reh$receiver_riskset  # list of length N, each N-1 1-based IDs
+	
+	# ── SENDER STACK ─────────────────────────────────────────────────────────────
+	sender_stack <- if (!is.null(stats$sender_stats)) {
+		
+		ss <- stats$sender_stats  # [E x N x Ks]
+		Ks <- dim(ss)[3]
+		stat_names <- dimnames(ss)[[3]]
+		
+		df <- as.data.frame(
+			do.call(rbind, lapply(seq_len(E), function(e) cbind(e, ss[e, , ])))
+		)
+		colnames(df) <- c("event", stat_names)
+		
+		if (!ordinal) {
+			df$log_interevent <- rep(log_iet, each = N)
+		}
+		
+		df$obs   <- unlist(lapply(seq_len(E), function(e) {
+			tabulate(obs_sender[e], nbins = N)
+		}))
+		df$actor <- rep(seq_len(N), E)
+		
+		df
+		
+	} else NULL
+	
+	# ── RECEIVER STACK ───────────────────────────────────────────────────────────
+	receiver_stack <- if (!is.null(stats$receiver_stats)) {
+		
+		rs <- stats$receiver_stats  # [E x N x Kr]
+		Kr <- dim(rs)[3]
+		stat_names <- dimnames(rs)[[3]]
+		
+		do.call(rbind, lapply(seq_len(E), function(e) {
+			s_id  <- obs_sender[e]
+			r_ids <- rec_riskset[[ s_id ]]
+			obs_r <- obs_receiver[e]
+			
+			mat  <- matrix(rs[e, r_ids, ], nrow = length(r_ids), ncol = Kr)
+			df_e <- as.data.frame(mat)
+			colnames(df_e) <- stat_names
+			
+			df_e$obs   <- as.integer(r_ids == obs_r)
+			df_e$actor <- r_ids
+			df_e$event <- e
+			df_e[, c("event", stat_names, "obs", "actor")]
+		}))
+		
+	} else NULL
+	
+	list(
+		sender_stack   = sender_stack,
+		receiver_stack = receiver_stack,
+		subset         = subset_idx,
+		N              = N,
+		E              = E,
+		ordinal        = ordinal
+	)
+}
+
+
+

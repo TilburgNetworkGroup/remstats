@@ -4,7 +4,7 @@ data(history)
 # plots for 'tomstats' objects
 
 # Prepare data
-reh <- remify2(edgelist = history[,1:3], model = "tie")
+reh <- remify(edgelist = history[,1:3], model = "tie")
 # Compute effects
 stats <- remstats(reh, tie_effects = ~ inertia())
 

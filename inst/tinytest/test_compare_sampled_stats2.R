@@ -21,22 +21,22 @@ check_sampled_equals_full <- function(effects,
 																			tol = 1e-12,
 																			attr_dyads = NULL) {
 	
-	reh <- remify::remify2(edgelist = history, model = "tie", riskset = "active")
+	reh <- remify::remify(edgelist = history, model = "tie", riskset = "active")
 	
-	ts_samp <- remstats::tomstats2(
+	ts_samp <- remstats::tomstats(
 		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_value = 1000,
 		sampling = TRUE, samp_num = samp_num, seed = seed, start = start1, stop = stop1
 	)
 	
 	# reproducibility (same seed/args)
-	ts_samp2 <- remstats::tomstats2(
+	ts_samp2 <- remstats::tomstats(
 		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_value = 1000,
 		sampling = TRUE, samp_num = samp_num, seed = seed, start = start1, stop = stop1
 	)
 	expect_equal(ts_samp, ts_samp2, tol = tol)
 	expect_equal(attr(ts_samp, "sample_map"), attr(ts_samp2, "sample_map"))
 	
-	ts_full <- remstats::tomstats2(
+	ts_full <- remstats::tomstats(
 		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_value = 1000,
 		sampling = FALSE, start = start1, stop = stop1
 	)

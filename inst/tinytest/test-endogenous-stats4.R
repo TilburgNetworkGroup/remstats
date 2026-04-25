@@ -8,7 +8,7 @@ edgelist <- data.frame(
   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1),
   type = c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 )
-reh <- remify::remify2(edgelist, model = "tie", directed = FALSE, riskset = "active",
+reh <- remify::remify(edgelist, model = "tie", directed = FALSE, riskset = "active",
 											 extend_riskset_by_type = TRUE)
 
 # ── "ignore" (default) ───────────────────────────────────────────────────────

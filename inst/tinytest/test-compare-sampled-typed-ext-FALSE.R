@@ -1,4 +1,4 @@
-# Tests that case-control sampled tomstats2 (sampling=TRUE) matches full tomstats2
+# Tests that case-control sampled tomstats (sampling=TRUE) matches full tomstats
 # at sampled dyad positions, when extend_riskset_by_type = FALSE.
 #
 # Scenarios covered:
@@ -52,11 +52,11 @@ check_sampled_equals_full <- function(effects, reh,
     stop         = stop
   )
 
-  ts_samp1 <- do.call(remstats::tomstats2,
+  ts_samp1 <- do.call(remstats::tomstats,
     c(args, list(sampling = TRUE, samp_num = samp_num, seed = seed1)))
-  ts_samp2 <- do.call(remstats::tomstats2,
+  ts_samp2 <- do.call(remstats::tomstats,
     c(args, list(sampling = TRUE, samp_num = samp_num, seed = seed2)))
-  ts_full  <- do.call(remstats::tomstats2,
+  ts_full  <- do.call(remstats::tomstats,
     c(args, list(sampling = FALSE)))
 
   # Slice names must be identical between sampled and full output
@@ -163,7 +163,7 @@ check_sampled_equals_full <- function(effects, reh,
 h_A     <- history[1:33, ]
 start_A <- 2; stop_A <- 20
 
-reh_A <- remify::remify2(edgelist = h_A, model = "tie", riskset = "active",
+reh_A <- remify::remify(edgelist = h_A, model = "tie", riskset = "active",
                 extend_riskset_by_type = FALSE)
 
 tests_A <- list(
@@ -232,7 +232,7 @@ for (nm in names(tests_A)) {
 h_B     <- history[1:44, ]
 start_B <- 3; stop_B <- 33
 
-reh_B <- remify::remify2(edgelist = h_B, model = "tie", riskset = "full",
+reh_B <- remify::remify(edgelist = h_B, model = "tie", riskset = "full",
                 directed = FALSE, extend_riskset_by_type = FALSE)
 
 tests_B <- list(
@@ -281,7 +281,7 @@ h_C     <- history[1:22, ]
 start_C <- 2; stop_C <- 18
 
 reh_C <- suppressWarnings(
-  remify::remify2(edgelist = h_C, model = "tie", riskset = "manual",
+  remify::remify(edgelist = h_C, model = "tie", riskset = "manual",
         directed = FALSE, manual.riskset = h_C[, c("actor1", "actor2")],
         extend_riskset_by_type = FALSE)
 )
@@ -333,7 +333,7 @@ for (nm in names(tests_C)) {
 h_D     <- history[1:25, ]
 start_D <- 3; stop_D <- 20
 
-reh_D <- remify::remify2(edgelist = h_D, model = "tie", riskset = "full",
+reh_D <- remify::remify(edgelist = h_D, model = "tie", riskset = "full",
                 directed = FALSE, ordinal = TRUE,
                 extend_riskset_by_type = FALSE)
 
@@ -386,12 +386,12 @@ for (nm in names(tests_D)) {
 # The riskset attached to the output should be untyped (no type column)
 # for ext=FALSE in both modes.
 # ---------------------------------------------------------------------------
-ts_full_shape <- remstats::tomstats2(
+ts_full_shape <- remstats::tomstats(
   ~ inertia(consider_type = TRUE),
   reh = reh_A, memory = "decay", memory_value = 1000,
   start = start_A, stop = stop_A, sampling = FALSE
 )
-ts_samp_shape <- remstats::tomstats2(
+ts_samp_shape <- remstats::tomstats(
   ~ inertia(consider_type = TRUE),
   reh = reh_A, memory = "decay", memory_value = 1000,
   start = start_A, stop = stop_A,
@@ -415,3 +415,4 @@ expect_equal(
   c("baseline", "inertia.social", "inertia.work"),
   info = "sampled path: type-split slice names match full path"
 )
+

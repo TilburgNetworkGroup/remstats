@@ -152,9 +152,9 @@ N       <- 10L
 D_dyad  <- N * (N - 1L)   # 90
 D_typed <- D_dyad * 2L    # 180
 
-reh_full_T <- remify2(edgelist, model = "tie", riskset = "full",
+reh_full_T <- remify(edgelist, model = "tie", riskset = "full",
                       extend_riskset_by_type = TRUE)
-reh_full_F <- remify2(edgelist, model = "tie", riskset = "full",
+reh_full_F <- remify(edgelist, model = "tie", riskset = "full",
                       extend_riskset_by_type = FALSE)
 
 expect_true(reh_full_T$meta$with_type_riskset)
@@ -214,9 +214,9 @@ check_inertia_values(stats_TT_full, stats_TF_full, stats_FT_full, stats_FF_full,
 # ===========================================================================
 # SECTION 2: riskset = "active", directed = TRUE
 # ===========================================================================
-reh_active_T <- remify2(edgelist, model = "tie", riskset = "active",
+reh_active_T <- remify(edgelist, model = "tie", riskset = "active",
                         extend_riskset_by_type = TRUE)
-reh_active_F <- remify2(edgelist, model = "tie", riskset = "active",
+reh_active_F <- remify(edgelist, model = "tie", riskset = "active",
                         extend_riskset_by_type = FALSE)
 
 stats_TT_act <- remstats(reh_active_T, tie_effects = ~ inertia(consider_type = "separate"), start = 1)
@@ -277,11 +277,11 @@ manual_rs <- data.frame(
 )
 
 reh_manual_T <- suppressWarnings(
-  remify2(edgelist, model = "tie", riskset = "manual",
+  remify(edgelist, model = "tie", riskset = "manual",
           manual.riskset = manual_rs, extend_riskset_by_type = TRUE)
 )
 reh_manual_F <- suppressWarnings(
-  remify2(edgelist, model = "tie", riskset = "manual",
+  remify(edgelist, model = "tie", riskset = "manual",
           manual.riskset = manual_rs, extend_riskset_by_type = FALSE)
 )
 
@@ -332,9 +332,9 @@ check_inertia_values(stats_TT_man, stats_TF_man, stats_FT_man, stats_FF_man,
 # ===========================================================================
 # SECTION 4: riskset = "full", directed = FALSE
 # ===========================================================================
-reh_undir_T <- remify2(edgelist, model = "tie", riskset = "full",
+reh_undir_T <- remify(edgelist, model = "tie", riskset = "full",
                         directed = FALSE, extend_riskset_by_type = TRUE)
-reh_undir_F <- remify2(edgelist, model = "tie", riskset = "full",
+reh_undir_F <- remify(edgelist, model = "tie", riskset = "full",
                         directed = FALSE, extend_riskset_by_type = FALSE)
 
 stats_TT_undir <- remstats(reh_undir_T, tie_effects = ~ inertia(consider_type = "separate"), start = 1)

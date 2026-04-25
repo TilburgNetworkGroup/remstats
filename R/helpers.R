@@ -17,14 +17,14 @@
 #
 # [return] array [M x S x P_out] with updated dimnames[[3]]
 split_type_slices_sampled <- function(statistics, effects, consider_type,
-                                       types, riskset, sample_map,
-                                       stats_by_type = NULL) {
+																			types, riskset, sample_map,
+																			stats_by_type = NULL) {
 	M          <- dim(statistics)[1]
 	S          <- dim(statistics)[2]
 	C          <- nrow(types)
 	stat_names <- dimnames(statistics)[[3]]
 
-	# [M x S] matrix of typeIDs for each sampled dyad (sample_map is 1-based row index)
+	# [M x S] matrix of typeIDs for each sampled dyad
 	type_mat <- matrix(riskset[sample_map, 3L], nrow = M, ncol = S)
 
 	new_slices <- list()
@@ -37,18 +37,18 @@ split_type_slices_sampled <- function(statistics, effects, consider_type,
 			base_name <- stat_names[p]
 
 			if (!is.null(stats_by_type)) {
-				# Multi-pass available: use per-type values from stats_by_type
 				if (consider_type[p] == 2L) {
 					# "interact": C^2 slices, zero non-matching dyad type positions
 					for (ci in seq_len(C)) {
 						past_type_name <- types$typeName[ci]
-						sbt <- stats_by_type[[ci]]
+						sbt   <- stats_by_type[[ci]]
 						p_sbt <- which(dimnames(sbt)[[3]] == base_name)
 						if (length(p_sbt) == 0) next
 						for (ci2 in seq_len(C)) {
 							dyad_type_name <- types$typeName[ci2]
 							dyad_type_id   <- types$typeID[ci2]
-							slice_name <- paste0(base_name, ".", past_type_name, ".", dyad_type_name)
+							slice_name <- paste0(base_name, ".", past_type_name,
+							                     ".", dyad_type_name)
 							slice2d <- sbt[, , p_sbt]
 							slice2d[type_mat != dyad_type_id] <- 0
 							new_mat <- array(slice2d, dim = c(M, S, 1))
@@ -57,26 +57,28 @@ split_type_slices_sampled <- function(statistics, effects, consider_type,
 						}
 					}
 				} else {
-					# "separate": C slices, no zeroing, use type-c filtered values
+					# "separate": C slices
 					for (ci in seq_len(C)) {
-						type_name <- types$typeName[ci]
+						type_name  <- types$typeName[ci]
 						slice_name <- paste0(base_name, ".", type_name)
-						sbt <- stats_by_type[[ci]]
+						sbt   <- stats_by_type[[ci]]
 						p_sbt <- which(dimnames(sbt)[[3]] == base_name)
 						if (length(p_sbt) == 0) next
-						new_mat <- sbt[, , p_sbt, drop = FALSE]
+						slice2d <- sbt[, , p_sbt]
+						new_mat <- array(slice2d, dim = c(M, S, 1))
 						dimnames(new_mat)[[3]] <- slice_name
 						new_slices[[length(new_slices) + 1]] <- new_mat
 					}
 				}
 			} else if (consider_type[p] == 2L) {
-				# "interact" without multi-pass: C^2 slices with zeroing
+				# "interact" without multi-pass: C^2 slices
 				for (ci in seq_len(C)) {
 					past_type_name <- types$typeName[ci]
 					for (ci2 in seq_len(C)) {
 						dyad_type_name <- types$typeName[ci2]
 						dyad_type_id   <- types$typeID[ci2]
-						slice_name <- paste0(base_name, ".", past_type_name, ".", dyad_type_name)
+						slice_name <- paste0(base_name, ".", past_type_name,
+						                     ".", dyad_type_name)
 						slice2d <- statistics[, , p]
 						slice2d[type_mat != dyad_type_id] <- 0
 						new_mat <- array(slice2d, dim = c(M, S, 1))
@@ -85,7 +87,7 @@ split_type_slices_sampled <- function(statistics, effects, consider_type,
 					}
 				}
 			} else {
-				# "separate" without multi-pass: C slices, no zeroing
+				# "separate" without multi-pass: C slices
 				for (ci in seq_len(C)) {
 					type_name  <- types$typeName[ci]
 					slice_name <- paste0(base_name, ".", type_name)
@@ -96,14 +98,12 @@ split_type_slices_sampled <- function(statistics, effects, consider_type,
 				}
 			}
 		} else {
-			# Keep as-is: consider_type=FALSE and non-typed effects are already
-			# correctly computed by C++ (inertia now aggregates internally too).
 			sl <- statistics[, , p, drop = FALSE]
 			dimnames(sl)[[3]] <- stat_names[p]
 			new_slices[[length(new_slices) + 1]] <- sl
 		}
 	}
-
+	
 	P_out  <- length(new_slices)
 	snames <- sapply(new_slices, function(s) dimnames(s)[[3]])
 	array(
@@ -344,53 +344,21 @@ prepare_tomstats <- function(
   # Reduce risk set to "active" dyads only
   if (reh$meta$riskset == "active") {
     act_id <- setNames(actors$actorID, actors$actorName)
-
-    if (isTRUE(reh$meta$riskset_source == "manual")) {
-      # For manual risksets: dyad_map_active is unreliable because getDyad2()
-      # decodes riskset_idx using a formula that differs from getDyadIndex() in
-      # C++, producing wrong actor/type assignments and NA types for some dyads.
-      # Derive the active set directly from reh$edgelist using actor/type names.
-      el      <- reh$edgelist
-      a1_raw  <- act_id[as.character(el$actor1)]
-      a2_raw  <- act_id[as.character(el$actor2)]
-      # For undirected: ensure canonical order (actor1 < actor2 by actorID)
-      if (!isTRUE(reh$meta$directed)) {
-        swap  <- !is.na(a1_raw) & !is.na(a2_raw) & a1_raw > a2_raw
-        a1_el <- ifelse(swap, a2_raw, a1_raw)
-        a2_el <- ifelse(swap, a1_raw, a2_raw)
-      } else {
-        a1_el <- a1_raw
-        a2_el <- a2_raw
-      }
-      if (needs_typed_riskset) {
-        type_id <- setNames(types$typeID, types$typeName)
-        t_el    <- type_id[as.character(el$type)]
-        obs_key <- paste(a1_el, a2_el, t_el, sep = "|")
-        obs_key <- unique(obs_key[!is.na(a1_el) & !is.na(a2_el) & !is.na(t_el)])
-        prepR_key    <- paste(prepR[, 1], prepR[, 2], prepR[, 3], sep = "|")
-        dyad_map_key <- obs_key
-      } else {
-        obs_key <- paste(a1_el, a2_el, sep = "|")
-        obs_key <- unique(obs_key[!is.na(a1_el) & !is.na(a2_el)])
-        prepR_key    <- paste(prepR[, 1], prepR[, 2], sep = "|")
-        dyad_map_key <- obs_key
-      }
+    
+    # For active risksets: dyad_map_active is reliable.
+    dyad_map <- reh$index$dyad_map_active %||% reh$index$dyad_map
+    a1_ids   <- act_id[as.character(dyad_map$actor1)]
+    a2_ids   <- act_id[as.character(dyad_map$actor2)]
+    if (needs_typed_riskset) {
+    	type_id      <- setNames(types$typeID, types$typeName)
+    	t_ids        <- type_id[as.character(dyad_map$type)]
+    	prepR_key    <- paste(prepR[, 1], prepR[, 2], prepR[, 3], sep = "|")
+    	dyad_map_key <- paste(a1_ids, a2_ids, t_ids, sep = "|")
     } else {
-      # For active risksets: dyad_map_active is reliable.
-      dyad_map <- reh$index$dyad_map_active %||% reh$index$dyad_map
-      a1_ids   <- act_id[as.character(dyad_map$actor1)]
-      a2_ids   <- act_id[as.character(dyad_map$actor2)]
-      if (needs_typed_riskset) {
-        type_id      <- setNames(types$typeID, types$typeName)
-        t_ids        <- type_id[as.character(dyad_map$type)]
-        prepR_key    <- paste(prepR[, 1], prepR[, 2], prepR[, 3], sep = "|")
-        dyad_map_key <- paste(a1_ids, a2_ids, t_ids, sep = "|")
-      } else {
-        # Untyped prepR: deduplicate actor pairs preserving riskset_idx order
-        prepR_key    <- paste(prepR[, 1], prepR[, 2], sep = "|")
-        pairs        <- paste(a1_ids, a2_ids, sep = "|")
-        dyad_map_key <- pairs[!duplicated(pairs)]
-      }
+    	# Untyped prepR: deduplicate actor pairs preserving riskset_idx order
+    	prepR_key    <- paste(prepR[, 1], prepR[, 2], sep = "|")
+    	pairs        <- paste(a1_ids, a2_ids, sep = "|")
+    	dyad_map_key <- pairs[!duplicated(pairs)]
     }
 
     row_idx <- match(dyad_map_key, prepR_key)
@@ -483,7 +451,11 @@ prepare_tomstats <- function(
     else if (identical(ct, "interact") || identical(ct, 2L) || identical(ct, 2)) 2L
     else stop("consider_type must be \"ignore\", \"separate\", or \"interact\"")
   })
-  consider_type <- append(consider_type, rep(1L, length(effects_int)), length(consider_type))
+  consider_type <- append(
+  	consider_type,
+  	rep(if (nrow(types) > 1) 1L else 0L, length(effects_int)),
+  	length(consider_type)
+  )
   # C++ consider_type logic:
   # "ignore"   (0): FALSE — aggregate all types in C++
   # "separate" (1): FALSE — aggregate all types in C++, R splits without zeroing
@@ -938,7 +910,7 @@ parse_formula <- function(formula, type, ordinal = FALSE) {
       list(list(effect = "baseline")), 0
     )
   }
-  if (type == "rateEffects" & attr(ft, "intercept") == 1) {
+  if (type == "rateEffects" & !ordinal & attr(ft, "intercept") == 1) {
     effects <- append(
       effects,
       list(list(effect = "baseline")), 0
@@ -1038,167 +1010,151 @@ parse_int <- function(formula, type, effects, ordinal = FALSE) {
 # [return] array [M x D_out x P_out] with updated dimnames[[3]]
 #
 split_type_slices <- function(statistics, effects, consider_type,
-                               types, prepR_typed, with_type_riskset,
-                               prepR_untyped = NULL,
-                               stats_by_type = NULL) {
-  C       <- nrow(types)
-  D_typed <- dim(statistics)[2]
-  type_ids <- prepR_typed[, 3]   # 0-based typeID per riskset row
+															types, prepR_typed, with_type_riskset,
+															prepR_untyped = NULL,
+															stats_by_type = NULL) {
+	C        <- nrow(types)
+	D_typed  <- dim(statistics)[2]
+	type_ids <- prepR_typed[, 3]
 
-  # For ext=FALSE: build actor-pair key for typed and untyped risksets so we
-  # can map typed columns into the D_dyad output space via key-matching.
-  if (!with_type_riskset && !is.null(prepR_untyped)) {
-    D_dyad      <- nrow(prepR_untyped)
-    key_untyped <- paste(prepR_untyped[, 1], prepR_untyped[, 2], sep = "|")
-    key_typed   <- paste(prepR_typed[, 1],   prepR_typed[, 2],   sep = "|")
-  } else {
-    D_dyad <- D_typed %/% C
-  }
+	if (!with_type_riskset && !is.null(prepR_untyped)) {
+		D_dyad      <- nrow(prepR_untyped)
+		key_untyped <- paste(prepR_untyped[, 1], prepR_untyped[, 2], sep = "|")
+		key_typed   <- paste(prepR_typed[, 1],   prepR_typed[, 2],   sep = "|")
+	} else {
+		D_dyad <- D_typed %/% C
+	}
 
-  stat_names <- dimnames(statistics)[[3]]
-  new_slices <- list()
+	stat_names <- dimnames(statistics)[[3]]
+	new_slices <- list()
 
-  for (p in seq_len(dim(statistics)[3])) {
-    # Only split endogenous effects that explicitly carry consider_type=TRUE.
-    # Exogenous effects (baseline, send, receive, tie, same, ...) and
-    # interaction terms never have a consider_type field and must not be split.
-    has_consider_type <- p <= length(effects) &&
-      "consider_type" %in% names(effects[[p]])
-    if (has_consider_type && consider_type[p] > 0L) {
-      base_name <- stat_names[p]
+	for (p in seq_len(dim(statistics)[3])) {
+		has_consider_type <- p <= length(effects) &&
+			"consider_type" %in% names(effects[[p]])
 
-      if (!is.null(stats_by_type)) {
-        # ext=TRUE with multi-pass: use per-type statistics from stats_by_type
-        # stat_names in stats_by_type[[ci]] match base_name
-        if (consider_type[p] == 2L) {
-          # "interact": C^2 slices named stat.pasttype.dyadtype
-          for (ci in seq_len(C)) {
-            past_type_name <- types$typeName[ci]
-            # Find this effect in stats_by_type[[ci]]
-            sbt <- stats_by_type[[ci]]
-            p_sbt <- which(dimnames(sbt)[[3]] == base_name)
-            if (length(p_sbt) == 0) next
-            for (ci2 in seq_len(C)) {
-              dyad_type_name <- types$typeName[ci2]
-              dyad_type_id   <- types$typeID[ci2]
-              slice_name <- paste0(base_name, ".", past_type_name, ".", dyad_type_name)
-              new_mat <- sbt[, , p_sbt, drop = FALSE]
-              new_mat[, which(type_ids != dyad_type_id), ] <- 0
-              dimnames(new_mat)[[3]] <- slice_name
-              new_slices[[length(new_slices) + 1]] <- new_mat
-            }
-          }
-        } else {
-          # "separate": C slices named stat.pasttype
-          for (ci in seq_len(C)) {
-            type_id   <- types$typeID[ci]
-            type_name <- types$typeName[ci]
-            slice_name <- paste0(base_name, ".", type_name)
-            sbt <- stats_by_type[[ci]]
-            p_sbt <- which(dimnames(sbt)[[3]] == base_name)
-            if (length(p_sbt) == 0) next
-            if (with_type_riskset) {
-              # ext=TRUE: use D_typed output directly
-              new_mat <- sbt[, , p_sbt, drop = FALSE]
-            } else {
-              # ext=FALSE: map type-c rows of typed riskset to D_dyad output
-              type_rows <- which(type_ids == type_id)
-              new_mat   <- array(0, dim = c(dim(sbt)[1], D_dyad, 1))
-              if (!is.null(prepR_untyped)) {
-                dst <- match(key_typed[type_rows], key_untyped)
-                valid <- !is.na(dst)
-                new_mat[, dst[valid], 1] <- sbt[, type_rows[valid], p_sbt]
-              } else {
-                new_mat[, seq_along(type_rows), 1] <- sbt[, type_rows, p_sbt]
-              }
-            }
-            dimnames(new_mat)[[3]] <- slice_name
-            new_slices[[length(new_slices) + 1]] <- new_mat
-          }
-        }
-        next
-      }
+		if (has_consider_type && consider_type[p] > 0L) {
+			base_name <- stat_names[p]
 
-      if (with_type_riskset && consider_type[p] == 2L) {
-        # "interact" + ext=TRUE (no multi-pass fallback): C^2 slices
-        for (ci in seq_len(C)) {
-          past_type_name <- types$typeName[ci]
-          for (ci2 in seq_len(C)) {
-            dyad_type_name <- types$typeName[ci2]
-            dyad_type_id   <- types$typeID[ci2]
-            slice_name <- paste0(base_name, ".", past_type_name, ".", dyad_type_name)
-            new_mat <- statistics[, , p, drop = FALSE]
-            new_mat[, which(type_ids != dyad_type_id), ] <- 0
-            dimnames(new_mat)[[3]] <- slice_name
-            new_slices[[length(new_slices) + 1]] <- new_mat
-          }
-        }
-        next
-      }
+			if (!is.null(stats_by_type)) {
 
-      # "separate" (or "interact" + ext=FALSE): C slices named stat.pasttype
-      for (ci in seq_len(C)) {
-        type_id   <- types$typeID[ci]
-        type_name <- types$typeName[ci]
-        slice_name <- paste0(base_name, ".", type_name)
+				if (consider_type[p] == 2L) {
+					# "interact": C^2 slices — past-type x dyad-type
+					for (ci in seq_len(C)) {
+						past_type_name <- types$typeName[ci]
+						sbt   <- stats_by_type[[ci]]
+						p_sbt <- which(dimnames(sbt)[[3]] == base_name)
+						if (length(p_sbt) == 0) next
+						for (ci2 in seq_len(C)) {
+							dyad_type_name <- types$typeName[ci2]
+							dyad_type_id   <- types$typeID[ci2]
+							slice_name <- paste0(base_name, ".", past_type_name, ".", dyad_type_name)
+							new_mat <- sbt[, , p_sbt, drop = FALSE]
+							new_mat[, which(type_ids != dyad_type_id), ] <- 0
+							dimnames(new_mat)[[3]] <- slice_name
+							new_slices[[length(new_slices) + 1]] <- new_mat
+						}
+					}
+				} else {
+					# "separate": C slices — past-type only
+					for (ci in seq_len(C)) {
+						type_id   <- types$typeID[ci]
+						type_name <- types$typeName[ci]
+						slice_name <- paste0(base_name, ".", type_name)
+						sbt   <- stats_by_type[[ci]]
+						p_sbt <- which(dimnames(sbt)[[3]] == base_name)
+						if (length(p_sbt) == 0) next
 
-        if (with_type_riskset) {
-          # ext=TRUE, "separate" (no multi-pass): no zeroing
-          new_mat <- statistics[, , p, drop = FALSE]
-        } else {
-          # ext=FALSE: map typed columns for this type into D_dyad output space.
-          # Typed riskset rows for this type may not cover all untyped dyads
-          # (active/manual risksets), so we start with a zero D_dyad matrix and
-          # fill in matched positions.
-          type_rows <- which(type_ids == type_id)
-          new_mat   <- array(0, dim = c(dim(statistics)[1], D_dyad, 1))
-          if (!is.null(prepR_untyped)) {
-            dst <- match(key_typed[type_rows], key_untyped)
-            valid <- !is.na(dst)
-            new_mat[, dst[valid], 1] <- statistics[, type_rows[valid], p]
-          } else {
-            # Fallback: typed rows == dyad rows (full riskset, equal counts per type)
-            new_mat[, seq_along(type_rows), 1] <- statistics[, type_rows, p]
-          }
-        }
-        dimnames(new_mat)[[3]] <- slice_name
-        new_slices[[length(new_slices) + 1]] <- new_mat
-      }
-    } else {
-      # Keep as-is; strip to D_dyad columns for ext=FALSE.
-      sl <- statistics[, , p, drop = FALSE]
-      if (!with_type_riskset && dim(sl)[2] == D_typed) {
-        if (!is.null(prepR_untyped)) {
-          # Use key-matching: for each untyped dyad, find its first matching
-          # column in the typed riskset (any type). Using type1_rows would
-          # miss dyads that only appear in other types (e.g. work-only dyads).
-          dst <- match(key_untyped, key_typed)
-          valid <- !is.na(dst)
-          new_sl <- array(0, dim = c(dim(sl)[1], D_dyad, 1))
-          new_sl[, which(valid), 1] <- sl[, dst[valid], 1]
-          sl <- new_sl
-        } else {
-          sl <- sl[, seq_len(D_dyad), , drop = FALSE]
-        }
-      }
-      dimnames(sl)[[3]] <- stat_names[p]
-      new_slices[[length(new_slices) + 1]] <- sl
-    }
-  }
+						if (with_type_riskset) {
+							# ext=TRUE: use per-type stats directly
+							new_mat <- sbt[, , p_sbt, drop = FALSE]
+						} else {
+							# ext=FALSE: map type-c rows of typed riskset to D_dyad output
+							type_rows <- which(type_ids == type_id)
+							new_mat   <- array(0, dim = c(dim(sbt)[1], D_dyad, 1))
+							if (!is.null(prepR_untyped)) {
+								dst   <- match(key_typed[type_rows], key_untyped)
+								valid <- !is.na(dst)
+								new_mat[, dst[valid], 1] <- sbt[, type_rows[valid], p_sbt]
+							} else {
+								new_mat[, seq_along(type_rows), 1] <- sbt[, type_rows, p_sbt]
+							}
+						}
+						dimnames(new_mat)[[3]] <- slice_name
+						new_slices[[length(new_slices) + 1]] <- new_mat
+					}
+				}
+				next
+			}
 
-  # Reconstruct cube (base R, no abind dependency)
-  M      <- dim(new_slices[[1]])[1]
-  D_out  <- dim(new_slices[[1]])[2]
-  P_out  <- length(new_slices)
-  snames <- sapply(new_slices, function(s) dimnames(s)[[3]])
-  array(
-    unlist(lapply(new_slices, function(s) s[, , 1])),
-    dim      = c(M, D_out, P_out),
-    dimnames = list(NULL, NULL, snames)
-  )
+			if (with_type_riskset && consider_type[p] == 2L) {
+				# "interact" + ext=TRUE without multi-pass
+				for (ci in seq_len(C)) {
+					past_type_name <- types$typeName[ci]
+					for (ci2 in seq_len(C)) {
+						dyad_type_name <- types$typeName[ci2]
+						dyad_type_id   <- types$typeID[ci2]
+						slice_name <- paste0(base_name, ".", past_type_name, ".", dyad_type_name)
+						new_mat <- statistics[, , p, drop = FALSE]
+						new_mat[, which(type_ids != dyad_type_id), ] <- 0
+						dimnames(new_mat)[[3]] <- slice_name
+						new_slices[[length(new_slices) + 1]] <- new_mat
+					}
+				}
+				next
+			}
+
+			# "separate" (or "interact" + ext=FALSE) without multi-pass
+			for (ci in seq_len(C)) {
+				type_id   <- types$typeID[ci]
+				type_name <- types$typeName[ci]
+				slice_name <- paste0(base_name, ".", type_name)
+
+				if (with_type_riskset) {
+					new_mat <- statistics[, , p, drop = FALSE]
+				} else {
+					type_rows <- which(type_ids == type_id)
+					new_mat   <- array(0, dim = c(dim(statistics)[1], D_dyad, 1))
+					if (!is.null(prepR_untyped)) {
+						dst   <- match(key_typed[type_rows], key_untyped)
+						valid <- !is.na(dst)
+						new_mat[, dst[valid], 1] <- statistics[, type_rows[valid], p]
+					} else {
+						new_mat[, seq_along(type_rows), 1] <- statistics[, type_rows, p]
+					}
+				}
+				dimnames(new_mat)[[3]] <- slice_name
+				new_slices[[length(new_slices) + 1]] <- new_mat
+			}
+
+		} else {
+			sl <- statistics[, , p, drop = FALSE]
+			if (!with_type_riskset && dim(sl)[2] == D_typed) {
+				if (!is.null(prepR_untyped)) {
+					dst   <- match(key_untyped, key_typed)
+					valid <- !is.na(dst)
+					new_sl <- array(0, dim = c(dim(sl)[1], D_dyad, 1))
+					new_sl[, which(valid), 1] <- sl[, dst[valid], 1]
+					sl <- new_sl
+				} else {
+					sl <- sl[, seq_len(D_dyad), , drop = FALSE]
+				}
+			}
+			dimnames(sl)[[3]] <- stat_names[p]
+			new_slices[[length(new_slices) + 1]] <- sl
+		}
+	}
+
+	M      <- dim(new_slices[[1]])[1]
+	D_out  <- dim(new_slices[[1]])[2]
+	P_out  <- length(new_slices)
+	snames <- sapply(new_slices, function(s) dimnames(s)[[3]])
+	array(
+		unlist(lapply(new_slices, function(s) s[, , 1])),
+		dim      = c(M, D_out, P_out),
+		dimnames = list(NULL, NULL, snames)
+	)
 }
-
-
+	
 # Compute the raw untyped prepR matrix for the ext=FALSE case.
 # Returns the integer matrix [D_dyad x 4] with 0-based actor/type/dyad IDs.
 #
@@ -1446,56 +1402,79 @@ PSHIFT_TYPE_NUM <- c(psABAB=1L, psABBA=2L, psABXB=3L, psABXA=4L,
 # type_id: 1-based typeID to filter on
 # Returns [M_out x N] matrix.
 compute_pshift_type_c_receiver <- function(pshift_num, edgelist, event_type_ids,
-                                            type_id, N, subset_start, subset_stop) {
-  M_out     <- subset_stop - subset_start + 1L
-  full_rows <- (subset_start + 1L):(subset_stop + 1L)  # 1-based rows in edgelist
-
-  type_c_rows <- which(event_type_ids == type_id)  # 1-based row positions of type-c events
-  k           <- findInterval(full_rows - 1L, type_c_rows)  # 0 = no type-c event before
-  has_prev    <- k > 0L
-  safe_k      <- pmax(k, 1L)
-
-  # 0-based actor IDs in edgelist -> +1 for 1-based indexing into result columns
-  prev_s <- ifelse(has_prev, edgelist[type_c_rows[safe_k], 2] + 1L, NA_integer_)
-  prev_r <- ifelse(has_prev, edgelist[type_c_rows[safe_k], 3] + 1L, NA_integer_)
-  curr_s <- edgelist[full_rows, 2] + 1L
-
-  result <- matrix(0, nrow = M_out, ncol = N)
-
-  if (pshift_num == 1L) {        # AB-AB: curr_s == prev_s -> prev_r
-    rows <- which(has_prev & curr_s == prev_s)
-    for (m in rows) result[m, prev_r[m]] <- 1
-
-  } else if (pshift_num == 2L) { # AB-BA: curr_s == prev_r -> prev_s
-    rows <- which(has_prev & curr_s == prev_r)
-    for (m in rows) result[m, prev_s[m]] <- 1
-
-  } else if (pshift_num == 3L) { # AB-XB: curr_s != prev_s AND != prev_r -> prev_r
-    rows <- which(has_prev & curr_s != prev_s & curr_s != prev_r)
-    for (m in rows) result[m, prev_r[m]] <- 1
-
-  } else if (pshift_num == 4L) { # AB-XA: curr_s != prev_s AND != prev_r -> prev_s
-    rows <- which(has_prev & curr_s != prev_s & curr_s != prev_r)
-    for (m in rows) result[m, prev_s[m]] <- 1
-
-  } else if (pshift_num == 5L) { # AB-AY: curr_s == prev_s -> all except prev_s, prev_r
-    rows <- which(has_prev & curr_s == prev_s)
-    for (m in rows) { result[m, ] <- 1; result[m, prev_s[m]] <- 0; result[m, prev_r[m]] <- 0 }
-
-  } else if (pshift_num == 6L) { # AB-BY: curr_s == prev_r -> all except prev_s, prev_r
-    rows <- which(has_prev & curr_s == prev_r)
-    for (m in rows) { result[m, ] <- 1; result[m, prev_s[m]] <- 0; result[m, prev_r[m]] <- 0 }
-
-  } else if (pshift_num == 7L) { # AB-XY: curr_s != prev_s AND != prev_r -> all except both
-    # No previous type-c event: treat as all-zeros (no type-c pattern has been established)
-    rows <- which(has_prev & curr_s != prev_s & curr_s != prev_r)
-    for (m in rows) { result[m, ] <- 1; result[m, prev_s[m]] <- 0; result[m, prev_r[m]] <- 0 }
-  }
-
-  result
+																					 type_id, N, subset_start, subset_stop) {
+	M_out     <- subset_stop - subset_start + 1L
+	full_rows <- (subset_start + 1L):(subset_stop + 1L)  # 1-based rows in edgelist
+	result    <- matrix(0, nrow = M_out, ncol = N)
+	
+	out_times    <- edgelist[full_rows, 1]
+	unique_times <- sort(unique(out_times))
+	
+	for (tp_idx in seq_along(unique_times)) {
+		curr_t <- unique_times[tp_idx]
+		
+		# Find previous time point
+		if (tp_idx == 1L) {
+			before_all <- which(edgelist[, 1] < curr_t)
+			if (length(before_all) == 0L) next  # no previous events, all 0
+			prev_t <- max(edgelist[before_all, 1])
+		} else {
+			prev_t <- unique_times[tp_idx - 1L]
+		}
+		
+		####
+		if (tp_idx == 1L) {
+			before_all <- which(edgelist[, 1] < curr_t)
+			cat("tp_idx=1: length(before_all)=", length(before_all), "\n")
+			if (length(before_all) == 0L) next
+			prev_t <- max(edgelist[before_all, 1])
+			cat("prev_t=", prev_t, "\n")
+			prev_ci_idx <- which(edgelist[, 1] == prev_t & event_type_ids == type_id)
+			cat("type_id=", type_id, "length(prev_ci_idx)=", length(prev_ci_idx), "\n")
+			cat("types at prev_t:", event_type_ids[which(edgelist[,1] == prev_t)], "\n")
+		}
+		####
+		
+		# Previous type-ci events at prev_t
+		prev_ci_idx <- which(edgelist[, 1] == prev_t & event_type_ids == type_id)
+		if (length(prev_ci_idx) == 0L) next
+		
+		# Output rows at curr_t
+		m_rows <- which(out_times == curr_t)
+		
+		for (m in m_rows) {
+			curr_s <- edgelist[full_rows[m], 2] + 1L  # 1-based
+			for (prev_e in prev_ci_idx) {
+				prev_s <- edgelist[prev_e, 2] + 1L
+				prev_r <- edgelist[prev_e, 3] + 1L
+				if (pshift_num == 1L) {        # AB-AB
+					if (curr_s == prev_s) result[m, prev_r] <- 1
+				} else if (pshift_num == 2L) { # AB-BA
+					if (curr_s == prev_r) result[m, prev_s] <- 1
+				} else if (pshift_num == 3L) { # AB-XB
+					if (curr_s != prev_s && curr_s != prev_r) result[m, prev_r] <- 1
+				} else if (pshift_num == 4L) { # AB-XA
+					if (curr_s != prev_s && curr_s != prev_r) result[m, prev_s] <- 1
+				} else if (pshift_num == 5L) { # AB-AY
+					if (curr_s == prev_s) {
+						result[m, ] <- 1; result[m, prev_s] <- 0; result[m, prev_r] <- 0
+					}
+				} else if (pshift_num == 6L) { # AB-BY
+					if (curr_s == prev_r) {
+						result[m, ] <- 1; result[m, prev_s] <- 0; result[m, prev_r] <- 0
+					}
+				} else if (pshift_num == 7L) { # AB-XY
+					if (curr_s != prev_s && curr_s != prev_r) {
+						result[m, ] <- 1; result[m, prev_s] <- 0; result[m, prev_r] <- 0
+					}
+				}
+			}
+		}
+	}
+	result
 }
 
-# Compute pshift.type_c for the TIE model (tomstats2), untyped riskset.
+# Compute pshift.type_c for the TIE model (tomstats), untyped riskset.
 # For each output row m, finds the last type-c event and applies the pshift
 # condition for all D dyads (actor1_0based, actor2_0based).
 # edgelist: [M x 4] matrix, cols = (time, actor1_0based, actor2_0based, type_0based)
@@ -1504,144 +1483,157 @@ compute_pshift_type_c_receiver <- function(pshift_num, edgelist, event_type_ids,
 # rs_a1, rs_a2: 0-based actor IDs for each of D dyads
 # Returns [M_out x D] matrix.
 compute_pshift_type_c_tie <- function(pshift_num, edgelist, event_type_ids,
-                                       type_id, rs_a1, rs_a2,
-                                       M_out, start, stop) {
-  D         <- length(rs_a1)
-  full_rows <- (start + 1L):(stop + 1L)  # 1-based rows in edgelist
-
-  type_c_rows <- which(event_type_ids == type_id)  # 1-based
-  k           <- findInterval(full_rows - 1L, type_c_rows)
-  has_prev    <- k > 0L
-
-  result <- matrix(0, nrow = M_out, ncol = D)
-
-  for (m in seq_len(M_out)) {
-    if (!has_prev[m]) next  # all zeros before first type-c event (psABXY also 0)
-    prev_s <- edgelist[type_c_rows[k[m]], 2]  # 0-based
-    prev_r <- edgelist[type_c_rows[k[m]], 3]  # 0-based
-
-    if (pshift_num == 1L) {        # AB-AB
-      result[m, rs_a1 == prev_s & rs_a2 == prev_r] <- 1
-    } else if (pshift_num == 2L) { # AB-BA
-      result[m, rs_a1 == prev_r & rs_a2 == prev_s] <- 1
-    } else if (pshift_num == 3L) { # AB-XB
-      result[m, rs_a1 != prev_s & rs_a1 != prev_r & rs_a2 == prev_r] <- 1
-    } else if (pshift_num == 4L) { # AB-XA
-      result[m, rs_a1 != prev_s & rs_a1 != prev_r & rs_a2 == prev_s] <- 1
-    } else if (pshift_num == 5L) { # AB-AY
-      result[m, rs_a1 == prev_s & rs_a2 != prev_r & rs_a2 != prev_s] <- 1
-    } else if (pshift_num == 6L) { # AB-BY
-      result[m, rs_a1 == prev_r & rs_a2 != prev_s & rs_a2 != prev_r] <- 1
-    } else if (pshift_num == 7L) { # AB-XY
-      result[m, rs_a1 != prev_s & rs_a1 != prev_r &
-                rs_a2 != prev_s & rs_a2 != prev_r] <- 1
-    }
-  }
-  result
+																			type_id, rs_a1, rs_a2,
+																			M_out, start, stop) {
+	D         <- length(rs_a1)
+	full_rows <- (start + 1L):(stop + 1L)   # 1-based
+	result    <- matrix(0, nrow = M_out, ncol = D)
+	
+	out_times    <- edgelist[full_rows, 1]
+	unique_times <- sort(unique(out_times))
+	
+	for (tp_idx in seq_along(unique_times)) {
+		curr_t <- unique_times[tp_idx]
+		
+		# Previous time point events of type ci
+		if (tp_idx == 1L) {
+			before_all <- which(edgelist[, 1] < curr_t)
+			if (length(before_all) == 0L) next
+			prev_t <- max(edgelist[before_all, 1])
+		} else {
+			prev_t <- unique_times[tp_idx - 1L]
+		}
+		
+		prev_ci_idx <- which(edgelist[, 1] == prev_t & event_type_ids == type_id)
+		if (length(prev_ci_idx) == 0L) next
+		
+		# Output rows at curr_t
+		m_rows <- which(out_times == curr_t)
+		
+		for (prev_e in prev_ci_idx) {
+			prev_s <- edgelist[prev_e, 2]
+			prev_r <- edgelist[prev_e, 3]
+			
+			for (m in m_rows) {
+				curr_s <- edgelist[full_rows[m], 2]   # 0-based sender of this output event
+				
+				if (pshift_num == 1L) {        # AB-AB
+					if (curr_s == prev_s)
+						result[m, rs_a1 == prev_s & rs_a2 == prev_r] <- 1
+				} else if (pshift_num == 2L) { # AB-BA
+					if (curr_s == prev_r)
+						result[m, rs_a1 == prev_r & rs_a2 == prev_s] <- 1
+				} else if (pshift_num == 3L) { # AB-XB
+					if (curr_s != prev_s && curr_s != prev_r)
+						result[m, rs_a1 != prev_s & rs_a1 != prev_r & rs_a2 == prev_r] <- 1
+				} else if (pshift_num == 4L) { # AB-XA
+					if (curr_s != prev_s && curr_s != prev_r)
+						result[m, rs_a1 != prev_s & rs_a1 != prev_r & rs_a2 == prev_s] <- 1
+				} else if (pshift_num == 5L) { # AB-AY
+					if (curr_s == prev_s)
+						result[m, rs_a1 == prev_s & rs_a2 != prev_r & rs_a2 != prev_s] <- 1
+				} else if (pshift_num == 6L) { # AB-BY
+					if (curr_s == prev_r)
+						result[m, rs_a1 == prev_r & rs_a2 != prev_s & rs_a2 != prev_r] <- 1
+				} else if (pshift_num == 7L) { # AB-XY
+					if (curr_s != prev_s && curr_s != prev_r)
+						result[m, rs_a1 != prev_s & rs_a1 != prev_r &
+									 	rs_a2 != prev_s & rs_a2 != prev_r] <- 1
+				}
+			}
+		}
+	}
+	result
 }
 
 # [return] array [M_out x N x P_out] with correct dimnames[[3]]
 compute_aomstats_with_type <- function(compute_fn, add_names_fn,
-                                        edgelist, weights, event_type_ids,
-                                        types_df, effects_names, consider_type,
-                                        with_type, C, subset_start, subset_stop, N) {
-  M     <- nrow(edgelist)
-  M_out <- subset_stop - subset_start + 1L
-  out_rows <- (subset_start + 1L):(subset_stop + 1L)  # 1-based in full edgelist
-
-  # Indices of ignore and separate effects
-  ignore_idx   <- which(consider_type == "ignore" | !with_type | C <= 1L)
-  separate_idx <- which(consider_type == "separate" & with_type & C > 1L)
-
-  result_slices <- vector("list", length(effects_names))
-
-  # ── ignore effects: single C++ call ───────────────────────────────────────
-  if (length(ignore_idx) > 0L) {
-    ign_names <- effects_names[ignore_idx]
-    st_ign    <- compute_fn(ign_names, edgelist, weights,
-                             subset_start, subset_stop)
-    # Set dimnames directly from ign_names (not add_names_fn which expects all P)
-    dimnames(st_ign)[[3]] <- ign_names
-    #N <- dim(st_ign)[2]
-    # Store each ignore slice
-    for (k in seq_along(ignore_idx)) {
-      p  <- ignore_idx[k]
-      sl <- st_ign[, , k, drop=FALSE]
-      dimnames(sl)[[3]] <- ign_names[k]
-      result_slices[[p]] <- sl
-    }
-  }
-
-  # ── separate effects ──────────────────────────────────────────────────────
-  # Two strategies depending on effect type:
-  #
-  # Pshift effects: R-level computation using last type-c event.
-  #   Masked-weights is wrong for pshifts because pshift_receiver ignores
-  #   weights entirely. Instead, for each output row we find the last type-c
-  #   event and apply the binary pshift condition directly.
-  #
-  # All other effects: masked-weights C++ call (correct for all memory types).
-  if (length(separate_idx) > 0L) {
-    for (p in separate_idx) {
-      eff_name    <- effects_names[p]
-      type_slices <- vector("list", C)
-
-      if (eff_name %in% PSHIFT_NAMES) {
-        # Pshift: R-level type-filtered computation
-        pshift_num <- PSHIFT_TYPE_NUM[eff_name]
-        for (ci in seq_len(C)) {
-          type_id   <- types_df$typeID[ci]
-          type_name <- types_df$typeName[ci]
-          st_c <- compute_pshift_type_c_receiver(
-            pshift_num, edgelist, event_type_ids, type_id,
-            N, subset_start, subset_stop
-          )
-          st_c <- array(st_c, dim = c(M_out, N, 1L))
-          dimnames(st_c)[[3]] <- paste0(eff_name, ".", type_name)
-          type_slices[[ci]] <- st_c
-        }
-      } else {
-        # Weighted-sum effects: masked-weights C++ call
-        for (ci in seq_len(C)) {
-          type_id   <- types_df$typeID[ci]
-          type_name <- types_df$typeName[ci]
-          weights_c <- weights * (event_type_ids == type_id)
-          st_c <- compute_fn(eff_name, edgelist, weights_c,
-                             subset_start, subset_stop)
-          st_c <- array(as.numeric(st_c), dim = c(M_out, N, 1L))
-          dimnames(st_c)[[3]] <- paste0(eff_name, ".", type_name)
-          type_slices[[ci]] <- st_c
-        }
-      }
-
-      result_slices[[p]] <- type_slices
-    }
-  }
-
-
-  # ── Assemble in original effect order ────────────────────────────────────
-  # Flatten: ignore slices stay as-is, separate become C slices each
-  final_slices <- list()
-  for (p in seq_along(result_slices)) {
-    sl <- result_slices[[p]]
-    if (is.array(sl)) {
-      final_slices[[length(final_slices) + 1L]] <- sl
-    } else if (is.list(sl)) {
-      # C type slices
-      for (ci in seq_len(C)) {
-        final_slices[[length(final_slices) + 1L]] <- sl[[ci]]
-      }
-    }
-  }
-
-  P_out  <- length(final_slices)
-  snames <- sapply(final_slices, function(s) dimnames(s)[[3]])
-  N_out  <- dim(final_slices[[1]])[2]
-  array(
-    unlist(lapply(final_slices, function(s) s[, , 1L])),
-    dim      = c(M_out, N_out, P_out),
-    dimnames = list(NULL, NULL, snames)
-  )
+																			 edgelist, weights, event_type_ids,
+																			 types_df, effects_names, consider_type,
+																			 with_type, C, subset_start, subset_stop, N) {
+	M     <- nrow(edgelist)
+	M_out <- subset_stop - subset_start + 1L
+	out_rows <- (subset_start + 1L):(subset_stop + 1L)
+	
+	ignore_idx   <- which(consider_type == "ignore" | !with_type | C <= 1L)
+	separate_idx <- which(consider_type == "separate" & with_type & C > 1L)
+	
+	result_slices <- vector("list", length(effects_names))
+	
+	# ── ignore effects: single C++ call ───────────────────────────────────────
+	if (length(ignore_idx) > 0L) {
+		ign_names <- effects_names[ignore_idx]
+		st_ign    <- compute_fn(ign_names, edgelist, weights,
+														subset_start, subset_stop)
+		dimnames(st_ign)[[3]] <- ign_names
+		for (k in seq_along(ignore_idx)) {
+			p  <- ignore_idx[k]
+			sl <- st_ign[, , k, drop = FALSE]
+			dimnames(sl)[[3]] <- ign_names[k]
+			result_slices[[p]] <- sl
+		}
+	}
+	
+	# ── separate effects ──────────────────────────────────────────────────────
+	if (length(separate_idx) > 0L) {
+		for (p in separate_idx) {
+			eff_name    <- effects_names[p]
+			type_slices <- vector("list", C)
+			
+			if (eff_name %in% PSHIFT_NAMES) {
+				# Pshift: use R-level per-type computation with correct
+				# method="pt" semantics (previous time point events only).
+				pshift_num <- PSHIFT_TYPE_NUM[eff_name]
+				for (ci in seq_len(C)) {
+					type_id   <- types_df$typeID[ci]
+					type_name <- types_df$typeName[ci]
+					st_c <- compute_pshift_type_c_receiver(
+						pshift_num, edgelist, event_type_ids, type_id,
+						N, subset_start, subset_stop
+					)
+					st_c <- array(st_c, dim = c(M_out, N, 1L))
+					dimnames(st_c)[[3]] <- paste0(eff_name, ".", type_name)
+					type_slices[[ci]] <- st_c
+				}
+			} else {
+				# Weighted-sum effects: masked-weights C++ call
+				for (ci in seq_len(C)) {
+					type_id   <- types_df$typeID[ci]
+					type_name <- types_df$typeName[ci]
+					weights_c <- weights * (event_type_ids == type_id)
+					st_c <- compute_fn(eff_name, edgelist, weights_c,
+														 subset_start, subset_stop)
+					st_c <- array(as.numeric(st_c), dim = c(M_out, N, 1L))
+					dimnames(st_c)[[3]] <- paste0(eff_name, ".", type_name)
+					type_slices[[ci]] <- st_c
+				}
+			}
+			
+			result_slices[[p]] <- type_slices
+		}
+	}
+	
+	# ── Assemble in original effect order ─────────────────────────────────────
+	final_slices <- list()
+	for (p in seq_along(result_slices)) {
+		sl <- result_slices[[p]]
+		if (is.array(sl)) {
+			final_slices[[length(final_slices) + 1L]] <- sl
+		} else if (is.list(sl)) {
+			for (ci in seq_len(C)) {
+				final_slices[[length(final_slices) + 1L]] <- sl[[ci]]
+			}
+		}
+	}
+	
+	P_out  <- length(final_slices)
+	snames <- sapply(final_slices, function(s) dimnames(s)[[3]])
+	N_out  <- dim(final_slices[[1]])[2]
+	array(
+		unlist(lapply(final_slices, function(s) s[, , 1L])),
+		dim      = c(M_out, N_out, P_out),
+		dimnames = list(NULL, NULL, snames)
+	)
 }
 
 # Compute type-specific aomstats and expand to full sequence with LOCF.
@@ -1716,7 +1708,7 @@ compute_aom_type_separate <- function(compute_fn, edgelist, weights,
 #    print(c(M, N, P))
     for (k in seq_len(M_c)) {
 #    	print(st_c[k,,])
-#    	from <- type_c_pos[k]
+    	from <- type_c_pos[k]
     	to   <- if (k < M_c) type_c_pos[k + 1L] - 1L else M
     	print(c(from,to))
     	for (row in from:to) {
@@ -1845,9 +1837,9 @@ prepare_subset <- function(start, stop, edgelist, method, model) {
   list(start = start, stop = stop)
 }
 
-prepare_sender_effects <- function(sender_formula) {
+prepare_sender_effects <- function(sender_formula, ordinal = FALSE) {
   check_formula(sender_formula)
-  sender_effects <- parse_formula(sender_formula, "rateEffects")
+  sender_effects <- parse_formula(sender_formula, "rateEffects", ordinal)
   sender_effects_names <- sapply(sender_effects, function(x) x$effect)
 
   # Check correct specification effects

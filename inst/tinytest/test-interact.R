@@ -14,7 +14,7 @@ info <- data.frame(
 )
 
 # Tie model
-reh <- remify::remify2(edgelist, model = "tie")
+reh <- remify::remify(edgelist, model = "tie")
 effects <- ~ send(variable = "x1"):inertia()
 stats <- remstats(reh, tie_effects = effects, attr_actors = info)
 

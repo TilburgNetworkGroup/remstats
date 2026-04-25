@@ -7,7 +7,7 @@ edgelist <- data.frame(
   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 )
 
-reh <- remify::remify2(edgelist, model = "tie", riskset = "active")
+reh <- remify::remify(edgelist, model = "tie", riskset = "active")
 effects <- ~ inertia()
 
 stats_window <- remstats(

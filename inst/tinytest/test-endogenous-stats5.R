@@ -8,7 +8,7 @@
 # )
 # 
 # # Statistics
-# reh <- remify::remify2(edgelist, model = "actor")
+# reh <- remify::remify(edgelist, model = "actor")
 # sender_effects <- ~
 #   indegreeSender() + outdegreeSender() + totaldegreeSender() +
 #     recencySendSender() + recencyReceiveSender() + psABA() + psABB() + psABX()
@@ -613,7 +613,7 @@
 #   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 # )
 # 
-# reh <- remify::remify2(edgelist, model = "actor")
+# reh <- remify::remify(edgelist, model = "actor")
 # 
 # # Selection of effects that have unique underlying cpp functions
 # sender_effects <- ~ indegreeSender() + recencySendSender() + psABA() 

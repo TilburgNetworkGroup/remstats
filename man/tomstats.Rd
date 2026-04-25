@@ -9,17 +9,14 @@ tomstats(
   reh,
   attr_actors = NULL,
   attr_dyads = NULL,
-  method = c("pt", "pe"),
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
   start = 2,
   stop = Inf,
   display_progress = FALSE,
-  adjmat = NULL,
-  get_adjmat = FALSE,
-  attr_data,
-  attributes,
-  edgelist
+  sampling = FALSE,
+  samp_num = NULL,
+  seed = NULL
 )
 }
 \arguments{
@@ -38,16 +35,11 @@ actors (see Details).}
 \item{attr_dyads}{optionally, an object of class \code{data.frame} or 
 \code{matrix} containing attribute information for dyads (see Details).}
 
-\item{method}{Specifies the method for managing simultaneous events, i.e., 
-events occurring at the same time. The default 'method' is 'pt' (per 
-timepoint), where statistics are computed once for each unique timepoint in 
-the edgelist. Alternatively, you can choose 'pe' (per event), where 
-statistics are computed once for each unique event observed in the edgelist.}
-
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. See
-`Details'.}
+\item{memory_value}{Numeric value indicating the memory parameter. Default 
+is \code{NA}, which is only valid for \code{memory = "full"} (no memory
+parameter required). See `Details'.}
 
 \item{start}{an optional integer value, specifying the index of the first
 time or event in the relational event history for which statistics must be 
@@ -60,28 +52,30 @@ computed (see 'Details')}
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 
-\item{adjmat}{optionally, a previously computed adjacency matrix with on the
-rows the time points and on the columns the risk set entries}
+\item{sampling}{Logical. If \code{TRUE}, statistics are computed using
+case–control (dyad) sampling rather than the full risk set. Default \code{FALSE}.}
 
-\item{get_adjmat}{whether the adjmat computed by tomstats should be
-outputted as an attribute of the statistics.}
+\item{samp_num}{Integer. Number of dyads to include per event when
+\code{sampling = TRUE}. Must be smaller than or equal to the size of the
+active risk set. Ignored when \code{sampling = FALSE}.}
 
-\item{attr_data}{deprecated, please use "attr_actors" instead}
-
-\item{attributes}{deprecated, please use "attr_data" instead}
-
-\item{edgelist}{deprecated, please use "reh" instead}
+\item{seed}{Optional integer. Random seed used for dyad sampling. Setting
+this ensures reproducible sampling across calls. If \code{NULL}, the
+current RNG state is used.}
 }
 \value{
 An object of class 'tomstats'. Array with the computed statistics,
 where rows refer to time points, columns refer to potential relational event
-(i.e., potential edges) in the risk set and slices refer to statistics. The
-'tomstats' object has the following attributes:
+(i.e., potential edges) in the risk set and slices refer to statistics.
+Statistics are computed once per unique time point (per-timepoint "pt"
+method), so the number of rows in the output equals \code{reh$M} (the number 
+of  unique time points), which may be less than the total number of observed 
+events when simultaneous events are present. The 'tomstats' object has the 
+following attributes:
   \describe{
     \item{\code{model}}{Type of model that is estimated.}
     \item{\code{formula}}{Model formula, obtained from the formula inputted to 'tie_effects'.}
     \item{\code{riskset}}{The risk set used to construct the statistics.}
-    \item{\code{adjmat}}{[Optional], if "get_adjmat = TRUE", the matrix with the accumulated event weights for each time point (on the rows) and each dyad (in the columns).}
   }
 }
 \description{
@@ -193,23 +187,3 @@ computation time but the user should be absolutely sure the adjacency matrix
 is accurate.
 }
 
-\examples{
-library(remstats)
-
-# Load data
-data(history)
-data(info)
-
-# Prepare data
-reh <- remify::remify(edgelist = history, model = "tie")
-
-# Compute effects
-effects <- ~ inertia():send("extraversion") + otp()
-tomstats(effects, reh = reh, attr_actors = info)
-
-}
-\references{
-Butts, C. T. (2008). A relational event framework for social
-action. Sociological Methodology, 38(1), 155–200.
-\doi{10.1111/j.1467-9531.2008.00203.x}
-}

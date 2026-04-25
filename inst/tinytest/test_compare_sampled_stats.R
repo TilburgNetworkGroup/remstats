@@ -2,7 +2,7 @@
 # # No using("tinytest") / library(tinytest) here.
 # 
 # # ------------------------------------------------------------------------------
-# # Helper: Compare sampled tomstats2 to full tomstats2, restricted to sampled dyads
+# # Helper: Compare sampled tomstats to full tomstats, restricted to sampled dyads
 # # ------------------------------------------------------------------------------
 # 
 # check_sampled_equals_full <- function(effects,
@@ -55,7 +55,7 @@
 # 		FUN.VALUE = rep(FALSE, reh$D)
 # 	))
 # 
-# 	# Ensure objects used inside effects are visible when tomstats2 evaluates the formula
+# 	# Ensure objects used inside effects are visible when tomstats evaluates the formula
 # 	env <- environment()
 # 
 # 	base_args <- list(
@@ -71,7 +71,7 @@
 # 	# Sampled
 # 	set.seed(seed)
 # 	ts_samp <- do.call(
-# 		remstats::tomstats2,
+# 		remstats::tomstats,
 # 		c(
 # 			list(effects = eval(effects, envir = env)),
 # 			base_args,
@@ -81,7 +81,7 @@
 # 
 # 	# Full
 # 	ts_full <- do.call(
-# 		remstats::tomstats2,
+# 		remstats::tomstats,
 # 		c(
 # 			list(effects = eval(effects, envir = env)),
 # 			base_args,
@@ -149,12 +149,12 @@
 # 	)
 # 
 # 	set.seed(seed)
-# 	ts_samp <- remstats::tomstats2(
+# 	ts_samp <- remstats::tomstats(
 # 		effects, reh = reh, attr_actors = info, method = "pt",
 # 		sampling = TRUE, samp_num = samp_num, seed = seed
 # 	)
 # 
-# 	ts_full <- remstats::tomstats2(
+# 	ts_full <- remstats::tomstats(
 # 		effects, reh = reh, attr_actors = info, method = "pt",
 # 		sampling = FALSE
 # 	)

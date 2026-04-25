@@ -25,7 +25,7 @@ info2 <- data.frame(
 info <- rbind(info, info2)
 
 # Statistics
-reh <- remify2(edgelist, model = "tie", riskset = "active")
+reh <- remify(edgelist, model = "tie", riskset = "active")
 effects <- ~
   outdegreeSender() + outdegreeReceiver() +
     indegreeSender() + indegreeReceiver() +

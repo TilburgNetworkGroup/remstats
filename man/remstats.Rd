@@ -11,17 +11,14 @@ remstats(
   receiver_effects = NULL,
   attr_actors = NULL,
   attr_dyads = NULL,
-  method = c("pt", "pe"),
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
   start = 2,
   stop = Inf,
   display_progress = FALSE,
-  adjmat = NULL,
-  get_adjmat = FALSE,
-  attr_data,
-  attributes,
-  edgelist
+  sampling = FALSE,
+  samp_num = NULL,
+  seed = NULL
 )
 }
 \arguments{
@@ -50,16 +47,11 @@ actors (see Details).}
 \item{attr_dyads}{optionally, an object of class \code{data.frame} or 
 \code{matrix} containing attribute information for dyads (see Details).}
 
-\item{method}{Specifies the method for managing simultaneous events, i.e., 
-events occurring at the same time. The default 'method' is 'pt' (per 
-timepoint), where statistics are computed once for each unique timepoint in 
-the edgelist. Alternatively, you can choose 'pe' (per event), where 
-statistics are computed once for each unique event observed in the edgelist.}
-
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. See
-`Details'.}
+\item{memory_value}{Numeric value indicating the memory parameter. Default 
+is \code{NA}, which is only valid for \code{memory = "full"} (no memory
+parameter required). See `Details'.}
 
 \item{start}{an optional integer value, specifying the index of the first
 time or event in the relational event history for which statistics must be 
@@ -72,18 +64,18 @@ computed (see 'Details')}
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 
-\item{adjmat}{optionally, for a tie-oriented model a previously computed 
-adjacency matrix with on the rows the time points and on the columns the 
-risk set entries}
+\item{sampling}{Logical. If \code{TRUE}, statistics are computed using
+case–control (dyad) sampling rather than the full risk set. Default \code{FALSE}.
+Only supported for a \code{tie} model.}
 
-\item{get_adjmat}{for a tie-oriented model, whether the adjmat computed by 
-remstats should be outputted as an attribute of the statistics.}
+\item{samp_num}{Integer. Number of dyads to include per event when
+\code{sampling = TRUE}. Must be smaller than or equal to the size of the
+active risk set. Ignored when \code{sampling = FALSE}.
+Only supported for a \code{tie} model.}
 
-\item{attr_data}{deprecated, please use "attr_actors" instead}
-
-\item{attributes}{deprecated, please use "attr_data" instead}
-
-\item{edgelist}{deprecated, please use "reh" instead}
+\item{seed}{Optional integer. Random seed used for dyad sampling. Setting
+this ensures reproducible sampling across calls. If \code{NULL}, the
+current RNG state is used.}
 }
 \value{
 An object of class 'remstats'. In case of the 
@@ -93,8 +85,11 @@ edges) in the risk set and slices refer to statistics. In case of the
 actor-oriented model, list with in the first element the statistics for the 
 sender activity rate step and in the second element the statistics for the 
 receiver choice step, where rows refer to time points, columns refer to 
-potential senders or receivers, respectively. The 'remstats' object has the 
-following attributes: 
+potential senders or receivers, respectively. Statistics are computed once
+per unique time point (per-timepoint "pt" method), so the number of rows in
+the output equals \code{reh$M} (the number of  unique time points), which may
+be less than the total number of observed events when simultaneous events
+are present. The 'remstats' object has the following attributes: 
   \describe{
     \item{\code{model}}{Type of model that is estimated, obtained from the 
      remify object inputted to 'reh'.}
@@ -106,9 +101,6 @@ following attributes:
     \item{\code{actors}}{For the actor-oriented model, the set of actors 
      used to construct the statistics, obtained from the remify object 
      inputted to 'reh'.}
-    \item{\code{adjmat}}{[Optional], for the tie-oriented model, if 
-     "get_adjmat = TRUE", the matrix with the accumulated event weights for 
-     each time point (on the rows) and each dyad (in the columns).}
   }
 }
 \description{

@@ -151,26 +151,11 @@ info <- data.frame(
   x2 = c(0, 1, 1)
 )
 
-reh <- remify2(edgelist, model = "tie")
-
-expect_warning(
-    remstats(reh = reh, tie_effects = ~ 1, attributes = info),
-    pattern = "Use 'attr_actors'"
-)
+reh <- remify(edgelist, model = "tie")
 
 colnames(info)[1] <- "id"
 
-expect_warning(
-    remstats(reh = reh, tie_effects = ~ 1, attributes = info),
-    pattern = "use 'name'"
-)
-
 colnames(info)[1] <- "name"
-
-expect_warning(
-    remstats(edgelist = reh, tie_effects = ~ 1),
-    pattern = "Use 'reh'"
-)
 
 expect_error(
     remstats(reh = edgelist, sender_effects = ~ 1),
@@ -191,26 +176,11 @@ info <- data.frame(
   x2 = c(0, 1, 1)
 )
 
-reh <- remify2(edgelist, model = "tie")
-
-expect_warning(
-    tomstats(reh = reh, effects = ~ 1, attributes = info),
-    pattern = "Use 'attr_actors'"
-)
+reh <- remify(edgelist, model = "tie")
 
 colnames(info)[1] <- "id"
 
-expect_warning(
-    tomstats(reh = reh, effects = ~ 1, attributes = info),
-    pattern = "use 'name'"
-)
-
 colnames(info)[1] <- "name"
-
-expect_warning(
-    tomstats(edgelist = reh, effects = ~ 1),
-    pattern = "Use 'reh'"
-)
 
 expect_error(
     tomstats(reh = edgelist, effects = ~ 1),
@@ -225,7 +195,7 @@ expect_error(
 # TODO(actor-model): )
 # TODO(actor-model): 
 
-reh <- remify2(edgelist, model = "tie")
+reh <- remify(edgelist, model = "tie")
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ 1, start = 0),
@@ -242,7 +212,7 @@ expect_error(
     pattern = "directed events"
 )
 
-reh <- remify2(edgelist, model = "tie", directed = FALSE)
+reh <- remify(edgelist, model = "tie", directed = FALSE)
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ outdegreeReceiver()),
@@ -250,7 +220,7 @@ expect_error(
 )
 
 # process_covariate -----------------------------------------------------
-reh <- remify2(edgelist, model = "tie")
+reh <- remify(edgelist, model = "tie")
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ send(variable = "x3"), 
@@ -338,14 +308,14 @@ expect_error(
     pattern = "number of actors")
 )
 
-reh <- remify2(edgelist, model = "tie", directed = FALSE)
+reh <- remify(edgelist, model = "tie", directed = FALSE)
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ tie(x = X),
     pattern = "symmetric")
 )
 
-reh <- remify2(edgelist, model = "tie")
+reh <- remify(edgelist, model = "tie")
 
 X[1,1] <- NA
 
@@ -355,7 +325,7 @@ expect_error(
 )
 
 # validate_memory -------------------------------------------------------
-reh <- remify2(edgelist, model = "tie")
+reh <- remify(edgelist, model = "tie")
 
 expect_error(
     remstats(reh = reh, tie_effects = ~ inertia(), memory = "window"),
@@ -443,7 +413,7 @@ expect_error(
 # TODO(actor-model):     pattern = "remify object"
 # TODO(actor-model): )
 # TODO(actor-model): 
-# TODO(actor-model): reh <- remify2(edgelist, model = "tie")
+# TODO(actor-model): reh <- remify(edgelist, model = "tie")
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
 # TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1),
@@ -556,7 +526,7 @@ expect_error(
 # TODO(actor-model):     pattern = "functions"
 # TODO(actor-model): )
 # TODO(actor-model): 
-# TODO(actor-model): reh <- remify2(edgelist, model = "tie")
+# TODO(actor-model): reh <- remify(edgelist, model = "tie")
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
 # TODO(actor-model):     remstats(reh = reh, tie_effects = ~ inertia),
@@ -569,7 +539,7 @@ expect_error(
 # TODO(actor-model): data(history)
 # TODO(actor-model): 
 # TODO(actor-model): # Prepare data for 'tomstats'
-# TODO(actor-model): reh_tie <- remify2(edgelist = history[,1:3], model = "tie")
+# TODO(actor-model): reh_tie <- remify(edgelist = history[,1:3], model = "tie")
 # TODO(actor-model): # Compute effects
 # TODO(actor-model): stats_tie <- remstats(reh_tie, tie_effects = ~ inertia())
 # TODO(actor-model): 

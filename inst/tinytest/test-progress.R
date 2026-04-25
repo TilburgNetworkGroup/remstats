@@ -6,7 +6,7 @@ edgelist <- data.frame(
 )
 
 # Statistics
-reh <- remify2(edgelist, model = "tie", riskset = "active")
+reh <- remify(edgelist, model = "tie", riskset = "active")
 effects <- ~
   outdegreeSender() + outdegreeReceiver() +
     indegreeSender() + indegreeReceiver() +
@@ -28,7 +28,7 @@ output <- capture.output(
 expect_true(all(grepl("Calculating", output)))
 
 # TODO(actor-model): actor-oriented model progress test pending aomstats implementation
-# reh <- remify2(edgelist, model = "actor")
+# reh <- remify(edgelist, model = "actor")
 # sender_effects <- ~
 #   indegreeSender() + outdegreeSender() + totaldegreeSender() +
 #     recencySendSender() + recencyReceiveSender()

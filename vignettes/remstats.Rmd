@@ -1,6 +1,10 @@
 ---
 title: "remstats"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_document:
+    theme: spacelab
+    highlight: pygments
+    code_folding: show
 vignette: >
   %\VignetteIndexEntry{remstats}
   %\VignetteEngine{knitr::rmarkdown}
@@ -18,149 +22,284 @@ knitr::opts_chunk$set(
 library(remstats)
 ```
 
+<i>This vignette explains how to compute statistics for relational event history data using `remstats()`, for both tie-oriented and actor-oriented models.</i>
+
+---
+
 ## Introduction 
-Relational event modeling approaches enable researchers to investigate both exogenous and endogenous factors influencing the evolution of a time-ordered sequence of relational events - commonly known as a *relational event history*. These models are categorized into *tie-oriented models*, where the probability of a dyad interacting next is modeled in a single step (e.g., see Butts, 2008), and *actor-oriented models*, which first model the probability of a sender initiating an interaction and subsequently the probability of the senders' choice of receiver (e.g., see Stadtfeld & Block, 2017). The `R` package `remstats` is designed to compute a variety of statistics for both types of models.
 
-The `remstats` package is part of a bundle of `R`-packages developed by researchers from Tilburg University intended to aid applied researchers in the application of relational event modeling. For preparing the relational event history, `remstats` assumes the prior application of `remify::remify()` (available on CRAN). Model estimation can subsequently be executed using `remstimate` (available on GitHub at github.com/TilburgNetworkGroup/remstimate).
+Relational event modeling approaches enable researchers to investigate both exogenous and endogenous factors influencing the evolution of a time-ordered sequence of relational events — commonly known as a *relational event history*. These models are categorized into *tie-oriented models*, where the probability of a dyad interacting next is modeled in a single step (e.g., see Butts, 2008), and *actor-oriented models*, which first model the probability of a sender initiating an interaction and subsequently the probability of the sender's choice of receiver (e.g., see Stadtfeld & Block, 2017). The `R` package `remstats` is designed to compute a variety of statistics for both types of models.
 
-The following provides a brief introduction to computing statistics for relational event history data with remstats. We'll begin with a quick workflow example, followed by a detailed description of the procedure for the tie-oriented model. Finally, we'll provide an explanation of the procedure for the actor-oriented model.
+The `remstats` package is part of the `remverse` suite of `R` packages developed at Tilburg University to support applied researchers in relational event modeling. For preparing the relational event history, `remstats` requires prior processing with `remify::remify()`. Model estimation can subsequently be executed using `remstimate`.
 
-## Workflow example 
+---
+
+## Quick workflow example
+
 ```{r}
 # Load data
 data(history)
 data(info)
 
+# Set weights to 1 (no event weighting)
+history$weight <- 1
+
 # Define effects
 effects <- ~ 1 + send("extraversion", info) + inertia()
 
-# Prepare event history with the 'remify package'
-rehObject <- remify::remify(edgelist = history, model = "tie")
+# Prepare event history
+reh <- remify::remify(edgelist = history, model = "tie")
 
 # Compute statistics
-statsObject <- remstats(reh = rehObject, tie_effects = effects)
+stats <- remstats(reh = reh, tie_effects = effects)
 
-# Estimate model parameters with the 'remstimate' package
-# fit <- remstimate::remstimate(reh = rehObject, stats = statsObject,
-# 	method = "MLE", timing = "interval")
+# Estimate model parameters (requires remstimate)
+# fit <- remstimate::remstimate(reh = reh, stats = stats, method = "MLE")
 ```
 
-## Getting started
+---
 
-### Data
-Relational event history data describes a time-ordered series of interactions between actors in a network. Such interactions are referred to as *relational events*. A relational event minimally contains information on the time of the event and the actors that are involved in the event. 
+## Data
 
-As an illustration, we use the `history` data object in the `remstats` package. This data object is a randomly generated relational event history. A description of the simulated data can be accessed with `?history`. Here, we read that `history` is a small simulated relational event history with 115 events. Besides information on the time and actors, for each event there is also information on the setting and an event weight. We can view the first six events with:
+Relational event history data describes a time-ordered series of interactions between actors in a network. A relational event minimally contains information on the time of the event and the actors involved.
+
+We use the `history` dataset from the `remstats` package (see `?history`): a small simulated relational event history with 115 events among 10 actors. Each event also records a `setting` (either `"work"` or `"social"`) and an event `weight`.
 
 ```{r}
 head(history)
 ```
 
-We prepare the relational event history for computation of statistics for the tie-oriented model with the `remify` function from the `remify` package. Whenever the weight variable is present in the `edgelist` supplied to `remify`, it assumes that we want to use these to weight the events in the computation of the statistics. In this example, we don't want this, thus we set the weight to one for all events:
-```{r}
-history$weight <- 1
-reh <- remify::remify(edgelist = history, model = "tie")
-```
-
-Besides the relational event history itself, relational event modeling often requires a second data object with exogenous information on the actors in the network. Information on the actors in the simulated data example in `remstats` is stored in the `info` object. A description of the `info` data can be accessed with `?info`. Here, we read that the `info` object stores for the 10 actors in the network information on their age, sex, extraversion and agreeableness score. Moreover, extraversion and agreeableness is measured multiple times during the observation period. The time variable tells us when the values change. We can view the attribute information for the first two actors with:
+Exogenous information on actors is stored in the `info` object (see `?info`), containing age, sex, extraversion, and agreeableness scores measured at multiple time points for each of the 10 actors:
 
 ```{r}
 head(info)
 ```
 
-### Compute statistics for the tie-oriented model
-First, we compute statistics for modeling relational event history data with a tie-oriented model. The statistics that are requested need to be supplied to the `tie_effects` argument of `remstats()`, specified in an object of class `formula`. This specification should be in the form `~ terms`.
+---
 
-An overview of the statistics that can be computed for the tie-oriented model is available using the `tie_effects()` function or its help documentation `?tie_effects`:
+# {.tabset .tabset-fade .tabset-pills}
 
-In this illustration, we start with requesting only one statistic: the inertia statistic. Most statistics can be tailored to the user's needs. For example, lets view the description for the `inertia` statistic using `?inertia`. Here, we can read that the inertia statistic computes for every timepoint *t* for every pair of actors *(i,j)* in the riskset the number of past events. With the `scaling` argument, one of the methods for scaling the statistic can be chosen. The `consider_type` argument is relevant when event types are in the dependent variable, which we do not consider in this example.
+## Tie-oriented model
 
-In this illustration, we will standardize the inertia statistic. To request this statistic, we define the formula as follows:s
+### Preparing the event history
+
+We prepare the event history for the tie-oriented model with `remify::remify()`. When a `weight` column is present in the edgelist, it is used to weight events in the computation of statistics. Here we set weights to one to avoid this:
+
 ```{r}
-effects <- ~ inertia(scaling = "std")
+history$weight <- 1
+reh <- remify::remify(edgelist = history, model = "tie")
 ```
 
-Now, we have everything we need to compute our first statistic:
+### Computing statistics
+
+Statistics for the tie-oriented model are supplied to the `tie_effects` argument of `remstats()` as a `formula` object of the form `~ terms`. An overview of available statistics is obtained with `tie_effects()` or `?tie_effects`.
+
+As a first example, we request the standardized inertia statistic:
+
 ```{r}
+effects <- ~ inertia(scaling = "std")
 out <- remstats(tie_effects = effects, reh = reh)
 ```
 
-The `remstats()` function outputs a 3-dimensional array with statistics for the tie-oriented model. On the rows of this array are the timepoints, the columns refer to the potential events in the riskset and the slices refer to the different statistics:
+The output is a 3-dimensional array. Rows correspond to unique time points, columns to potential events in the risk set, and slices to statistics:
+
 ```{r}
 dim(out)
 ```
-Our statistics object has 115 rows, corresponding to the 115 time points in the relational event history. It has 90 columns, corresponding to the 90 events in the riskset. The statistics object has two slices, that is because the baseline statistics is automatically computed when the timing of the events in the relational event history is exact (unless removed by specifying `-1` in the `effects` formula) and saved in the first slice. The `remstats()` procedure assumes that the timing of the events in the relational event history is exact and the full likelihood is used in the estimation, unless the argument `ordinal` in `remify::remify()` is set to `TRUE`. 
 
-We can view the names of the statistics that are in the statistics object with:
+The number of rows equals `reh$M` — the number of unique time points (115 here). When simultaneous events are present, the number of rows is less than the total number of events, since statistics are computed once per unique time point. There are 90 columns corresponding to the $10 \times 9$ directed dyads in the full risk set. The two slices are: (1) a baseline statistic, automatically included when event timing is exact (`ordinal = FALSE`), and (2) the inertia statistic. The baseline can be suppressed by including `-1` in the effects formula.
+
 ```{r}
 out
 ```
-Here, we see that, indeed, a baseline and inertia statistic are computed. 
 
-Since we did not request anything special for the riskset in `remify::remify()`, it consists of every directed pair of actors observed in the relational event history, which is 10*9 = 90 pairs. These pairs are saved in the `riskset` attribute. We can ask for the first few lines of this riskset:
+The risk set composition is stored as an attribute of the output. Each row describes one dyad, with columns `sender`, `receiver`, `type` (if event types are present), and `id` (the column index in the statistics array):
+
 ```{r}
 head(attr(out, "riskset"))
 ```
 
-Here, we see that the first event in the riskset is the event were actor 101 sends an interaction directed towards actor 103. The id column refers to the column in the statistic object that contains the statistic(s) for this specific dyad. The first column in the statistic object refers to this first event in the riskset, the second column in the statistic object to the second event in the riskset, and so forth. 
+Exogenous statistics require an `attr_actors` object. The `attr_actors` can be passed directly inside effect functions or globally via the `attr_actors` argument of `remstats()`. Statistics are separated by `+` in the formula, and interactions are specified with `:` or `*`:
 
-Inertia is an example of an *endogenous* statistic: it is a function of the relational event history itself. Next, we are going to add a request for an *exogenous* statistic. For this we need the exogenous information on the actors in the `info` object. 
-
-As an illustration, we are going to request the statistic for an effect of extraversion on sending events, i.e., a send effect. The description of a send effect is accessed with `?send`. Here, we read that we need to supply the variable for which we want to specify a sender effect and that this variable should correspond to a column in the `attr_actors` object that we supply. Thus, we specify a send effect of extraversion with `send("extraversion", attr_actors = info)`. Here, we specify the `attr_actors` object within the `send()` function. Alternatively, it can be supplied to `remstats()`. This is for example useful if you want to compute a bunch of exogenous statistics using the same `attr_actors` object.  
-
-Statistics in the `effects` formula should be separated with the `+`. Finally, we add an interaction between the `inertia()` statistic and the `send()` statistic. This can be done by using the `*` or `:` operator:
 ```{r}
-effects <- ~ inertia(scaling = "std") + send("extraversion", info) + 
-    inertia(scaling = "std"):send("extraversion", info) 
+effects <- ~ inertia(scaling = "std") + 
+             send("extraversion", info) + 
+             inertia(scaling = "std"):send("extraversion", info)
 out <- remstats(tie_effects = effects, reh = reh)
+out
 ```
 
-### Compute statistics for the actor-oriented model
-The procedure to compute statistics for the actor-oriented model is largely similar to what is written above, except that statistics have to be specified separately for the sender activity rate step of the model and the receiver choice step of the model. The statistics requested for these two modeling steps need to be supplied to two different effects arguments, namely `sender_effects` and `receiver_effects`, respectively. 
+### Memory
 
-An overview of the statistics that are available for the actor-oriented model in the two modeling steps can be obtained using the `actor_effects()` function or its help documentation `?actor_effects`. 
+The `memory` argument controls which past events are included in the computation of endogenous statistics at each time point $t$. Four options are available:
 
-In this illustration, we start with requesting only one statistic for the sender activity rate step: the *outdegreeSender* statistic. First, lets view the description for the `outdegreeSender` statistic using `?outdegreeSender`. Here, we can read that, in the sender activity rate step of the actor-oriented model, the outdegreeSender statistic computes for every timepoint *t* for every actors *i* the number of outgoing past events. With the `scaling` argument, one of the methods for scaling the statistic can be chosen. 
+- `"full"` (default): the entire event history before $t$ is included.
+- `"window"`: only events within a time window of length `memory_value` before $t$ are included. For example, `memory = "window", memory_value = 200` includes only events that occurred at most 200 time units ago.
+- `"interval"`: only events within a specific time interval before $t$ are included, defined by `memory_value = c(lower, upper)`. For example, `memory_value = c(100, 200)` includes only events between 100 and 200 time units ago.
+- `"decay"`: past events are weighted by an exponential decay function with half-life `memory_value`. More recent events receive higher weight.
 
-First, we prepare the event history for computing statistics for an actor-oriented model: 
+```{r}
+# Full memory (default)
+out_full <- remstats(
+    tie_effects  = ~ inertia(),
+    reh          = reh,
+    memory       = "full"
+)
+
+# Window memory: only events within the last 500 time units
+out_window <- remstats(
+    tie_effects  = ~ inertia(),
+    reh          = reh,
+    memory       = "window",
+    memory_value = 500
+)
+
+# Decay memory: exponential decay with half-life 200
+out_decay <- remstats(
+    tie_effects  = ~ inertia(),
+    reh          = reh,
+    memory       = "decay",
+    memory_value = 200
+)
+```
+
+### Event types and `consider_type`
+
+When an event type variable is present in the relational event history, the `consider_type` argument in each effect function controls how the statistic accounts for event types. We illustrate this using the `setting` column in `history` (values: `"work"`, `"social"`), passed to `remify()` via the `event_type` argument:
+
+```{r}
+reh_typed <- remify::remify(
+    edgelist   = history,
+    model      = "tie",
+    event_type = "setting"
+)
+```
+
+Three options are available for `consider_type`:
+
+**`"ignore"`**: event type is not taken into account. The statistic is computed over all past events regardless of type. This is the appropriate choice when event types are not a substantive concern, or when no types are present.
+
+```{r}
+out_ignore <- remstats(
+    tie_effects = ~ inertia(consider_type = "ignore"),
+    reh         = reh_typed
+)
+dim(out_ignore)       # one inertia slice plus baseline
+dimnames(out_ignore)[[3]]
+```
+
+**`"separate"`**: the statistic is computed separately for each event type, resulting in one slice per type. For example, with two types `"social"` and `"work"`, inertia yields: (1) the number of past `"social"` events for each dyad, and (2) the number of past `"work"` events for each dyad.
+
+```{r}
+out_separate <- remstats(
+    tie_effects = ~ inertia(consider_type = "separate"),
+    reh         = reh_typed
+)
+dim(out_separate)       # two inertia slices (one per type) plus baseline
+dimnames(out_separate)[[3]]
+```
+
+**`"interact"`**: the statistic conditions on the type of the most recent event. The statistic at time $t$ is computed only over past events of the same type as the event at $t-1$, effectively allowing the effect of past event history to depend on the type of the triggering event.
+
+```{r}
+out_interact <- remstats(
+    tie_effects = ~ inertia(consider_type = "interact"),
+    reh         = reh_typed
+)
+dim(out_interact)
+dimnames(out_interact)[[3]]
+```
+
+---
+
+## Tie-oriented model with case-control sampling
+
+For large networks where computing statistics over the full risk set is computationally expensive, `remstats` supports *case-control sampling* (also known as dyad sampling). Instead of computing statistics for all dyads in the risk set at each time point, a random sample of dyads is drawn and used as the comparison set, substantially reducing computation time.
+
+Case-control sampling is enabled by setting `sampling = TRUE` in `remstats()`. Two additional arguments control the sampling:
+
+- `samp_num`: the number of dyads to sample per event (must be ≤ the size of the active risk set).
+- `seed`: an optional integer random seed for reproducibility.
+
+```{r}
+reh <- remify::remify(edgelist = history, model = "tie")
+
+out_sampled <- remstats(
+    tie_effects = ~ inertia() + send("extraversion", info),
+    reh         = reh,
+    sampling    = TRUE,
+    samp_num    = 20,
+    seed        = 42
+)
+```
+
+The output is an object of class `tomstats_sampled`. Its structure differs from the standard output: rather than a full array over all dyads, it stores only the statistics for the sampled dyads plus the observed event at each time point. This object can be passed directly to `remstimate` for model estimation using the case-control likelihood.
+
+Note that case-control sampling is only available for the tie-oriented model and is not supported for the actor-oriented model.
+
+---
+
+## Actor-oriented model
+
+### Preparing the event history
+
+We prepare the event history for the actor-oriented model. Note that actor-oriented modeling requires directed events:
+
 ```{r}
 reh <- remify::remify(edgelist = history, model = "actor")
 ```
-To compute the outdegreeSender statistic for the sender activity rate step we supply it to the `sender_effects` argument of `remstats()`:
-```{r} 
-effects <- ~ outdegreeSender()
-out <- remstats(sender_effects = effects, reh = reh)
+
+### Computing statistics
+
+For the actor-oriented model, statistics must be specified separately for the two modeling steps:
+
+- **Sender activity rate step**: supplied to `sender_effects` — models which actor sends the next event.
+- **Receiver choice step**: supplied to `receiver_effects` — models which actor the sender chooses as receiver.
+
+An overview of available statistics for each step is obtained with `actor_effects()` or `?actor_effects`.
+
+We start by requesting the `outdegreeSender` statistic for the sender step:
+
+```{r}
+out <- remstats(
+    sender_effects = ~ outdegreeSender(),
+    reh            = reh
+)
 ```
 
-The outputted remstats object is now a list with two elements: `sender_stats` and `receiver_stats`:
+The output for the actor-oriented model is a list with two elements:
+
 ```{r}
 names(out)
 ```
-Since we did not request any statistics for the receiver choice step here, the `receiver_stats` object is empty. The `sender_stats` object contains the statistic array with the `baseline` statistic (again, automatically computed unless `ordinal = TRUE`), and the requested `outdegreeSender` statistic:
+
+Since no statistics were requested for the receiver step, `receiver_stats` is empty. The `sender_stats` object contains the baseline statistic (automatically included when `ordinal = FALSE`) and the requested `outdegreeSender` statistic:
+
 ```{r}
 out
 ```
 
-The dimension of `out$sender_stats` is 115 x 10 x 2. On the rows we have the timepoints, the columns refer to the actors that can be senders and the slices refer to the different statistics. 
+The dimensions of `out$sender_stats` are 115 × 10 × 2: rows are unique time points, columns are potential senders, and slices are statistics.
 
-Lets extend our model and also request a statistic for the receiver choice step:
+We extend the model with a statistic for the receiver choice step:
+
 ```{r}
-sender_effects <- ~ outdegreeSender()
-receiver_effects <- ~ inertia()
-out <- remstats(sender_effects = sender_effects, receiver_effects = receiver_effects, reh = reh)
+out <- remstats(
+    sender_effects   = ~ outdegreeSender(),
+    receiver_effects = ~ inertia(),
+    reh              = reh
+)
 ```
 
-We can access the statistic computed for the receiver choice step with `out$receiver_stats`. In this step, the baseline statistic is not automatically computed (and not defined). Hence, the dimensions of the statistics object for the receiver choice step are 115 x 10 x 1. On the rows we have again the timepoints, on the columns now the receivers and on the slices the statistics. 
+The statistics for the receiver choice step are accessed with `out$receiver_stats`. The baseline statistic is not defined for the receiver step, so its dimensions are 115 × 10 × 1: rows are time points, columns are potential receivers, and slices are statistics.
 
-Note that the computed values of the statistic in the receiver choice step are equal to the values for this receiver, given the current sender. For example, lets review the first six lines:
+The computed values in the receiver choice step give the statistic for each potential receiver, given the current sender. For example:
+
 ```{r}
-# Set the column names equal to the receivers
-colnames(out$receiver_stats) <- attributes(reh)$dictionary$actors$actorName
-# Set the rownames equal to the senders
-rownames(out$receiver_stats) <- reh$edgelist$actor1
-# View the first six lines
-head(out$receiver_stats[,,"inertia"])
+# Label columns with receiver names and rows with senders
+dimnames(out$receiver_stats)[[2]] <- reh$meta$dictionary$actors$actorName
+dimnames(out$receiver_stats)[[1]] <- reh$edgelist$actor1[-1]
+head(out$receiver_stats[,, "inertia"])
 ```
 
-At the first timepoint, the inertia statistic for all receivers given the current sender (actor 105) is zero because no prior events have occurred. At the second timepoint, the sender is again actor 105. Now the inertia statistic is equal to the 1 for the receiver of the first event (actor 113). At the third timepoint, the inertia statistic is again zero for all receivers because now the sending actor is 115, who did not send any prior events. 
-
+At the first time point, inertia is zero for all receivers because no prior events have occurred. At the second time point, inertia is 1 for the receiver of the first event (given the same sender). At the third time point, the sender is a different actor with no prior sending history, so inertia is again zero for all receivers.
