@@ -228,7 +228,7 @@ aomstats <- function(reh,
     receiver_interactions <- temp$receiver_interactions
 
     # Prepare subset arguments
-    subset <- prepare_subset(start, stop, edgelist, method, model = "receiver")
+    subset <- prepare_subset(start, stop, edgelist, method, model = "sender") # if model is set to 'receiver' the dimension is based on number of events rather than time points.
 
     # Prepare receiver covariate information
     receiver_covar <- prepare_receiver_covariates(receiver_effects,
