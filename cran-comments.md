@@ -3,7 +3,7 @@ Date: 2026-04-30
 
 ## Coordinated submission
 This is a coordinated submission together with remify (4.0.0) and 
-remstimate (3.0.0). These packages are interdependent and should be 
+remstimate (3.0.0). These packages are interdependent and need to be 
 processed in order: remify first, then remstats, then remstimate.
 
 ## Updates
