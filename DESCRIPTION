@@ -54,14 +54,14 @@ Depends:
     R (>= 4.0.0) 
 Imports: 
     Rcpp (>= 1.0.8.3),
-    remify (>= 4.0.0),
+    remify,
     stats,
     graphics,
     grDevices
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 Suggests: 
     tinytest,
-    remify (>= 4.0.0),
+    remify,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
