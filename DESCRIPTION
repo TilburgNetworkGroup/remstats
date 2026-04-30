@@ -61,7 +61,7 @@ Imports:
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress
 Suggests: 
     tinytest,
-    remify,
+    remify (>= 4.0.0),
     knitr,
     rmarkdown
 VignetteBuilder: knitr
