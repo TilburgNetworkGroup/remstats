@@ -54,7 +54,7 @@ Depends:
     R (>= 4.0.0) 
 Imports: 
     Rcpp (>= 1.0.8.3),
-    remify,
+    remify (>= 4.0.0),
     stats,
     graphics,
     grDevices
@@ -66,4 +66,3 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 LazyDataCompression: gzip
-Remotes: TilburgNetworkGroup/remify
