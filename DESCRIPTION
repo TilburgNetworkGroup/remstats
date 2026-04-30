@@ -2,7 +2,7 @@ Package: remstats
 Type: Package
 Title: Computes Statistics for Relational Event History Data
 Version: 4.0.0
-Date: 2026-04-25
+Date: 2026-04-30
 Authors@R: 
     c(
         person(
@@ -43,7 +43,7 @@ Authors@R:
             email = "r.t.a.j.leenders@tilburguniversity.edu")
     )
 Maintainer: Joris Mulder <j.mulder3@tilburguniversity.edu>
-Description: Computes a variety of statistics for relational event models. Relational event models enable researchers to investigate both exogenous and endogenous factors influencing the evolution of a time-ordered sequence of events. These models are categorized into tie-oriented models (Butts, C., 2008, <doi:10.1111/j.1467-9531.2008.00203.x>), where the probability of a dyad interacting next is modeled in a single step, and actor-oriented models (Stadtfeld, C., & Block, P., 2017, <doi:10.15195/v4.a14>), which first model the probability of a sender initiating an interaction and subsequently the probability of the sender's choice of receiver. The package is designed to compute a variety of statistics that summarize exogenous and endogenous influences on the event stream for both types of models.  
+Description: Computes a variety of statistics for relational event models (Meijerink et al., <doi:10.3758/s13428-022-01821-8>). Relational event models enable researchers to investigate exogenous and endogenous factors, and interactions, influencing the evolution of a time-ordered sequence of events. These models are categorized into tie-oriented models (Butts, C., 2008, <doi:10.1111/j.1467-9531.2008.00203.x>), where the probability of a dyad interacting next is modeled in a single step, and actor-oriented models (Stadtfeld, C., & Block, P., 2017, <doi:10.15195/v4.a14>), which first model the probability of a sender initiating an interaction and subsequently the probability of the sender's choice of receiver. The package is designed to compute a variety of statistics that summarize exogenous and endogenous influences on the event stream for both types of models.  
 License: MIT + file LICENSE
 URL: https://tilburgnetworkgroup.github.io/remstats/
 BugReports: https://github.com/TilburgNetworkGroup/remstats/issues
@@ -66,3 +66,4 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 LazyDataCompression: gzip
+Remotes: TilburgNetworkGroup/remify

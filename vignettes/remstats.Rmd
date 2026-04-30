@@ -22,7 +22,11 @@ knitr::opts_chunk$set(
 library(remstats)
 ```
 
-<i>This vignette explains how to compute statistics for relational event history data using `remstats()`, for both tie-oriented and actor-oriented models.</i>
+<i>This vignette explains how to compute statistics for relational event history data using `remstats()`, for both tie-oriented and actor-oriented models. When using the package please cite:
+
+Meijerink-Bosman, M., Back, M., Geukes, K., Leenders, R., & Mulder, J. (2023). Discovering trends of social interaction behavior over time: An introduction to relational event modeling. Behavior Research Methods. https://doi.org/10.3758/s13428-022-01821-8
+
+</i>
 
 ---
 

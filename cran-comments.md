@@ -1,8 +1,10 @@
-# remstats 3.2.4
-Date: 2025-01-28
+# remstats 4.0.0
+Date: 2026-04-30
 
-## Updated
-- Corresponding author email.
+## Updates
+* Extended functionality of remstats().
+* This new version of remstats (4.0.0) was submitted to CRAN at the same time as 'remify' (4.0.0) and
+  'remstimate' (3.0.0). These new versions are not compatible with older package versions.
 
 ## Test environments
 - Local Windows 10, R version 4.3.1 

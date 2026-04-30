@@ -1,0 +1,27 @@
+citHeader("To cite remstats in publications, please use:")
+
+citEntry(
+  entry = "Article",
+  title = "Discovering trends of social interaction behavior over time: An introduction to relational event modeling: Trends of social interaction",
+  author = personList(
+    person("Marlyne", "Meijerink-Bosman"),
+    person("Mitja", "Back"),
+    person("Katharina", "Geukes"),
+    person("Roger", "Leenders"),
+    person("Joris", "Mulder")
+  ),
+  journal = "Behavior Research Methods",
+  year = "2023",
+  volume = "55",
+  number = "3",
+  pages = "997--1023",
+  doi = "10.3758/s13428-022-01821-8",
+  textVersion =
+    paste(
+      "Meijerink-Bosman, M., Back, M., Geukes, K., Leenders, R., & Mulder, J. (2023).",
+      "Discovering trends of social interaction behavior over time:",
+      "An introduction to relational event modeling.",
+      "Behavior Research Methods, 55(3), 997–1023.",
+      "https://doi.org/10.3758/s13428-022-01821-8"
+    )
+)
