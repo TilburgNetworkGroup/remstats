@@ -520,13 +520,13 @@ duremstats <- function(reh,
 #'       type-\eqn{c} events and calling the C++ function once per type;
 #'       no C++ changes required.  The output effect names are suffixed with
 #'       the type label, e.g. \code{activeTie.X.start}.}
-#'     \item{\code{"interact"}}{Compute one statistic with \eqn{D \times C} columns:
-       for each (actor-pair, type) combination, only active events of that type
-       contribute.  Implemented R-side by filtering \code{edgelist_dual} to
-       each type and calling the C++ function once per type; results are
-       \code{cbind}-ed in alphabetical type order.  The output has
-       \eqn{D_{\text{base}} \times C} columns and is consistent with a typed
-       riskset (\code{extend_riskset_by_type = TRUE}).}
+#'     \item{\code{"interact"}}{Compute one statistic with \eqn{D\times C} columns:
+#'     for each (actor-pair, type) combination, only active events of that type
+#'     contribute.  Implemented R-side by filtering \code{edgelist_dual} to
+#'     each type and calling the C++ function once per type; results are
+#'     \code{cbind}-ed in alphabetical type order.  The output has
+#'     \eqn{D_{\text{base}} \times C} columns and is consistent with a typed
+#'     riskset (\code{extend_riskset_by_type = TRUE}).}
 #'   }
 #'
 #' @return A named list with elements \code{effect}, \code{scaling}, and
