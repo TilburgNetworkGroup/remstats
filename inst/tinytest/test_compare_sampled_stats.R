@@ -26,7 +26,7 @@
 # 	# Build remify object FIRST (so event/userStat covariates match reh$edgelist)
 # 	remify_args <- list(edgelist = history, model = "tie", riskset = "active")
 # 	if (!is.null(origin)) remify_args$origin <- origin
-# 	reh <- do.call(remify::remify, remify_args)
+# 	reh <- do.call(remify, remify_args)
 # 
 # 	# event() covariate must match reh$edgelist rows
 # 	# reh$edgelist has columns: time, actor1, actor2, weight, (maybe type)
@@ -71,7 +71,7 @@
 # 	# Sampled
 # 	set.seed(seed)
 # 	ts_samp <- do.call(
-# 		remstats::tomstats,
+# 		tomstats,
 # 		c(
 # 			list(effects = eval(effects, envir = env)),
 # 			base_args,
@@ -81,7 +81,7 @@
 # 
 # 	# Full
 # 	ts_full <- do.call(
-# 		remstats::tomstats,
+# 		tomstats,
 # 		c(
 # 			list(effects = eval(effects, envir = env)),
 # 			base_args,
@@ -140,7 +140,7 @@
 # 	# Make ordinal time (1..n)
 # 	history$time <- seq_len(nrow(history))
 # 
-# 	reh <- remify::remify(
+# 	reh <- remify(
 # 		edgelist = history,
 # 		model = "tie",
 # 		riskset = "active",
@@ -149,12 +149,12 @@
 # 	)
 # 
 # 	set.seed(seed)
-# 	ts_samp <- remstats::tomstats(
+# 	ts_samp <- tomstats(
 # 		effects, reh = reh, attr_actors = info, method = "pt",
 # 		sampling = TRUE, samp_num = samp_num, seed = seed
 # 	)
 # 
-# 	ts_full <- remstats::tomstats(
+# 	ts_full <- tomstats(
 # 		effects, reh = reh, attr_actors = info, method = "pt",
 # 		sampling = FALSE
 # 	)

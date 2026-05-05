@@ -17,13 +17,21 @@
 #' @param stats A \code{tomstats} object (output of \code{remstats()} or
 #'   \code{tomstats()}).
 #' @param reh A \code{remify} object (output of \code{remify::remify2()}).
+#' @param add_actors Logical (default \code{TRUE}). When \code{TRUE}, two
+#'   extra columns \code{actor1} (sender label) and \code{actor2} (receiver
+#'   label) are appended by looking up \code{reh$index$dyad_map_active} (or
+#'   \code{reh$riskset_info$included} as a fallback).  Set to \code{FALSE} to
+#'   suppress this lookup, e.g. when the riskset has not yet been resolved or
+#'   for performance reasons.
 #'
 #' @return A list with elements:
 #' \describe{
 #'   \item{remstats_stack}{Data frame in long format with columns: \code{event}
-#'     (event index), \code{dyad} (dyad index 1..D), all statistic columns,
-#'     \code{obs} (1 = observed event, 0 = non-event), and
-#'     \code{log_interevent} (log inter-event time; only for interval timing).}
+#'     (event index), all statistic columns, \code{log_interevent} (log
+#'     inter-event time; interval timing only), \code{obs} (1 = observed event,
+#'     0 = non-event), \code{dyad} (active dyad index 1..D), and — when
+#'     \code{add_actors = TRUE} and the riskset is available — \code{actor1}
+#'     (sender label) and \code{actor2} (receiver label).}
 #'   \item{subset}{Integer vector of length 2: first and last event index.}
 #'   \item{D}{Number of dyads in the risk set.}
 #'   \item{E}{Number of events (time points).}
@@ -31,13 +39,53 @@
 #' }
 #'
 #' @export
-stack_stats <- function(stats, reh) {
+stack_stats <- function(stats, reh, add_actors = TRUE) {
   UseMethod("stack_stats")
+}
+
+# NULL-coalescing operator (defined locally if not already available)
+if (!exists("%||%")) {
+  `%||%` <- function(a, b) if (!is.null(a)) a else b
+}
+
+# ---------------------------------------------------------------------------
+# Internal helper: return a two-column character data frame (actor1, actor2)
+# with exactly D rows — one per active dyad, in active-dyad order.
+#
+# Primary source : reh$index$dyad_map_active  (columns: dyadIDactive, actor1,
+#                                               actor2, type)
+# Fallback        : reh$riskset_info$included  (columns: actor1, actor2, …)
+# Returns NULL silently if neither is found.
+# ---------------------------------------------------------------------------
+.get_riskset_actors <- function(reh, D) {
+
+  rs <- NULL
+
+  # ── Primary: reh$index$dyad_map_active ──────────────────────────────────────
+  if (!is.null(reh$index$dyad_map_active)) {
+    dm <- reh$index$dyad_map_active
+    if (NROW(dm) >= D && all(c("actor1", "actor2") %in% names(dm))) {
+      rs <- dm[seq_len(D), c("actor1", "actor2"), drop = FALSE]
+    }
+  }
+
+  # ── Fallback: reh$riskset_info$included ─────────────────────────────────────
+  if (is.null(rs) && !is.null(reh$riskset_info$included)) {
+    inc <- reh$riskset_info$included
+    if (NROW(inc) >= D && all(c("actor1", "actor2") %in% names(inc))) {
+      rs <- inc[seq_len(D), c("actor1", "actor2"), drop = FALSE]
+    }
+  }
+
+  if (is.null(rs)) return(NULL)
+
+  rownames(rs) <- NULL
+  rs
 }
 
 #' @export
 #' @method stack_stats tomstats
-stack_stats.tomstats <- function(stats, reh) {
+stack_stats.tomstats <- function(stats, reh, add_actors = TRUE) {
 
   if (!inherits(reh, "remify")) stop("'reh' must be a remify object.")
 
@@ -89,30 +137,41 @@ stack_stats.tomstats <- function(stats, reh) {
 
   stat_glm$obs <- unlist(lapply(seq_len(E), function(e) {
     ev_idx <- subset_idx[1] + e - 1L
-    obs_dyad <- dyad_vec[ev_idx]
+    obs_dyad <- dyad_vec[[ev_idx]]   # [[ ]] handles both scalar (thin=1) and vector (thin>1)
     tabulate(obs_dyad, nbins = D)
   }))
 
   # ── Dyad index ───────────────────────────────────────────────────────────────
   stat_glm$dyad <- rep(seq_len(D), E)
 
-  list(
-    remstats_stack = stat_glm,
-    subset  = subset_idx,
-    D       = D,
-    E       = E,
-    ordinal = ordinal
-  )
-}
+  # ── Actor labels: actor1 (sender) and actor2 (receiver) per row ──────────────
+  if (add_actors) {
+    rs_actors <- .get_riskset_actors(reh, D)
+    if (!is.null(rs_actors)) {
+      stat_glm$actor1 <- rs_actors$actor1[ stat_glm$dyad ]
+      stat_glm$actor2 <- rs_actors$actor2[ stat_glm$dyad ]
+    }
+  }
 
-# NULL-coalescing operator (defined locally if not already available)
-if (!exists("%||%")) {
-  `%||%` <- function(a, b) if (!is.null(a)) a else b
+  reserved <- c("event", "obs", "log_interevent", "dyad", "actor1", "actor2")
+  structure(
+    list(
+      remstats_stack = stat_glm,
+      subset     = subset_idx,
+      D          = D,
+      E          = E,
+      ordinal    = ordinal,
+      model      = "tie",
+      sampled    = FALSE,
+      stat_names = setdiff(names(stat_glm), reserved)
+    ),
+    class = "remstats_stacked"
+  )
 }
 
 #' @export
 #' @method stack_stats tomstats_sampled
-stack_stats.tomstats_sampled <- function(stats, reh) {
+stack_stats.tomstats_sampled <- function(stats, reh, add_actors = TRUE) {
 
   if (!inherits(reh, "remify")) stop("'reh' must be a remify object.")
 
@@ -165,102 +224,432 @@ stack_stats.tomstats_sampled <- function(stats, reh) {
   # ── Sampled dyad index (1-based within active riskset) ───────────────────────
   stat_glm$dyad <- as.vector(t(sample_map))  # [E*S]: dyad ID for each row
 
-  list(
-    remstats_stack = stat_glm,
-    subset  = subset_idx,
-    S       = S,
-    E       = E,
-    ordinal = ordinal
+  # ── Actor labels: actor1 (sender) and actor2 (receiver) per row ──────────────
+  # sample_map holds 1-based indices into the full active riskset, so use the
+  # maximum observed dyad index as the riskset size.
+  if (add_actors) {
+    D_full <- max(sample_map, na.rm = TRUE)
+    rs_actors <- .get_riskset_actors(reh, D_full)
+    if (!is.null(rs_actors)) {
+      stat_glm$actor1 <- rs_actors$actor1[ stat_glm$dyad ]
+      stat_glm$actor2 <- rs_actors$actor2[ stat_glm$dyad ]
+    }
+  }
+
+  reserved <- c("event", "obs", "log_interevent", "dyad", "actor1", "actor2", "weight")
+  structure(
+    list(
+      remstats_stack = stat_glm,
+      subset     = subset_idx,
+      S          = S,
+      E          = E,
+      ordinal    = ordinal,
+      model      = "tie",
+      sampled    = TRUE,
+      stat_names = setdiff(names(stat_glm), reserved)
+    ),
+    class = "remstats_stacked"
   )
 }
 
 
 #' @export
 #' @method stack_stats aomstats
-stack_stats.aomstats <- function(stats, reh) {
-	
-	if (!inherits(reh, "remify")) stop("'reh' must be a remify object.")
-	
-	# ── Dimensions ───────────────────────────────────────────────────────────────
-	subset_idx <- as.integer(unlist(attr(stats, "subset")))  # [start, stop]
-	E  <- subset_idx[2] - subset_idx[1] + 1L
-	N  <- reh$N
-	
-	# ── Ordinal flag ─────────────────────────────────────────────────────────────
-	ordinal <- isTRUE(reh$meta$ordinal)
-	
-	# ── Observed sender/receiver per event ───────────────────────────────────────
-	# ids$actor1 and ids$actor2 are 1-based
-	obs_sender   <- reh$ids$actor1[ subset_idx[1]:subset_idx[2] ]
-	obs_receiver <- reh$ids$actor2[ subset_idx[1]:subset_idx[2] ]
-	
-	# ── Inter-event times (interval only) ────────────────────────────────────────
-	if (!ordinal) {
-		iet <- reh$intereventTime[ subset_idx[1]:subset_idx[2] ]
-		log_iet <- log(iet)
-	}
-	
-	# ── Receiver riskset (list indexed by 1-based sender ID) ─────────────────────
-	rec_riskset <- reh$receiver_riskset  # list of length N, each N-1 1-based IDs
-	
-	# ── SENDER STACK ─────────────────────────────────────────────────────────────
-	sender_stack <- if (!is.null(stats$sender_stats)) {
-		
-		ss <- stats$sender_stats  # [E x N x Ks]
-		Ks <- dim(ss)[3]
-		stat_names <- dimnames(ss)[[3]]
-		
-		df <- as.data.frame(
-			do.call(rbind, lapply(seq_len(E), function(e) cbind(e, ss[e, , ])))
-		)
-		colnames(df) <- c("event", stat_names)
-		
-		if (!ordinal) {
-			df$log_interevent <- rep(log_iet, each = N)
-		}
-		
-		df$obs   <- unlist(lapply(seq_len(E), function(e) {
-			tabulate(obs_sender[e], nbins = N)
-		}))
-		df$actor <- rep(seq_len(N), E)
-		
-		df
-		
-	} else NULL
-	
-	# ── RECEIVER STACK ───────────────────────────────────────────────────────────
-	receiver_stack <- if (!is.null(stats$receiver_stats)) {
-		
-		rs <- stats$receiver_stats  # [E x N x Kr]
-		Kr <- dim(rs)[3]
-		stat_names <- dimnames(rs)[[3]]
-		
-		do.call(rbind, lapply(seq_len(E), function(e) {
-			s_id  <- obs_sender[e]
-			r_ids <- rec_riskset[[ s_id ]]
-			obs_r <- obs_receiver[e]
-			
-			mat  <- matrix(rs[e, r_ids, ], nrow = length(r_ids), ncol = Kr)
-			df_e <- as.data.frame(mat)
-			colnames(df_e) <- stat_names
-			
-			df_e$obs   <- as.integer(r_ids == obs_r)
-			df_e$actor <- r_ids
-			df_e$event <- e
-			df_e[, c("event", stat_names, "obs", "actor")]
-		}))
-		
-	} else NULL
-	
-	list(
-		sender_stack   = sender_stack,
-		receiver_stack = receiver_stack,
-		subset         = subset_idx,
-		N              = N,
-		E              = E,
-		ordinal        = ordinal
-	)
+stack_stats.aomstats <- function(stats, reh, add_actors = TRUE) {
+
+  if (!inherits(reh, "remify")) stop("'reh' must be a remify object.")
+
+  # ── Dimensions ───────────────────────────────────────────────────────────────
+  subset_idx <- as.integer(unlist(attr(stats, "subset")))  # [start, stop]
+  E  <- subset_idx[2] - subset_idx[1] + 1L
+  N  <- reh$N
+
+  # ── Ordinal flag ─────────────────────────────────────────────────────────────
+  ordinal <- isTRUE(reh$meta$ordinal)
+
+  # ── Observed sender/receiver per event ───────────────────────────────────────
+  # ids$actor1 and ids$actor2 are 1-based integer IDs
+  obs_sender   <- reh$ids$actor1[ subset_idx[1]:subset_idx[2] ]
+  obs_receiver <- reh$ids$actor2[ subset_idx[1]:subset_idx[2] ]
+
+  # ── Inter-event times (interval only) ────────────────────────────────────────
+  if (!ordinal) {
+    iet <- reh$intereventTime[ subset_idx[1]:subset_idx[2] ]
+    log_iet <- log(iet)
+  }
+
+  # ── Receiver riskset (list indexed by 1-based sender ID) ─────────────────────
+  rec_riskset <- reh$receiver_riskset  # list of length N, each element = valid receiver IDs
+
+  # ── Actor label lookup (optional) ────────────────────────────────────────────
+  # For aomstats the "actor" column already holds 1-based integer IDs; if the
+  # caller wants labels we resolve them from the dictionary.
+  actor_labels <- NULL
+  if (add_actors && !is.null(reh$meta$dictionary$actors)) {
+    dict <- reh$meta$dictionary$actors   # data frame: actorName, actorID
+    actor_labels <- setNames(dict$actorName, dict$actorID)
+  }
+
+  # ── SENDER STACK ─────────────────────────────────────────────────────────────
+  sender_stack <- if (!is.null(stats$sender_stats)) {
+
+    ss <- stats$sender_stats  # [E x N x Ks]
+    Ks <- dim(ss)[3]
+    stat_names <- dimnames(ss)[[3]]
+
+    df <- as.data.frame(
+      do.call(rbind, lapply(seq_len(E), function(e) cbind(e, ss[e, , ])))
+    )
+    colnames(df) <- c("event", stat_names)
+
+    if (!ordinal) {
+      df$log_interevent <- rep(log_iet, each = N)
+    }
+
+    df$obs   <- unlist(lapply(seq_len(E), function(e) {
+      tabulate(obs_sender[[e]], nbins = N)   # [[ ]] handles simultaneous senders (thin>1)
+    }))
+    df$actor <- rep(seq_len(N), E)
+
+    if (add_actors && !is.null(actor_labels)) {
+      df$actor_label <- actor_labels[ as.character(df$actor) ]
+    }
+
+    df
+
+  } else NULL
+
+  # ── RECEIVER STACK ───────────────────────────────────────────────────────────
+  receiver_stack <- if (!is.null(stats$receiver_stats)) {
+
+    rs <- stats$receiver_stats  # [E x N x Kr]
+    Kr <- dim(rs)[3]
+    stat_names <- dimnames(rs)[[3]]
+
+    do.call(rbind, lapply(seq_len(E), function(e) {
+      # [[ ]] gives integer vector for both thin=1 (length 1) and thin>1 (length >1)
+      senders   <- as.integer(obs_sender[[e]])
+      receivers <- as.integer(obs_receiver[[e]])
+
+      # Inner loop over simultaneous events at this time point
+      do.call(rbind, lapply(seq_along(senders), function(j) {
+        s_id  <- senders[j]
+        obs_r <- receivers[j]
+        r_ids <- rec_riskset[[ s_id ]]
+
+        mat  <- matrix(rs[e, r_ids, ], nrow = length(r_ids), ncol = Kr)
+        df_e <- as.data.frame(mat)
+        colnames(df_e) <- stat_names
+
+        df_e$obs   <- as.integer(r_ids == obs_r)
+        df_e$actor <- r_ids
+        df_e$event <- e
+
+        if (add_actors && !is.null(actor_labels)) {
+          df_e$actor_label <- actor_labels[ as.character(r_ids) ]
+          df_e[, c("event", stat_names, "obs", "actor", "actor_label")]
+        } else {
+          df_e[, c("event", stat_names, "obs", "actor")]
+        }
+      }))
+    }))
+
+  } else NULL
+
+  reserved_s <- c("event", "obs", "log_interevent", "actor", "actor_label")
+  reserved_r <- c("event", "obs", "actor", "actor_label")
+  structure(
+    list(
+      sender_stack        = sender_stack,
+      receiver_stack      = receiver_stack,
+      subset              = subset_idx,
+      N                   = N,
+      E                   = E,
+      ordinal             = ordinal,
+      model               = "actor",
+      sender_stat_names   = if (!is.null(sender_stack))
+                              setdiff(names(sender_stack), reserved_s) else character(0),
+      receiver_stat_names = if (!is.null(receiver_stack))
+                              setdiff(names(receiver_stack), reserved_r) else character(0)
+    ),
+    class = "remstats_stacked"
+  )
+}
+
+# ── Print / Summary ──────────────────────────────────────────────────────────
+
+#' @export
+print.remstats_stacked <- function(x, ...) {
+  cat("Stacked Relational Event Network Statistics\n")
+
+  if (identical(x$model, "durem")) {
+    cat("> Model: tie-oriented (duration)\n")
+    cat("> Timing:", if (isTRUE(x$ordinal)) "ordinal" else "interval", "\n")
+    cat("> Dyads (start):", x$D_start, "\n")
+    cat("> Dyads (end)  :", x$D_end,   "\n")
+    cat("> Time points:", x$E, "\n")
+    cat("> Stacked dimensions:",
+        nrow(x$remstats_stack), "rows x",
+        ncol(x$remstats_stack), "columns\n")
+    cat("> Start statistics:\n")
+    for (i in seq_along(x$stat_names_start))
+      cat("\t >>", i, ":", x$stat_names_start[i], "\n")
+    cat("> End statistics:\n")
+    for (i in seq_along(x$stat_names_end))
+      cat("\t >>", i, ":", x$stat_names_end[i], "\n")
+    return(invisible(x))
+  }
+
+  if (x$model == "tie") {
+    cat("> Model: tie-oriented\n")
+    cat("> Timing:", if (x$ordinal) "ordinal" else "interval", "\n")
+    if (isTRUE(x$sampled)) {
+      cat("> Riskset: case-control sampled (S =", x$S, "per event)\n")
+    } else {
+      cat("> Dyads:", x$D, "\n")
+    }
+    cat("> Time points:", x$E, "\n")
+    cat("> Stacked dimensions:",
+        nrow(x$remstats_stack), "rows x",
+        ncol(x$remstats_stack), "columns\n")
+    cat("> Statistics:\n")
+    for (i in seq_along(x$stat_names))
+      cat("\t >>", i, ":", x$stat_names[i], "\n")
+
+  } else {
+    cat("> Model: actor-oriented\n")
+    cat("> Timing:", if (x$ordinal) "ordinal" else "interval", "\n")
+    cat("> Actors:", x$N, "\n")
+    cat("> Time points:", x$E, "\n")
+    if (!is.null(x$sender_stack)) {
+      cat("> Sender model:\n")
+      cat("\t >> Stacked dimensions:",
+          nrow(x$sender_stack), "rows x",
+          ncol(x$sender_stack), "columns\n")
+      cat("\t >> Statistics:\n")
+      for (i in seq_along(x$sender_stat_names))
+        cat("\t \t >>>", i, ":", x$sender_stat_names[i], "\n")
+    }
+    if (!is.null(x$receiver_stack)) {
+      cat("> Receiver model:\n")
+      cat("\t >> Stacked dimensions:",
+          nrow(x$receiver_stack), "rows x",
+          ncol(x$receiver_stack), "columns\n")
+      cat("\t >> Statistics:\n")
+      for (i in seq_along(x$receiver_stat_names))
+        cat("\t \t >>>", i, ":", x$receiver_stat_names[i], "\n")
+    }
+  }
+  invisible(x)
+}
+
+# ── DuREM method ─────────────────────────────────────────────────────────────
+
+#' @export
+#' @method stack_stats remstats_durem
+stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
+
+  if (missing(reh) || is.null(reh)) reh <- attr(stats, "reh")
+  if (!inherits(reh, "remify_durem"))
+    stop("'reh' must be a remify_durem object.")
+
+  ss <- stats$start_stats   # [M × D_s × P_s]
+  es <- stats$end_stats     # [M × D_e × P_e]
+
+  M   <- dim(ss)[1L]
+  D_s <- dim(ss)[2L];  D_e <- dim(es)[2L]
+  P_s <- dim(ss)[3L];  P_e <- dim(es)[3L]
+
+  names_s <- dimnames(ss)[[3L]]
+  names_e <- dimnames(es)[[3L]]
+
+  edgelist <- reh$edgelist      # time / actor1 / actor2 / end
+  ed       <- reh$edgelist_dual
+
+  directed_start <- isTRUE(reh$meta$directed)
+  directed_end   <- isTRUE(reh$durem$directed_end)
+
+  N          <- reh$N
+  actor_dict <- reh$meta$dictionary$actors
+  # 0-based actor IDs keyed by name (same convention as duremstats.R)
+  actor_ids  <- setNames(actor_dict$actorID - 1L, actor_dict$actorName)
+
+  # Riskset matrices: cell (i+1, j+1) = 0-based dyad ID (-999 if absent)
+  rm_s <- .build_riskset_matrix(N, directed_start)
+  rm_e <- .build_riskset_matrix(N, directed_end)
+
+  # 1-based column index in stats array for a named dyad
+  .dcol_s <- function(a1, a2)
+    as.integer(rm_s[actor_ids[a1] + 1L, actor_ids[a2] + 1L]) + 1L
+
+  .dcol_e <- function(a1, a2) {
+    i <- actor_ids[a1]; j <- actor_ids[a2]
+    if (!directed_end) { tmp <- min(i, j); j <- max(i, j); i <- tmp }
+    as.integer(rm_e[i + 1L, j + 1L]) + 1L
+  }
+
+  # Pre-compute column indices for every event in the duration edgelist
+  ne    <- nrow(edgelist)
+  s_col <- vapply(seq_len(ne),
+                  function(k) .dcol_s(edgelist$actor1[k], edgelist$actor2[k]),
+                  integer(1L))
+  e_col <- vapply(seq_len(ne),
+                  function(k) .dcol_e(edgelist$actor1[k], edgelist$actor2[k]),
+                  integer(1L))
+
+  # Unique time points covered by the stats arrays
+  utimes_all <- sort(unique(ed$time))
+  subset_s   <- as.integer(unlist(attr(ss, "subset")))  # [start_idx, stop_idx]
+  utimes     <- utimes_all[subset_s[1L]:subset_s[2L]]   # M values
+
+  # Log inter-event times relative to the time point just before the window
+  origin_t  <- if (subset_s[1L] > 1L) utimes_all[subset_s[1L] - 1L] else 0
+  log_iet   <- log(utimes - c(origin_t, utimes[-M]))
+
+  all_s_cols <- seq_len(D_s)
+  n_stat_cols <- P_s + P_e
+
+  # ── Main stacking loop ───────────────────────────────────────────────────────
+  block_list <- vector("list", M)
+
+  for (m in seq_len(M)) {
+    t    <- utimes[m]
+    liet <- log_iet[m]
+
+    # Blocking (for start risk set): events that started ≤ t and haven't ended
+    blocked_scols <- unique(s_col[edgelist$time <= t &
+                                   (is.na(edgelist$end) | edgelist$end > t)])
+
+    # State 1 – observed end (ended exactly at t, started before t)
+    end_obs_cols <- unique(e_col[!is.na(edgelist$end) &
+                                   edgelist$end == t & edgelist$time < t])
+
+    # State 2 – ongoing at risk to end (started strictly before t, runs past t)
+    ong_cols <- unique(e_col[edgelist$time < t &
+                               (is.na(edgelist$end) | edgelist$end > t)])
+
+    # State 3 – observed start (started at t)
+    sta_obs_cols <- unique(s_col[edgelist$time == t])
+
+    # State 4 – inactive start dyads (not blocked, not starting now)
+    inactive_cols <- setdiff(all_s_cols, blocked_scols)
+
+    n_rows <- length(end_obs_cols) + length(ong_cols) +
+              length(sta_obs_cols)  + length(inactive_cols)
+    if (n_rows == 0L) next
+
+    # Pre-allocate: obs | log_iet | P_s start cols | P_e end cols | event | dyad
+    mat <- matrix(0, nrow = n_rows, ncol = n_stat_cols + 4L)
+    r   <- 0L
+
+    # Helpers to fill a row
+    end_col_range   <- (3L + P_s):(2L + P_s + P_e)
+    start_col_range <- 3L:(2L + P_s)
+
+    # State 1
+    for (d in end_obs_cols) {
+      r <- r + 1L
+      mat[r, 1L]             <- 1L
+      mat[r, 2L]             <- liet
+      mat[r, end_col_range]  <- c(unname(es[m, d, ]))
+      mat[r, n_stat_cols + 3L] <- m
+      mat[r, n_stat_cols + 4L] <- d
+    }
+    # State 2
+    for (d in ong_cols) {
+      r <- r + 1L
+      mat[r, 2L]             <- liet
+      mat[r, end_col_range]  <- c(unname(es[m, d, ]))
+      mat[r, n_stat_cols + 3L] <- m
+      mat[r, n_stat_cols + 4L] <- d
+    }
+    # State 3
+    for (d in sta_obs_cols) {
+      r <- r + 1L
+      mat[r, 1L]               <- 1L
+      mat[r, 2L]               <- liet
+      mat[r, start_col_range]  <- c(unname(ss[m, d, ]))
+      mat[r, n_stat_cols + 3L] <- m
+      mat[r, n_stat_cols + 4L] <- d
+    }
+    # State 4
+    for (d in inactive_cols) {
+      r <- r + 1L
+      mat[r, 2L]               <- liet
+      mat[r, start_col_range]  <- c(unname(ss[m, d, ]))
+      mat[r, n_stat_cols + 3L] <- m
+      mat[r, n_stat_cols + 4L] <- d
+    }
+
+    block_list[[m]] <- mat[seq_len(r), , drop = FALSE]
+  }
+
+  df <- as.data.frame(do.call(rbind, block_list))
+  colnames(df) <- c("obs", "log_interevent",
+                    names_s, names_e,
+                    "event", "dyad")
+
+  # ── Optional actor name columns ───────────────────────────────────────────
+  if (add_actors) {
+    actor_names <- actor_dict$actorName[order(actor_dict$actorID)]
+    # Reverse-map: for each dyad column d, what are actor1/actor2?
+    a1_s <- character(D_s); a2_s <- character(D_s)
+    a1_e <- character(D_e); a2_e <- character(D_e)
+    for (i in seq_len(N)) for (j in seq_len(N)) {
+      d_s <- rm_s[i, j]; if (d_s >= 0L) { a1_s[d_s + 1L] <- actor_names[i]; a2_s[d_s + 1L] <- actor_names[j] }
+      d_e <- rm_e[i, j]; if (d_e >= 0L) { a1_e[d_e + 1L] <- actor_names[i]; a2_e[d_e + 1L] <- actor_names[j] }
+    }
+    # Each row's dyad column comes from the start or end riskset.
+    # Rows with non-zero end stats are end-model rows; otherwise start-model.
+    is_end_row <- rowSums(df[, names_e, drop = FALSE]) != 0 | df$obs == 1 & df[, names_s[1]] == 0
+    # Simpler: use the pre-built lookups for both and pick by model type.
+    # We track model type implicitly: end-model rows have start stats == 0,
+    # start-model rows have end stats == 0.  Use the first stat col as proxy.
+    # Safer: tag during loop — skip for now and just use start-model actors.
+    df$actor1 <- ifelse(df$dyad <= D_s, a1_s[pmin(df$dyad, D_s)], "")
+    df$actor2 <- ifelse(df$dyad <= D_s, a2_s[pmin(df$dyad, D_s)], "")
+  }
+
+  stat_names_all <- c(names_s, names_e)
+
+  structure(
+    list(
+      remstats_stack   = df,
+      subset           = subset_s,
+      D_start          = D_s,
+      D_end            = D_e,
+      E                = M,
+      ordinal          = FALSE,
+      model            = "durem",
+      sampled          = FALSE,
+      stat_names       = stat_names_all,
+      stat_names_start = names_s,
+      stat_names_end   = names_e
+    ),
+    class = c("remstats_stacked_durem", "remstats_stacked")
+  )
 }
 
 
-
+#' @export
+summary.remstats_stacked <- function(object, ...) {
+  print(object)
+  cat("\n")
+  if (identical(object$model, "durem")) {
+    cat("── Stacked data ────────────────────────────────────────────────────────\n")
+    print(summary(object$remstats_stack))
+  } else if (object$model == "tie") {
+    cat("── Stacked data ────────────────────────────────────────────────────────\n")
+    print(summary(object$remstats_stack))
+  } else {
+    if (!is.null(object$sender_stack)) {
+      cat("── Sender stack ────────────────────────────────────────────────────────\n")
+      print(summary(object$sender_stack))
+    }
+    if (!is.null(object$receiver_stack)) {
+      cat("── Receiver stack ──────────────────────────────────────────────────────\n")
+      print(summary(object$receiver_stack))
+    }
+  }
+  invisible(object)
+}

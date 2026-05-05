@@ -11,7 +11,7 @@ edgelist <- data.frame(
 )
 event_types <- c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 edgelist$type <- event_types
-reh <- remify::remify(edgelist, model = "tie", riskset = "active", extend_riskset_by_type = TRUE)
+reh <- remify(edgelist, model = "tie", riskset = "active", extend_riskset_by_type = TRUE)
 
 # ── "ignore" (default) ───────────────────────────────────────────────────────
 # All effects with default consider_type = "ignore" produce one aggregated stat
@@ -529,7 +529,7 @@ reciprocity.1 <- rbind(
 expect_equal(stats_sep[,,"reciprocity.1"], reciprocity.1, info = "reciprocity.1 correct")
 
 # ext=FALSE should give same separate values for matching actor pairs
-reh_false <- remify::remify(edgelist, model = "tie", riskset = "active",
+reh_false <- remify(edgelist, model = "tie", riskset = "active",
   extend_riskset_by_type = FALSE)
 stats_sep_false <- remstats(reh_false, tie_effects = ~
   inertia(consider_type = "separate"), start = 1)
@@ -648,7 +648,7 @@ edgelist2 <- data.frame(
   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1),
   type = c(1, 1, 2, 2, 1, 2, 2, 1, 1, 1)
 )
-reh2 <- remify::remify(edgelist2, model = "tie", riskset = "active", extend_riskset_by_type = TRUE)
+reh2 <- remify(edgelist2, model = "tie", riskset = "active", extend_riskset_by_type = TRUE)
 effects2 <- ~ FEtype() + inertia() + itp()
 riskset2 <- attr(remstats(reh2, tie_effects = effects2, start = 1), "riskset")
 

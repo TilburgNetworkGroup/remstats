@@ -6,7 +6,7 @@ edgelist <- data.frame(
 )
 
 # --- Check for the tie-oriented model
-reh <- remify::remify(edgelist, model = "tie", actors = 1:6)
+reh <- remify(edgelist, model = "tie", actors = 1:6)
 
 # Create example remstats objects
 rs1 <- remstats(reh = reh, 
@@ -41,13 +41,13 @@ if (at_home()) {
 }
 
 # Check different remstats objects
-# TODO(actor-model): reh_actor <- remify::remify(edgelist, model = "actor", actors = 1:6)
+# TODO(actor-model): reh_actor <- remify(edgelist, model = "actor", actors = 1:6)
 # TODO(actor-model): rs3 <- remstats(reh = reh, tie_effects = ~ inertia())
 # TODO(actor-model): rs4 <- remstats(reh = reh_actor, receiver_effects = ~ otp())
 # TODO(actor-model): expect_error(bind_remstats(rs3, rs4), "All objects should be of class")
 
 # TODO(actor-model): # --- Check for the actor-oriented model
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor", actors = 1:6)
+# TODO(actor-model): reh <- remify(edgelist, model = "actor", actors = 1:6)
 # TODO(actor-model): 
 # TODO(actor-model): # Create example remstats objects
 # TODO(actor-model): rs1 <- remstats(reh = reh, 

@@ -301,23 +301,32 @@ Rcpp::List getEventIndices(const arma::mat &edgelist,
 
     if (method == "pt")
     {
-        arma::vec eventTimes;
         if (model == "sender")
         {
+            // start/stop are indices into the unique-times vector
             arma::vec uniqueTimes = arma::unique(edgelist.col(0));
-            eventTimes = uniqueTimes.subvec(start, stop);
-        }
-        else if (model == "receiver")
-        {
-            eventTimes = arma::unique(edgelist.col(0).subvec(start, stop));
-        }
+            arma::vec eventTimes  = uniqueTimes.subvec(start, stop);
 
-        eventIndices = Rcpp::List(eventTimes.n_elem);
-
-        for (arma::uword i = 0; i < eventTimes.n_elem; ++i)
+            eventIndices = Rcpp::List(eventTimes.n_elem);
+            for (arma::uword i = 0; i < eventTimes.n_elem; ++i)
+            {
+                arma::uvec indices = arma::find(edgelist.col(0) == eventTimes(i));
+                eventIndices[i] = Rcpp::wrap(indices);
+            }
+        }
+        else // model == "receiver": start/stop are edgelist row indices
         {
-            arma::uvec indices = arma::find(edgelist.col(0) == eventTimes(i));
-            eventIndices[i] = Rcpp::wrap(indices);
+            // Find unique times within the row window [start, stop] only
+            arma::vec timesInRange      = edgelist.col(0).subvec(start, stop);
+            arma::vec uniqueTimesInRange = arma::unique(timesInRange);
+
+            eventIndices = Rcpp::List(uniqueTimesInRange.n_elem);
+            for (arma::uword i = 0; i < uniqueTimesInRange.n_elem; ++i)
+            {
+                // Relative indices within [start,stop], shifted to absolute row numbers
+                arma::uvec relIndices = arma::find(timesInRange == uniqueTimesInRange(i));
+                eventIndices[i] = Rcpp::wrap(relIndices + (arma::uword)start);
+            }
         }
     }
     else if (method == "pe")

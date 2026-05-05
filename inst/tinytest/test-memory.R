@@ -7,7 +7,7 @@ edgelist <- data.frame(
   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 )
 
-reh <- remify::remify(edgelist, model = "tie", riskset = "active")
+reh <- remify(edgelist, model = "tie", riskset = "active")
 effects <- ~ inertia()
 
 stats_window <- remstats(
@@ -82,7 +82,7 @@ expect_equal(stats_decay[, , "inertia"], inertia_decay)
 # TODO(actor-model):   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 # TODO(actor-model): )
 # TODO(actor-model): 
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor")
+# TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): sender_effects <- ~
 # TODO(actor-model):   indegreeSender() + outdegreeSender() + totaldegreeSender() +
 # TODO(actor-model):     recencySendSender() + recencyReceiveSender()

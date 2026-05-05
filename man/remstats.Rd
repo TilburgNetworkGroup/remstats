@@ -18,12 +18,17 @@ remstats(
   display_progress = FALSE,
   sampling = FALSE,
   samp_num = NULL,
-  seed = NULL
+  seed = NULL,
+  start_effects = NULL,
+  end_effects = NULL,
+  psi_start = 1,
+  psi_end = 1
 )
 }
 \arguments{
-\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
-the relational event history.}
+\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing
+the relational event history. May also be a \code{remify_durem} object for
+duration relational event models.}
 
 \item{tie_effects}{an object of class \code{"\link[stats]{formula}"} (or one
 that can be coerced to that class): a symbolic description of the effects in
@@ -76,6 +81,23 @@ Only supported for a \code{tie} model.}
 \item{seed}{Optional integer. Random seed used for dyad sampling. Setting
 this ensures reproducible sampling across calls. If \code{NULL}, the
 current RNG state is used.}
+
+\item{start_effects}{Formula for the start sub-model statistics. Only used
+when \code{reh} is a \code{remify_durem} object (i.e. when
+\code{remify(..., duration = TRUE)} was called). Equivalent to
+\code{tie_effects} but applied to the start process.}
+
+\item{end_effects}{Formula for the end sub-model statistics. Only used when
+\code{reh} is a \code{remify_durem} object.}
+
+\item{psi_start}{Numeric. Duration exponent for start-model history
+weighting. The weight of each past event in the start statistics is
+\code{event_weight * (end - time + 1)^psi_start}. Default \code{1}.
+Only used when \code{reh} is a \code{remify_durem} object.}
+
+\item{psi_end}{Numeric. Duration exponent for end-model history weighting.
+Default \code{1}. Only used when \code{reh} is a \code{remify_durem}
+object.}
 }
 \value{
 An object of class 'remstats'. In case of the 

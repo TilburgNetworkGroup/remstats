@@ -4,21 +4,30 @@
 \alias{stack_stats}
 \title{Stack remstats for model fitting}
 \usage{
-stack_stats(stats, reh)
+stack_stats(stats, reh, add_actors = TRUE)
 }
 \arguments{
 \item{stats}{A \code{tomstats} object (output of \code{remstats()} or
 \code{tomstats()}).}
 
 \item{reh}{A \code{remify} object (output of \code{remify::remify2()}).}
+
+\item{add_actors}{Logical (default \code{TRUE}). When \code{TRUE}, two
+extra columns \code{actor1} (sender label) and \code{actor2} (receiver
+label) are appended by looking up \code{reh$index$dyad_map_active} (or
+\code{reh$riskset_info$included} as a fallback).  Set to \code{FALSE} to
+suppress this lookup, e.g. when the riskset has not yet been resolved or
+for performance reasons.}
 }
 \value{
 A list with elements:
 \describe{
   \item{remstats_stack}{Data frame in long format with columns: \code{event}
-    (event index), \code{dyad} (dyad index 1..D), all statistic columns,
-    \code{obs} (1 = observed event, 0 = non-event), and
-    \code{log_interevent} (log inter-event time; only for interval timing).}
+    (event index), all statistic columns, \code{log_interevent} (log
+    inter-event time; interval timing only), \code{obs} (1 = observed event,
+    0 = non-event), \code{dyad} (active dyad index 1..D), and — when
+    \code{add_actors = TRUE} and the riskset is available — \code{actor1}
+    (sender label) and \code{actor2} (receiver label).}
   \item{subset}{Integer vector of length 2: first and last event index.}
   \item{D}{Number of dyads in the risk set.}
   \item{E}{Number of events (time points).}

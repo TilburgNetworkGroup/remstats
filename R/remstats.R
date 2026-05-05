@@ -119,8 +119,22 @@
 #' (or one that can be coerced to that class): a symbolic description of the
 #' effects in the receiver choice step of model for which statistics are
 #' computed, see `Details'
-#' @param reh an object of class \code{"\link[remify]{remify}"} characterizing 
-#' the relational event history.
+#' @param start_effects Formula for the start sub-model statistics. Only used
+#'   when \code{reh} is a \code{remify_durem} object (i.e. when
+#'   \code{remify(..., duration = TRUE)} was called). Equivalent to
+#'   \code{tie_effects} but applied to the start process.
+#' @param end_effects Formula for the end sub-model statistics. Only used when
+#'   \code{reh} is a \code{remify_durem} object.
+#' @param psi_start Numeric. Duration exponent for start-model history
+#'   weighting. The weight of each past event in the start statistics is
+#'   \code{event_weight * (end - time + 1)^psi_start}. Default \code{1}.
+#'   Only used when \code{reh} is a \code{remify_durem} object.
+#' @param psi_end Numeric. Duration exponent for end-model history weighting.
+#'   Default \code{1}. Only used when \code{reh} is a \code{remify_durem}
+#'   object.
+#' @param reh an object of class \code{"\link[remify]{remify}"} characterizing
+#' the relational event history. May also be a \code{remify_durem} object for
+#' duration relational event models.
 #' @param attr_actors optionally, an object of class
 #' \code{"\link[base]{data.frame}"} that contains exogenous attributes for 
 #' actors (see Details).
@@ -200,21 +214,52 @@
 #'
 #' @export
 remstats <- function(
-    reh, 
-    tie_effects = NULL, 
-    sender_effects = NULL,
-    receiver_effects = NULL, 
-    attr_actors = NULL, 
-    attr_dyads = NULL, 
-    memory = c("full", "window", "decay", "interval"),
-    memory_value = NA, 
-    start = 2, 
-    stop = Inf,
+    reh,
+    tie_effects      = NULL,
+    sender_effects   = NULL,
+    receiver_effects = NULL,
+    attr_actors      = NULL,
+    attr_dyads       = NULL,
+    memory           = c("full", "window", "decay", "interval"),
+    memory_value     = NA,
+    start            = 2,
+    stop             = Inf,
     display_progress = FALSE,
-    sampling = FALSE,
-    samp_num = NULL,
-    seed = NULL
+    sampling         = FALSE,
+    samp_num         = NULL,
+    seed             = NULL,
+    # ── Duration REM arguments ────────────────────────────────────────────────
+    start_effects    = NULL,
+    end_effects      = NULL,
+    psi_start        = 1,
+    psi_end          = 1
 ) {
+
+    # ── Duration REM dispatch ─────────────────────────────────────────────────
+    # When reh is a remify_durem object, delegate to .remstats_durem() which
+    # builds the dual-event edgelist, applies psi weighting, and calls
+    # tomstats() separately for start and end models.
+    if (inherits(reh, "remify_durem")) {
+        if (isTRUE(sampling))
+            warning(
+                "`sampling = TRUE` is not yet supported for `remify_durem` objects",
+                "and will be ignored."
+            )
+        return(.remstats_durem(
+            reh              = reh,
+            start_effects    = start_effects,
+            end_effects      = end_effects,
+            psi_start        = psi_start,
+            psi_end          = psi_end,
+            attr_actors      = attr_actors,
+            attr_dyads       = attr_dyads,
+            memory           = memory,
+            memory_value     = memory_value,
+            start            = start,
+            stop             = stop,
+            display_progress = display_progress
+        ))
+    }
 
     # Check if the deprecated "id" column is used in attr_actors
     if (!is.null(attr_actors)) {

@@ -8,7 +8,7 @@ edgelist <- data.frame(
 )
 
 # Statistics
-reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
+reh <- remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
 effects <- ~ degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
   inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
@@ -66,23 +66,6 @@ totaldegreeDyad <- rbind(
   c(10, 10, 6, 12, 8, 8)
 )
 expect_equal(stats[, , "totaldegreeDyad"], totaldegreeDyad)
-
-# ccp
-# duration <- c(3, 2, 1, 1, 3, 2, 1, 1, 1, 1)
-# ccp_stats <- remstats(reh, tie_effects = ~ ccp(duration = duration))
-# ccp <- rbind(
-#   matrix(0, ncol = nrow(riskset)),
-#   c(0, 0, 0, 0, 0, 0),
-#   c(0, 0, 0, 1, 0, 0),
-#   c(0, 0, 0, 1, 0, 0),
-#   c(0, 0, 0, 0, 0, 0),
-#   c(0, 0, 0, 0, 0, 0),
-#   c(0, 0, 0, 0, 1, 0),
-#   c(0, 1, 0, 0, 1, 0),
-#   c(0, 0, 0, 0, 0, 0),
-#   c(0, 0, 0, 0, 0, 0)
-# )
-# expect_equal(ccp_stats[, , "ccp"], ccp)
 
 # inertia
 inertia <- rbind(
@@ -204,7 +187,7 @@ edgelist <- data.frame(
   actor2 = c(3, 1, 3, 3, 2, 3, 1, 3, 4, 1)
 )
 
-reh <- remify::remify(edgelist, model = "tie", directed = FALSE, 
+reh <- remify(edgelist, model = "tie", directed = FALSE, 
   riskset = "active")
 
 # Selection of effects that have unique underlying cpp functions

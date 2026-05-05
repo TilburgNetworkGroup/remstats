@@ -106,6 +106,23 @@ RcppExport SEXP _remstats_compute_stats_receiver(SEXP effectsSEXP, SEXP edgelist
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// calculate_active_stats
+arma::mat calculate_active_stats(const arma::mat& edgelist, const arma::mat& risksetMatrix, int stat_type, bool directed, int start, int stop, bool display_progress);
+RcppExport SEXP _remstats_calculate_active_stats(SEXP edgelistSEXP, SEXP risksetMatrixSEXP, SEXP stat_typeSEXP, SEXP directedSEXP, SEXP startSEXP, SEXP stopSEXP, SEXP display_progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type edgelist(edgelistSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type risksetMatrix(risksetMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type stat_type(stat_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type stop(stopSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_active_stats(edgelist, risksetMatrix, stat_type, directed, start, stop, display_progress));
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_riskset
 arma::mat get_riskset(arma::uvec actorID, arma::uvec typeID, bool directed);
 static SEXP _remstats_get_riskset_try(SEXP actorIDSEXP, SEXP typeIDSEXP, SEXP directedSEXP) {
@@ -545,6 +562,7 @@ RcppExport SEXP _remstats_RcppExport_registerCCallable() {
 static const R_CallMethodDef CallEntries[] = {
     {"_remstats_compute_stats_sender", (DL_FUNC) &_remstats_compute_stats_sender, 13},
     {"_remstats_compute_stats_receiver", (DL_FUNC) &_remstats_compute_stats_receiver, 13},
+    {"_remstats_calculate_active_stats", (DL_FUNC) &_remstats_calculate_active_stats, 7},
     {"_remstats_get_riskset", (DL_FUNC) &_remstats_get_riskset, 3},
     {"_remstats_convert_to_risksetMatrix", (DL_FUNC) &_remstats_convert_to_risksetMatrix, 3},
     {"_remstats_calculate_inertia", (DL_FUNC) &_remstats_calculate_inertia, 9},

@@ -25,7 +25,7 @@
 # info <- rbind(info, info2)
 # 
 # # Statistics
-# reh <- remify::remify(edgelist, model = "actor")
+# reh <- remify(edgelist, model = "actor")
 # sender_effects <- ~ send(variable = "x1") 
 # receiver_effects <- ~ receive(variable = "x1") + 
 #   average(variable = "x1") + difference(variable = "x1") + 
@@ -93,7 +93,7 @@
 # expect_equal(receiver_stats[, , "same_x2"], same)
 # 
 # # test standardization
-# reh <- remify::remify(edgelist, model = "actor")
+# reh <- remify(edgelist, model = "actor")
 # std_sender_effects <- ~ send(variable = "x1", scaling = "std")
 # std_receiver_effects <- ~ receive(variable = "x1", scaling = "std") + 
 #   average(variable = "x1", scaling = "std") + 
@@ -139,7 +139,7 @@
 #   actor2 = c(2, 3, 1, 3, 2)
 # )
 # 
-# reh <- remify::remify(edgelist, model = "actor", riskset = "active")
+# reh <- remify(edgelist, model = "actor", riskset = "active")
 # 
 # # Method = "pt"
 # # Selection of effects that have unique underlying cpp functions

@@ -9,6 +9,10 @@ compute_stats_receiver <- function(effects, edgelist, actors, weights, covariate
     .Call(`_remstats_compute_stats_receiver`, effects, edgelist, actors, weights, covariates, interactions, memory, memory_value, scaling, start, stop, method, display_progress)
 }
 
+calculate_active_stats <- function(edgelist, risksetMatrix, stat_type, directed, start, stop, display_progress) {
+    .Call(`_remstats_calculate_active_stats`, edgelist, risksetMatrix, stat_type, directed, start, stop, display_progress)
+}
+
 get_riskset <- function(actorID, typeID, directed) {
     .Call(`_remstats_get_riskset`, actorID, typeID, directed)
 }

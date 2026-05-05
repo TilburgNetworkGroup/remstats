@@ -18,8 +18,9 @@ aomstats(
 )
 }
 \arguments{
-\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing 
-the relational event history.}
+\item{reh}{an object of class \code{"\link[remify]{remify}"} characterizing
+the relational event history. May also be a \code{remify_durem} object for
+duration relational event models.}
 
 \item{sender_effects}{an object of class \code{"\link[stats]{formula}"} (or
 one that can be coerced to that class): a symbolic description of the

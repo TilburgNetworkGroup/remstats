@@ -53,7 +53,7 @@ slice_stats <- remstats(reh, tie_effects = effects, attr_actors = info,
 expect_equal(stats[2:4,,], slice_stats[1:nrow(slice_stats),,])
 
 # Statistics
-# TODO(actor-model): reh <- remify::remify(edgelist, model = "actor")
+# TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): sender_effects <- ~ send(variable = "x1") +
 # TODO(actor-model):   indegreeSender() + outdegreeSender() + totaldegreeSender() +
 # TODO(actor-model):   recencySendSender() + recencyReceiveSender()

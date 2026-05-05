@@ -23,23 +23,23 @@ check_sampled_equals_full <- function(effects,
 																			tol = 1e-12,
 																			attr_dyads = NULL) {
 
-	reh <- remify::remify(edgelist = history, model = "tie",
+	reh <- remify(edgelist = history, model = "tie",
 												 riskset = "full", ordinal = TRUE, directed = FALSE)
 
-	ts_samp <- remstats::tomstats(
+	ts_samp <- tomstats(
 		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads,
 		sampling = TRUE, samp_num = samp_num, seed = seed, start = start1, stop = stop1, memory = "decay", memory_value = 3
 	)
 
 	# reproducibility (same seed/args)
-	ts_samp2 <- remstats::tomstats(
+	ts_samp2 <- tomstats(
 		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads,
 		sampling = TRUE, samp_num = samp_num, seed = seed, start = start1, stop = stop1, memory = "decay", memory_value = 3
 	)
 	expect_equal(ts_samp, ts_samp2, tol = tol)
 	expect_equal(attr(ts_samp, "sample_map"), attr(ts_samp2, "sample_map"))
 
-	ts_full <- remstats::tomstats(
+	ts_full <- tomstats(
 		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads,
 		sampling = FALSE, start = start1, stop = stop1, memory = "decay", memory_value = 3
 	)
@@ -148,7 +148,7 @@ make_actor_event_userstat <- function(reh, actor_id, riskset_df) {
 	matrix(as.numeric(involved_at_time), nrow = M, ncol = D)
 }
 userstat_actor_test <- function(start1,stop1) {
-	reh <- remify::remify(
+	reh <- remify(
 		edgelist = history, model = "tie",
 		riskset = "full", ordinal = TRUE, directed = FALSE
 	)
