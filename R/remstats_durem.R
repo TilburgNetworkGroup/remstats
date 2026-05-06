@@ -136,6 +136,115 @@
 }
 
 
+# ── remstats.remify_durem dispatch ───────────────────────────────────────────
+
+#' remstats method for \code{remify_durem} objects
+#'
+#' Intercepts \code{remstats()} calls on \code{remify_durem} objects and routes
+#' them to the correct backend:
+#'
+#' \itemize{
+#'   \item If \code{start_effects} or \code{end_effects} contain active-state
+#'     effects (e.g. \code{activeTie()}, \code{activeOutdegreeSender()}) the
+#'     call is forwarded to \code{\link{duremstats}}.
+#'   \item Otherwise the call is forwarded to \code{.remstats_durem}, which
+#'     computes history-weighted statistics via \code{tomstats} with optional
+#'     psi-weighting.
+#'   \item If a formula mixes active-state and history-weighted effects an error
+#'     is raised.
+#' }
+#'
+#' @param reh            A \code{remify_durem} object.
+#' @param start_effects  Formula for start-model statistics.
+#' @param end_effects    Formula for end-model statistics.
+#' @param psi_start      Duration exponent for start-model history weighting
+#'   (forwarded to \code{.remstats_durem}; ignored for active-state effects).
+#' @param psi_end        Duration exponent for end-model history weighting.
+#' @param attr_actors    Actor-level attribute data frame (forwarded to
+#'   \code{tomstats}; ignored for active-state effects).
+#' @param attr_dyads     Dyad-level attribute data frame (forwarded to
+#'   \code{tomstats}; ignored for active-state effects).
+#' @param memory         Memory type forwarded to \code{tomstats}.
+#' @param memory_value   Memory value forwarded to \code{tomstats}.
+#' @param start          First time-point index.
+#' @param stop           Last  time-point index.
+#' @param display_progress Logical.
+#' @param ...            Additional arguments (currently unused).
+#' @return A \code{remstats_durem} object.
+#' @export
+#' @method remstats remify_durem
+remstats.remify_durem <- function(reh,
+                                   start_effects    = NULL,
+                                   end_effects      = NULL,
+                                   psi_start        = 1,
+                                   psi_end          = 1,
+                                   attr_actors      = NULL,
+                                   attr_dyads       = NULL,
+                                   memory           = c("full", "window",
+                                                        "decay", "interval"),
+                                   memory_value     = NA,
+                                   start            = 2,
+                                   stop             = Inf,
+                                   display_progress = FALSE,
+                                   ...) {
+
+    all_durem_effects <- c(names(.durem_stat_type_directed),
+                           names(.durem_stat_type_undirected))
+
+    # Classify a formula: "durem", "history", "mixed", or "empty"
+    .classify <- function(formula) {
+        if (is.null(formula)) return("empty")
+        labels       <- attr(terms(formula), "term.labels")
+        effect_names <- sub("\\(.*$", "", labels)
+        is_durem     <- effect_names %in% all_durem_effects
+        if (all(is_durem))  return("durem")
+        if (!any(is_durem)) return("history")
+        return("mixed")
+    }
+
+    cls_start <- .classify(start_effects)
+    cls_end   <- .classify(end_effects)
+
+    if (cls_start == "mixed" || cls_end == "mixed")
+        stop(
+            "A formula passed to remstats() on a remify_durem object mixes ",
+            "active-state effects (activeTie, activeOutdegreeSender, ...) with ",
+            "history-weighted effects (inertia, reciprocity, ...). ",
+            "These must be computed separately via duremstats() and ",
+            ".remstats_durem() and then combined.",
+            call. = FALSE
+        )
+
+    use_durem <- cls_start == "durem" || cls_end == "durem"
+
+    if (use_durem) {
+        duremstats(
+            reh              = reh,
+            start_effects    = start_effects,
+            end_effects      = end_effects,
+            start            = start,
+            stop             = stop,
+            display_progress = display_progress
+        )
+    } else {
+        .remstats_durem(
+            reh              = reh,
+            start_effects    = start_effects,
+            end_effects      = end_effects,
+            psi_start        = psi_start,
+            psi_end          = psi_end,
+            attr_actors      = attr_actors,
+            attr_dyads       = attr_dyads,
+            memory           = match.arg(memory),
+            memory_value     = memory_value,
+            start            = start,
+            stop             = stop,
+            display_progress = display_progress
+        )
+    }
+}
+
+
 # ── S3 methods ────────────────────────────────────────────────────────────────
 
 #' Test whether an object is a \code{remstats_durem}
