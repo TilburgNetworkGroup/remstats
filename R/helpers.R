@@ -1,3 +1,5 @@
+#' @importFrom remify remify
+
 # Split consider_type=TRUE statistics into C type-specific slices for the
 # sampled (CCS) path. Works on [M x S x P] arrays where S = samp_num and
 # columns are typed riskset row indices (via sample_map_cpp).
