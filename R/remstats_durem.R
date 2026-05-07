@@ -3,7 +3,8 @@
 # Duration Relational Event Model — remstats dispatch
 #
 # Entry point: remstats(reh, start_effects, end_effects, psi_start, psi_end, ...)
-#   when reh is a remify_durem object.
+#   when reh is a remify_durem object. Dispatched internally via
+#   .remstats_durem_dispatch().
 #
 # Returns a remstats_durem object: a list with $start_stats and $end_stats
 # (3-D arrays [M × D × P] with effect names suffixed .start / .end) plus
@@ -138,15 +139,15 @@
 
 # ── remstats.remify_durem dispatch ───────────────────────────────────────────
 
-#' remstats method for \code{remify_durem} objects
+#' Internal dispatch for \code{remify_durem} objects
 #'
-#' Intercepts \code{remstats()} calls on \code{remify_durem} objects and routes
-#' them to the correct backend.  Each formula is inspected term-by-term:
+#' Called by \code{\link{remstats}} when \code{reh} inherits from
+#' \code{"remify_durem"}.  Each formula is inspected term-by-term:
 #'
 #' \itemize{
 #'   \item \strong{Pure active-state} formulas (only \code{activeTie()},
 #'     \code{activeOutdegreeSender()}, etc.) are forwarded to
-#'     \code{\link{duremstats}}.
+#'     \code{duremstats}.
 #'   \item \strong{Pure history-weighted} formulas (only \code{inertia()},
 #'     \code{reciprocity()}, etc.) are forwarded to \code{.remstats_durem},
 #'     which calls \code{tomstats} with optional psi-weighting.
@@ -171,11 +172,9 @@
 #' @param start          First time-point index.
 #' @param stop           Last  time-point index.
 #' @param display_progress Logical.
-#' @param ...            Additional arguments (currently unused).
 #' @return A \code{remstats_durem} object.
-#' @export
-#' @method remstats remify_durem
-remstats.remify_durem <- function(reh,
+#' @keywords internal
+.remstats_durem_dispatch <- function(reh,
                                    start_effects    = NULL,
                                    end_effects      = NULL,
                                    psi_start        = 1,
@@ -187,8 +186,7 @@ remstats.remify_durem <- function(reh,
                                    memory_value     = NA,
                                    start            = 2,
                                    stop             = Inf,
-                                   display_progress = FALSE,
-                                   ...) {
+                                   display_progress = FALSE) {
 
     memory <- match.arg(memory)
 

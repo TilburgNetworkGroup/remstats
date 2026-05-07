@@ -69,23 +69,23 @@ CA <- dyad_col("C", "A"); CB <- dyad_col("C", "B")
 
 # Compute all directed active-state statistics (start=1 → all 5 rows)
 suppressWarnings({
-    s_tie  <- duremstats(reh, start_effects = ~ activeTie(),
+    s_tie  <- remstats(reh, start_effects = ~ activeTie(),
                          start = 1L, stop = Inf)$start_stats
-    s_ods  <- duremstats(reh, start_effects = ~ activeOutdegreeSender(),
+    s_ods  <- remstats(reh, start_effects = ~ activeOutdegreeSender(),
                          start = 1L, stop = Inf)$start_stats
-    s_idr  <- duremstats(reh, start_effects = ~ activeIndegreeReceiver(),
+    s_idr  <- remstats(reh, start_effects = ~ activeIndegreeReceiver(),
                          start = 1L, stop = Inf)$start_stats
-    s_tds  <- duremstats(reh, start_effects = ~ activeTotaldegreeSender(),
+    s_tds  <- remstats(reh, start_effects = ~ activeTotaldegreeSender(),
                          start = 1L, stop = Inf)$start_stats
-    s_tdr  <- duremstats(reh, start_effects = ~ activeTotaldegreeReceiver(),
+    s_tdr  <- remstats(reh, start_effects = ~ activeTotaldegreeReceiver(),
                          start = 1L, stop = Inf)$start_stats
-    s_otp  <- duremstats(reh, start_effects = ~ activeSharedPartners_otp(),
+    s_otp  <- remstats(reh, start_effects = ~ activeSharedPartners_otp(),
                          start = 1L, stop = Inf)$start_stats
-    s_itp  <- duremstats(reh, start_effects = ~ activeSharedPartners_itp(),
+    s_itp  <- remstats(reh, start_effects = ~ activeSharedPartners_itp(),
                          start = 1L, stop = Inf)$start_stats
-    s_osp  <- duremstats(reh, start_effects = ~ activeSharedPartners_osp(),
+    s_osp  <- remstats(reh, start_effects = ~ activeSharedPartners_osp(),
                          start = 1L, stop = Inf)$start_stats
-    s_isp  <- duremstats(reh, start_effects = ~ activeSharedPartners_isp(),
+    s_isp  <- remstats(reh, start_effects = ~ activeSharedPartners_isp(),
                          start = 1L, stop = Inf)$start_stats
 })
 

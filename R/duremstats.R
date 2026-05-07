@@ -9,7 +9,8 @@
 # explicit tracking of which events are currently open and cannot be derived
 # from weighted event history alone.
 #
-# Entry point: duremstats(reh, start_effects, end_effects, ...)
+# Entry point: called internally by .remstats_durem_dispatch() when the
+#   formula contains active-state effects.
 # Returns:     a list with $start_stats and $end_stats (same shape as
 #              remstats_durem, so they can be combined at estimation time)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -18,22 +19,22 @@
 # ── Effect name → stat_type integer ──────────────────────────────────────────
 
 .durem_stat_type_directed <- c(
-    activeTie                   = 1L,
-    activeOutdegreeSender       = 2L,
-    activeIndegreeReceiver      = 3L,
-    activeTotaldegreeSender     = 4L,
-    activeTotaldegreeReceiver   = 5L,
-    activeSharedPartners_otp    = 6L,
-    activeSharedPartners_itp    = 7L,
-    activeSharedPartners_osp    = 8L,
-    activeSharedPartners_isp    = 9L
+	activeTie                   = 1L,
+	activeOutdegreeSender       = 2L,
+	activeIndegreeReceiver      = 3L,
+	activeTotaldegreeSender     = 4L,
+	activeTotaldegreeReceiver   = 5L,
+	activeSharedPartners_otp    = 6L,
+	activeSharedPartners_itp    = 7L,
+	activeSharedPartners_osp    = 8L,
+	activeSharedPartners_isp    = 9L
 )
 
 .durem_stat_type_undirected <- c(
-    activeTie                   = 1L,
-    activeDegreeActor1          = 2L,
-    activeDegreeActor2          = 3L,
-    activeSharedPartners        = 4L
+	activeTie                   = 1L,
+	activeDegreeActor1          = 2L,
+	activeDegreeActor2          = 3L,
+	activeSharedPartners        = 4L
 )
 
 
@@ -50,14 +51,14 @@
 #' @return A numeric matrix with columns [time, actor1_id, actor2_id, status].
 #' @keywords internal
 .prepare_dual_edgelist <- function(edgelist_dual, actor_ids) {
-    matrix(
-        c(edgelist_dual$time,
-          actor_ids[edgelist_dual$actor1],
-          actor_ids[edgelist_dual$actor2],
-          ifelse(edgelist_dual$status == "start", 0L, 1L)),
-        ncol = 4L,
-        dimnames = list(NULL, c("time", "actor1", "actor2", "status"))
-    )
+	matrix(
+		c(edgelist_dual$time,
+			actor_ids[edgelist_dual$actor1],
+			actor_ids[edgelist_dual$actor2],
+			ifelse(edgelist_dual$status == "start", 0L, 1L)),
+		ncol = 4L,
+		dimnames = list(NULL, c("time", "actor1", "actor2", "status"))
+	)
 }
 
 
@@ -74,10 +75,38 @@
 #'   Dimensions N × N when C = 1; N*C × N*C when C > 1.
 #' @keywords internal
 .build_riskset_matrix <- function(N, directed, C = 1L) {
-    actor_ids_0 <- as.integer(seq_len(N) - 1L)
-    type_ids    <- as.integer(seq_len(C) - 1L)
-    riskset     <- get_riskset(actor_ids_0, type_ids, directed)
-    convert_to_risksetMatrix(riskset, N = N, C = C)
+	actor_ids_0 <- as.integer(seq_len(N) - 1L)
+	type_ids    <- as.integer(seq_len(C) - 1L)
+	riskset     <- get_riskset(actor_ids_0, type_ids, directed)
+	convert_to_risksetMatrix(riskset, N = N, C = C)
+}
+
+
+# ── Baseline (intercept) helper ───────────────────────────────────────────
+
+#' Prepend a baseline column of 1s to a 3-D stats array
+#'
+#' Checks whether the formula includes an intercept (no \code{-1}).
+#' If so, prepends a \code{baseline{suffix}} slice of 1s along dim 3.
+#'
+#' @param arr    3-D array \[M × D × P\] or \code{NULL}.
+#' @param formula Formula that produced the array.
+#' @param suffix  \code{".start"} or \code{".end"}.
+#' @return Updated array with P+1 slices, or the original if no intercept.
+#' @keywords internal
+.maybe_prepend_baseline <- function(arr, formula, suffix) {
+	if (is.null(arr) || is.null(formula)) return(arr)
+	has_intercept <- attr(terms(formula), "intercept") == 1L
+	if (!has_intercept) return(arr)
+	d   <- dim(arr)
+	bl  <- array(1, dim = c(d[1L], d[2L], 1L),
+							 dimnames = list(NULL, NULL, paste0("baseline", suffix)))
+	out <- array(0, dim = c(d[1L], d[2L], d[3L] + 1L),
+							 dimnames = list(NULL, NULL,
+							 								c(dimnames(bl)[[3L]], dimnames(arr)[[3L]])))
+	out[, , 1L]              <- bl
+	out[, , 2L:(d[3L] + 1L)] <- arr
+	out
 }
 
 
@@ -86,15 +115,15 @@
 #' Validate consider_type for active-state effects
 #' @keywords internal
 .validate_consider_type_durem <- function(consider_type) {
-    valid <- c("ignore", "separate", "interact")
-    if (!consider_type %in% valid)
-        stop(
-            "`consider_type = \"", consider_type, "\"` is not supported for ",
-            "active-state statistics.\n",
-            "Valid values: \"ignore\", \"separate\", \"interact\".",
-            call. = FALSE
-        )
-    invisible(NULL)
+	valid <- c("ignore", "separate", "interact")
+	if (!consider_type %in% valid)
+		stop(
+			"`consider_type = \"", consider_type, "\"` is not supported for ",
+			"active-state statistics.\n",
+			"Valid values: \"ignore\", \"separate\", \"interact\".",
+			call. = FALSE
+		)
+	invisible(NULL)
 }
 
 
@@ -108,26 +137,26 @@
 #'   and \code{$consider_type}.
 #' @keywords internal
 .parse_active_effects <- function(formula) {
-    if (is.null(formula)) return(list())
-    tt     <- terms(formula)
-    labels <- attr(tt, "term.labels")
-    lapply(labels, function(lbl) {
-        # Evaluate the call in the current search path so that activeTie() etc.
-        # resolve to the exported stub functions and return their config list.
-        tryCatch(
-            eval(parse(text = lbl)),
-            error = function(e) {
-                if (grepl("could not find function", conditionMessage(e),
-                          fixed = TRUE))
-                    stop("Unknown active-state effect '",
-                         sub("\\(.*$", "", lbl), "'. ",
-                         "See ?active_effects for available effects.",
-                         call. = FALSE)
-                stop("Could not evaluate active-state effect term '", lbl,
-                     "': ", conditionMessage(e), call. = FALSE)
-            }
-        )
-    })
+	if (is.null(formula)) return(list())
+	tt     <- terms(formula)
+	labels <- attr(tt, "term.labels")
+	lapply(labels, function(lbl) {
+		# Evaluate the call in the current search path so that activeTie() etc.
+		# resolve to the exported stub functions and return their config list.
+		tryCatch(
+			eval(parse(text = lbl)),
+			error = function(e) {
+				if (grepl("could not find function", conditionMessage(e),
+									fixed = TRUE))
+					stop("Unknown active-state effect '",
+							 sub("\\(.*$", "", lbl), "'. ",
+							 "See ?active_effects for available effects.",
+							 call. = FALSE)
+				stop("Could not evaluate active-state effect term '", lbl,
+						 "': ", conditionMessage(e), call. = FALSE)
+			}
+		)
+	})
 }
 
 
@@ -147,238 +176,238 @@
 #' @return 3-D array \[M × D × P\] or \code{NULL} if no effects.
 #' @keywords internal
 .compute_active_stats <- function(effect_configs, reh, directed,
-                                  start, stop, suffix,
-                                  display_progress) {
-    if (length(effect_configs) == 0L) return(NULL)
-
-    stat_map <- if (directed) .durem_stat_type_directed
-                else           .durem_stat_type_undirected
-
-    # Extract names and validate
-    eff_names <- vapply(effect_configs, `[[`, character(1L), "effect")
-    unknown   <- setdiff(eff_names, names(stat_map))
-    if (length(unknown) > 0L)
-        stop("Unknown active-state effect(s): ",
-             paste(unknown, collapse = ", "), ".\n",
-             "Available: ", paste(names(stat_map), collapse = ", "),
-             call. = FALSE)
-
-    # Validate consider_type
-    for (cfg in effect_configs)
-        .validate_consider_type_durem(cfg$consider_type)
-
-    # Build actor ID lookup (0-based).
-    # reh$meta$dictionary$actors$actorID is 1-based; subtract 1 for C++.
-    actor_dict  <- reh$meta$dictionary$actors
-    actor_ids   <- setNames(actor_dict$actorID - 1L, actor_dict$actorName)
-    N           <- reh$N
-
-    # Number of event types.
-    # Use C > 1 (from reh) only when extend_riskset_by_type = TRUE, so that
-    # D in the output array is consistent with reh$D for "ignore" effects.
-    # For "separate" effects we always use C = 1 per per-type call (see below).
-    has_types    <- isTRUE(reh$meta$with_type)
-    type_riskset <- isTRUE(reh$meta$with_type_riskset)
-    C_reh        <- if (!is.null(reh$C)) reh$C else 1L
-
-    # For "ignore" effects respect the typed riskset when requested.
-    C_ignore     <- if (type_riskset) C_reh else 1L
-
-    # Riskset matrix and D for "ignore" effects
-    riskset_mat_ignore <- .build_riskset_matrix(N, directed, C_ignore)
-    D_ignore <- as.integer(max(riskset_mat_ignore[riskset_mat_ignore >= 0]) + 1L)
-
-    # Riskset matrix for "separate" per-type calls (always C = 1)
-    riskset_mat_sep <- if (C_ignore == 1L) riskset_mat_ignore
-                       else .build_riskset_matrix(N, directed, 1L)
-    D_sep <- as.integer(max(riskset_mat_sep[riskset_mat_sep >= 0]) + 1L)
-
-    # Dual edgelist encoded for C++ (full, for "ignore" effects)
-    ed_mat_full <- .prepare_dual_edgelist(reh$edgelist_dual, actor_ids)
-
-    # Per-type encoded edgelists (for "separate" and "interact" effects)
-    type_levels <- if (has_types) sort(unique(reh$edgelist$type)) else character(0L)
-
-    needs_per_type <- has_types && any(vapply(effect_configs,
-        function(cfg) cfg$consider_type %in% c("separate", "interact"),
-        logical(1L)))
-
-    ed_mat_per_type <- if (needs_per_type) {
-        lapply(type_levels, function(tc) {
-            ed_tc <- reh$edgelist_dual[reh$edgelist_dual$type == tc, ]
-            .prepare_dual_edgelist(ed_tc, actor_ids)
-        })
-    } else NULL
-
-    # D for "interact": one D_sep-wide block per type, concatenated
-    D_interact <- as.integer(D_sep * C_reh)
-
-    # Number of output time points (relative to the full dual edgelist)
-    M <- as.integer(stop - start + 1L)
-
-    # Full timeline — used for forward-filling per-type results
-    full_utimes <- sort(unique(reh$edgelist_dual$time))
-
-    # Helper: expand a per-type C++ result (n_tc rows) into M rows.
-    #
-    # C++ computes the active state BEFORE each unique time in the type-tc
-    # edgelist:
-    #   mat_tc[k, ] = active state before tc_utimes[k]
-    #
-    # For each time t in the full output window:
-    #   - If t IS a tc time point (t == tc_utimes[k]): use row k — the state
-    #     before that tc event is the correct "before t" statistic.
-    #   - If t is BETWEEN tc events (tc_utimes[k] < t < tc_utimes[k+1]): use
-    #     row k+1 — the state "before tc_utimes[k+1]" already incorporates
-    #     all tc events up through tc_utimes[k], which is exactly the active
-    #     state at time t.
-    #   - If t is before any tc event: the active state is empty (all zeros).
-    .expand_to_M <- function(mat_tc, tc_edgelist_mat) {
-        tc_utimes  <- sort(unique(tc_edgelist_mat[, "time"]))
-        n_tc       <- length(tc_utimes)
-        segment    <- full_utimes[(start + 1L):(stop + 1L)]  # 1-based R indexing
-        k          <- findInterval(segment, tc_utimes)        # last tc_time <= t
-        is_tc_time <- segment %in% tc_utimes
-        # tc times: row k; between tc times: row k+1 (capped at n_tc)
-        row_map    <- ifelse(is_tc_time, k, pmin(k + 1L, n_tc))
-        mat_full   <- matrix(0, nrow = M, ncol = ncol(mat_tc))
-        nz         <- row_map > 0L
-        if (any(nz))
-            mat_full[nz, ] <- mat_tc[row_map[nz], , drop = FALSE]
-        mat_full
-    }
-
-    # ── Expand effect configs ──────────────────────────────────────────────────
-    # Each entry carries a $type_label field:
-    #   NA           → "ignore" (or "interact") — one entry per original effect
-    #   "<type>"     → "separate"               — one entry per type
-    expanded <- list()
-    for (cfg in effect_configs) {
-        if (cfg$consider_type == "separate" && has_types && length(type_levels) > 0L) {
-            # "separate": one output stat per type
-            for (tc in type_levels) {
-                e            <- cfg
-                e$type_label <- tc
-                expanded     <- c(expanded, list(e))
-            }
-        } else if (cfg$consider_type == "interact" && (!has_types || length(type_levels) == 0L)) {
-            # "interact" on untyped data: degrade silently to "ignore"
-            cfg$consider_type <- "ignore"
-            cfg$type_label    <- NA_character_
-            expanded          <- c(expanded, list(cfg))
-        } else {
-            # "ignore" and "interact" (with types): single output stat
-            cfg$type_label <- NA_character_
-            expanded       <- c(expanded, list(cfg))
-        }
-    }
-
-    # Output dimension names
-    out_names <- vapply(expanded, function(e) {
-        base <- e$effect
-        if (!is.na(e$type_label)) paste0(base, ".", e$type_label) else base
-    }, character(1L))
-
-    # Choose D for each expanded effect
-    out_D <- vapply(expanded, function(e) {
-        if (e$consider_type == "interact") D_interact
-        else if (!is.na(e$type_label))     D_sep
-        else                               D_ignore
-    }, integer(1L))
-
-    # All effects should agree on D; mixing consider_type values with different
-    # D dimensions (e.g. "ignore" + "interact") in one formula is unsupported.
-    D_out <- out_D[1L]
-    if (length(unique(out_D)) > 1L)
-        warning("Effects in this formula produce different D dimensions ",
-                "(mixing \"ignore\", \"separate\", and/or \"interact\" with ",
-                "typed risksets). Output array uses D = ", D_out,
-                " from the first effect; other effects may be misaligned.",
-                call. = FALSE)
-
-    # ── Allocate output array [M × D × P_expanded] ───────────────────────────
-    P_out <- length(expanded)
-    out   <- array(0, dim      = c(M, D_out, P_out),
-                      dimnames = list(NULL, NULL, paste0(out_names, suffix)))
-
-    # ── Per-effect computation ────────────────────────────────────────────────
-    for (p_idx in seq_along(expanded)) {
-        e     <- expanded[[p_idx]]
-        eff   <- e$effect
-        stype <- stat_map[[eff]]
-
-        if (display_progress)
-            message("Calculating active-state statistic: ", eff,
-                    if (!is.na(e$type_label)) paste0(" [type = ", e$type_label, "]") else "")
-
-        # Choose the right edgelist and riskset, then call C++
-        if (e$consider_type == "interact") {
-            # Call C++ once per type with the type-filtered edgelist and untyped
-            # riskset, then cbind the results into a [M × D*C] matrix.
-            # Column order mirrors type_levels (alphabetically sorted) so that
-            # type c occupies columns [(c-1)*D_sep + 1 .. c*D_sep].
-            # C++ is always called from the beginning (start=0) so it has the
-            # full history to determine the active state; the result is then
-            # forward-filled into the M-row output window.
-            mats <- lapply(seq_along(type_levels), function(tc_idx) {
-                ed_tc  <- ed_mat_per_type[[tc_idx]]
-                n_tc   <- length(unique(ed_tc[, "time"]))
-                mat_tc <- calculate_active_stats(
-                    edgelist         = ed_tc,
-                    risksetMatrix    = riskset_mat_sep,
-                    stat_type        = stype,
-                    directed         = directed,
-                    start            = 0L,
-                    stop             = as.integer(n_tc - 1L),
-                    display_progress = FALSE   # avoid duplicate messages
-                )
-                .expand_to_M(mat_tc, ed_tc)
-            })
-            mat <- do.call(cbind, mats)   # [M × D*C]
-        } else if (is.na(e$type_label)) {
-            # "ignore": use full edgelist and (possibly typed) ignore riskset
-            mat <- calculate_active_stats(
-                edgelist         = ed_mat_full,
-                risksetMatrix    = riskset_mat_ignore,
-                stat_type        = stype,
-                directed         = directed,
-                start            = as.integer(start),
-                stop             = as.integer(stop),
-                display_progress = display_progress
-            )
-        } else {
-            # "separate": use type-filtered edgelist and untyped riskset.
-            # C++ is always called from the beginning (start=0) so it has the
-            # full history; the result is forward-filled into the M-row window.
-            tc_idx <- match(e$type_label, type_levels)
-            ed_tc  <- ed_mat_per_type[[tc_idx]]
-            n_tc   <- length(unique(ed_tc[, "time"]))
-            mat_tc <- calculate_active_stats(
-                edgelist         = ed_tc,
-                risksetMatrix    = riskset_mat_sep,
-                stat_type        = stype,
-                directed         = directed,
-                start            = 0L,
-                stop             = as.integer(n_tc - 1L),
-                display_progress = display_progress
-            )
-            mat <- .expand_to_M(mat_tc, ed_tc)
-        }   # mat is [M × D] (or [M × D*C] for "interact")
-
-        # ── Scaling ───────────────────────────────────────────────────────────
-        if (identical(e$scaling, "std")) {
-            for (m in seq_len(M)) {
-                vals <- mat[m, ]
-                mu   <- mean(vals)
-                s    <- sd(vals)
-                mat[m, ] <- if (s > 0) (vals - mu) / s else vals - mu
-            }
-        }
-
-        out[, , p_idx] <- mat
-    }
-
-    out
+																	start, stop, suffix,
+																	display_progress) {
+	if (length(effect_configs) == 0L) return(NULL)
+	
+	stat_map <- if (directed) .durem_stat_type_directed
+	else           .durem_stat_type_undirected
+	
+	# Extract names and validate
+	eff_names <- vapply(effect_configs, `[[`, character(1L), "effect")
+	unknown   <- setdiff(eff_names, names(stat_map))
+	if (length(unknown) > 0L)
+		stop("Unknown active-state effect(s): ",
+				 paste(unknown, collapse = ", "), ".\n",
+				 "Available: ", paste(names(stat_map), collapse = ", "),
+				 call. = FALSE)
+	
+	# Validate consider_type
+	for (cfg in effect_configs)
+		.validate_consider_type_durem(cfg$consider_type)
+	
+	# Build actor ID lookup (0-based).
+	# reh$meta$dictionary$actors$actorID is 1-based; subtract 1 for C++.
+	actor_dict  <- reh$meta$dictionary$actors
+	actor_ids   <- setNames(actor_dict$actorID - 1L, actor_dict$actorName)
+	N           <- reh$N
+	
+	# Number of event types.
+	# Use C > 1 (from reh) only when extend_riskset_by_type = TRUE, so that
+	# D in the output array is consistent with reh$D for "ignore" effects.
+	# For "separate" effects we always use C = 1 per per-type call (see below).
+	has_types    <- isTRUE(reh$meta$with_type)
+	type_riskset <- isTRUE(reh$meta$with_type_riskset)
+	C_reh        <- if (!is.null(reh$C)) reh$C else 1L
+	
+	# For "ignore" effects respect the typed riskset when requested.
+	C_ignore     <- if (type_riskset) C_reh else 1L
+	
+	# Riskset matrix and D for "ignore" effects
+	riskset_mat_ignore <- .build_riskset_matrix(N, directed, C_ignore)
+	D_ignore <- as.integer(max(riskset_mat_ignore[riskset_mat_ignore >= 0]) + 1L)
+	
+	# Riskset matrix for "separate" per-type calls (always C = 1)
+	riskset_mat_sep <- if (C_ignore == 1L) riskset_mat_ignore
+	else .build_riskset_matrix(N, directed, 1L)
+	D_sep <- as.integer(max(riskset_mat_sep[riskset_mat_sep >= 0]) + 1L)
+	
+	# Dual edgelist encoded for C++ (full, for "ignore" effects)
+	ed_mat_full <- .prepare_dual_edgelist(reh$edgelist_dual, actor_ids)
+	
+	# Per-type encoded edgelists (for "separate" and "interact" effects)
+	type_levels <- if (has_types) sort(unique(reh$edgelist$type)) else character(0L)
+	
+	needs_per_type <- has_types && any(vapply(effect_configs,
+																						function(cfg) cfg$consider_type %in% c("separate", "interact"),
+																						logical(1L)))
+	
+	ed_mat_per_type <- if (needs_per_type) {
+		lapply(type_levels, function(tc) {
+			ed_tc <- reh$edgelist_dual[reh$edgelist_dual$type == tc, ]
+			.prepare_dual_edgelist(ed_tc, actor_ids)
+		})
+	} else NULL
+	
+	# D for "interact": one D_sep-wide block per type, concatenated
+	D_interact <- as.integer(D_sep * C_reh)
+	
+	# Number of output time points (relative to the full dual edgelist)
+	M <- as.integer(stop - start + 1L)
+	
+	# Full timeline — used for forward-filling per-type results
+	full_utimes <- sort(unique(reh$edgelist_dual$time))
+	
+	# Helper: expand a per-type C++ result (n_tc rows) into M rows.
+	#
+	# C++ computes the active state BEFORE each unique time in the type-tc
+	# edgelist:
+	#   mat_tc[k, ] = active state before tc_utimes[k]
+	#
+	# For each time t in the full output window:
+	#   - If t IS a tc time point (t == tc_utimes[k]): use row k — the state
+	#     before that tc event is the correct "before t" statistic.
+	#   - If t is BETWEEN tc events (tc_utimes[k] < t < tc_utimes[k+1]): use
+	#     row k+1 — the state "before tc_utimes[k+1]" already incorporates
+	#     all tc events up through tc_utimes[k], which is exactly the active
+	#     state at time t.
+	#   - If t is before any tc event: the active state is empty (all zeros).
+	.expand_to_M <- function(mat_tc, tc_edgelist_mat) {
+		tc_utimes  <- sort(unique(tc_edgelist_mat[, "time"]))
+		n_tc       <- length(tc_utimes)
+		segment    <- full_utimes[(start + 1L):(stop + 1L)]  # 1-based R indexing
+		k          <- findInterval(segment, tc_utimes)        # last tc_time <= t
+		is_tc_time <- segment %in% tc_utimes
+		# tc times: row k; between tc times: row k+1 (capped at n_tc)
+		row_map    <- ifelse(is_tc_time, k, pmin(k + 1L, n_tc))
+		mat_full   <- matrix(0, nrow = M, ncol = ncol(mat_tc))
+		nz         <- row_map > 0L
+		if (any(nz))
+			mat_full[nz, ] <- mat_tc[row_map[nz], , drop = FALSE]
+		mat_full
+	}
+	
+	# ── Expand effect configs ──────────────────────────────────────────────────
+	# Each entry carries a $type_label field:
+	#   NA           → "ignore" (or "interact") — one entry per original effect
+	#   "<type>"     → "separate"               — one entry per type
+	expanded <- list()
+	for (cfg in effect_configs) {
+		if (cfg$consider_type == "separate" && has_types && length(type_levels) > 0L) {
+			# "separate": one output stat per type
+			for (tc in type_levels) {
+				e            <- cfg
+				e$type_label <- tc
+				expanded     <- c(expanded, list(e))
+			}
+		} else if (cfg$consider_type == "interact" && (!has_types || length(type_levels) == 0L)) {
+			# "interact" on untyped data: degrade silently to "ignore"
+			cfg$consider_type <- "ignore"
+			cfg$type_label    <- NA_character_
+			expanded          <- c(expanded, list(cfg))
+		} else {
+			# "ignore" and "interact" (with types): single output stat
+			cfg$type_label <- NA_character_
+			expanded       <- c(expanded, list(cfg))
+		}
+	}
+	
+	# Output dimension names
+	out_names <- vapply(expanded, function(e) {
+		base <- e$effect
+		if (!is.na(e$type_label)) paste0(base, ".", e$type_label) else base
+	}, character(1L))
+	
+	# Choose D for each expanded effect
+	out_D <- vapply(expanded, function(e) {
+		if (e$consider_type == "interact") D_interact
+		else if (!is.na(e$type_label))     D_sep
+		else                               D_ignore
+	}, integer(1L))
+	
+	# All effects should agree on D; mixing consider_type values with different
+	# D dimensions (e.g. "ignore" + "interact") in one formula is unsupported.
+	D_out <- out_D[1L]
+	if (length(unique(out_D)) > 1L)
+		warning("Effects in this formula produce different D dimensions ",
+						"(mixing \"ignore\", \"separate\", and/or \"interact\" with ",
+						"typed risksets). Output array uses D = ", D_out,
+						" from the first effect; other effects may be misaligned.",
+						call. = FALSE)
+	
+	# ── Allocate output array [M × D × P_expanded] ───────────────────────────
+	P_out <- length(expanded)
+	out   <- array(0, dim      = c(M, D_out, P_out),
+								 dimnames = list(NULL, NULL, paste0(out_names, suffix)))
+	
+	# ── Per-effect computation ────────────────────────────────────────────────
+	for (p_idx in seq_along(expanded)) {
+		e     <- expanded[[p_idx]]
+		eff   <- e$effect
+		stype <- stat_map[[eff]]
+		
+		if (display_progress)
+			message("Calculating active-state statistic: ", eff,
+							if (!is.na(e$type_label)) paste0(" [type = ", e$type_label, "]") else "")
+		
+		# Choose the right edgelist and riskset, then call C++
+		if (e$consider_type == "interact") {
+			# Call C++ once per type with the type-filtered edgelist and untyped
+			# riskset, then cbind the results into a [M × D*C] matrix.
+			# Column order mirrors type_levels (alphabetically sorted) so that
+			# type c occupies columns [(c-1)*D_sep + 1 .. c*D_sep].
+			# C++ is always called from the beginning (start=0) so it has the
+			# full history to determine the active state; the result is then
+			# forward-filled into the M-row output window.
+			mats <- lapply(seq_along(type_levels), function(tc_idx) {
+				ed_tc  <- ed_mat_per_type[[tc_idx]]
+				n_tc   <- length(unique(ed_tc[, "time"]))
+				mat_tc <- calculate_active_stats(
+					edgelist         = ed_tc,
+					risksetMatrix    = riskset_mat_sep,
+					stat_type        = stype,
+					directed         = directed,
+					start            = 0L,
+					stop             = as.integer(n_tc - 1L),
+					display_progress = FALSE   # avoid duplicate messages
+				)
+				.expand_to_M(mat_tc, ed_tc)
+			})
+			mat <- do.call(cbind, mats)   # [M × D*C]
+		} else if (is.na(e$type_label)) {
+			# "ignore": use full edgelist and (possibly typed) ignore riskset
+			mat <- calculate_active_stats(
+				edgelist         = ed_mat_full,
+				risksetMatrix    = riskset_mat_ignore,
+				stat_type        = stype,
+				directed         = directed,
+				start            = as.integer(start),
+				stop             = as.integer(stop),
+				display_progress = display_progress
+			)
+		} else {
+			# "separate": use type-filtered edgelist and untyped riskset.
+			# C++ is always called from the beginning (start=0) so it has the
+			# full history; the result is forward-filled into the M-row window.
+			tc_idx <- match(e$type_label, type_levels)
+			ed_tc  <- ed_mat_per_type[[tc_idx]]
+			n_tc   <- length(unique(ed_tc[, "time"]))
+			mat_tc <- calculate_active_stats(
+				edgelist         = ed_tc,
+				risksetMatrix    = riskset_mat_sep,
+				stat_type        = stype,
+				directed         = directed,
+				start            = 0L,
+				stop             = as.integer(n_tc - 1L),
+				display_progress = display_progress
+			)
+			mat <- .expand_to_M(mat_tc, ed_tc)
+		}   # mat is [M × D] (or [M × D*C] for "interact")
+		
+		# ── Scaling ───────────────────────────────────────────────────────────
+		if (identical(e$scaling, "std")) {
+			for (m in seq_len(M)) {
+				vals <- mat[m, ]
+				mu   <- mean(vals)
+				s    <- sd(vals)
+				mat[m, ] <- if (s > 0) (vals - mu) / s else vals - mu
+			}
+		}
+		
+		out[, , p_idx] <- mat
+	}
+	
+	out
 }
 
 
@@ -430,63 +459,68 @@
 #'   \[M × D × P\] with effect names suffixed \code{.start} / \code{.end},
 #'   and \code{attr(., "reh")} set to \code{reh}.  The same shape as a
 #'   \code{remstats_durem} object so the two can be combined at estimation time.
-#' @export
+#' @keywords internal
 duremstats <- function(reh,
-                       start_effects    = NULL,
-                       end_effects      = NULL,
-                       start            = 2L,
-                       stop             = Inf,
-                       display_progress = FALSE) {
-
-    if (!inherits(reh, "remify_durem"))
-        stop("`reh` must be a `remify_durem` object.")
-
-    # Unique time points in the dual edgelist
-    ed    <- reh$edgelist_dual
-    utimes <- sort(unique(ed$time))
-    M_total <- length(utimes)
-
-    start <- max(1L, as.integer(start)) - 1L           # convert to 0-based
-    stop  <- if (is.infinite(stop)) M_total - 1L       # Inf → last time point
-             else min(M_total - 1L, as.integer(stop) - 1L)
-
-    directed_start <- isTRUE(reh$meta$directed)
-    directed_end   <- isTRUE(reh$durem$directed_end)
-
-    eff_start <- .parse_active_effects(start_effects)
-    eff_end   <- .parse_active_effects(end_effects)
-
-    ss <- .compute_active_stats(eff_start, reh, directed_start,
-                                start, stop, ".start", display_progress)
-    es <- .compute_active_stats(eff_end,   reh, directed_end,
-                                start, stop, ".end",   display_progress)
-
-    out <- list(start_stats = ss, end_stats = es)
-    attr(out, "reh") <- reh
-    class(out) <- "remstats_durem"   # same class → compatible with estimation
-    out
+											 start_effects    = NULL,
+											 end_effects      = NULL,
+											 start            = 2L,
+											 stop             = Inf,
+											 display_progress = FALSE) {
+	
+	if (!inherits(reh, "remify_durem"))
+		stop("`reh` must be a `remify_durem` object.")
+	
+	# Unique time points in the dual edgelist
+	ed    <- reh$edgelist_dual
+	utimes <- sort(unique(ed$time))
+	M_total <- length(utimes)
+	
+	start <- max(1L, as.integer(start)) - 1L           # convert to 0-based
+	stop  <- if (is.infinite(stop)) M_total - 1L       # Inf → last time point
+	else min(M_total - 1L, as.integer(stop) - 1L)
+	
+	directed_start <- isTRUE(reh$meta$directed)
+	directed_end   <- isTRUE(reh$durem$directed_end)
+	
+	eff_start <- .parse_active_effects(start_effects)
+	eff_end   <- .parse_active_effects(end_effects)
+	
+	ss <- .compute_active_stats(eff_start, reh, directed_start,
+															start, stop, ".start", display_progress)
+	es <- .compute_active_stats(eff_end,   reh, directed_end,
+															start, stop, ".end",   display_progress)
+	
+	# ── Prepend baseline (intercept) when formula has no -1 ───────────────────
+	ss <- .maybe_prepend_baseline(ss, start_effects, ".start")
+	es <- .maybe_prepend_baseline(es, end_effects,   ".end")
+	
+	out <- list(start_stats = ss, end_stats = es)
+	attr(out, "reh") <- reh
+	class(out) <- "remstats_durem"   # same class → compatible with estimation
+	out
 }
 
 
 # ── Effect constructor functions ──────────────────────────────────────────────
 # Each function mirrors the remstats pattern: calling it returns a named list
-# that duremstats() reads to configure the C++ computation and post-processing.
+# that the internal duremstats() function reads to configure the C++ computation
+# and post-processing.
 # They are designed for use inside formulas:
-#   duremstats(reh, start_effects = ~ activeTie() + activeOutdegreeSender("std"))
+#   remstats(reh, start_effects = ~ activeTie() + activeOutdegreeSender("std"))
 # but can also be called directly, e.g. to inspect the default configuration.
 
 #' Active-state statistics for Duration Relational Event Models
 #'
 #' Constructor functions for active-state effects used inside formulas passed
-#' to \code{\link{duremstats}}.  They capture properties of the currently
+#' to \code{\link{remstats}} (when \code{reh} is a \code{remify_durem} object).
+#' They capture properties of the currently
 #' \emph{active} event network — events that have started but not yet ended —
 #' at each time point in a duration relational event sequence.
 #'
-#' Each function returns a configuration list consumed by \code{duremstats()}.
-#' The functions can be called directly to inspect defaults or passed inside
-#' a formula:
+#' Each function returns a configuration list consumed internally.
+#' The functions are passed inside a formula:
 #' \preformatted{
-#'   duremstats(reh,
+#'   remstats(reh,
 #'     start_effects = ~ activeTie() + activeOutdegreeSender(scaling = "std"),
 #'     end_effects   = ~ activeTie())
 #' }
@@ -575,84 +609,84 @@ duremstats <- function(reh,
 #' @return A named list with elements \code{effect}, \code{scaling}, and
 #'   \code{consider_type}, consumed by \code{\link{duremstats}}.
 #'
-#' @seealso \code{\link{duremstats}}
+#' @seealso \code{\link{remstats}}
 #' @name active_effects
 NULL
 
 .active_effect_cfg <- function(name, scaling, consider_type) {
-    scaling <- match.arg(scaling, c("none", "std"))
-    .validate_consider_type_durem(consider_type)
-    list(effect = name, scaling = scaling, consider_type = consider_type)
+	scaling <- match.arg(scaling, c("none", "std"))
+	.validate_consider_type_durem(consider_type)
+	list(effect = name, scaling = scaling, consider_type = consider_type)
 }
 
 #' @rdname active_effects
 #' @export
 activeTie <- function(scaling = c("none", "std"),
-                      consider_type = "ignore")
-    .active_effect_cfg("activeTie", scaling, consider_type)
+											consider_type = "ignore")
+	.active_effect_cfg("activeTie", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeOutdegreeSender <- function(scaling = c("none", "std"),
-                                  consider_type = "ignore")
-    .active_effect_cfg("activeOutdegreeSender", scaling, consider_type)
+																	consider_type = "ignore")
+	.active_effect_cfg("activeOutdegreeSender", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeIndegreeReceiver <- function(scaling = c("none", "std"),
-                                   consider_type = "ignore")
-    .active_effect_cfg("activeIndegreeReceiver", scaling, consider_type)
+																	 consider_type = "ignore")
+	.active_effect_cfg("activeIndegreeReceiver", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeTotaldegreeSender <- function(scaling = c("none", "std"),
-                                    consider_type = "ignore")
-    .active_effect_cfg("activeTotaldegreeSender", scaling, consider_type)
+																		consider_type = "ignore")
+	.active_effect_cfg("activeTotaldegreeSender", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeTotaldegreeReceiver <- function(scaling = c("none", "std"),
-                                      consider_type = "ignore")
-    .active_effect_cfg("activeTotaldegreeReceiver", scaling, consider_type)
+																			consider_type = "ignore")
+	.active_effect_cfg("activeTotaldegreeReceiver", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeSharedPartners_otp <- function(scaling = c("none", "std"),
-                                     consider_type = "ignore")
-    .active_effect_cfg("activeSharedPartners_otp", scaling, consider_type)
+																		 consider_type = "ignore")
+	.active_effect_cfg("activeSharedPartners_otp", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeSharedPartners_itp <- function(scaling = c("none", "std"),
-                                     consider_type = "ignore")
-    .active_effect_cfg("activeSharedPartners_itp", scaling, consider_type)
+																		 consider_type = "ignore")
+	.active_effect_cfg("activeSharedPartners_itp", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeSharedPartners_osp <- function(scaling = c("none", "std"),
-                                     consider_type = "ignore")
-    .active_effect_cfg("activeSharedPartners_osp", scaling, consider_type)
+																		 consider_type = "ignore")
+	.active_effect_cfg("activeSharedPartners_osp", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeSharedPartners_isp <- function(scaling = c("none", "std"),
-                                     consider_type = "ignore")
-    .active_effect_cfg("activeSharedPartners_isp", scaling, consider_type)
+																		 consider_type = "ignore")
+	.active_effect_cfg("activeSharedPartners_isp", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeDegreeActor1 <- function(scaling = c("none", "std"),
-                                consider_type = "ignore")
-    .active_effect_cfg("activeDegreeActor1", scaling, consider_type)
+															 consider_type = "ignore")
+	.active_effect_cfg("activeDegreeActor1", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeDegreeActor2 <- function(scaling = c("none", "std"),
-                                consider_type = "ignore")
-    .active_effect_cfg("activeDegreeActor2", scaling, consider_type)
+															 consider_type = "ignore")
+	.active_effect_cfg("activeDegreeActor2", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeSharedPartners <- function(scaling = c("none", "std"),
-                                 consider_type = "ignore")
-    .active_effect_cfg("activeSharedPartners", scaling, consider_type)
+																 consider_type = "ignore")
+	.active_effect_cfg("activeSharedPartners", scaling, consider_type)

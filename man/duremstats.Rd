@@ -68,3 +68,4 @@ Available effects for undirected networks:
     (i,h) and (j,h) are currently active.}
 }
 }
+\keyword{internal}

@@ -235,18 +235,45 @@ remstats <- function(
     psi_end          = 1
 ) {
 
+    # ── Input validation ─────────────────────────────────────────────────────
+    is_durem <- inherits(reh, "remify_durem")
+
+    if (is_durem) {
+        # Duration model: only start_effects / end_effects are valid
+        if (!is.null(tie_effects))
+            stop("Use `start_effects` and/or `end_effects` for duration models ",
+                 "(remify_durem objects), not `tie_effects`.", call. = FALSE)
+        if (!is.null(sender_effects) || !is.null(receiver_effects))
+            stop("Actor-oriented duration models are not yet supported. ",
+                 "Use `start_effects` and/or `end_effects` for the tie-oriented ",
+                 "duration model.", call. = FALSE)
+        if (is.null(start_effects) && is.null(end_effects))
+            stop("At least one of `start_effects` or `end_effects` must be ",
+                 "specified for duration models.", call. = FALSE)
+    } else {
+        # Non-duration model: start_effects / end_effects are invalid
+        if (!is.null(start_effects) || !is.null(end_effects)) {
+            if (!is.null(reh$meta) && reh$meta$model == "tie") {
+                stop("`start_effects` and `end_effects` are only for duration ",
+                     "models. Use `tie_effects` for non-duration tie models, ",
+                     "or call remify(..., duration = TRUE) first.", call. = FALSE)
+            } else {
+                stop("`start_effects` and `end_effects` are only for duration ",
+                     "models. Use `sender_effects` and/or `receiver_effects` ",
+                     "for actor-oriented models.", call. = FALSE)
+            }
+        }
+    }
+
     # ── Duration REM dispatch ─────────────────────────────────────────────────
-    # When reh is a remify_durem object, delegate to .remstats_durem() which
-    # builds the dual-event edgelist, applies psi weighting, and calls
-    # tomstats() separately for start and end models.
-    if (inherits(reh, "remify_durem")) {
+    if (is_durem) {
         if (isTRUE(sampling))
             warning(
                 "`sampling = TRUE` is not yet supported for `remify_durem` objects ",
                 "and will be ignored. Case-control sampling for the duration model ",
                 "is planned for a future release."
             )
-        return(remstats.remify_durem(
+        return(.remstats_durem_dispatch(
             reh              = reh,
             start_effects    = start_effects,
             end_effects      = end_effects,
@@ -276,6 +303,12 @@ remstats <- function(
     }
 
     if (reh$meta$model == "tie") {
+        if (!is.null(sender_effects) || !is.null(receiver_effects))
+            stop("Use `tie_effects` for tie-oriented models, not ",
+                 "`sender_effects` / `receiver_effects`.", call. = FALSE)
+        if (is.null(tie_effects))
+            stop("`tie_effects` must be specified for tie-oriented models.",
+                 call. = FALSE)
     	out <- tomstats(
     		effects = tie_effects, 
     		reh = reh,
@@ -293,6 +326,12 @@ remstats <- function(
     }
 
     if (reh$meta$model == "actor") {
+        if (!is.null(tie_effects))
+            stop("Use `sender_effects` and/or `receiver_effects` for ",
+                 "actor-oriented models, not `tie_effects`.", call. = FALSE)
+        if (is.null(sender_effects) && is.null(receiver_effects))
+            stop("At least one of `sender_effects` or `receiver_effects` ",
+                 "must be specified for actor-oriented models.", call. = FALSE)
         out <- aomstats(
             reh = reh, 
             sender_effects = sender_effects,

@@ -70,13 +70,13 @@ modelling assumptions and is not uniquely determined.}
     type-\eqn{c} events and calling the C++ function once per type;
     no C++ changes required.  The output effect names are suffixed with
     the type label, e.g. \code{activeTie.X.start}.}
-  \item{\code{"interact"}}{Compute one statistic with \eqn{D\times C} columns:
-  for each (actor-pair, type) combination, only active events of that type
-  contribute.  Implemented R-side by filtering \code{edgelist_dual} to
-  each type and calling the C++ function once per type; results are
-  \code{cbind}-ed in alphabetical type order.  The output has
-  \eqn{D_{\text{base}} \times C} columns and is consistent with a typed
-  riskset (\code{extend_riskset_by_type = TRUE}).}
+  \item{\code{"interact"}}{Compute one statistic with \eqn{D * C} columns:
+    for each (actor-pair, type) combination, only active events of that type
+    contribute.  Implemented R-side by filtering \code{edgelist_dual} to
+    each type and calling the C++ function once per type; results are
+    \code{cbind}-ed in alphabetical type order.  The output has
+    \eqn{D_{base} * C} columns and is consistent with a typed
+    riskset (\code{extend_riskset_by_type = TRUE}).}
 }}
 }
 \value{
@@ -85,16 +85,16 @@ A named list with elements \code{effect}, \code{scaling}, and
 }
 \description{
 Constructor functions for active-state effects used inside formulas passed
-to \code{\link{duremstats}}.  They capture properties of the currently
+to \code{\link{remstats}} (when \code{reh} is a \code{remify_durem} object).
+They capture properties of the currently
 \emph{active} event network — events that have started but not yet ended —
 at each time point in a duration relational event sequence.
 }
 \details{
-Each function returns a configuration list consumed by \code{duremstats()}.
-The functions can be called directly to inspect defaults or passed inside
-a formula:
+Each function returns a configuration list consumed internally.
+The functions are passed inside a formula:
 \preformatted{
-  duremstats(reh,
+  remstats(reh,
     start_effects = ~ activeTie() + activeOutdegreeSender(scaling = "std"),
     end_effects   = ~ activeTie())
 }
@@ -144,5 +144,5 @@ a formula:
 }
 }
 \seealso{
-\code{\link{duremstats}}
+\code{\link{remstats}}
 }
