@@ -141,17 +141,19 @@
 #' remstats method for \code{remify_durem} objects
 #'
 #' Intercepts \code{remstats()} calls on \code{remify_durem} objects and routes
-#' them to the correct backend:
+#' them to the correct backend.  Each formula is inspected term-by-term:
 #'
 #' \itemize{
-#'   \item If \code{start_effects} or \code{end_effects} contain active-state
-#'     effects (e.g. \code{activeTie()}, \code{activeOutdegreeSender()}) the
-#'     call is forwarded to \code{\link{duremstats}}.
-#'   \item Otherwise the call is forwarded to \code{.remstats_durem}, which
-#'     computes history-weighted statistics via \code{tomstats} with optional
-#'     psi-weighting.
-#'   \item If a formula mixes active-state and history-weighted effects an error
-#'     is raised.
+#'   \item \strong{Pure active-state} formulas (only \code{activeTie()},
+#'     \code{activeOutdegreeSender()}, etc.) are forwarded to
+#'     \code{\link{duremstats}}.
+#'   \item \strong{Pure history-weighted} formulas (only \code{inertia()},
+#'     \code{reciprocity()}, etc.) are forwarded to \code{.remstats_durem},
+#'     which calls \code{tomstats} with optional psi-weighting.
+#'   \item \strong{Mixed} formulas are split automatically: active-state terms
+#'     go to \code{duremstats} and history-weighted terms go to
+#'     \code{.remstats_durem}; the two resulting arrays are combined along the
+#'     statistics dimension before being returned.
 #' }
 #'
 #' @param reh            A \code{remify_durem} object.
@@ -188,8 +190,12 @@ remstats.remify_durem <- function(reh,
                                    display_progress = FALSE,
                                    ...) {
 
+    memory <- match.arg(memory)
+
     all_durem_effects <- c(names(.durem_stat_type_directed),
                            names(.durem_stat_type_undirected))
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
 
     # Classify a formula: "durem", "history", "mixed", or "empty"
     .classify <- function(formula) {
@@ -202,32 +208,32 @@ remstats.remify_durem <- function(reh,
         return("mixed")
     }
 
+    # Split a formula into its durem and history sub-formulas
+    .split_formula <- function(formula) {
+        if (is.null(formula)) return(list(durem = NULL, history = NULL))
+        labels       <- attr(terms(formula), "term.labels")
+        effect_names <- sub("\\(.*$", "", labels)
+        is_durem     <- effect_names %in% all_durem_effects
+        make_f <- function(terms) {
+            if (length(terms) == 0L) return(NULL)
+            as.formula(paste("~", paste(terms, collapse = " + ")))
+        }
+        list(durem   = make_f(labels[ is_durem]),
+             history = make_f(labels[!is_durem]))
+    }
+
+    # ── Classify both formulas ────────────────────────────────────────────────
     cls_start <- .classify(start_effects)
     cls_end   <- .classify(end_effects)
 
-    if (cls_start == "mixed" || cls_end == "mixed")
-        stop(
-            "A formula passed to remstats() on a remify_durem object mixes ",
-            "active-state effects (activeTie, activeOutdegreeSender, ...) with ",
-            "history-weighted effects (inertia, reciprocity, ...). ",
-            "These must be computed separately via duremstats() and ",
-            ".remstats_durem() and then combined.",
-            call. = FALSE
-        )
+    use_durem   <- cls_start %in% c("durem",   "mixed") ||
+                   cls_end   %in% c("durem",   "mixed")
+    use_history <- cls_start %in% c("history", "mixed") ||
+                   cls_end   %in% c("history", "mixed")
 
-    use_durem <- cls_start == "durem" || cls_end == "durem"
-
-    if (use_durem) {
-        duremstats(
-            reh              = reh,
-            start_effects    = start_effects,
-            end_effects      = end_effects,
-            start            = start,
-            stop             = stop,
-            display_progress = display_progress
-        )
-    } else {
-        .remstats_durem(
+    # ── Pure history ──────────────────────────────────────────────────────────
+    if (!use_durem) {
+        return(.remstats_durem(
             reh              = reh,
             start_effects    = start_effects,
             end_effects      = end_effects,
@@ -235,13 +241,55 @@ remstats.remify_durem <- function(reh,
             psi_end          = psi_end,
             attr_actors      = attr_actors,
             attr_dyads       = attr_dyads,
-            memory           = match.arg(memory),
+            memory           = memory,
             memory_value     = memory_value,
             start            = start,
             stop             = stop,
             display_progress = display_progress
-        )
+        ))
     }
+
+    # ── Pure active-state ─────────────────────────────────────────────────────
+    if (!use_history) {
+        return(duremstats(
+            reh              = reh,
+            start_effects    = start_effects,
+            end_effects      = end_effects,
+            start            = start,
+            stop             = stop,
+            display_progress = display_progress
+        ))
+    }
+
+    # ── Mixed: split, compute each half, combine ──────────────────────────────
+    sp_start <- .split_formula(start_effects)
+    sp_end   <- .split_formula(end_effects)
+
+    dstats <- duremstats(
+        reh              = reh,
+        start_effects    = sp_start$durem,
+        end_effects      = sp_end$durem,
+        start            = start,
+        stop             = stop,
+        display_progress = display_progress
+    )
+
+    hstats <- .remstats_durem(
+        reh              = reh,
+        start_effects    = sp_start$history,
+        end_effects      = sp_end$history,
+        psi_start        = psi_start,
+        psi_end          = psi_end,
+        attr_actors      = attr_actors,
+        attr_dyads       = attr_dyads,
+        memory           = memory,
+        memory_value     = memory_value,
+        start            = start,
+        stop             = stop,
+        display_progress = display_progress
+    )
+
+    bind_remstats(dstats, hstats)
 }
 
 

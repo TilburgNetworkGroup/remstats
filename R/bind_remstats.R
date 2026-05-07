@@ -37,13 +37,63 @@ bind_remstats <- function(...) {
 
     # Check class
     stopifnot(
-        "All objects should be of class remstats" =
-            all(sapply(arg.list, function(x) any(class(x) == "remstats")))
+        "All objects should be of class remstats or remstats_durem" =
+            all(sapply(arg.list, function(x)
+                any(class(x) == "remstats") || inherits(x, "remstats_durem")))
     )
 
     firstclass <- class(arg.list[[1]])[1]
     if (!all(sapply(arg.list, function(x) class(x)[1] == firstclass))) {
         stop(paste0("All objects should be of class ", firstclass))
+    }
+
+    # ── remstats_durem ────────────────────────────────────────────────────────
+    if (firstclass == "remstats_durem") {
+
+        # Helper: combine a list of 3-D arrays along dim 3, dropping duplicates
+        .combine_stat_arrays <- function(arrays) {
+            arrays <- Filter(Negate(is.null), arrays)
+            if (length(arrays) == 0L) return(NULL)
+            if (length(arrays) == 1L) return(arrays[[1L]])
+
+            keep_names <- dimnames(arrays[[1L]])[[3L]]
+            keep_ids   <- vector("list", length(arrays))
+            keep_ids[[1L]] <- seq_len(dim(arrays[[1L]])[3L])
+            for (i in seq(2L, length(arrays))) {
+                cur_names  <- dimnames(arrays[[i]])[[3L]]
+                keep_ids[[i]] <- which(!(cur_names %in% keep_names))
+                keep_names <- union(keep_names, cur_names)
+            }
+
+            # Drop arrays where all stats are duplicates
+            nonempty   <- sapply(keep_ids, length) > 0L
+            arrays     <- arrays[nonempty]
+            keep_ids   <- keep_ids[nonempty]
+
+            out <- combine_stats(arrays, keep_ids)
+            dimnames(out) <- list(NULL, NULL, keep_names)
+
+            n_in  <- sum(sapply(arrays, function(x) dim(x)[3L]))
+            if (dim(out)[3L] < n_in)
+                warning("Duplicate statistics detected. Removing duplicate slices.")
+
+            out
+        }
+
+        combined_start <- .combine_stat_arrays(
+            lapply(arg.list, function(x) x$start_stats))
+        combined_end   <- .combine_stat_arrays(
+            lapply(arg.list, function(x) x$end_stats))
+
+        out <- list(
+            start_stats = combined_start,
+            end_stats   = combined_end,
+            psi_start   = arg.list[[1L]]$psi_start,
+            psi_end     = arg.list[[1L]]$psi_end
+        )
+        attr(out, "reh") <- attr(arg.list[[1L]], "reh")
+        class(out) <- "remstats_durem"
+        return(out)
     }
 
     if (firstclass == "tomstats") {

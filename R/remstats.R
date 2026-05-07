@@ -242,10 +242,11 @@ remstats <- function(
     if (inherits(reh, "remify_durem")) {
         if (isTRUE(sampling))
             warning(
-                "`sampling = TRUE` is not yet supported for `remify_durem` objects",
-                "and will be ignored."
+                "`sampling = TRUE` is not yet supported for `remify_durem` objects ",
+                "and will be ignored. Case-control sampling for the duration model ",
+                "is planned for a future release."
             )
-        return(.remstats_durem(
+        return(remstats.remify_durem(
             reh              = reh,
             start_effects    = start_effects,
             end_effects      = end_effects,
@@ -253,7 +254,7 @@ remstats <- function(
             psi_end          = psi_end,
             attr_actors      = attr_actors,
             attr_dyads       = attr_dyads,
-            memory           = memory,
+            memory           = match.arg(memory),
             memory_value     = memory_value,
             start            = start,
             stop             = stop,

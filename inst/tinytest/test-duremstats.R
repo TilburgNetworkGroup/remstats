@@ -410,15 +410,15 @@ idx_X <- grep("\\.X\\.start$", dimnames(s_sep)[[3]])
 idx_Y <- grep("\\.Y\\.start$", dimnames(s_sep)[[3]])
 
 # Row 4 (t=6): A→B(X) and A→C(X) active; B→C(Y) active; C→A not yet active
-expect_equal(s_sep[4, AB, idx_X], 1,
+expect_equal(unname(s_sep[4, AB, idx_X]), 1,
     info = "activeTie.X row4 A→B = 1 (X event active)")
-expect_equal(s_sep[4, AC, idx_X], 1,
+expect_equal(unname(s_sep[4, AC, idx_X]), 1,
     info = "activeTie.X row4 A→C = 1 (X event active)")
-expect_equal(s_sep[4, BC, idx_X], 0,
+expect_equal(unname(s_sep[4, BC, idx_X]), 0,
     info = "activeTie.X row4 B→C = 0 (B→C is type Y, not X)")
-expect_equal(s_sep[4, BC, idx_Y], 1,
+expect_equal(unname(s_sep[4, BC, idx_Y]), 1,
     info = "activeTie.Y row4 B→C = 1 (Y event active)")
-expect_equal(s_sep[4, AB, idx_Y], 0,
+expect_equal(unname(s_sep[4, AB, idx_Y]), 0,
     info = "activeTie.Y row4 A→B = 0 (A→B is type X, not Y)")
 
 # ── 17. consider_type = "interact" with typed events ─────────────────────────
@@ -459,9 +459,9 @@ AB_Y <- AB + D_base
 AC_Y <- AC + D_base
 BC_Y <- BC + D_base
 
-expect_equal(s_int[4, BC_Y, 1], 1,
+expect_equal(unname(s_int[4, BC_Y, 1]), 1,
     info = "interact row4 B→C (Y-block) = 1")
-expect_equal(s_int[4, AB_Y, 1], 0,
+expect_equal(unname(s_int[4, AB_Y, 1]), 0,
     info = "interact row4 A→B (Y-block) = 0 (A→B is type X)")
 
 # Row 1: nothing active in either block

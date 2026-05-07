@@ -213,8 +213,40 @@
     # D for "interact": one D_sep-wide block per type, concatenated
     D_interact <- as.integer(D_sep * C_reh)
 
-    # Number of output time points
+    # Number of output time points (relative to the full dual edgelist)
     M <- as.integer(stop - start + 1L)
+
+    # Full timeline — used for forward-filling per-type results
+    full_utimes <- sort(unique(reh$edgelist_dual$time))
+
+    # Helper: expand a per-type C++ result (n_tc rows) into M rows.
+    #
+    # C++ computes the active state BEFORE each unique time in the type-tc
+    # edgelist:
+    #   mat_tc[k, ] = active state before tc_utimes[k]
+    #
+    # For each time t in the full output window:
+    #   - If t IS a tc time point (t == tc_utimes[k]): use row k — the state
+    #     before that tc event is the correct "before t" statistic.
+    #   - If t is BETWEEN tc events (tc_utimes[k] < t < tc_utimes[k+1]): use
+    #     row k+1 — the state "before tc_utimes[k+1]" already incorporates
+    #     all tc events up through tc_utimes[k], which is exactly the active
+    #     state at time t.
+    #   - If t is before any tc event: the active state is empty (all zeros).
+    .expand_to_M <- function(mat_tc, tc_edgelist_mat) {
+        tc_utimes  <- sort(unique(tc_edgelist_mat[, "time"]))
+        n_tc       <- length(tc_utimes)
+        segment    <- full_utimes[(start + 1L):(stop + 1L)]  # 1-based R indexing
+        k          <- findInterval(segment, tc_utimes)        # last tc_time <= t
+        is_tc_time <- segment %in% tc_utimes
+        # tc times: row k; between tc times: row k+1 (capped at n_tc)
+        row_map    <- ifelse(is_tc_time, k, pmin(k + 1L, n_tc))
+        mat_full   <- matrix(0, nrow = M, ncol = ncol(mat_tc))
+        nz         <- row_map > 0L
+        if (any(nz))
+            mat_full[nz, ] <- mat_tc[row_map[nz], , drop = FALSE]
+        mat_full
+    }
 
     # ── Expand effect configs ──────────────────────────────────────────────────
     # Each entry carries a $type_label field:
@@ -285,16 +317,22 @@
             # riskset, then cbind the results into a [M × D*C] matrix.
             # Column order mirrors type_levels (alphabetically sorted) so that
             # type c occupies columns [(c-1)*D_sep + 1 .. c*D_sep].
+            # C++ is always called from the beginning (start=0) so it has the
+            # full history to determine the active state; the result is then
+            # forward-filled into the M-row output window.
             mats <- lapply(seq_along(type_levels), function(tc_idx) {
-                calculate_active_stats(
-                    edgelist         = ed_mat_per_type[[tc_idx]],
+                ed_tc  <- ed_mat_per_type[[tc_idx]]
+                n_tc   <- length(unique(ed_tc[, "time"]))
+                mat_tc <- calculate_active_stats(
+                    edgelist         = ed_tc,
                     risksetMatrix    = riskset_mat_sep,
                     stat_type        = stype,
                     directed         = directed,
-                    start            = as.integer(start),
-                    stop             = as.integer(stop),
+                    start            = 0L,
+                    stop             = as.integer(n_tc - 1L),
                     display_progress = FALSE   # avoid duplicate messages
                 )
+                .expand_to_M(mat_tc, ed_tc)
             })
             mat <- do.call(cbind, mats)   # [M × D*C]
         } else if (is.na(e$type_label)) {
@@ -309,17 +347,22 @@
                 display_progress = display_progress
             )
         } else {
-            # "separate": use type-filtered edgelist and untyped riskset
+            # "separate": use type-filtered edgelist and untyped riskset.
+            # C++ is always called from the beginning (start=0) so it has the
+            # full history; the result is forward-filled into the M-row window.
             tc_idx <- match(e$type_label, type_levels)
-            mat <- calculate_active_stats(
-                edgelist         = ed_mat_per_type[[tc_idx]],
+            ed_tc  <- ed_mat_per_type[[tc_idx]]
+            n_tc   <- length(unique(ed_tc[, "time"]))
+            mat_tc <- calculate_active_stats(
+                edgelist         = ed_tc,
                 risksetMatrix    = riskset_mat_sep,
                 stat_type        = stype,
                 directed         = directed,
-                start            = as.integer(start),
-                stop             = as.integer(stop),
+                start            = 0L,
+                stop             = as.integer(n_tc - 1L),
                 display_progress = display_progress
             )
+            mat <- .expand_to_M(mat_tc, ed_tc)
         }   # mat is [M × D] (or [M × D*C] for "interact")
 
         # ── Scaling ───────────────────────────────────────────────────────────
@@ -520,13 +563,13 @@ duremstats <- function(reh,
 #'       type-\eqn{c} events and calling the C++ function once per type;
 #'       no C++ changes required.  The output effect names are suffixed with
 #'       the type label, e.g. \code{activeTie.X.start}.}
-#'     \item{\code{"interact"}}{Compute one statistic with \eqn{D\times C} columns:
-#'     for each (actor-pair, type) combination, only active events of that type
-#'     contribute.  Implemented R-side by filtering \code{edgelist_dual} to
-#'     each type and calling the C++ function once per type; results are
-#'     \code{cbind}-ed in alphabetical type order.  The output has
-#'     \eqn{D_{\text{base}} \times C} columns and is consistent with a typed
-#'     riskset (\code{extend_riskset_by_type = TRUE}).}
+#'     \item{\code{"interact"}}{Compute one statistic with \eqn{D * C} columns:
+#'       for each (actor-pair, type) combination, only active events of that type
+#'       contribute.  Implemented R-side by filtering \code{edgelist_dual} to
+#'       each type and calling the C++ function once per type; results are
+#'       \code{cbind}-ed in alphabetical type order.  The output has
+#'       \eqn{D_{base} * C} columns and is consistent with a typed
+#'       riskset (\code{extend_riskset_by_type = TRUE}).}
 #'   }
 #'
 #' @return A named list with elements \code{effect}, \code{scaling}, and
