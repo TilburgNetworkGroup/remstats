@@ -269,7 +269,7 @@
 		k          <- findInterval(segment, tc_utimes)        # last tc_time <= t
 		is_tc_time <- segment %in% tc_utimes
 		# tc times: row k; between tc times: row k+1 (capped at n_tc)
-		row_map    <- ifelse(is_tc_time, k, pmin(k + 1L, n_tc))
+		row_map 	 <- ifelse(is_tc_time, k, pmin(k + 1L, n_tc + 1L))
 		mat_full   <- matrix(0, nrow = M, ncol = ncol(mat_tc))
 		nz         <- row_map > 0L
 		if (any(nz))
@@ -278,9 +278,10 @@
 	}
 	
 	# ── Expand effect configs ──────────────────────────────────────────────────
-	# Each entry carries a $type_label field:
-	#   NA           → "ignore" (or "interact") — one entry per original effect
-	#   "<type>"     → "separate"               — one entry per type
+	# Each entry carries:
+	#   $type_label  — name suffix for dimnames
+	#   $event_type  — filter active ties by this event type (interact only)
+	#   $dyad_type   — column block index in the D*C output (interact only)
 	expanded <- list()
 	for (cfg in effect_configs) {
 		if (cfg$consider_type == "separate" && has_types && length(type_levels) > 0L) {
@@ -295,8 +296,31 @@
 			cfg$consider_type <- "ignore"
 			cfg$type_label    <- NA_character_
 			expanded          <- c(expanded, list(cfg))
+		} else if (cfg$consider_type == "interact" && has_types && !type_riskset) {
+			# "interact" requires extend_riskset_by_type = TRUE; coerce to
+			# "separate" (same behavior as tomstats for non-duration models)
+			warning("\"interact\" requires extend_riskset_by_type = TRUE; ",
+							"coercing to \"separate\".", call. = FALSE)
+			cfg$consider_type <- "separate"
+			for (tc in type_levels) {
+				e            <- cfg
+				e$type_label <- tc
+				expanded     <- c(expanded, list(e))
+			}
+		} else if (cfg$consider_type == "interact" && has_types && type_riskset) {
+			# "interact" with extended riskset: C×C entries
+			# Convention follows tomstats: stat.eventType.dyadType
+			for (et in type_levels) {
+				for (dt in type_levels) {
+					e            <- cfg
+					e$type_label <- paste0(et, ".", dt)
+					e$event_type <- et    # filter active ties by this type
+					e$dyad_type  <- dt    # place result in this column block
+					expanded     <- c(expanded, list(e))
+				}
+			}
 		} else {
-			# "ignore" and "interact" (with types): single output stat
+			# "ignore": single output stat
 			cfg$type_label <- NA_character_
 			expanded       <- c(expanded, list(cfg))
 		}
@@ -309,10 +333,13 @@
 	}, character(1L))
 	
 	# Choose D for each expanded effect
+	# When type_riskset=TRUE, "separate" also uses D_interact (the 6-col result
+	# is replicated across all C type blocks, matching tomstats behavior).
 	out_D <- vapply(expanded, function(e) {
-		if (e$consider_type == "interact") D_interact
-		else if (!is.na(e$type_label))     D_sep
-		else                               D_ignore
+		if (e$consider_type == "interact")               D_interact
+		else if (!is.na(e$type_label) && type_riskset)   D_interact
+		else if (!is.na(e$type_label))                   D_sep
+		else                                             D_ignore
 	}, integer(1L))
 	
 	# All effects should agree on D; mixing consider_type values with different
@@ -330,6 +357,11 @@
 	out   <- array(0, dim      = c(M, D_out, P_out),
 								 dimnames = list(NULL, NULL, paste0(out_names, suffix)))
 	
+	# ── Pre-compute per-type active stats for interact effects ──────────────
+	# Cache keyed by (effect, type) to avoid redundant C++ calls across C×C
+	# entries that share the same event_type.
+	interact_cache <- list()
+	
 	# ── Per-effect computation ────────────────────────────────────────────────
 	for (p_idx in seq_along(expanded)) {
 		e     <- expanded[[p_idx]]
@@ -341,16 +373,13 @@
 							if (!is.na(e$type_label)) paste0(" [type = ", e$type_label, "]") else "")
 		
 		# Choose the right edgelist and riskset, then call C++
-		if (e$consider_type == "interact") {
-			# Call C++ once per type with the type-filtered edgelist and untyped
-			# riskset, then cbind the results into a [M × D*C] matrix.
-			# Column order mirrors type_levels (alphabetically sorted) so that
-			# type c occupies columns [(c-1)*D_sep + 1 .. c*D_sep].
-			# C++ is always called from the beginning (start=0) so it has the
-			# full history to determine the active state; the result is then
-			# forward-filled into the M-row output window.
-			mats <- lapply(seq_along(type_levels), function(tc_idx) {
-				ed_tc  <- ed_mat_per_type[[tc_idx]]
+		if (e$consider_type == "interact" && !is.null(e$event_type)) {
+			# C×C interact: compute per event_type (cached), place in dyad_type
+			# column block of [M × D_interact].
+			cache_key <- paste0(eff, "::", e$event_type)
+			if (is.null(interact_cache[[cache_key]])) {
+				et_idx <- match(e$event_type, type_levels)
+				ed_tc  <- ed_mat_per_type[[et_idx]]
 				n_tc   <- length(unique(ed_tc[, "time"]))
 				mat_tc <- calculate_active_stats(
 					edgelist         = ed_tc,
@@ -359,11 +388,16 @@
 					directed         = directed,
 					start            = 0L,
 					stop             = as.integer(n_tc - 1L),
-					display_progress = FALSE   # avoid duplicate messages
+					display_progress = FALSE
 				)
-				.expand_to_M(mat_tc, ed_tc)
-			})
-			mat <- do.call(cbind, mats)   # [M × D*C]
+				interact_cache[[cache_key]] <- .expand_to_M(mat_tc, ed_tc)
+			}
+			et_mat <- interact_cache[[cache_key]]   # [M × D_sep]
+			dt_idx <- match(e$dyad_type, type_levels)
+			mat    <- matrix(0, nrow = M, ncol = D_interact)
+			col_start <- (dt_idx - 1L) * D_sep + 1L
+			col_end   <- dt_idx * D_sep
+			mat[, col_start:col_end] <- et_mat
 		} else if (is.na(e$type_label)) {
 			# "ignore": use full edgelist and (possibly typed) ignore riskset
 			mat <- calculate_active_stats(
@@ -375,6 +409,8 @@
 				stop             = as.integer(stop),
 				display_progress = display_progress
 			)
+			# C++ appends a post-last-event row; drop it for the ignore path
+			mat <- mat[seq_len(M), , drop = FALSE]
 		} else {
 			# "separate": use type-filtered edgelist and untyped riskset.
 			# C++ is always called from the beginning (start=0) so it has the
@@ -391,8 +427,14 @@
 				stop             = as.integer(n_tc - 1L),
 				display_progress = display_progress
 			)
-			mat <- .expand_to_M(mat_tc, ed_tc)
-		}   # mat is [M × D] (or [M × D*C] for "interact")
+			mat_sep <- .expand_to_M(mat_tc, ed_tc)   # [M × D_sep]
+			if (type_riskset) {
+				# Replicate across all C type blocks to fill [M × D_interact]
+				mat <- do.call(cbind, rep(list(mat_sep), C_reh))
+			} else {
+				mat <- mat_sep
+			}
+		}   # mat is [M × D_out]
 		
 		# ── Scaling ───────────────────────────────────────────────────────────
 		if (identical(e$scaling, "std")) {
@@ -496,7 +538,10 @@ duremstats <- function(reh,
 	
 	out <- list(start_stats = ss, end_stats = es)
 	attr(out, "reh") <- reh
-	class(out) <- "remstats_durem"   # same class → compatible with estimation
+	attr(out, "model") <- reh$meta$model
+	attr(out, "subset") <- c(start+1,stop+1)
+	
+	class(out) <- c("remstats_durem", "remstats")   # same class → compatible with estimation
 	out
 }
 

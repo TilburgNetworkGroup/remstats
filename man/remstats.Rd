@@ -13,8 +13,8 @@ remstats(
   attr_dyads = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
-  start = 2,
-  stop = Inf,
+  first = 2,
+  last = Inf,
   display_progress = FALSE,
   sampling = FALSE,
   samp_num = NULL,
@@ -58,11 +58,11 @@ actors (see Details).}
 is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 parameter required). See `Details'.}
 
-\item{start}{an optional integer value, specifying the index of the first
+\item{first}{an optional integer value, specifying the index of the first
 time or event in the relational event history for which statistics must be 
 computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.}
 
-\item{stop}{an optional integer value, specifying the index of the last
+\item{last}{an optional integer value, specifying the index of the last
 time or event in the relational event history for which statistics must be 
 computed (see 'Details')}
 
@@ -96,8 +96,9 @@ weighting. The weight of each past event in the start statistics is
 Only used when \code{reh} is a \code{remify_durem} object.}
 
 \item{psi_end}{Numeric. Duration exponent for end-model history weighting.
-Default \code{1}. Only used when \code{reh} is a \code{remify_durem}
-object.}
+The weight of each past event in the end statistics is
+\code{event_weight * (end - time + 1)^psi_start}. Default \code{1}.
+Only used when \code{reh} is a \code{remify_durem} object.}
 }
 \value{
 An object of class 'remstats'. In case of the 

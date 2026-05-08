@@ -57,71 +57,96 @@
     directed_start <- isTRUE(reh$meta$directed)
     directed_end   <- isTRUE(reh$durem$directed_end)
 
+    # Preserve the original extend_riskset_by_type setting
+    ext_by_type <- isTRUE(reh$meta$with_type_riskset)
+
     # ── Helper: build a remify-ready edgelist with psi-scaled weights ─────────
     # Applies (base_weight * duration^psi) when either user weights exist or
     # psi != 0.  When both are absent the weight column is omitted entirely and
     # remify/tomstats treat every event as having weight 1.
     has_weight_col <- "weight" %in% names(ed)
     .make_el <- function(psi) {
-        out <- data.frame(
-            time   = ed$time,
-            actor1 = ed$actor1,
-            actor2 = ed$actor2,
-            stringsAsFactors = FALSE
-        )
-        if (has_weight_col || psi != 0) {
-            base_w    <- if (has_weight_col) ed$weight else rep(1, nrow(ed))
-            out$weight <- base_w * ed$duration ^ psi
-        }
-        if ("type" %in% names(ed)) out$type <- ed$type
-        out
+    	out <- data.frame(
+    		time   = ed$time,
+    		actor1 = ed$actor1,
+    		actor2 = ed$actor2,
+    		stringsAsFactors = FALSE
+    	)
+    	base_w <- if (has_weight_col) ed$weight else rep(1, nrow(ed))
+    	w <- base_w * (ed$duration + 1) ^ psi
+    	# Only completed (end) events contribute to history; start events
+    	# are evaluation points with zero weight. This ensures ongoing
+    	# events don't inflate inertia before their duration is realized.
+    	w[ed$status == "start"] <- 0
+    	out$weight <- w
+    	if ("type" %in% names(ed)) out$type <- ed$type
+    	out
     }
 
     # ── Start model ───────────────────────────────────────────────────────────
-    suppressWarnings(
-        reh_start <- remify(
-            edgelist = .make_el(psi_start),
-            directed = directed_start,
-            model    = "tie",
-            actors   = actors
+    if (!is.null(start_effects)) {
+        suppressWarnings(
+            reh_start <- remify(
+            	edgelist = .make_el(psi_start),
+                directed = directed_start,
+                model    = "tie",
+                actors   = actors,
+                extend_riskset_by_type = ext_by_type
+            )
         )
-    )
 
-    start_stats <- tomstats(
-        effects          = start_effects,
-        reh              = reh_start,
-        attr_actors      = attr_actors,
-        attr_dyads       = attr_dyads,
-        memory           = memory,
-        memory_value     = memory_value,
-        start            = start,
-        stop             = stop,
-        display_progress = display_progress
-    )
-    dimnames(start_stats)[[3]] <- paste0(dimnames(start_stats)[[3]], ".start")
+        start_stats <- tomstats(
+            effects          = start_effects,
+            reh              = reh_start,
+            attr_actors      = attr_actors,
+            attr_dyads       = attr_dyads,
+            memory           = memory,
+            memory_value     = memory_value,
+            start            = start,
+            stop             = stop,
+            display_progress = display_progress
+        )
+        dimnames(start_stats)[[3]] <- paste0(dimnames(start_stats)[[3]], ".start")
+    } else {
+        start_stats <- NULL
+    }
 
     # ── End model ─────────────────────────────────────────────────────────────
-    suppressWarnings(
-        reh_end <- remify(
-            edgelist = .make_el(psi_end),
-            directed = directed_end,
-            model    = "tie",
-            actors   = actors
+    if (!is.null(end_effects)) {
+        suppressWarnings(
+            reh_end <- remify(
+            		edgelist = .make_el(psi_end),
+                directed = directed_end,
+                model    = "tie",
+                actors   = actors,
+                extend_riskset_by_type = ext_by_type
+            )
         )
-    )
 
-    end_stats <- tomstats(
-        effects          = end_effects,
-        reh              = reh_end,
-        attr_actors      = attr_actors,
-        attr_dyads       = attr_dyads,
-        memory           = memory,
-        memory_value     = memory_value,
-        start            = start,
-        stop             = stop,
-        display_progress = display_progress
-    )
-    dimnames(end_stats)[[3]] <- paste0(dimnames(end_stats)[[3]], ".end")
+        end_stats <- tomstats(
+            effects          = end_effects,
+            reh              = reh_end,
+            attr_actors      = attr_actors,
+            attr_dyads       = attr_dyads,
+            memory           = memory,
+            memory_value     = memory_value,
+            start            = start,
+            stop             = stop,
+            display_progress = display_progress
+        )
+        dimnames(end_stats)[[3]] <- paste0(dimnames(end_stats)[[3]], ".end")
+        
+    } else {
+        end_stats <- NULL
+    }
+    
+    if (!is.null(end_effects)) {
+    	last_timepoint <- dim(end_stats)[1] + start - 1L
+    }else if (!is.null(start_effects)) {
+    	last_timepoint <- dim(end_stats)[1] + start - 1L
+    }else{
+    	last_timepoint <- stop
+    }
 
     # ── Assemble remstats_durem object ────────────────────────────────────────
     out <- list(
@@ -131,7 +156,9 @@
         psi_end     = psi_end
     )
     attr(out, "reh") <- reh
-    class(out) <- "remstats_durem"
+    attr(out, "model") <- reh$meta$model
+    attr(out, "subset") <- c(start,last_timepoint)
+    class(out) <- c("remstats_durem", "remstats")
 
     out
 }

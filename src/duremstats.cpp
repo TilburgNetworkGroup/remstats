@@ -216,6 +216,18 @@ arma::mat calculate_active_stats(
 
         p.increment();
     }
+    
+    // ── Final-state row: active state after all events ────────────────────────
+    // Needed so the R caller can map time points beyond the last event.
+    stat.resize(M + 1, D);
+    for (int i = 0; i < N; ++i) {
+    	for (int j = 0; j < N; ++j) {
+    		if (i == j) continue;
+    		int dyad = (int)risksetMatrix(i, j);
+    		if (dyad < 0) continue;
+    		// same switch as above — or factor into a helper
+    	}
+    }
 
     return stat;
 }

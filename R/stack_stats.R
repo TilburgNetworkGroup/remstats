@@ -518,7 +518,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 
     # Blocking (for start risk set): events that started ≤ t and haven't ended
     blocked_scols <- unique(s_col[edgelist$time <= t &
-                                   (is.na(edgelist$end) | edgelist$end > t)])
+                                   (is.na(edgelist$end) | edgelist$end >= t)])
 
     # State 1 – observed end (ended exactly at t, started before t)
     end_obs_cols <- unique(e_col[!is.na(edgelist$end) &

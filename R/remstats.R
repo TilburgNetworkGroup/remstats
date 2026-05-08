@@ -130,8 +130,9 @@
 #'   \code{event_weight * (end - time + 1)^psi_start}. Default \code{1}.
 #'   Only used when \code{reh} is a \code{remify_durem} object.
 #' @param psi_end Numeric. Duration exponent for end-model history weighting.
-#'   Default \code{1}. Only used when \code{reh} is a \code{remify_durem}
-#'   object.
+#'   The weight of each past event in the end statistics is
+#'   \code{event_weight * (end - time + 1)^psi_start}. Default \code{1}.
+#'   Only used when \code{reh} is a \code{remify_durem} object.
 #' @param reh an object of class \code{"\link[remify]{remify}"} characterizing
 #' the relational event history. May also be a \code{remify_durem} object for
 #' duration relational event models.
@@ -144,10 +145,10 @@
 #' @param memory_value Numeric value indicating the memory parameter. Default 
 #' is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 #' parameter required). See `Details'.
-#' @param start an optional integer value, specifying the index of the first
+#' @param first an optional integer value, specifying the index of the first
 #' time or event in the relational event history for which statistics must be 
 #' computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.
-#' @param stop an optional integer value, specifying the index of the last
+#' @param last an optional integer value, specifying the index of the last
 #' time or event in the relational event history for which statistics must be 
 #' computed (see 'Details')
 #' @param sampling Logical. If \code{TRUE}, statistics are computed using
@@ -222,8 +223,8 @@ remstats <- function(
     attr_dyads       = NULL,
     memory           = c("full", "window", "decay", "interval"),
     memory_value     = NA,
-    start            = 2,
-    stop             = Inf,
+    first            = 2,
+    last             = Inf,
     display_progress = FALSE,
     sampling         = FALSE,
     samp_num         = NULL,
@@ -235,6 +236,10 @@ remstats <- function(
     psi_end          = 1
 ) {
 
+		#changed argument names not to confuse these with start_effects and end_effects
+		start <- first
+		stop <- last
+		
     # ── Input validation ─────────────────────────────────────────────────────
     is_durem <- inherits(reh, "remify_durem")
 

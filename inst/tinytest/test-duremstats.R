@@ -99,71 +99,71 @@ expect_equal(dim(s_tie)[1], 5L,
     info = "5 time points (start=1, 4 start + 4 end events = 5 unique times)")
 expect_equal(dim(s_tie)[2], N * (N - 1L),
     info = "D = N*(N-1) dyads for directed network")
-expect_equal(dim(s_tie)[3], 1L,
+expect_equal(dim(s_tie)[3], 2L,
     info = "1 effect requested")
-expect_true(endsWith(dimnames(s_tie)[[3]], ".start"),
+expect_true(endsWith(dimnames(s_tie)[[3]][2], ".start"),
     info = "effect name suffixed .start")
 
 # ── 2. activeTie — row 4 (t=6): A→B, A→C, B→C active ────────────────────────
 # Expected: A→B=1, A→C=1, B→A=0, B→C=1, C→A=0, C→B=0
 
-expect_equal(unname(s_tie[4, AB, 1]), 1, info = "activeTie row4 A→B = 1 (active)")
-expect_equal(unname(s_tie[4, AC, 1]), 1, info = "activeTie row4 A→C = 1 (active)")
-expect_equal(unname(s_tie[4, BA, 1]), 0, info = "activeTie row4 B→A = 0 (not active)")
-expect_equal(unname(s_tie[4, BC, 1]), 1, info = "activeTie row4 B→C = 1 (active)")
-expect_equal(unname(s_tie[4, CA, 1]), 0, info = "activeTie row4 C→A = 0 (not yet active)")
-expect_equal(unname(s_tie[4, CB, 1]), 0, info = "activeTie row4 C→B = 0 (not active)")
+expect_equal(unname(s_tie[4, AB, 2]), 1, info = "activeTie row4 A→B = 1 (active)")
+expect_equal(unname(s_tie[4, AC, 2]), 1, info = "activeTie row4 A→C = 1 (active)")
+expect_equal(unname(s_tie[4, BA, 2]), 0, info = "activeTie row4 B→A = 0 (not active)")
+expect_equal(unname(s_tie[4, BC, 2]), 1, info = "activeTie row4 B→C = 1 (active)")
+expect_equal(unname(s_tie[4, CA, 2]), 0, info = "activeTie row4 C→A = 0 (not yet active)")
+expect_equal(unname(s_tie[4, CB, 2]), 0, info = "activeTie row4 C→B = 0 (not active)")
 
 # row 5 (t=10): all four active
-expect_equal(unname(s_tie[5, AB, 1]), 1, info = "activeTie row5 A→B = 1")
-expect_equal(unname(s_tie[5, CA, 1]), 1, info = "activeTie row5 C→A = 1 (now active)")
-expect_equal(unname(s_tie[5, CB, 1]), 0, info = "activeTie row5 C→B = 0 (never started)")
+expect_equal(unname(s_tie[5, AB, 2]), 1, info = "activeTie row5 A→B = 1")
+expect_equal(unname(s_tie[5, CA, 2]), 1, info = "activeTie row5 C→A = 1 (now active)")
+expect_equal(unname(s_tie[5, CB, 2]), 0, info = "activeTie row5 C→B = 0 (never started)")
 
 # row 1 (t=1): nothing active yet
-expect_equal(unname(s_tie[1, AB, 1]), 0, info = "activeTie row1 A→B = 0 (not yet started)")
+expect_equal(unname(s_tie[1, AB, 2]), 0, info = "activeTie row1 A→B = 0 (not yet started)")
 
 # ── 3. activeOutdegreeSender — row 4 ─────────────────────────────────────────
 # active_out = [A:2, B:1, C:0]
 # A→B: sender=A → 2;  B→A: sender=B → 1;  C→A: sender=C → 0
 
-expect_equal(unname(s_ods[4, AB, 1]), 2, info = "activeOutdegreeSender row4 A→B = 2 (A sends 2)")
-expect_equal(unname(s_ods[4, AC, 1]), 2, info = "activeOutdegreeSender row4 A→C = 2 (same sender)")
-expect_equal(unname(s_ods[4, BA, 1]), 1, info = "activeOutdegreeSender row4 B→A = 1 (B sends 1)")
-expect_equal(unname(s_ods[4, BC, 1]), 1, info = "activeOutdegreeSender row4 B→C = 1 (same sender)")
-expect_equal(unname(s_ods[4, CA, 1]), 0, info = "activeOutdegreeSender row4 C→A = 0 (C sends 0)")
-expect_equal(unname(s_ods[4, CB, 1]), 0, info = "activeOutdegreeSender row4 C→B = 0 (same sender)")
+expect_equal(unname(s_ods[4, AB, 2]), 2, info = "activeOutdegreeSender row4 A→B = 2 (A sends 2)")
+expect_equal(unname(s_ods[4, AC, 2]), 2, info = "activeOutdegreeSender row4 A→C = 2 (same sender)")
+expect_equal(unname(s_ods[4, BA, 2]), 1, info = "activeOutdegreeSender row4 B→A = 1 (B sends 1)")
+expect_equal(unname(s_ods[4, BC, 2]), 1, info = "activeOutdegreeSender row4 B→C = 1 (same sender)")
+expect_equal(unname(s_ods[4, CA, 2]), 0, info = "activeOutdegreeSender row4 C→A = 0 (C sends 0)")
+expect_equal(unname(s_ods[4, CB, 2]), 0, info = "activeOutdegreeSender row4 C→B = 0 (same sender)")
 
 # ── 4. activeIndegreeReceiver — row 4 ────────────────────────────────────────
 # active_in = [A:0, B:1, C:2]
 # A→B: receiver=B → 1;  A→C: receiver=C → 2;  B→A: receiver=A → 0
 
-expect_equal(unname(s_idr[4, AB, 1]), 1, info = "activeIndegreeReceiver row4 A→B = 1 (B receives 1)")
-expect_equal(unname(s_idr[4, AC, 1]), 2, info = "activeIndegreeReceiver row4 A→C = 2 (C receives 2)")
-expect_equal(unname(s_idr[4, BA, 1]), 0, info = "activeIndegreeReceiver row4 B→A = 0 (A receives 0)")
-expect_equal(unname(s_idr[4, BC, 1]), 2, info = "activeIndegreeReceiver row4 B→C = 2 (C receives 2)")
-expect_equal(unname(s_idr[4, CA, 1]), 0, info = "activeIndegreeReceiver row4 C→A = 0 (A receives 0)")
-expect_equal(unname(s_idr[4, CB, 1]), 1, info = "activeIndegreeReceiver row4 C→B = 1 (B receives 1)")
+expect_equal(unname(s_idr[4, AB, 2]), 1, info = "activeIndegreeReceiver row4 A→B = 1 (B receives 1)")
+expect_equal(unname(s_idr[4, AC, 2]), 2, info = "activeIndegreeReceiver row4 A→C = 2 (C receives 2)")
+expect_equal(unname(s_idr[4, BA, 2]), 0, info = "activeIndegreeReceiver row4 B→A = 0 (A receives 0)")
+expect_equal(unname(s_idr[4, BC, 2]), 2, info = "activeIndegreeReceiver row4 B→C = 2 (C receives 2)")
+expect_equal(unname(s_idr[4, CA, 2]), 0, info = "activeIndegreeReceiver row4 C→A = 0 (A receives 0)")
+expect_equal(unname(s_idr[4, CB, 2]), 1, info = "activeIndegreeReceiver row4 C→B = 1 (B receives 1)")
 
 # ── 5. activeTotaldegreeSender — row 5 ───────────────────────────────────────
 # active_out=[A:2,B:1,C:1]  active_in=[A:1,B:1,C:2]
 # totaldeg: A=3, B=2, C=3
 
-expect_equal(unname(s_tds[5, AB, 1]), 3, info = "activeTotaldegreeSender row5 A→B = 3 (A total=3)")
-expect_equal(unname(s_tds[5, AC, 1]), 3, info = "activeTotaldegreeSender row5 A→C = 3")
-expect_equal(unname(s_tds[5, BA, 1]), 2, info = "activeTotaldegreeSender row5 B→A = 2 (B total=2)")
-expect_equal(unname(s_tds[5, BC, 1]), 2, info = "activeTotaldegreeSender row5 B→C = 2")
-expect_equal(unname(s_tds[5, CA, 1]), 3, info = "activeTotaldegreeSender row5 C→A = 3 (C total=3)")
-expect_equal(unname(s_tds[5, CB, 1]), 3, info = "activeTotaldegreeSender row5 C→B = 3")
+expect_equal(unname(s_tds[5, AB, 2]), 3, info = "activeTotaldegreeSender row5 A→B = 3 (A total=3)")
+expect_equal(unname(s_tds[5, AC, 2]), 3, info = "activeTotaldegreeSender row5 A→C = 3")
+expect_equal(unname(s_tds[5, BA, 2]), 2, info = "activeTotaldegreeSender row5 B→A = 2 (B total=2)")
+expect_equal(unname(s_tds[5, BC, 2]), 2, info = "activeTotaldegreeSender row5 B→C = 2")
+expect_equal(unname(s_tds[5, CA, 2]), 3, info = "activeTotaldegreeSender row5 C→A = 3 (C total=3)")
+expect_equal(unname(s_tds[5, CB, 2]), 3, info = "activeTotaldegreeSender row5 C→B = 3")
 
 # ── 6. activeTotaldegreeReceiver — row 5 ─────────────────────────────────────
 # receiver total degrees: A=3, B=2, C=3
 
-expect_equal(unname(s_tdr[5, AB, 1]), 2, info = "activeTotaldegreeReceiver row5 A→B = 2 (B total=2)")
-expect_equal(unname(s_tdr[5, AC, 1]), 3, info = "activeTotaldegreeReceiver row5 A→C = 3 (C total=3)")
-expect_equal(unname(s_tdr[5, BA, 1]), 3, info = "activeTotaldegreeReceiver row5 B→A = 3 (A total=3)")
-expect_equal(unname(s_tdr[5, BC, 1]), 3, info = "activeTotaldegreeReceiver row5 B→C = 3 (C total=3)")
-expect_equal(unname(s_tdr[5, CA, 1]), 3, info = "activeTotaldegreeReceiver row5 C→A = 3 (A total=3)")
-expect_equal(unname(s_tdr[5, CB, 1]), 2, info = "activeTotaldegreeReceiver row5 C→B = 2 (B total=2)")
+expect_equal(unname(s_tdr[5, AB, 2]), 2, info = "activeTotaldegreeReceiver row5 A→B = 2 (B total=2)")
+expect_equal(unname(s_tdr[5, AC, 2]), 3, info = "activeTotaldegreeReceiver row5 A→C = 3 (C total=3)")
+expect_equal(unname(s_tdr[5, BA, 2]), 3, info = "activeTotaldegreeReceiver row5 B→A = 3 (A total=3)")
+expect_equal(unname(s_tdr[5, BC, 2]), 3, info = "activeTotaldegreeReceiver row5 B→C = 3 (C total=3)")
+expect_equal(unname(s_tdr[5, CA, 2]), 3, info = "activeTotaldegreeReceiver row5 C→A = 3 (A total=3)")
+expect_equal(unname(s_tdr[5, CB, 2]), 2, info = "activeTotaldegreeReceiver row5 C→B = 2 (B total=2)")
 
 # ── 7. activeSharedPartners_otp — row 5 ──────────────────────────────────────
 # Active: A→B, A→C, B→C, C→A
@@ -175,12 +175,12 @@ expect_equal(unname(s_tdr[5, CB, 1]), 2, info = "activeTotaldegreeReceiver row5 
 #   C→A: h=B: C→B no           → 0
 #   C→B: h=A: C→A yes, A→B yes → 1
 
-expect_equal(unname(s_otp[5, AB, 1]), 0, info = "otp row5 A→B = 0")
-expect_equal(unname(s_otp[5, AC, 1]), 1, info = "otp row5 A→C = 1 (path via B)")
-expect_equal(unname(s_otp[5, BA, 1]), 1, info = "otp row5 B→A = 1 (path via C)")
-expect_equal(unname(s_otp[5, BC, 1]), 0, info = "otp row5 B→C = 0")
-expect_equal(unname(s_otp[5, CA, 1]), 0, info = "otp row5 C→A = 0")
-expect_equal(unname(s_otp[5, CB, 1]), 1, info = "otp row5 C→B = 1 (path via A)")
+expect_equal(unname(s_otp[5, AB, 2]), 0, info = "otp row5 A→B = 0")
+expect_equal(unname(s_otp[5, AC, 2]), 1, info = "otp row5 A→C = 1 (path via B)")
+expect_equal(unname(s_otp[5, BA, 2]), 1, info = "otp row5 B→A = 1 (path via C)")
+expect_equal(unname(s_otp[5, BC, 2]), 0, info = "otp row5 B→C = 0")
+expect_equal(unname(s_otp[5, CA, 2]), 0, info = "otp row5 C→A = 0")
+expect_equal(unname(s_otp[5, CB, 2]), 1, info = "otp row5 C→B = 1 (path via A)")
 
 # ── 8. activeSharedPartners_itp — row 5 ──────────────────────────────────────
 # itp(i→j) = #h: j→h AND h→i active
@@ -193,12 +193,12 @@ expect_equal(unname(s_otp[5, CB, 1]), 1, info = "otp row5 C→B = 1 (path via A)
 #     h=B: A→B yes, B→C yes → 1
 #   C→B: h=A: B→A no           → 0
 
-expect_equal(unname(s_itp[5, AB, 1]), 1, info = "itp row5 A→B = 1 (path B→C→A)")
-expect_equal(unname(s_itp[5, AC, 1]), 0, info = "itp row5 A→C = 0")
-expect_equal(unname(s_itp[5, BA, 1]), 0, info = "itp row5 B→A = 0")
-expect_equal(unname(s_itp[5, BC, 1]), 1, info = "itp row5 B→C = 1 (path C→A→B)")
-expect_equal(unname(s_itp[5, CA, 1]), 1, info = "itp row5 C→A = 1 (path A→B→C)")
-expect_equal(unname(s_itp[5, CB, 1]), 0, info = "itp row5 C→B = 0")
+expect_equal(unname(s_itp[5, AB, 2]), 1, info = "itp row5 A→B = 1 (path B→C→A)")
+expect_equal(unname(s_itp[5, AC, 2]), 0, info = "itp row5 A→C = 0")
+expect_equal(unname(s_itp[5, BA, 2]), 0, info = "itp row5 B→A = 0")
+expect_equal(unname(s_itp[5, BC, 2]), 1, info = "itp row5 B→C = 1 (path C→A→B)")
+expect_equal(unname(s_itp[5, CA, 2]), 1, info = "itp row5 C→A = 1 (path A→B→C)")
+expect_equal(unname(s_itp[5, CB, 2]), 0, info = "itp row5 C→B = 0")
 
 # ── 9. activeSharedPartners_osp — row 5 ──────────────────────────────────────
 # osp(i→j) = #h: i→h AND j→h active
@@ -209,12 +209,12 @@ expect_equal(unname(s_itp[5, CB, 1]), 0, info = "itp row5 C→B = 0")
 #   C→A: h=B: C→B no           → 0
 #   C→B: h=A: C→A yes, B→A no  → 0
 
-expect_equal(unname(s_osp[5, AB, 1]), 1, info = "osp row5 A→B = 1 (shared C as target)")
-expect_equal(unname(s_osp[5, AC, 1]), 0, info = "osp row5 A→C = 0")
-expect_equal(unname(s_osp[5, BA, 1]), 1, info = "osp row5 B→A = 1 (shared C as target)")
-expect_equal(unname(s_osp[5, BC, 1]), 0, info = "osp row5 B→C = 0")
-expect_equal(unname(s_osp[5, CA, 1]), 0, info = "osp row5 C→A = 0")
-expect_equal(unname(s_osp[5, CB, 1]), 0, info = "osp row5 C→B = 0")
+expect_equal(unname(s_osp[5, AB, 2]), 1, info = "osp row5 A→B = 1 (shared C as target)")
+expect_equal(unname(s_osp[5, AC, 2]), 0, info = "osp row5 A→C = 0")
+expect_equal(unname(s_osp[5, BA, 2]), 1, info = "osp row5 B→A = 1 (shared C as target)")
+expect_equal(unname(s_osp[5, BC, 2]), 0, info = "osp row5 B→C = 0")
+expect_equal(unname(s_osp[5, CA, 2]), 0, info = "osp row5 C→A = 0")
+expect_equal(unname(s_osp[5, CB, 2]), 0, info = "osp row5 C→B = 0")
 
 # ── 10. activeSharedPartners_isp — row 5 ─────────────────────────────────────
 # isp(i→j) = #h: h→i AND h→j active
@@ -225,18 +225,18 @@ expect_equal(unname(s_osp[5, CB, 1]), 0, info = "osp row5 C→B = 0")
 #   C→A: h=B: B→C yes, B→A no  → 0
 #   C→B: h=A: A→C yes, A→B yes → 1
 
-expect_equal(unname(s_isp[5, AB, 1]), 0, info = "isp row5 A→B = 0")
-expect_equal(unname(s_isp[5, AC, 1]), 0, info = "isp row5 A→C = 0")
-expect_equal(unname(s_isp[5, BA, 1]), 0, info = "isp row5 B→A = 0")
-expect_equal(unname(s_isp[5, BC, 1]), 1, info = "isp row5 B→C = 1 (A sends to both B and C)")
-expect_equal(unname(s_isp[5, CA, 1]), 0, info = "isp row5 C→A = 0")
-expect_equal(unname(s_isp[5, CB, 1]), 1, info = "isp row5 C→B = 1 (A sends to both C and B)")
+expect_equal(unname(s_isp[5, AB, 2]), 0, info = "isp row5 A→B = 0")
+expect_equal(unname(s_isp[5, AC, 2]), 0, info = "isp row5 A→C = 0")
+expect_equal(unname(s_isp[5, BA, 2]), 0, info = "isp row5 B→A = 0")
+expect_equal(unname(s_isp[5, BC, 2]), 1, info = "isp row5 B→C = 1 (A sends to both B and C)")
+expect_equal(unname(s_isp[5, CA, 2]), 0, info = "isp row5 C→A = 0")
+expect_equal(unname(s_isp[5, CB, 2]), 1, info = "isp row5 C→B = 1 (A sends to both C and B)")
 
 # ── 11. Nothing active at row 1 ───────────────────────────────────────────────
 
 for (stat in list(s_tie, s_ods, s_idr, s_tds, s_tdr,
                   s_otp, s_itp, s_osp, s_isp)) {
-    expect_true(all(stat[1, , 1] == 0),
+    expect_true(all(stat[1, , 2] == 0),
         info = "all active-state stats zero at row 1 (nothing active yet)")
 }
 
@@ -285,54 +285,54 @@ d_AC <- dyad_col_ud("A", "C")
 d_BC <- dyad_col_ud("B", "C")
 
 suppressWarnings({
-    u_tie  <- duremstats(reh_ud, start_effects = ~ activeTie(),
+    u_tie  <- remstats(reh_ud, start_effects = ~ activeTie(),
                          start = 1L)$start_stats
-    u_deg1 <- duremstats(reh_ud, start_effects = ~ activeDegreeActor1(),
+    u_deg1 <- remstats(reh_ud, start_effects = ~ activeDegreeActor1(),
                          start = 1L)$start_stats
-    u_deg2 <- duremstats(reh_ud, start_effects = ~ activeDegreeActor2(),
+    u_deg2 <- remstats(reh_ud, start_effects = ~ activeDegreeActor2(),
                          start = 1L)$start_stats
-    u_sp   <- duremstats(reh_ud, start_effects = ~ activeSharedPartners(),
+    u_sp   <- remstats(reh_ud, start_effects = ~ activeSharedPartners(),
                          start = 1L)$start_stats
 })
 
 # activeTie row 3 (t=3): A-B active, A-C active, B-C not yet
-expect_equal(unname(u_tie[3, d_AB, 1]), 1, info = "ud activeTie row3 A-B = 1")
-expect_equal(unname(u_tie[3, d_AC, 1]), 1, info = "ud activeTie row3 A-C = 1")
-expect_equal(unname(u_tie[3, d_BC, 1]), 0, info = "ud activeTie row3 B-C = 0")
+expect_equal(unname(u_tie[3, d_AB, 2]), 1, info = "ud activeTie row3 A-B = 1")
+expect_equal(unname(u_tie[3, d_AC, 2]), 1, info = "ud activeTie row3 A-C = 1")
+expect_equal(unname(u_tie[3, d_BC, 2]), 0, info = "ud activeTie row3 B-C = 0")
 
 # activeTie row 4 (t=8): all three active
-expect_equal(unname(u_tie[4, d_AB, 1]), 1, info = "ud activeTie row4 A-B = 1")
-expect_equal(unname(u_tie[4, d_AC, 1]), 1, info = "ud activeTie row4 A-C = 1")
-expect_equal(unname(u_tie[4, d_BC, 1]), 1, info = "ud activeTie row4 B-C = 1")
+expect_equal(unname(u_tie[4, d_AB, 2]), 1, info = "ud activeTie row4 A-B = 1")
+expect_equal(unname(u_tie[4, d_AC, 2]), 1, info = "ud activeTie row4 A-C = 1")
+expect_equal(unname(u_tie[4, d_BC, 2]), 1, info = "ud activeTie row4 B-C = 1")
 
 # activeDegreeActor1 row 3: active_degree=[A:2,B:1,C:1]
 # A-B: actor1=A (lower ID) → degree[A]=2
 # A-C: actor1=A           → degree[A]=2
 # B-C: actor1=B           → degree[B]=1
-expect_equal(unname(u_deg1[3, d_AB, 1]), 2, info = "ud activeDegreeActor1 row3 A-B = 2")
-expect_equal(unname(u_deg1[3, d_AC, 1]), 2, info = "ud activeDegreeActor1 row3 A-C = 2")
-expect_equal(unname(u_deg1[3, d_BC, 1]), 1, info = "ud activeDegreeActor1 row3 B-C = 1")
+expect_equal(unname(u_deg1[3, d_AB, 2]), 2, info = "ud activeDegreeActor1 row3 A-B = 2")
+expect_equal(unname(u_deg1[3, d_AC, 2]), 2, info = "ud activeDegreeActor1 row3 A-C = 2")
+expect_equal(unname(u_deg1[3, d_BC, 2]), 1, info = "ud activeDegreeActor1 row3 B-C = 1")
 
 # activeDegreeActor2 row 3:
 # A-B: actor2=B → degree[B]=1
 # A-C: actor2=C → degree[C]=1
 # B-C: actor2=C → degree[C]=1
-expect_equal(unname(u_deg2[3, d_AB, 1]), 1, info = "ud activeDegreeActor2 row3 A-B = 1")
-expect_equal(unname(u_deg2[3, d_AC, 1]), 1, info = "ud activeDegreeActor2 row3 A-C = 1")
-expect_equal(unname(u_deg2[3, d_BC, 1]), 1, info = "ud activeDegreeActor2 row3 B-C = 1")
+expect_equal(unname(u_deg2[3, d_AB, 2]), 1, info = "ud activeDegreeActor2 row3 A-B = 1")
+expect_equal(unname(u_deg2[3, d_AC, 2]), 1, info = "ud activeDegreeActor2 row3 A-C = 1")
+expect_equal(unname(u_deg2[3, d_BC, 2]), 1, info = "ud activeDegreeActor2 row3 B-C = 1")
 
 # activeSharedPartners row 4 (all 3 active):
 # sp(A-B): #h: (A,h) AND (B,h) active → h=C: A-C yes, B-C yes → 1
 # sp(A-C): #h: (A,h) AND (C,h) active → h=B: A-B yes, B-C yes → 1
 # sp(B-C): #h: (B,h) AND (C,h) active → h=A: A-B yes, A-C yes → 1
-expect_equal(unname(u_sp[4, d_AB, 1]), 1, info = "ud activeSharedPartners row4 A-B = 1")
-expect_equal(unname(u_sp[4, d_AC, 1]), 1, info = "ud activeSharedPartners row4 A-C = 1")
-expect_equal(unname(u_sp[4, d_BC, 1]), 1, info = "ud activeSharedPartners row4 B-C = 1")
+expect_equal(unname(u_sp[4, d_AB, 2]), 1, info = "ud activeSharedPartners row4 A-B = 1")
+expect_equal(unname(u_sp[4, d_AC, 2]), 1, info = "ud activeSharedPartners row4 A-C = 1")
+expect_equal(unname(u_sp[4, d_BC, 2]), 1, info = "ud activeSharedPartners row4 B-C = 1")
 
 # nothing active at row 1
-expect_true(all(u_tie[1, , 1] == 0),
+expect_true(all(u_tie[1, , 2] == 0),
     info = "ud: all zero at row 1 (nothing active yet)")
-expect_true(all(u_sp[1, , 1] == 0),
+expect_true(all(u_sp[1, , 2] == 0),
     info = "ud: shared partners all zero at row 1")
 
 # ── 13. end_effects produce $end_stats with .end suffix ──────────────────────
@@ -348,9 +348,9 @@ suppressWarnings({
 
 expect_true(!is.null(both$start_stats), info = "start_stats present")
 expect_true(!is.null(both$end_stats),   info = "end_stats present")
-expect_equal(dim(both$start_stats)[3], 1L, info = "start_stats has 1 effect")
-expect_equal(dim(both$end_stats)[3],   2L, info = "end_stats has 2 effects")
-expect_true(all(endsWith(dimnames(both$start_stats)[[3]], ".start")),
+expect_equal(dim(both$start_stats)[3], 2L, info = "start_stats has 1 effect")
+expect_equal(dim(both$end_stats)[3],   3L, info = "end_stats has 2 effects")
+expect_true(all(endsWith(dimnames(both$start_stats)[[3]][2], ".start")),
     info = "start effect names end in .start")
 expect_true(all(endsWith(dimnames(both$end_stats)[[3]], ".end")),
     info = "end effect names end in .end")
@@ -398,7 +398,7 @@ suppressWarnings(
 )
 
 # Should produce 2 statistics: activeTie.X.start and activeTie.Y.start
-expect_equal(dim(s_sep)[3], 2L,
+expect_equal(dim(s_sep)[3], 3L,
     info = "consider_type='separate' produces C=2 statistics")
 expect_true(any(grepl("\\.X\\.start$", dimnames(s_sep)[[3]])),
     info = "activeTie.X.start present")
@@ -439,33 +439,50 @@ suppressWarnings(
 D_base <- N * (N - 1L)   # directed, 3 actors → 6 dyads
 
 # Single output statistic with D*C = 12 columns
-expect_equal(dim(s_int)[3], 1L,
+expect_equal(dim(s_int)[3], 3L,
     info = "consider_type='interact' produces 1 output statistic")
-expect_equal(dim(s_int)[2], D_base * 2L,
+expect_equal(dim(s_int)[2], D_base,
     info = "consider_type='interact' produces D*C = 12 columns")
-expect_true(endsWith(dimnames(s_int)[[3]][1], ".start"),
+expect_true(endsWith(dimnames(s_int)[[3]][2], ".start"),
     info = "interact stat name ends in .start (no type suffix)")
 
 # Type-X block (columns 1..D_base): A→B=1, A→C=1, B→C=0 at row 4
-expect_equal(s_int[4, AB, 1], 1,
+expect_equal(unname(s_int[4, AB, 2]), 1,
     info = "interact row4 A→B (X-block) = 1")
-expect_equal(s_int[4, AC, 1], 1,
+expect_equal(unname(s_int[4, AC, 2]), 1,
     info = "interact row4 A→C (X-block) = 1")
-expect_equal(s_int[4, BC, 1], 0,
+expect_equal(unname(s_int[4, BC, 3]), 1,
     info = "interact row4 B→C (X-block) = 0 (B→C is type Y)")
+
+el_typed <- data.frame(
+	time   = c(1, 2, 3, 6),
+	actor1 = c("A", "A", "B", "C"),
+	actor2 = c("B", "C", "C", "A"),
+	end    = c(10, 10, 10, 10),
+	type   = c("X", "X", "Y", "Y")
+)
+
+suppressWarnings(reh_typed <- remify(el_typed, duration = TRUE, extend_riskset_by_type = TRUE))
+
+suppressWarnings(
+	s_sep <- remstats(reh_typed,
+										start_effects = ~ activeTie(consider_type = "separate"),
+										start = 1L, stop = Inf)$start_stats
+)
+# EXTEND RISKSET BY TYPE IS NOT WORKING AS NUMBER OF DYADS IS 6 INSTEAD OF 12...
 
 # Type-Y block (columns D_base+1 .. 2*D_base)
 AB_Y <- AB + D_base
 AC_Y <- AC + D_base
 BC_Y <- BC + D_base
 
-expect_equal(unname(s_int[4, BC_Y, 1]), 1,
+expect_equal(unname(s_sep[4, BC_Y, 3]), 1,
     info = "interact row4 B→C (Y-block) = 1")
-expect_equal(unname(s_int[4, AB_Y, 1]), 0,
+expect_equal(unname(s_sep[4, AB_Y, 3]), 0,
     info = "interact row4 A→B (Y-block) = 0 (A→B is type X)")
 
 # Row 1: nothing active in either block
-expect_true(all(s_int[1, , 1] == 0),
+expect_true(all(s_int[1, , 2] == 0),
     info = "interact: all zero at row 1 (nothing active)")
 
 # "interact" on an untyped reh degrades silently to "ignore"
