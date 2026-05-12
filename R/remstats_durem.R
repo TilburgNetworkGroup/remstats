@@ -52,7 +52,9 @@
     #   time, actor1, actor2, status ("start"/"end"), duration, weight, [type]
     ed     <- reh$edgelist_dual
     actors <- reh$meta$dictionary$actors$actorName
-
+    riskset_type <- reh$meta$riskset
+    ordi <- reh$meta$ordinal
+    
     # directional flags
     directed_start <- isTRUE(reh$meta$directed)
     directed_end   <- isTRUE(reh$durem$directed_end)
@@ -87,10 +89,12 @@
     if (!is.null(start_effects)) {
         suppressWarnings(
             reh_start <- remify(
-            	edgelist = .make_el(psi_start),
+            		edgelist = .make_el(psi_start),
                 directed = directed_start,
+            		ordinal  = ordi,
                 model    = "tie",
                 actors   = actors,
+            		riskset  = riskset_type,
                 extend_riskset_by_type = ext_by_type
             )
         )
@@ -117,8 +121,10 @@
             reh_end <- remify(
             		edgelist = .make_el(psi_end),
                 directed = directed_end,
+            		ordinal  = ordi,
                 model    = "tie",
                 actors   = actors,
+            		riskset  = riskset_type,
                 extend_riskset_by_type = ext_by_type
             )
         )
@@ -140,12 +146,12 @@
         end_stats <- NULL
     }
     
-    if (!is.null(end_effects)) {
-    	last_timepoint <- dim(end_stats)[1] + start - 1L
-    }else if (!is.null(start_effects)) {
-    	last_timepoint <- dim(end_stats)[1] + start - 1L
+    if (!is.null(start_stats)) {
+    	last_timepoint <- unlist(attr(start_stats,"subset"))[2]
+    }else if (!is.null(end_stats)) {
+    	last_timepoint <- unlist(attr(end_stats,"subset"))[2]
     }else{
-    	last_timepoint <- stop
+    	last_timepoint <- NA
     }
 
     # ── Assemble remstats_durem object ────────────────────────────────────────
@@ -157,7 +163,7 @@
     )
     attr(out, "reh") <- reh
     attr(out, "model") <- reh$meta$model
-    attr(out, "subset") <- c(start,last_timepoint)
+    attr(out, "subset") <- c(first=start,last=unname(last_timepoint))
     class(out) <- c("remstats_durem", "remstats")
 
     out
@@ -256,7 +262,7 @@
     use_history <- cls_start %in% c("history", "mixed") ||
                    cls_end   %in% c("history", "mixed")
 
-    # ── Pure history ──────────────────────────────────────────────────────────
+    # ── Regular tomstats ─────────────────────────────────────────────────────
     if (!use_durem) {
         return(.remstats_durem(
             reh              = reh,
@@ -314,7 +320,16 @@
         display_progress = display_progress
     )
 
-    bind_remstats(dstats, hstats)
+    out_stats <- bind_remstats(dstats, hstats)
+    
+    # ref <- (dstats %||% hstats)
+    # ref_arr <- ref$start_stats %||% ref$end_stats
+    # attr(out_stats, "subset") <- attr(ref_arr, "subset") 
+    # attr(out_stats, "method") <- attr(ref_arr, "method")
+    # attr(out_stats, "dyad_keys") <- attr(ref_arr, "dyad_keys")
+    
+    out_stats
+    
 }
 
 

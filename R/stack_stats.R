@@ -6,13 +6,13 @@
 #'
 #' For interval timing (\code{ordinal = FALSE}), the stacked data can be
 #' fitted with a Poisson GLM using \code{log_interevent} as an offset:
-#' \code{glm(obs ~ -1 + . - event - dyad - log_interevent,
+#' \code{glm(obs ~ -1 + . - time - dyad - log_interevent,
 #'           offset = log_interevent, family = poisson, data = stacked$remstats_stack)}
 #'
 #' For ordinal timing (\code{ordinal = TRUE}), use conditional logistic
-#' regression stratified by event:
-#' \code{survival::clogit(obs ~ -1 + . - event - dyad +
-#'                        strata(event), data = stacked$remstats_stack)}
+#' regression stratified by time point:
+#' \code{survival::clogit(obs ~ -1 + . - time - dyad +
+#'                        strata(time), data = stacked$remstats_stack)}
 #'
 #' @param stats A \code{tomstats} object (output of \code{remstats()} or
 #'   \code{tomstats()}).
@@ -26,8 +26,9 @@
 #'
 #' @return A list with elements:
 #' \describe{
-#'   \item{remstats_stack}{Data frame in long format with columns: \code{event}
-#'     (event index), all statistic columns, \code{log_interevent} (log
+#'   \item{remstats_stack}{Data frame in long format with columns: \code{time}
+#'     (time-point index matching \code{attr(stats, "subset")} sequence),
+#'     all statistic columns, \code{log_interevent} (log
 #'     inter-event time; interval timing only), \code{obs} (1 = observed event,
 #'     0 = non-event), \code{dyad} (active dyad index 1..D), and — when
 #'     \code{add_actors = TRUE} and the riskset is available — \code{actor1}
@@ -106,9 +107,9 @@ stack_stats.tomstats <- function(stats, reh, add_actors = TRUE) {
 
   # ── Stack statistics: [E*D x P] ──────────────────────────────────────────────
   stat_glm <- as.data.frame(
-    do.call(rbind, lapply(seq_len(E), function(e) cbind(e, stats[e, , ])))
+    do.call(rbind, lapply(seq_len(E), function(e) cbind(subset_idx[1] + e - 1L, stats[e, , ])))
   )
-  colnames(stat_glm)[1] <- "event"
+  colnames(stat_glm)[1] <- "time"
 
   # ── Offset: log inter-event time (interval timing only) ──────────────────────
   if (!ordinal) {
@@ -153,7 +154,7 @@ stack_stats.tomstats <- function(stats, reh, add_actors = TRUE) {
     }
   }
 
-  reserved <- c("event", "obs", "log_interevent", "dyad", "actor1", "actor2")
+  reserved <- c("time", "obs", "log_interevent", "dyad", "actor1", "actor2")
   structure(
     list(
       remstats_stack = stat_glm,
@@ -195,9 +196,9 @@ stack_stats.tomstats_sampled <- function(stats, reh, add_actors = TRUE) {
 
   # ── Stack statistics: [E*S x P] ──────────────────────────────────────────────
   stat_glm <- as.data.frame(
-    do.call(rbind, lapply(seq_len(E), function(e) cbind(e, stats[e, , ])))
+    do.call(rbind, lapply(seq_len(E), function(e) cbind(subset_idx[1] + e - 1L, stats[e, , ])))
   )
-  colnames(stat_glm)[1] <- "event"
+  colnames(stat_glm)[1] <- "time"
 
   # ── Offset: log inter-event time (interval only) ─────────────────────────────
   if (!ordinal) {
@@ -236,7 +237,7 @@ stack_stats.tomstats_sampled <- function(stats, reh, add_actors = TRUE) {
     }
   }
 
-  reserved <- c("event", "obs", "log_interevent", "dyad", "actor1", "actor2", "weight")
+  reserved <- c("time", "obs", "log_interevent", "dyad", "actor1", "actor2", "weight")
   structure(
     list(
       remstats_stack = stat_glm,
@@ -298,9 +299,9 @@ stack_stats.aomstats <- function(stats, reh, add_actors = TRUE) {
     stat_names <- dimnames(ss)[[3]]
 
     df <- as.data.frame(
-      do.call(rbind, lapply(seq_len(E), function(e) cbind(e, ss[e, , ])))
+      do.call(rbind, lapply(seq_len(E), function(e) cbind(subset_idx[1] + e - 1L, ss[e, , ])))
     )
-    colnames(df) <- c("event", stat_names)
+    colnames(df) <- c("time", stat_names)
 
     if (!ordinal) {
       df$log_interevent <- rep(log_iet, each = N)
@@ -343,21 +344,21 @@ stack_stats.aomstats <- function(stats, reh, add_actors = TRUE) {
 
         df_e$obs   <- as.integer(r_ids == obs_r)
         df_e$actor <- r_ids
-        df_e$event <- e
+        df_e$time <- subset_idx[1] + e - 1L
 
         if (add_actors && !is.null(actor_labels)) {
           df_e$actor_label <- actor_labels[ as.character(r_ids) ]
-          df_e[, c("event", stat_names, "obs", "actor", "actor_label")]
+          df_e[, c("time", stat_names, "obs", "actor", "actor_label")]
         } else {
-          df_e[, c("event", stat_names, "obs", "actor")]
+          df_e[, c("time", stat_names, "obs", "actor")]
         }
       }))
     }))
 
   } else NULL
 
-  reserved_s <- c("event", "obs", "log_interevent", "actor", "actor_label")
-  reserved_r <- c("event", "obs", "actor", "actor_label")
+  reserved_s <- c("time", "obs", "log_interevent", "actor", "actor_label")
+  reserved_r <- c("time", "obs", "actor", "actor_label")
   structure(
     list(
       sender_stack        = sender_stack,
@@ -448,186 +449,241 @@ print.remstats_stacked <- function(x, ...) {
 #' @export
 #' @method stack_stats remstats_durem
 stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
+	
+	if (missing(reh) || is.null(reh)) reh <- attr(stats, "reh")
+	if (!inherits(reh, "remify_durem"))
+		stop("'reh' must be a remify_durem object.")
+	
+	ss <- stats$start_stats   # [M × D_s × P_s] or NULL
+	es <- stats$end_stats     # [M × D_e × P_e] or NULL
+	
+	if (is.null(ss) && is.null(es))
+		stop("Both start_stats and end_stats are NULL.")
+	
+	M   <- dim(ss %||% es)[1L]
+	D_s <- if (!is.null(ss)) dim(ss)[2L] else 0L
+	D_e <- if (!is.null(es)) dim(es)[2L] else 0L
+	P_s <- if (!is.null(ss)) dim(ss)[3L] else 0L
+	P_e <- if (!is.null(es)) dim(es)[3L] else 0L
+	
+	names_s <- if (!is.null(ss)) dimnames(ss)[[3L]] else character(0L)
+	names_e <- if (!is.null(es)) dimnames(es)[[3L]] else character(0L)
+	
+	edgelist <- reh$edgelist      # time / actor1 / actor2 / end / type(?)
+	ed       <- reh$edgelist_dual
+	
+	# ── Type riskset detection ─────────────────────────────────────────────────
+	ext_by_type <- isTRUE(reh$meta$with_type_riskset)
+	has_types   <- "type" %in% names(edgelist)
+	
+	# ── Riskset lookup from reh$riskset_info$included ────────────────────────
+	# Row order in 'included' = column order in the stats arrays.
+	# Works for saturated, active, and manual risksets.
+	incl <- reh$riskset_info$included
+	D_incl <- nrow(incl)
 
-  if (missing(reh) || is.null(reh)) reh <- attr(stats, "reh")
-  if (!inherits(reh, "remify_durem"))
-    stop("'reh' must be a remify_durem object.")
+	if (D_s > 0L && D_s != D_incl)
+		warning("D_s (", D_s, ") != nrow(included) (", D_incl,
+						"); column mapping may be wrong")
+	if (D_e > 0L && D_e != D_incl)
+		warning("D_e (", D_e, ") != nrow(included) (", D_incl,
+						"); column mapping may be wrong")
 
-  ss <- stats$start_stats   # [M × D_s × P_s]
-  es <- stats$end_stats     # [M × D_e × P_e]
+	# Hash: (actor1, actor2 [, type]) -> 1-based column index
+	if (ext_by_type && "type" %in% names(incl)) {
+		incl_key <- paste(incl$actor1, incl$actor2, incl$type, sep = "\t")
+	} else {
+		incl_key <- paste(incl$actor1, incl$actor2, sep = "\t")
+	}
+	incl_lookup <- setNames(seq_len(D_incl), incl_key)
 
-  M   <- dim(ss)[1L]
-  D_s <- dim(ss)[2L];  D_e <- dim(es)[2L]
-  P_s <- dim(ss)[3L];  P_e <- dim(es)[3L]
+	# Base-dyad grouping for blocking: "a1\ta2" -> all column indices
+	base_key_vec <- paste(incl$actor1, incl$actor2, sep = "\t")
+	base_to_cols <- split(seq_len(D_incl), base_key_vec)
 
-  names_s <- dimnames(ss)[[3L]]
-  names_e <- dimnames(es)[[3L]]
+	# Column lookup
+	.dcol <- function(a1, a2, tp = NULL) {
+		if (ext_by_type && !is.null(tp))
+			key <- paste(a1, a2, tp, sep = "\t")
+		else
+			key <- paste(a1, a2, sep = "\t")
+		unname(incl_lookup[key])
+	}
 
-  edgelist <- reh$edgelist      # time / actor1 / actor2 / end
-  ed       <- reh$edgelist_dual
-
-  directed_start <- isTRUE(reh$meta$directed)
-  directed_end   <- isTRUE(reh$durem$directed_end)
-
-  N          <- reh$N
-  actor_dict <- reh$meta$dictionary$actors
-  # 0-based actor IDs keyed by name (same convention as duremstats.R)
-  actor_ids  <- setNames(actor_dict$actorID - 1L, actor_dict$actorName)
-
-  # Riskset matrices: cell (i+1, j+1) = 0-based dyad ID (-999 if absent)
-  rm_s <- .build_riskset_matrix(N, directed_start)
-  rm_e <- .build_riskset_matrix(N, directed_end)
-
-  # 1-based column index in stats array for a named dyad
-  .dcol_s <- function(a1, a2)
-    as.integer(rm_s[actor_ids[a1] + 1L, actor_ids[a2] + 1L]) + 1L
-
-  .dcol_e <- function(a1, a2) {
-    i <- actor_ids[a1]; j <- actor_ids[a2]
-    if (!directed_end) { tmp <- min(i, j); j <- max(i, j); i <- tmp }
-    as.integer(rm_e[i + 1L, j + 1L]) + 1L
-  }
-
-  # Pre-compute column indices for every event in the duration edgelist
-  ne    <- nrow(edgelist)
-  s_col <- vapply(seq_len(ne),
-                  function(k) .dcol_s(edgelist$actor1[k], edgelist$actor2[k]),
-                  integer(1L))
-  e_col <- vapply(seq_len(ne),
-                  function(k) .dcol_e(edgelist$actor1[k], edgelist$actor2[k]),
-                  integer(1L))
-
-  # Unique time points covered by the stats arrays
-  utimes_all <- sort(unique(ed$time))
-  subset_s   <- as.integer(unlist(attr(ss, "subset")))  # [start_idx, stop_idx]
-  utimes     <- utimes_all[subset_s[1L]:subset_s[2L]]   # M values
-
-  # Log inter-event times relative to the time point just before the window
-  origin_t  <- if (subset_s[1L] > 1L) utimes_all[subset_s[1L] - 1L] else 0
-  log_iet   <- log(utimes - c(origin_t, utimes[-M]))
-
-  all_s_cols <- seq_len(D_s)
-  n_stat_cols <- P_s + P_e
-
-  # ── Main stacking loop ───────────────────────────────────────────────────────
-  block_list <- vector("list", M)
-
-  for (m in seq_len(M)) {
-    t    <- utimes[m]
-    liet <- log_iet[m]
-
-    # Blocking (for start risk set): events that started ≤ t and haven't ended
-    blocked_scols <- unique(s_col[edgelist$time <= t &
-                                   (is.na(edgelist$end) | edgelist$end >= t)])
-
-    # State 1 – observed end (ended exactly at t, started before t)
-    end_obs_cols <- unique(e_col[!is.na(edgelist$end) &
-                                   edgelist$end == t & edgelist$time < t])
-
-    # State 2 – ongoing at risk to end (started strictly before t, runs past t)
-    ong_cols <- unique(e_col[edgelist$time < t &
-                               (is.na(edgelist$end) | edgelist$end > t)])
-
-    # State 3 – observed start (started at t)
-    sta_obs_cols <- unique(s_col[edgelist$time == t])
-
-    # State 4 – inactive start dyads (not blocked, not starting now)
-    inactive_cols <- setdiff(all_s_cols, blocked_scols)
-
-    n_rows <- length(end_obs_cols) + length(ong_cols) +
-              length(sta_obs_cols)  + length(inactive_cols)
-    if (n_rows == 0L) next
-
-    # Pre-allocate: obs | log_iet | P_s start cols | P_e end cols | event | dyad
-    mat <- matrix(0, nrow = n_rows, ncol = n_stat_cols + 4L)
-    r   <- 0L
-
-    # Helpers to fill a row
-    end_col_range   <- (3L + P_s):(2L + P_s + P_e)
-    start_col_range <- 3L:(2L + P_s)
-
-    # State 1
-    for (d in end_obs_cols) {
-      r <- r + 1L
-      mat[r, 1L]             <- 1L
-      mat[r, 2L]             <- liet
-      mat[r, end_col_range]  <- c(unname(es[m, d, ]))
-      mat[r, n_stat_cols + 3L] <- m
-      mat[r, n_stat_cols + 4L] <- d
-    }
-    # State 2
-    for (d in ong_cols) {
-      r <- r + 1L
-      mat[r, 2L]             <- liet
-      mat[r, end_col_range]  <- c(unname(es[m, d, ]))
-      mat[r, n_stat_cols + 3L] <- m
-      mat[r, n_stat_cols + 4L] <- d
-    }
-    # State 3
-    for (d in sta_obs_cols) {
-      r <- r + 1L
-      mat[r, 1L]               <- 1L
-      mat[r, 2L]               <- liet
-      mat[r, start_col_range]  <- c(unname(ss[m, d, ]))
-      mat[r, n_stat_cols + 3L] <- m
-      mat[r, n_stat_cols + 4L] <- d
-    }
-    # State 4
-    for (d in inactive_cols) {
-      r <- r + 1L
-      mat[r, 2L]               <- liet
-      mat[r, start_col_range]  <- c(unname(ss[m, d, ]))
-      mat[r, n_stat_cols + 3L] <- m
-      mat[r, n_stat_cols + 4L] <- d
-    }
-
-    block_list[[m]] <- mat[seq_len(r), , drop = FALSE]
-  }
-
-  df <- as.data.frame(do.call(rbind, block_list))
-  colnames(df) <- c("obs", "log_interevent",
-                    names_s, names_e,
-                    "event", "dyad")
-
-  # ── Optional actor name columns ───────────────────────────────────────────
-  if (add_actors) {
-    actor_names <- actor_dict$actorName[order(actor_dict$actorID)]
-    # Reverse-map: for each dyad column d, what are actor1/actor2?
-    a1_s <- character(D_s); a2_s <- character(D_s)
-    a1_e <- character(D_e); a2_e <- character(D_e)
-    for (i in seq_len(N)) for (j in seq_len(N)) {
-      d_s <- rm_s[i, j]; if (d_s >= 0L) { a1_s[d_s + 1L] <- actor_names[i]; a2_s[d_s + 1L] <- actor_names[j] }
-      d_e <- rm_e[i, j]; if (d_e >= 0L) { a1_e[d_e + 1L] <- actor_names[i]; a2_e[d_e + 1L] <- actor_names[j] }
-    }
-    # Each row's dyad column comes from the start or end riskset.
-    # Rows with non-zero end stats are end-model rows; otherwise start-model.
-    is_end_row <- rowSums(df[, names_e, drop = FALSE]) != 0 | df$obs == 1 & df[, names_s[1]] == 0
-    # Simpler: use the pre-built lookups for both and pick by model type.
-    # We track model type implicitly: end-model rows have start stats == 0,
-    # start-model rows have end stats == 0.  Use the first stat col as proxy.
-    # Safer: tag during loop — skip for now and just use start-model actors.
-    df$actor1 <- ifelse(df$dyad <= D_s, a1_s[pmin(df$dyad, D_s)], "")
-    df$actor2 <- ifelse(df$dyad <= D_s, a2_s[pmin(df$dyad, D_s)], "")
-  }
-
-  stat_names_all <- c(names_s, names_e)
-
-  structure(
-    list(
-      remstats_stack   = df,
-      subset           = subset_s,
-      D_start          = D_s,
-      D_end            = D_e,
-      E                = M,
-      ordinal          = FALSE,
-      model            = "durem",
-      sampled          = FALSE,
-      stat_names       = stat_names_all,
-      stat_names_start = names_s,
-      stat_names_end   = names_e
-    ),
-    class = c("remstats_stacked_durem", "remstats_stacked")
-  )
+	.bkey <- function(a1, a2) paste(a1, a2, sep = "\t")
+	
+	# Pre-compute column indices for every event in the original edgelist
+	ne <- nrow(edgelist)
+	
+	# Full column index (typed when ext=TRUE)
+	if (ext_by_type && has_types) {
+		s_col <- vapply(seq_len(ne),
+										function(k) .dcol(edgelist$actor1[k],
+																			edgelist$actor2[k],
+																			edgelist$type[k]),
+										integer(1L))
+	} else {
+		s_col <- vapply(seq_len(ne),
+										function(k) .dcol(edgelist$actor1[k],
+																			edgelist$actor2[k]),
+										integer(1L))
+	}
+	
+	# Base keys per event (for blocking: "a1\ta2")
+	bkey_vec <- vapply(seq_len(ne),
+										 function(k) .bkey(edgelist$actor1[k],
+										 									 edgelist$actor2[k]),
+										 character(1L))
+	
+	# End columns: same riskset, same ordering
+	e_col <- if (D_e > 0L) s_col else rep(0L, ne)
+	
+	# Unique time points covered by the stats arrays
+	utimes_all <- sort(unique(ed$time))
+	subset_ref <- if (!is.null(ss)) ss else es
+	subset_s   <- as.integer(unlist(attr(subset_ref, "subset")))
+	utimes     <- utimes_all[subset_s[1L]:subset_s[2L]]
+	
+	# Log inter-event times
+	origin_t  <- if (subset_s[1L] > 1L) utimes_all[subset_s[1L] - 1L] else 0
+	log_iet   <- log(utimes - c(origin_t, utimes[-M]))
+	
+	all_s_cols  <- seq_len(D_incl)
+	n_stat_cols <- P_s + P_e
+	
+	# type_exclusive: when TRUE (default), an active event of any type blocks
+	# starting events of ALL types for the same actor pair (types are mutually
+	# exclusive). When FALSE, types are independent — only the exact typed
+	# dyad column is blocked. Has no effect without ext_by_type.
+	type_excl <- !ext_by_type || !isFALSE(reh$durem$type_exclusive)
+	
+	# ── Main stacking loop ───────────────────────────────────────────────────────
+	block_list <- vector("list", M)
+	
+	for (m in seq_len(M)) {
+		t    <- utimes[m]
+		liet <- log_iet[m]
+		
+		# Active events: started before t, end strictly after t.
+		# An event with end == t ends AT t and is no longer active.
+		active_mask <- edgelist$time < t &
+			(is.na(edgelist$end) | edgelist$end > t)
+		
+		# Blocking: exclude active dyads from the start riskset
+		if (type_excl) {
+			blocked_bkeys <- unique(bkey_vec[active_mask])
+			blocked_scols <- unique(unlist(base_to_cols[blocked_bkeys]))
+		} else {
+			blocked_scols <- unique(s_col[active_mask])
+		}
+		
+		# State 1 – observed end (ended exactly at t, started before t)
+		end_mask <- !is.na(edgelist$end) & edgelist$end == t & edgelist$time < t
+		end_obs_cols <- if (D_e > 0L) unique(e_col[end_mask]) else integer(0L)
+		
+		# State 2 – ongoing at risk to end (started strictly before t, runs past t)
+		ong_mask <- edgelist$time < t & (is.na(edgelist$end) | edgelist$end > t)
+		ong_cols <- if (D_e > 0L) unique(e_col[ong_mask]) else integer(0L)
+		
+		# State 3 – observed start (started at t)
+		sta_obs_cols <- unique(s_col[edgelist$time == t])
+		
+		# State 4 – inactive start dyads (not blocked, not already counted as observed)
+		inactive_cols <- setdiff(all_s_cols, c(blocked_scols, sta_obs_cols))
+		
+		n_rows <- length(end_obs_cols) + length(ong_cols) +
+			length(sta_obs_cols)  + length(inactive_cols)
+		if (n_rows == 0L) next
+		
+		mat <- matrix(0, nrow = n_rows, ncol = n_stat_cols + 4L)
+		r   <- 0L
+		
+		start_col_range <- if (P_s > 0L) 3L:(2L + P_s)              else integer(0L)
+		end_col_range   <- if (P_e > 0L) (3L + P_s):(2L + P_s + P_e) else integer(0L)
+		
+		# State 1 – observed end
+		if (P_e > 0L) {
+			for (d in end_obs_cols) {
+				r <- r + 1L
+				mat[r, 1L]             <- 1L
+				mat[r, 2L]             <- liet
+				mat[r, end_col_range]  <- c(unname(es[m, d, ]))
+				mat[r, n_stat_cols + 3L] <- subset_s[1] + m - 1L
+				mat[r, n_stat_cols + 4L] <- d
+			}
+		}
+		
+		# State 2 – ongoing
+		if (P_e > 0L) {
+			for (d in ong_cols) {
+				r <- r + 1L
+				mat[r, 2L]             <- liet
+				mat[r, end_col_range]  <- c(unname(es[m, d, ]))
+				mat[r, n_stat_cols + 3L] <- subset_s[1] + m - 1L
+				mat[r, n_stat_cols + 4L] <- d
+			}
+		}
+		
+		# State 3 – observed start
+		if (P_s > 0L) {
+			for (d in sta_obs_cols) {
+				r <- r + 1L
+				mat[r, 1L]               <- 1L
+				mat[r, 2L]               <- liet
+				mat[r, start_col_range]  <- c(unname(ss[m, d, ]))
+				mat[r, n_stat_cols + 3L] <- subset_s[1] + m - 1L
+				mat[r, n_stat_cols + 4L] <- d
+			}
+		}
+		
+		# State 4 – inactive
+		if (P_s > 0L) {
+			for (d in inactive_cols) {
+				r <- r + 1L
+				mat[r, 2L]               <- liet
+				mat[r, start_col_range]  <- c(unname(ss[m, d, ]))
+				mat[r, n_stat_cols + 3L] <- subset_s[1] + m - 1L
+				mat[r, n_stat_cols + 4L] <- d
+			}
+		}
+		
+		block_list[[m]] <- mat[seq_len(r), , drop = FALSE]
+	}
+	
+	df <- as.data.frame(do.call(rbind, block_list))
+	colnames(df) <- c("obs", "log_interevent",
+										names_s, names_e,
+										"time", "dyad")
+	
+	# ── Optional actor name columns ───────────────────────────────────────────
+	if (add_actors) {
+		df$actor1 <- incl$actor1[df$dyad]
+		df$actor2 <- incl$actor2[df$dyad]
+		if (ext_by_type && "type" %in% names(incl)) {
+			df$type <- incl$type[df$dyad]
+		} else if (has_types) {
+			df$type <- NA_character_
+		}
+	}
+	
+	stat_names_all <- c(names_s, names_e)
+	
+	structure(
+		list(
+			remstats_stack   = df,
+			subset           = subset_s,
+			D_start          = D_s,
+			D_end            = D_e,
+			E                = M,
+			ordinal          = FALSE,
+			model            = "durem",
+			sampled          = FALSE,
+			stat_names       = stat_names_all,
+			stat_names_start = names_s,
+			stat_names_end   = names_e
+		),
+		class = c("remstats_stacked_durem", "remstats_stacked")
+	)
 }
 
 
