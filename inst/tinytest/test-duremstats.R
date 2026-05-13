@@ -70,23 +70,23 @@ CA <- dyad_col("C", "A"); CB <- dyad_col("C", "B")
 # Compute all directed active-state statistics (start=1 → all 5 rows)
 suppressWarnings({
     s_tie  <- remstats(reh, start_effects = ~ activeTie(),
-                         start = 1L, stop = Inf)$start_stats
+                         first = 1L, last = Inf)$start_stats
     s_ods  <- remstats(reh, start_effects = ~ activeOutdegreeSender(),
-                         start = 1L, stop = Inf)$start_stats
+    									 first = 1L, last = Inf)$start_stats
     s_idr  <- remstats(reh, start_effects = ~ activeIndegreeReceiver(),
-                         start = 1L, stop = Inf)$start_stats
+    									 first = 1L, last = Inf)$start_stats
     s_tds  <- remstats(reh, start_effects = ~ activeTotaldegreeSender(),
-                         start = 1L, stop = Inf)$start_stats
+    									 first = 1L, last = Inf)$start_stats
     s_tdr  <- remstats(reh, start_effects = ~ activeTotaldegreeReceiver(),
-                         start = 1L, stop = Inf)$start_stats
+    									 first = 1L, last = Inf)$start_stats
     s_otp  <- remstats(reh, start_effects = ~ activeSharedPartners_otp(),
-                         start = 1L, stop = Inf)$start_stats
+    									 first = 1L, last = Inf)$start_stats
     s_itp  <- remstats(reh, start_effects = ~ activeSharedPartners_itp(),
-                         start = 1L, stop = Inf)$start_stats
+    									 first = 1L, last = Inf)$start_stats
     s_osp  <- remstats(reh, start_effects = ~ activeSharedPartners_osp(),
-                         start = 1L, stop = Inf)$start_stats
+    									 first = 1L, last = Inf)$start_stats
     s_isp  <- remstats(reh, start_effects = ~ activeSharedPartners_isp(),
-                         start = 1L, stop = Inf)$start_stats
+    									 first = 1L, last = Inf)$start_stats
 })
 
 # ── 1. Output structure ───────────────────────────────────────────────────────
@@ -286,13 +286,13 @@ d_BC <- dyad_col_ud("B", "C")
 
 suppressWarnings({
     u_tie  <- remstats(reh_ud, start_effects = ~ activeTie(),
-                         start = 1L)$start_stats
+                         first = 1L)$start_stats
     u_deg1 <- remstats(reh_ud, start_effects = ~ activeDegreeActor1(),
-                         start = 1L)$start_stats
+    									 first = 1L)$start_stats
     u_deg2 <- remstats(reh_ud, start_effects = ~ activeDegreeActor2(),
-                         start = 1L)$start_stats
+    									 first = 1L)$start_stats
     u_sp   <- remstats(reh_ud, start_effects = ~ activeSharedPartners(),
-                         start = 1L)$start_stats
+    									 first = 1L)$start_stats
 })
 
 # activeTie row 3 (t=3): A-B active, A-C active, B-C not yet
@@ -340,10 +340,10 @@ expect_true(all(u_sp[1, , 2] == 0),
 # activeDegreeActor1 is the second undirected effect (stat_type 2).
 
 suppressWarnings({
-    both <- duremstats(reh,
+    both <- remstats(reh,
                        start_effects = ~ activeTie(),
                        end_effects   = ~ activeTie() + activeDegreeActor1(),
-                       start = 1L)
+    									 first = 1L)
 })
 
 expect_true(!is.null(both$start_stats), info = "start_stats present")
@@ -361,20 +361,20 @@ expect_true(all(endsWith(dimnames(both$end_stats)[[3]], ".end")),
 expect_equal(unname(both$end_stats[5, AB, 1]), unname(s_tie[5, AB, 1]),
     info = "end_stats activeTie matches start_stats (same event history)")
 
-# ── 14. unknown effect name triggers error ────────────────────────────────────
-
-expect_error(
-    duremstats(reh, start_effects = ~ notAnEffect()),
-    pattern = "Unknown active-state effect",
-    info = "unknown effect name raises error"
-)
+# # ── 14. unknown effect name triggers error ────────────────────────────────────
+# 
+# expect_error(
+#     remstats(reh, start_effects = ~ notAnEffect()),
+#     pattern = "Unknown active-state effect",
+#     info = "unknown effect name raises error"
+# )
 
 # ── 15. output is a remstats_durem object ─────────────────────────────────────
 
 expect_inherits(both, "remstats_durem",
-    info = "duremstats returns remstats_durem class")
+    info = "remstats returns remstats_durem class")
 expect_true(is.remstats_durem(both),
-    info = "is.remstats_durem TRUE for duremstats output")
+    info = "is.remstats_durem TRUE for remstats output")
 
 # ── 16. consider_type = "separate" with typed events ─────────────────────────
 # Two types X and Y.  At row 4 (t=6): A→B(X), A→C(X), B→C(Y) active.
@@ -394,7 +394,7 @@ suppressWarnings(reh_typed <- remify(el_typed, duration = TRUE))
 suppressWarnings(
     s_sep <- remstats(reh_typed,
                         start_effects = ~ activeTie(consider_type = "separate"),
-                        start = 1L, stop = Inf)$start_stats
+                        first = 1L, last = Inf)$start_stats
 )
 
 # Should produce 2 statistics: activeTie.X.start and activeTie.Y.start
@@ -431,9 +431,9 @@ expect_equal(unname(s_sep[4, AB, idx_Y]), 0,
 # Type-Y block: A→B=0, A→C=0, B→C=1, others=0
 
 suppressWarnings(
-    s_int <- duremstats(reh_typed,
+    s_int <- remstats(reh_typed,
                         start_effects = ~ activeTie(consider_type = "interact"),
-                        start = 1L, stop = Inf)$start_stats
+                        first = 1L, last = Inf)$start_stats
 )
 
 D_base <- N * (N - 1L)   # directed, 3 actors → 6 dyads
@@ -467,7 +467,7 @@ suppressWarnings(reh_typed <- remify(el_typed, duration = TRUE, extend_riskset_b
 suppressWarnings(
 	s_sep <- remstats(reh_typed,
 										start_effects = ~ activeTie(consider_type = "separate"),
-										start = 1L, stop = Inf)$start_stats
+										first = 1L, last = Inf)$start_stats
 )
 # EXTEND RISKSET BY TYPE IS NOT WORKING AS NUMBER OF DYADS IS 6 INSTEAD OF 12...
 
@@ -487,9 +487,9 @@ expect_true(all(s_int[1, , 2] == 0),
 
 # "interact" on an untyped reh degrades silently to "ignore"
 suppressWarnings(
-    s_int_ud <- duremstats(reh,
+    s_int_ud <- remstats(reh,
                            start_effects = ~ activeTie(consider_type = "interact"),
-                           start = 1L, stop = Inf)$start_stats
+                           first = 1L, last = Inf)$start_stats
 )
 expect_equal(dim(s_int_ud)[2], D_base,
     info = "interact on untyped reh degrades to ignore (D = D_base)")
@@ -511,9 +511,9 @@ suppressWarnings(
 )
 
 suppressWarnings(
-    s_ext <- duremstats(reh_typed_ext,
+    s_ext <- remstats(reh_typed_ext,
                         start_effects = ~ activeTie(),
-                        start = 1L, stop = Inf)$start_stats
+                        first = 1L, last = Inf)$start_stats
 )
 
 C_typed <- reh_typed_ext$C

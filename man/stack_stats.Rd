@@ -22,8 +22,9 @@ for performance reasons.}
 \value{
 A list with elements:
 \describe{
-  \item{remstats_stack}{Data frame in long format with columns: \code{event}
-    (event index), all statistic columns, \code{log_interevent} (log
+  \item{remstats_stack}{Data frame in long format with columns: \code{time}
+    (time-point index matching \code{attr(stats, "subset")} sequence),
+    all statistic columns, \code{log_interevent} (log
     inter-event time; interval timing only), \code{obs} (1 = observed event,
     0 = non-event), \code{dyad} (active dyad index 1..D), and — when
     \code{add_actors = TRUE} and the riskset is available — \code{actor1}
@@ -42,11 +43,11 @@ set at one event time point.
 \details{
 For interval timing (\code{ordinal = FALSE}), the stacked data can be
 fitted with a Poisson GLM using \code{log_interevent} as an offset:
-\code{glm(obs ~ -1 + . - event - dyad - log_interevent,
+\code{glm(obs ~ -1 + . - time - dyad - log_interevent,
           offset = log_interevent, family = poisson, data = stacked$remstats_stack)}
 
 For ordinal timing (\code{ordinal = TRUE}), use conditional logistic
-regression stratified by event:
-\code{survival::clogit(obs ~ -1 + . - event - dyad +
-                       strata(event), data = stacked$remstats_stack)}
+regression stratified by time point:
+\code{survival::clogit(obs ~ -1 + . - time - dyad +
+                       strata(time), data = stacked$remstats_stack)}
 }
