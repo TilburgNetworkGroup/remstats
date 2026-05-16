@@ -16,7 +16,7 @@ effects_ig <- ~ FEtype() +
   degreeDiff() + degreeMin() + degreeMax() + totaldegreeDyad() +
   inertia() + sp() + sp(unique = TRUE) + psABAB() + psABAY()
 
-stats <- remstats(reh, tie_effects = effects_ig, start = 1)
+stats <- remstats(reh, tie_effects = effects_ig, first = 1)
 riskset <- attr(stats, "riskset")
 
 # No type suffixes
@@ -158,7 +158,7 @@ expect_equal(stats[, , "psABAY"], psABAY.ig)
 # ── "separate" ───────────────────────────────────────────────────────────────
 stats_sep <- remstats(reh, tie_effects = ~
   inertia(consider_type = "separate") +
-  degreeMin(consider_type = "separate"), start = 1)
+  degreeMin(consider_type = "separate"), first = 1)
 
 expect_true(all(c("inertia.1","inertia.2",
                   "degreeMin.1","degreeMin.2") %in% dimnames(stats_sep)[[3]]))
@@ -203,7 +203,7 @@ std_effects <- ~
   degreeDiff(scaling = "std") + totaldegreeDyad(scaling = "std") +
   inertia(scaling = "std") +
   sp(scaling = "std") + sp(scaling = "std", unique = TRUE)
-std_stats <- remstats(reh, tie_effects = std_effects, start = 1)
+std_stats <- remstats(reh, tie_effects = std_effects, first = 1)
 
 sapply(2:dim(std_stats)[3], function(p) {
   stat_name <- dimnames(std_stats)[[3]][p]
@@ -216,13 +216,13 @@ sapply(2:dim(std_stats)[3], function(p) {
 # ── Proportional scaling ─────────────────────────────────────────────────────
 # inertia prop scaling not defined for undirected
 prop_effects_err <- ~ inertia(scaling = "prop")
-expect_error(remstats(reh, tie_effects = prop_effects_err, start = 1),
+expect_error(remstats(reh, tie_effects = prop_effects_err, first = 1),
   pattern = "not defined")
 
 prop_effects <- ~
   degreeMin(scaling = "prop") + degreeMax(scaling = "prop") +
   totaldegreeDyad(scaling = "prop")
-prop_stats <- remstats(reh, tie_effects = prop_effects, start = 1)
+prop_stats <- remstats(reh, tie_effects = prop_effects, first = 1)
 
 # degreeMin, degreeMax: scaled by (m-1)
 sapply(2:3, function(p) {

@@ -21,7 +21,7 @@ reh_int <- remify(edgelist = history_sub, model = "tie",
 ts_int <- tomstats(effects, reh = reh_int,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
-                               start = 2, stop = 30,
+                               first = 2, last = 30,
                                sampling = FALSE)
 
 stacked_int <- stack_stats(ts_int, reh_int)
@@ -46,7 +46,7 @@ expect_equal(E_int, dim(ts_int)[1],
   info = "interval: E matches number of time points")
 
 # Column names
-expect_true(all(c("event", "obs", "dyad", "log_interevent") %in%
+expect_true(all(c("time_index", "obs", "dyad", "log_interevent") %in%
                   colnames(df_int)),
   info = "interval: required columns present")
 expect_true(all(c("baseline", "inertia", "indegreeSender", "outdegreeSender") %in%
@@ -70,7 +70,7 @@ expect_equal(df_int$dyad, rep(seq_len(D_int), E_int),
   info = "interval: dyad index cycles correctly")
 
 # Event index: each event block has the correct event number
-expect_equal(df_int$event, rep(seq_len(E_int), each = D_int),
+expect_equal(df_int$time_index, 1+rep(seq_len(E_int), each = D_int),
   info = "interval: event index correct")
 
 # Offset: log_interevent matches reh interevent times
@@ -97,7 +97,7 @@ reh_ord <- remify(edgelist = history_sub, model = "tie",
 ts_ord <- tomstats(effects, reh = reh_ord,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
-                               start = 2, stop = 30,
+                               first = 2, last = 30,
                                sampling = FALSE)
 
 stacked_ord <- stack_stats(ts_ord, reh_ord)
@@ -131,7 +131,7 @@ reh_full <- remify(edgelist = history_sub, model = "tie",
 ts_full <- tomstats(effects, reh = reh_full,
                                 attr_actors = info,
                                 memory = "decay", memory_value = 1000,
-                                start = 2, stop = 30,
+                                first = 2, last = 30,
                                 sampling = FALSE)
 
 stacked_full <- stack_stats(ts_full, reh_full)
@@ -154,7 +154,7 @@ expect_true("log_interevent" %in% colnames(df_full),
 ts_sub <- tomstats(effects, reh = reh_int,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
-                               start = 5, stop = 20,
+                               first = 5, last = 20,
                                sampling = FALSE)
 
 stacked_sub <- stack_stats(ts_sub, reh_int)
@@ -177,7 +177,7 @@ samp_num <- 5L
 ts_samp <- tomstats(effects, reh = reh_int,
                                 attr_actors = info,
                                 memory = "decay", memory_value = 1000,
-                                start = 2, stop = 30,
+                                first = 2, last = 30,
                                 sampling = TRUE, samp_num = samp_num, seed = 1L)
 
 stacked_samp <- stack_stats(ts_samp, reh_int)
@@ -199,7 +199,7 @@ expect_equal(stacked_samp$E, dim(ts_samp)[1],
   info = "sampled interval: E matches stats rows")
 
 # Column names
-expect_true(all(c("event", "obs", "dyad", "weight", "log_interevent") %in%
+expect_true(all(c("time_index", "obs", "dyad", "weight", "log_interevent") %in%
                   colnames(df_samp)),
   info = "sampled interval: required columns present")
 expect_true(all(c("inertia", "indegreeSender", "outdegreeSender") %in%
@@ -243,7 +243,7 @@ expect_equal(stacked_samp$subset, c(2L, 30L),
 ts_samp_ord <- tomstats(effects, reh = reh_ord,
                                     attr_actors = info,
                                     memory = "decay", memory_value = 1000,
-                                    start = 2, stop = 30,
+                                    first = 2, last = 30,
                                     sampling = TRUE, samp_num = samp_num, seed = 1L)
 
 stacked_samp_ord <- stack_stats(ts_samp_ord, reh_ord)

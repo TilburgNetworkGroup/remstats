@@ -37,8 +37,8 @@ suppressWarnings({
 
 suppressWarnings({
     stats <- remstats(reh,
-                      start_effects = ~ remstats::inertia(),
-                      end_effects   = ~ remstats::inertia())
+                      start_effects = ~ inertia(),
+                      end_effects   = ~ inertia())
 })
 
 expect_inherits(stats, "remstats_durem",

@@ -41,13 +41,13 @@ run_check <- function(tie_formula, aom_formula, memory, memory_value, label) {
   ts_tie <- tomstats(
     tie_formula, reh = reh_tie, sampling = FALSE,
     memory = memory, memory_value = memory_value,
-    start = START
+    first = START
   )
 
   ts_aom <- aomstats(
     reh = reh_actor, receiver_effects = aom_formula,
     memory = memory, memory_value = memory_value,
-    start = START
+    first = START
   )
 
   slices <- dimnames(ts_tie)[[3]]

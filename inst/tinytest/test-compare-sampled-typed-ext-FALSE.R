@@ -39,7 +39,7 @@ history[4, ]      <- history[5, ]
 # ---------------------------------------------------------------------------
 check_sampled_equals_full <- function(effects, reh,
                                        memory = "full", memory_value = NA,
-                                       start, stop,
+                                       first, last,
                                        samp_num = 5L,
                                        seed1 = 1L, seed2 = 42L,
                                        tol = 1e-12) {
@@ -48,8 +48,8 @@ check_sampled_equals_full <- function(effects, reh,
     attr_actors  = info,
     memory       = memory,
     memory_value = memory_value,
-    start        = start,
-    stop         = stop
+    first        = first,
+    last         = last
   )
 
   ts_samp1 <- do.call(tomstats,
@@ -222,7 +222,7 @@ for (nm in names(tests_A)) {
   check_sampled_equals_full(
     tests_A[[nm]], reh = reh_A,
     memory = "decay", memory_value = 1000,
-    start = start_A, stop = stop_A
+    first = start_A, last = stop_A
   )
 }
 
@@ -270,7 +270,7 @@ for (nm in names(tests_B)) {
   check_sampled_equals_full(
     tests_B[[nm]], reh = reh_B,
     memory = "decay", memory_value = 1000,
-    start = start_B, stop = stop_B
+    first = start_B, last = stop_B
   )
 }
 
@@ -323,7 +323,7 @@ for (nm in names(tests_C)) {
   check_sampled_equals_full(
     tests_C[[nm]], reh = reh_C,
     memory = "decay", memory_value = 1000,
-    start = start_C, stop = stop_C
+    first = start_C, last = stop_C
   )
 }
 
@@ -374,7 +374,7 @@ for (nm in names(tests_D)) {
   check_sampled_equals_full(
     tests_D[[nm]], reh = reh_D,
     memory = "window", memory_value = 3,
-    start = start_D, stop = stop_D,
+    first = start_D, last = stop_D,
     samp_num = 10L
   )
 }
@@ -389,12 +389,12 @@ for (nm in names(tests_D)) {
 ts_full_shape <- tomstats(
   ~ inertia(consider_type = TRUE),
   reh = reh_A, memory = "decay", memory_value = 1000,
-  start = start_A, stop = stop_A, sampling = FALSE
+  first = start_A, last = stop_A, sampling = FALSE
 )
 ts_samp_shape <- tomstats(
   ~ inertia(consider_type = TRUE),
   reh = reh_A, memory = "decay", memory_value = 1000,
-  start = start_A, stop = stop_A,
+  first = start_A, last = stop_A,
   sampling = TRUE, samp_num = 5L, seed = 1L
 )
 

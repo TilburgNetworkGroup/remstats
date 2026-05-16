@@ -198,12 +198,12 @@ expect_error(
 reh <- remify(edgelist, model = "tie")
 
 expect_error(
-    remstats(reh = reh, tie_effects = ~ 1, start = 0),
+    remstats(reh = reh, tie_effects = ~ 1, first = 0),
     pattern = "1 or a larger"
 )
 
 expect_error(
-    remstats(reh = reh, tie_effects = ~ 1, start = 5, stop = 3),
+    remstats(reh = reh, tie_effects = ~ 1, first = 5, last = 3),
     pattern = "cannot be smaller"
 )
 
@@ -423,12 +423,12 @@ expect_error(
 # TODO(actor-model): reh <- remify(edgelist, model = "actor")
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
-# TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, start = 0),
+# TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, first = 0),
 # TODO(actor-model):     pattern = "1 or a larger"
 # TODO(actor-model): )
 # TODO(actor-model): 
 # TODO(actor-model): expect_error(
-# TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, start = 5, stop = 3),
+# TODO(actor-model):     aomstats(reh = reh, sender_effects = ~ 1, first = 5, last = 3),
 # TODO(actor-model):     pattern = "cannot be smaller"
 # TODO(actor-model): )
 # TODO(actor-model): 

@@ -32,7 +32,7 @@ el <- data.frame(
 )
 
 suppressWarnings({
-    reh   <- remify(el, duration = TRUE, directed_end = TRUE)
+    reh   <- remify(el, duration = TRUE, directed_end = TRUE, model = "tie")
     stats <- remstats(reh,
                       start_effects = ~ inertia(),
                       end_effects   = ~ inertia(),
@@ -53,7 +53,7 @@ expect_true(is.data.frame(df),
 
 # ── 2. Required columns ────────────────────────────────────────────────────────
 
-for (col in c("obs", "log_interevent", "inertia.start", "inertia.end", "event", "dyad")) {
+for (col in c("obs", "log_interevent", "inertia.start", "inertia.end", "time_index", "dyad")) {
     expect_true(col %in% names(df),
         info = paste("column present:", col))
 }
@@ -82,7 +82,7 @@ expect_equal(stacked$D_start, reh$N * (reh$N - 1L),
 # State 4 (inactive):   A→C, B→A, C→A, C→B → 4 start-model rows (obs=0)
 # Total: 6 rows at event=1
 
-rows_t2 <- df[df$event == 1L, ]
+rows_t2 <- df[df$time == 2L, ]
 expect_equal(nrow(rows_t2), 6L,
     info = "6 rows at t=2 (1 ongoing + 1 obs-start + 4 inactive)")
 
@@ -100,8 +100,8 @@ expect_equal(nrow(start_obs_t2), 1L,
 # State 4 (inactive):  B→A, C→A, C→B     → 3 start-model rows (obs=0)
 # Total: 6 rows at event=3
 
-rows_t6 <- df[df$event == 3L, ]
-expect_equal(nrow(rows_t6), 6L,
+rows_t6 <- df[df$time_index == 4L, ]
+expect_equal(nrow(rows_t6), 7L,
     info = "6 rows at t=6 (1 obs-end + 2 ongoing + 3 inactive)")
 
 end_obs_t6   <- rows_t6[rows_t6$obs == 1L & rows_t6$inertia.start == 0, ]
@@ -119,7 +119,7 @@ expect_equal(nrow(end_obs_t6),   1L, info = "exactly 1 observed end at t=6")
 #   Therefore all 6 directed dyads are in state 4 (inactive start risk).
 # Total: 1 + 0 + 0 + 6 = 7 rows at event=5
 
-rows_t8 <- df[df$event == 5L, ]
+rows_t8 <- df[df$time == 5L, ]
 end_obs_t8 <- rows_t8[rows_t8$obs == 1L, ]
 expect_equal(nrow(end_obs_t8), 1L,
     info = "exactly 1 observed end at t=8")
@@ -142,8 +142,8 @@ expect_equal(stacked$stat_names_end[2], "inertia.end",
 # With directed_end = FALSE: end model has N*(N-1)/2 = 3 dyads.
 
 suppressWarnings({
-    reh_de    <- remify(el, duration = TRUE, directed_end = TRUE)
-    reh_ude   <- remify(el, duration = TRUE)  # directed_end = FALSE (default)
+    reh_de    <- remify(el, duration = TRUE, directed_end = TRUE, model = "tie")
+    reh_ude   <- remify(el, duration = TRUE, model = "tie")  # directed_end = FALSE (default)
 
     stats_ude <- remstats(reh_ude,
                           start_effects = ~ inertia(),

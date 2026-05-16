@@ -310,17 +310,15 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 #' that follow logically from their definition (e.g., the recenyContinue
 #' statistic does depend on time since the event and not on event weights).
 #'
-#' @section Subset the event history using 'start' and 'stop':
+#' @section Subset the event history using 'first' and 'last':
 #' It is possible to compute statistics for a segment of the relational event 
 #' sequence, based on the entire event history. This is done by specifying the 
-#' 'start' and 'stop' values as the indices for the first and last event times 
-#' for which statistics are needed. For instance, setting 'start = 5' and 'stop 
+#' 'first' and 'last' values as the indices for the first and last event times 
+#' for which statistics are needed. For instance, setting 'first = 5' and 'last 
 #' = 5' calculates statistics for the 5th event in the relational event 
-#' sequence, considering events 1-4 in the history. Note that in cases of 
-#' simultaneous events with the 'method' set to 'pt' (per timepoint), 'start' 
-#' and 'stop' should correspond to the indices of the first and last 
+#' sequence, considering events 1-4 in the history.
 #' \emph{unique} event timepoints for which statistics are needed. For example, 
-#' if 'start = 5' and 'stop = 5', statistics are computed for the 5th unique 
+#' if 'first = 5' and 'last = 5', statistics are computed for the 5th unique 
 #' timepoint in the relational event sequence, considering all events occurring 
 #' at unique timepoints 1-4.
 #'
@@ -352,8 +350,8 @@ tomstats <- function(
 		attr_dyads = NULL,
 		memory = c("full", "window", "decay", "interval"),
 		memory_value = NA,
-		start = 2,
-		stop = Inf,
+		first = 2,
+		last = Inf,
 		display_progress = FALSE,
 		# new
 		sampling = FALSE, # sampling = TRUE
@@ -363,6 +361,8 @@ tomstats <- function(
 	#remove not needed arguments
 	
 	method <- "pt"
+	start <- first
+	stop <- last
 	
 	memory <- match.arg(memory)
 	

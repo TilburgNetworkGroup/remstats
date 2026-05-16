@@ -69,8 +69,8 @@
 #' @section Subset of the relational event history:
 #' Optionally, statistics can be computed for a slice of the relational event
 #' sequence - but based on the entire history. This is achieved by setting the
-#' start and stop values equal to the index of the first and last event for
-#' which statistics are requested. For example, start = 5 and stop = 5 computes
+#' first and last values equal to the index of the first and last event for
+#' which statistics are requested. For example, first = 5 and last = 5 computes
 #' the statistics for only the 5th event in the relational event sequence,
 #' based on the history that consists of events 1-4.
 #'
@@ -124,10 +124,12 @@ aomstats <- function(reh,
                      attr_dyads = NULL,
                      memory = c("full", "window", "decay", "interval"),
                      memory_value = NA,
-                     start = 2,
-                     stop = Inf,
+                     first = 2,
+                     last = Inf,
                      display_progress = FALSE) {
 
+	start <- first
+	stop <- last
 	method <- "pt"
 	
   # Validate remaining aomstats arguments

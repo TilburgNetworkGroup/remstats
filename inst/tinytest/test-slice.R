@@ -45,9 +45,9 @@ effects <- ~
     average(variable = "x1") + difference(variable = "x1") + 
     maximum(variable = "x1") + minimum(variable = "x1") +
     same(variable = "x2") 
-stats <- remstats(reh, tie_effects = effects, attr_actors = info, start = 1)
+stats <- remstats(reh, tie_effects = effects, attr_actors = info, first = 1)
 slice_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
-  start = 2, stop = 4)
+  first = 2, last = 4)
 
 # Test
 expect_equal(stats[2:4,,], slice_stats[1:nrow(slice_stats),,])
@@ -77,7 +77,7 @@ expect_equal(stats[2:4,,], slice_stats[1:nrow(slice_stats),,])
 # TODO(actor-model): slice_stats <- remstats(reh = reh,
 # TODO(actor-model):   sender_effects = sender_effects,
 # TODO(actor-model):   receiver_effects = receiver_effects, 
-# TODO(actor-model):   attr_actors = info, start = 2, stop = 4
+# TODO(actor-model):   attr_actors = info, first = 2, last = 4
 # TODO(actor-model): )
 # TODO(actor-model): slice_sender_stats <- slice_stats$sender_stats
 # TODO(actor-model): slice_receiver_stats <- slice_stats$receiver_stats

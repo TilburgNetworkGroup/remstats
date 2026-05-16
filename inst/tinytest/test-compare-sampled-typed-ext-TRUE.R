@@ -45,8 +45,8 @@ check_sampled_equals_full <- function(effects, reh,
     attr_actors  = info,
     memory       = memory,
     memory_value = memory_value,
-    start        = start,
-    stop         = stop
+    first        = start,
+    last         = stop
   )
 
   ts_samp1 <- do.call(tomstats,
@@ -301,12 +301,12 @@ for (nm in names(tests_D)) {
 ts_full_shape <- tomstats(
   ~ inertia(consider_type = "separate"),
   reh = reh_A, memory = "decay", memory_value = 1000,
-  start = start_A, stop = stop_A, sampling = FALSE
+  first = start_A, last = stop_A, sampling = FALSE
 )
 ts_samp_shape <- tomstats(
   ~ inertia(consider_type = "separate"),
   reh = reh_A, memory = "decay", memory_value = 1000,
-  start = start_A, stop = stop_A,
+  first = start_A, last = stop_A,
   sampling = TRUE, samp_num = 5L, seed = 1L
 )
 
@@ -332,7 +332,7 @@ expect_equal(
 ts_int_shape <- tomstats(
   ~ inertia(consider_type = "interact"),
   reh = reh_A, memory = "decay", memory_value = 1000,
-  start = start_A, stop = stop_A, sampling = FALSE
+  first = start_A, last = stop_A, sampling = FALSE
 )
 expect_true(
   all(c("inertia.social.social", "inertia.social.work",

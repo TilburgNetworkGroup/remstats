@@ -12,7 +12,7 @@ edgelist$weight <- weights
 # Test for tie-oriented model (weights are used in "adjmat", only need to test for one statistic)
 reh <- remify(edgelist, model = "tie")
 effects <- ~ inertia()
-stats <- remstats(reh, tie_effects = effects, start = 1)
+stats <- remstats(reh, tie_effects = effects, first = 1)
 riskset <- attr(stats, "riskset")
 
 inertia <- rbind(

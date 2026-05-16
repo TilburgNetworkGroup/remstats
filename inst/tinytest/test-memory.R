@@ -12,7 +12,7 @@ effects <- ~ inertia()
 
 stats_window <- remstats(
   reh = reh, tie_effects = effects, memory = "window",
-  memory_value = 5, start = 1
+  memory_value = 5, first = 1
 )
 riskset <- attr(stats_window, "riskset")
 
@@ -32,7 +32,7 @@ expect_equal(stats_window[, , "inertia"], inertia_window)
 
 stats_interval <- remstats(
   reh = reh, tie_effects = effects,
-  memory = "interval", memory_value = c(2, 5), start = 1
+  memory = "interval", memory_value = c(2, 5), first = 1
 )
 
 intertia_interval <- rbind(
@@ -51,7 +51,7 @@ expect_equal(stats_interval[, , "inertia"], intertia_interval)
 
 stats_decay <- remstats(
   reh = reh, tie_effects = effects,
-  memory = "decay", memory_value = 5, start = 1
+  memory = "decay", memory_value = 5, first = 1
 )
 
 f <- function(time, time_event) {

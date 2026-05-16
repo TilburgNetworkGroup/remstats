@@ -30,11 +30,11 @@ eff_ign <- ~ psABBA(consider_type = "ignore") +
 	psABAB(consider_type = "ignore") +
 	psABAY(consider_type = "ignore")
 
-ts_FALSE     <- tomstats(eff_sep, reh = reh_FALSE, sampling = FALSE, start = 2)
-ts_sep       <- tomstats(eff_sep, reh = reh_TRUE,  sampling = FALSE, start = 2)
-ts_int       <- tomstats(eff_int, reh = reh_TRUE,  sampling = FALSE, start = 2)
-ts_ign_FALSE <- tomstats(eff_ign, reh = reh_FALSE, sampling = FALSE, start = 2)
-ts_ign_TRUE  <- tomstats(eff_ign, reh = reh_TRUE,  sampling = FALSE, start = 2)
+ts_FALSE     <- tomstats(eff_sep, reh = reh_FALSE, sampling = FALSE, first = 2)
+ts_sep       <- tomstats(eff_sep, reh = reh_TRUE,  sampling = FALSE, first = 2)
+ts_int       <- tomstats(eff_int, reh = reh_TRUE,  sampling = FALSE, first = 2)
+ts_ign_FALSE <- tomstats(eff_ign, reh = reh_FALSE, sampling = FALSE, first = 2)
+ts_ign_TRUE  <- tomstats(eff_ign, reh = reh_TRUE,  sampling = FALSE, first = 2)
 
 # ---------------------------------------------------------------------------
 # Row 4: previous event = (3,2,social) — only social slices can be non-zero
@@ -74,7 +74,7 @@ el2 <- data.frame(
 )
 reh2 <- remify(el2, model = "tie", directed = TRUE,
 								extend_riskset_by_type = FALSE)
-ts2  <- tomstats(eff_sep, reh = reh2, sampling = FALSE, start = 2)
+ts2  <- tomstats(eff_sep, reh = reh2, sampling = FALSE, first = 2)
 
 # Row 2 corresponds to time=3, previous time point = time=2
 # (1,2,social): psABAB.social → dyad (1,2) = 1 (sender 1 == curr sender 1)

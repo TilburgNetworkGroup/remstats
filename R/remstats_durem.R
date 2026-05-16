@@ -106,8 +106,8 @@
             attr_dyads       = attr_dyads,
             memory           = memory,
             memory_value     = memory_value,
-            start            = start,
-            stop             = stop,
+            first            = start,
+            last             = stop,
             display_progress = display_progress
         )
         dimnames(start_stats)[[3]] <- paste0(dimnames(start_stats)[[3]], ".start")
@@ -136,11 +136,16 @@
             attr_dyads       = attr_dyads,
             memory           = memory,
             memory_value     = memory_value,
-            start            = start,
-            stop             = stop,
+            first            = start,
+            last             = stop,
             display_progress = display_progress
         )
         dimnames(end_stats)[[3]] <- paste0(dimnames(end_stats)[[3]], ".end")
+        
+        rs <- attr(end_stats, "riskset")
+        names(rs)[names(rs) == "sender"]   <- "actor1"
+        names(rs)[names(rs) == "receiver"] <- "actor2"
+        attr(end_stats, "riskset") <- rs
         
     } else {
         end_stats <- NULL

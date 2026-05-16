@@ -109,7 +109,7 @@ stack_stats.tomstats <- function(stats, reh, add_actors = TRUE) {
   stat_glm <- as.data.frame(
     do.call(rbind, lapply(seq_len(E), function(e) cbind(subset_idx[1] + e - 1L, stats[e, , ])))
   )
-  colnames(stat_glm)[1] <- "time"
+  colnames(stat_glm)[1] <- "time_index"
 
   # ── Offset: log inter-event time (interval timing only) ──────────────────────
   if (!ordinal) {
@@ -154,7 +154,7 @@ stack_stats.tomstats <- function(stats, reh, add_actors = TRUE) {
     }
   }
 
-  reserved <- c("time", "obs", "log_interevent", "dyad", "actor1", "actor2")
+  reserved <- c("time_index", "obs", "log_interevent", "dyad", "actor1", "actor2")
   structure(
     list(
       remstats_stack = stat_glm,
@@ -198,7 +198,7 @@ stack_stats.tomstats_sampled <- function(stats, reh, add_actors = TRUE) {
   stat_glm <- as.data.frame(
     do.call(rbind, lapply(seq_len(E), function(e) cbind(subset_idx[1] + e - 1L, stats[e, , ])))
   )
-  colnames(stat_glm)[1] <- "time"
+  colnames(stat_glm)[1] <- "time_index"
 
   # ── Offset: log inter-event time (interval only) ─────────────────────────────
   if (!ordinal) {
@@ -237,7 +237,7 @@ stack_stats.tomstats_sampled <- function(stats, reh, add_actors = TRUE) {
     }
   }
 
-  reserved <- c("time", "obs", "log_interevent", "dyad", "actor1", "actor2", "weight")
+  reserved <- c("time_index", "obs", "log_interevent", "dyad", "actor1", "actor2", "weight")
   structure(
     list(
       remstats_stack = stat_glm,
@@ -301,7 +301,7 @@ stack_stats.aomstats <- function(stats, reh, add_actors = TRUE) {
     df <- as.data.frame(
       do.call(rbind, lapply(seq_len(E), function(e) cbind(subset_idx[1] + e - 1L, ss[e, , ])))
     )
-    colnames(df) <- c("time", stat_names)
+    colnames(df) <- c("time_index", stat_names)
 
     if (!ordinal) {
       df$log_interevent <- rep(log_iet, each = N)
@@ -344,21 +344,21 @@ stack_stats.aomstats <- function(stats, reh, add_actors = TRUE) {
 
         df_e$obs   <- as.integer(r_ids == obs_r)
         df_e$actor <- r_ids
-        df_e$time <- subset_idx[1] + e - 1L
+        df_e$time_index <- subset_idx[1] + e - 1L
 
         if (add_actors && !is.null(actor_labels)) {
           df_e$actor_label <- actor_labels[ as.character(r_ids) ]
-          df_e[, c("time", stat_names, "obs", "actor", "actor_label")]
+          df_e[, c("time_index", stat_names, "obs", "actor", "actor_label")]
         } else {
-          df_e[, c("time", stat_names, "obs", "actor")]
+          df_e[, c("time_index", stat_names, "obs", "actor")]
         }
       }))
     }))
 
   } else NULL
 
-  reserved_s <- c("time", "obs", "log_interevent", "actor", "actor_label")
-  reserved_r <- c("time", "obs", "actor", "actor_label")
+  reserved_s <- c("time_index", "obs", "log_interevent", "actor", "actor_label")
+  reserved_r <- c("time_index", "obs", "actor", "actor_label")
   structure(
     list(
       sender_stack        = sender_stack,
@@ -485,9 +485,9 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	if (D_s > 0L && D_s != D_incl)
 		warning("D_s (", D_s, ") != nrow(included) (", D_incl,
 						"); column mapping may be wrong")
-	if (D_e > 0L && D_e != D_incl)
-		warning("D_e (", D_e, ") != nrow(included) (", D_incl,
-						"); column mapping may be wrong")
+	# if (D_e > 0L && D_e != D_incl)
+	# 	warning("D_e (", D_e, ") != nrow(included) (", D_incl,
+	# 					"); column mapping may be wrong")
 
 	# Hash: (actor1, actor2 [, type]) -> 1-based column index
 	if (ext_by_type && "type" %in% names(incl)) {
@@ -536,7 +536,18 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 										 character(1L))
 	
 	# End columns: same riskset, same ordering
-	e_col <- if (D_e > 0L) s_col else rep(0L, ne)
+	if (D_e > 0L) {
+		rs_end  <- attr(es, "riskset")
+		dir_end <- isTRUE(reh$durem$directed_end)
+		.ek <- function(a1, a2)
+			if (dir_end) paste(a1, a2, sep = "\t")
+		else paste(pmin(a1, a2), pmax(a1, a2), sep = "\t")
+		end_lookup <- setNames(seq_len(nrow(rs_end)),
+													 .ek(rs_end$actor1, rs_end$actor2))
+		e_col <- unname(end_lookup[.ek(edgelist$actor1, edgelist$actor2)])
+	} else {
+		e_col <- rep(0L, ne)
+	}
 	
 	# Unique time points covered by the stats arrays
 	utimes_all <- sort(unique(ed$time))
@@ -653,7 +664,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	df <- as.data.frame(do.call(rbind, block_list))
 	colnames(df) <- c("obs", "log_interevent",
 										names_s, names_e,
-										"time", "dyad")
+										"time_index", "dyad")
 	
 	# ── Optional actor name columns ───────────────────────────────────────────
 	if (add_actors) {

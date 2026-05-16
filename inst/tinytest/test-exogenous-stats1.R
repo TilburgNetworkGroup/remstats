@@ -31,7 +31,7 @@ effects <-	~ send(variable = "x1") + receive(variable = "x1") +
   maximum(variable = "x1") + minimum(variable = "x1") +
   same(variable = "x2") 
 
-stats <- remstats(reh, tie_effects = effects, attr_actors = info, start = 1)
+stats <- remstats(reh, tie_effects = effects, attr_actors = info, first = 1)
 riskset <- attr(stats, "riskset")
 
 # Baseline
@@ -109,7 +109,7 @@ expect_equal(stats[, , "same_x2"], same)
 
 # test difference absolute = FALSE
 effects3 <- ~ difference(variable = "x1", absolute = FALSE)
-stats3 <- remstats(reh, tie_effects = effects3, attr_actors = info, start = 1)
+stats3 <- remstats(reh, tie_effects = effects3, attr_actors = info, first = 1)
 
 difference <- rbind(
   c(-10, -20, 10, -10, 10),
@@ -128,7 +128,7 @@ std_effects <- ~
   difference(variable = "x1", scaling = "std") + 
   maximum(variable = "x1", scaling = "std") + 
   minimum(variable = "x1", scaling = "std") 
-std_stats <- remstats(reh, tie_effects = std_effects, attr_actors = info, start = 1)
+std_stats <- remstats(reh, tie_effects = std_effects, attr_actors = info, first = 1)
 
 sapply(2:dim(std_stats)[3], function(p) {
   stat_name <- dimnames(std_stats)[[3]][p]
@@ -154,7 +154,7 @@ effects <- ~ send(variable = "x1") +
   average(variable = "x1") 
 
 pt_stats <- remstats(reh, tie_effects = effects, attr_actors = info, 
-  start = 1)
+  first = 1)
 riskset <- attr(pt_stats, "riskset")
 
 # send

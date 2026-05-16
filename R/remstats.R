@@ -321,8 +321,8 @@ remstats <- function(
     		attr_dyads = attr_dyads, 
     		memory = memory, 
     		memory_value = memory_value, 
-    		start = start, 
-    		stop = stop, 
+    		first = start, 
+    		last = stop, 
     		display_progress = display_progress,
     		sampling = sampling,
     		samp_num = samp_num,
@@ -345,8 +345,8 @@ remstats <- function(
             attr_dyads = attr_dyads, 
             memory = memory, 
             memory_value = memory_value, 
-            start = start, 
-            stop = stop, 
+            first = start, 
+            last = stop, 
             display_progress = display_progress
         )
     }
