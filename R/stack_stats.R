@@ -611,7 +611,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 			length(sta_obs_cols)  + length(inactive_cols)
 		if (n_rows == 0L) next
 		
-		mat <- matrix(0, nrow = n_rows, ncol = n_stat_cols + 4L)
+		mat <- matrix(0, nrow = n_rows, ncol = n_stat_cols + 5L)
 		r   <- 0L
 		
 		start_col_range <- if (P_s > 0L) 3L:(2L + P_s)              else integer(0L)
@@ -626,6 +626,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 				mat[r, end_col_range]  <- c(unname(es[m, d, ]))
 				mat[r, n_stat_cols + 3L] <- subset_s[1] + m - 1L
 				mat[r, n_stat_cols + 4L] <- d
+				mat[r, n_stat_cols + 5L] <- 1L
 			}
 		}
 		
@@ -637,6 +638,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 				mat[r, end_col_range]  <- c(unname(es[m, d, ]))
 				mat[r, n_stat_cols + 3L] <- subset_s[1] + m - 1L
 				mat[r, n_stat_cols + 4L] <- d
+				mat[r, n_stat_cols + 5L] <- 1L
 			}
 		}
 		
@@ -649,6 +651,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 				mat[r, start_col_range]  <- c(unname(ss[m, d, ]))
 				mat[r, n_stat_cols + 3L] <- subset_s[1] + m - 1L
 				mat[r, n_stat_cols + 4L] <- d
+				mat[r, n_stat_cols + 5L] <- 0L
 			}
 		}
 		
@@ -660,6 +663,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 				mat[r, start_col_range]  <- c(unname(ss[m, d, ]))
 				mat[r, n_stat_cols + 3L] <- subset_s[1] + m - 1L
 				mat[r, n_stat_cols + 4L] <- d
+				mat[r, n_stat_cols + 5L] <- 0L
 			}
 		}
 		
@@ -669,7 +673,8 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	df <- as.data.frame(do.call(rbind, block_list))
 	colnames(df) <- c("obs", "log_interevent",
 										names_s, names_e,
-										"time_index", "dyad")
+										"time_index", "dyad","process")
+	df$process <- ifelse(df$process == 0L, "start", "end")
 	if (ordinal) df$log_interevent <- NULL
 	
 	# ── Optional actor name columns ───────────────────────────────────────────
