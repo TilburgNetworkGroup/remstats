@@ -454,6 +454,8 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	if (!inherits(reh, "remify_durem"))
 		stop("'reh' must be a remify_durem object.")
 	
+	ordinal <- isTRUE(reh$meta$ordinal)
+	
 	ss <- stats$start_stats   # [M × D_s × P_s] or NULL
 	es <- stats$end_stats     # [M × D_e × P_e] or NULL
 	
@@ -556,8 +558,12 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	utimes     <- utimes_all[subset_s[1L]:subset_s[2L]]
 	
 	# Log inter-event times
-	origin_t  <- if (subset_s[1L] > 1L) utimes_all[subset_s[1L] - 1L] else 0
-	log_iet   <- log(utimes - c(origin_t, utimes[-M]))
+	if (!ordinal) {
+		origin_t  <- if (subset_s[1L] > 1L) utimes_all[subset_s[1L] - 1L] else 0
+		log_iet   <- log(utimes - c(origin_t, utimes[-M]))
+	} else {
+		log_iet   <- rep(0, M)  # placeholder, won't be included in output
+	}
 	
 	all_s_cols  <- seq_len(D_incl)
 	n_stat_cols <- P_s + P_e
@@ -665,16 +671,18 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	colnames(df) <- c("obs", "log_interevent",
 										names_s, names_e,
 										"time_index", "dyad")
+	if (ordinal) df$log_interevent <- NULL
 	
 	# ── Optional actor name columns ───────────────────────────────────────────
+	if (ext_by_type && "type" %in% names(incl)) {
+		df$type <- incl$type[df$dyad]
+	} else if (has_types) {
+		df$type <- NA_character_
+	}
+	
 	if (add_actors) {
 		df$actor1 <- incl$actor1[df$dyad]
 		df$actor2 <- incl$actor2[df$dyad]
-		if (ext_by_type && "type" %in% names(incl)) {
-			df$type <- incl$type[df$dyad]
-		} else if (has_types) {
-			df$type <- NA_character_
-		}
 	}
 	
 	stat_names_all <- c(names_s, names_e)
@@ -686,7 +694,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 			D_start          = D_s,
 			D_end            = D_e,
 			E                = M,
-			ordinal          = FALSE,
+			ordinal          = ordinal,
 			model            = "durem",
 			sampled          = FALSE,
 			stat_names       = stat_names_all,

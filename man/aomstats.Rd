@@ -12,8 +12,8 @@ aomstats(
   attr_dyads = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
-  start = 2,
-  stop = Inf,
+  first = 2,
+  last = Inf,
   display_progress = FALSE
 )
 }
@@ -44,6 +44,14 @@ actors (see Details).}
 \item{memory_value}{Numeric value indicating the memory parameter. Default 
 is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 parameter required). See `Details'.}
+
+\item{first}{an optional integer value, specifying the index of the first
+time or event in the relational event history for which statistics must be 
+computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.}
+
+\item{last}{an optional integer value, specifying the index of the last
+time or event in the relational event history for which statistics must be 
+computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the
 endogenous statistics be shown (TRUE) or not (FALSE)?}
@@ -143,8 +151,8 @@ statistic does depend on time since the event and not on event weights).
 
 Optionally, statistics can be computed for a slice of the relational event
 sequence - but based on the entire history. This is achieved by setting the
-start and stop values equal to the index of the first and last event for
-which statistics are requested. For example, start = 5 and stop = 5 computes
+first and last values equal to the index of the first and last event for
+which statistics are requested. For example, first = 5 and last = 5 computes
 the statistics for only the 5th event in the relational event sequence,
 based on the history that consists of events 1-4.
 }
