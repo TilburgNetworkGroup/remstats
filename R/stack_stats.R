@@ -553,8 +553,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	
 	# Unique time points covered by the stats arrays
 	utimes_all <- sort(unique(ed$time))
-	subset_ref <- if (!is.null(ss)) ss else es
-	subset_s   <- as.integer(unlist(attr(subset_ref, "subset")))
+	subset_s <- as.integer(unlist(attr(stats, "subset")))
 	utimes     <- utimes_all[subset_s[1L]:subset_s[2L]]
 	
 	# Log inter-event times
