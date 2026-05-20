@@ -275,8 +275,7 @@ remstats <- function(
         if (isTRUE(sampling))
             warning(
                 "`sampling = TRUE` is not yet supported for `remify_durem` objects ",
-                "and will be ignored. Case-control sampling for the duration model ",
-                "is planned for a future release."
+                "and will be ignored."
             )
         return(.remstats_durem_dispatch(
             reh              = reh,
