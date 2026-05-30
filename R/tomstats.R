@@ -220,14 +220,13 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 }
 
 
-
 #' tomstats
 #'
 #' Computes statistics for modeling relational event history data
 #' with the tie-oriented relational event model.
 #'
-#' @param effects an object of class \code{"\link[stats]{formula}"} (or one
-#' that can be coerced to that class): a symbolic description of the effects in
+#' @param tie_effects an object of class \code{"\link[stats]{formula}"} (or one
+#' that can be coerced to that class): a symbolic description of the tie_effects in
 #' the model for which statistics are computed, see 'Details' for the available
 #' effects and their corresponding statistics
 #' @param sampling Logical. If \code{TRUE}, statistics are computed using
@@ -244,9 +243,9 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 #' The statistics to be computed are defined symbolically and should be
 #' supplied to the \code{effects} argument in the form \code{~ effects}. The
 #' terms are separated by + operators. For example:
-#' \code{effects = ~ inertia() + otp()}. Interactions between two effects
+#' \code{tie_effects = ~ inertia() + otp()}. Interactions between two effects
 #' can be included with * operators. For example:
-#' \code{effects = ~ inertia()*otp()}. A list of available effects can be
+#' \code{tie_effects = ~ inertia()*otp()}. A list of available effects can be
 #' obtained with \code{\link{tie_effects}()}.
 #'
 #' The majority of the statistics can be scaled in some way, see
@@ -262,27 +261,6 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 #' undirected. Some statistics are only defined for either directed or
 #' undirected events (see the documentation of the statistics). Note that
 #' undirected events are only available for the tie-oriented model.
-#'
-#' @section attr_actors:
-#' For the computation of the \emph{exogenous} statistics an attributes object
-#' with the exogenous covariate information has to be supplied to the
-#' \code{attr_actors} argument in either \code{remstats()} or in the separate
-#' effect functions supplied to the \code{..._effects} arguments (e.g., see
-#' \code{\link{send}}). This \code{attr_actors} object should be constructed as
-#' follows: A dataframe with rows referring to the attribute value of actor
-#' \emph{i} at timepoint \emph{t}. A `name` column is required that contains the
-#' actor name (corresponding to the actor names in the relational event
-#' history). A `time` column is required that contains the time when attributes
-#' change (set to zero if none of the attributes vary over time). Subsequent
-#' columns contain the attributes that are called in the specifications of
-#' exogenous statistics (column name corresponding to the string supplied to
-#' the \code{variable} argument in the effect function). Note that the
-#' procedure for the exogenous effects `tie' and `event' deviates from this,
-#' here the exogenous covariate information has to be specified in a different
-#' way, see \code{\link{tie}} and \code{\link{event}}.
-#'
-#' @section attr_dyads:
-#' For the computation of the \emph{dyad exogenous} statistics with \code{tie()}, an attributes object with the exogenous covariates information per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} containing attribute information for dyads. If \code{attr_dyads} is a \code{data.frame}, the first two columns should represent "actor1" and "actor2" (for directed events, "actor1" corresponds to the sender, and "actor2" corresponds to the receiver). Additional columns can represent dyads' exogenous attributes. If attributes vary over time, include a column named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond to "actor1", columns to "actor2", and cells contain dyads' exogenous attributes.
 #'
 #' @section Memory:
 #' The default `memory` setting is `"full"`, which implies that at each time
@@ -322,13 +300,6 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 #' timepoint in the relational event sequence, considering all events occurring 
 #' at unique timepoints 1-4.
 #'
-#' @section Adjacency matrix:
-#' Optionally, a previously computed adjacency matrix can be supplied. Note
-#' that the endogenous statistics will be computed based on this adjacency
-#' matrix. Hence, supplying a previously computed adjacency matrix can reduce
-#' computation time but the user should be absolutely sure the adjacency matrix
-#' is accurate.
-#'
 #' @return An object of class 'tomstats'. Array with the computed statistics,
 #' where rows refer to time points, columns refer to potential relational event
 #' (i.e., potential edges) in the risk set and slices refer to statistics.
@@ -344,10 +315,8 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 #'   }
 #' @export
 tomstats <- function(
-		effects,
+		tie_effects,
 		reh,
-		attr_actors = NULL,
-		attr_dyads = NULL,
 		memory = c("full", "window", "decay", "interval"),
 		memory_value = NA,
 		first = 2,
@@ -356,13 +325,26 @@ tomstats <- function(
 		# new
 		sampling = FALSE, # sampling = TRUE
 		samp_num = NULL, # samp_num = 20
-		seed = NULL
+		seed = NULL,
+		attr_actors = NULL,
+		attr_dyads = NULL
 ) {
 	#remove not needed arguments
 	
+	if (!is.null(attr_actors)) {
+		warning("'attr_actors' is deprecated. Supply attributes directly in the stat functions (e.g., send()). This argument is ignored.",
+						call. = FALSE)
+	}
+	if (!is.null(attr_dyads)) {
+		warning("'attr_dyads' is deprecated. Supply attributes directly in the stat functions (e.g., send()). This argument is ignored.",
+						call. = FALSE)
+	}
+	
+	#change of argument names
 	method <- "pt"
 	start <- first
 	stop <- last
+	effects <- tie_effects
 	
 	memory <- match.arg(memory)
 	

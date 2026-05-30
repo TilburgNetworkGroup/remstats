@@ -331,3 +331,75 @@ bind_remstats <- function(...) {
 		return(statistics)
 	}
 }
+
+
+#' Select a subset of statistics from a remstats object
+#'
+#' @param object a \code{remstats} object (of class \code{tomstats},
+#'   \code{aomstats}, or \code{remstats_durem})
+#' @param tie_effects character vector of statistic names to keep (tomstats only)
+#' @param sender_effects character vector of statistic names to keep (aomstats only)
+#' @param receiver_effects character vector of statistic names to keep (aomstats only)
+#' @param start_effects character vector of statistic names to keep (remstats_durem only)
+#' @param end_effects character vector of statistic names to keep (remstats_durem only)
+#'
+#' @return a remstats object of the same class with only the selected statistics
+#'
+#' @export
+select_stats <- function(object,
+												 tie_effects      = NULL,
+												 sender_effects   = NULL,
+												 receiver_effects = NULL,
+												 start_effects    = NULL,
+												 end_effects      = NULL) {
+	
+	if (inherits(object, "remstats_durem")) {
+		.select_stats_durem(object, start_effects, end_effects)
+	} else if (inherits(object, "aomstats")) {
+		.select_stats_aom(object, sender_effects, receiver_effects)
+	} else if (inherits(object, "tomstats")) {
+		.select_stats_tom(object, tie_effects)
+	} else {
+		stop("'object' must be a 'tomstats', 'aomstats', or 'remstats_durem' object")
+	}
+}
+
+# Helper: subset a single 3D stats array by stat names
+.subset_array <- function(arr, which) {
+	if (is.null(which)) return(arr)
+	if (is.null(arr)) {
+		stop("cannot select statistics from a NULL array")
+	}
+	nms <- dimnames(arr)[[3]]
+	bad <- setdiff(which, nms)
+	if (length(bad) > 0L) {
+		stop("statistic(s) not found: ", paste(bad, collapse = ", "))
+	}
+	out <- arr[, , which, drop = FALSE]
+	attrs <- attributes(arr)
+	attrs$dim      <- dim(out)
+	attrs$dimnames <- dimnames(out)
+	attrs$formula  <- NULL
+	attributes(out) <- attrs
+	out
+}
+
+.select_stats_tom <- function(object, which) {
+	out <- .subset_array(object, which)
+	attr(out, "formula") <- NULL
+	out
+}
+
+.select_stats_aom <- function(object, sender, receiver) {
+	object$sender_stats   <- .subset_array(object$sender_stats,   sender)
+	object$receiver_stats <- .subset_array(object$receiver_stats, receiver)
+	attr(object, "formula") <- NULL
+	object
+}
+
+.select_stats_durem <- function(object, start, end) {
+	object$start_stats <- .subset_array(object$start_stats, start)
+	object$end_stats   <- .subset_array(object$end_stats,   end)
+	attr(object, "formula") <- NULL
+	object
+}

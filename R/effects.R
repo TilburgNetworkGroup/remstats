@@ -537,12 +537,13 @@ maximum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #' waiting time between events.
 #'
 #' @details
-#' The statistic at timepoint \emph{t} is for all dyads in the risk set equal
-#' to the attribute of the event at timepoint \emph{t}.
+#' Because the statistics
+#' array is indexed by unique timepoint rather than by event, multiple events
+#' occurring at the same time must be collapsed to a single value; the
+#' average of the event attribute is taken over these events.
 #'
-#' @param x vector with the event attribute
-#' @param variableName optionally, a string indicating the variable name, used
-#' for the dimnames of the output statistics object
+#' @param variable string with the name of the column in the event_attr object for which the statistic has to be computed.
+#' @param event_attr an object of class data.frame that contains the attribute
 #'
 #' @seealso \code{\link{FEtype}}
 #'
@@ -551,25 +552,20 @@ maximum <- function(variable, attr_actors = NULL, scaling = c("none", "std"), at
 #' 
 #' @examples
 #' \donttest{
-#'   reh_tie <- remify::remify(history, model = "tie")
+#'   reh_tie <- remify::remify(history, model = "tie", event_attr = "setting")
 #'   data(history, package = "remstats")
 #'   history$work <- ifelse(history$setting == "work", 1, 0)
-#'   effects <- ~ event(x = history$work, variableName = "setting_is_work")
+#'   effects <- ~ event("work", event_attr = history)
 #'   remstats(reh = reh_tie, tie_effects = effects)
 #' }
 #'
 #' @export
-event <- function(x, variableName = NULL) {
-  # Missing values
-  if (anyNA(x)) {
-    stop("Vector 'x' in event() contains missing values.")
-  }
-
+event <- function(variable, event_attr) {
   # Output
   list(
     effect = "event",
-    x = x,
-    variable = variableName
+    x = event_attr[[variable]],
+    variable = variable
   )
 }
 

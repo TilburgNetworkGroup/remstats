@@ -125,10 +125,6 @@ expect_warning(
 )
 
 x <- c(1, 1, NA)
-expect_error(
-    event(x), 
-    pattern = "missing values"
-)
 
 Y <- matrix(1:15, nrow = 5, ncol = 3)
 Y[1,1] <- NA
@@ -183,7 +179,7 @@ colnames(info)[1] <- "id"
 colnames(info)[1] <- "name"
 
 expect_error(
-    tomstats(reh = edgelist, effects = ~ 1),
+    tomstats(reh = edgelist, tie_effects = ~ 1),
     pattern = "object of class remify"
 )
 

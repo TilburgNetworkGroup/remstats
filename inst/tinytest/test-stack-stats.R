@@ -8,7 +8,7 @@ data(info,    package = "remstats")
 colnames(history)[colnames(history) == "setting"] <- "type"
 history_sub <- history[1:40, ]
 
-effects <- ~ inertia(consider_type = FALSE) +
+effects <- ~ inertia(consider_type = "interact") + 
                indegreeSender(consider_type = FALSE) +
                outdegreeSender(consider_type = FALSE)
 
@@ -16,13 +16,14 @@ effects <- ~ inertia(consider_type = FALSE) +
 # SECTION 1: Interval timing, active riskset
 # ---------------------------------------------------------------------------
 reh_int <- remify(edgelist = history_sub, model = "tie",
-                            riskset = "active", extend_riskset_by_type = TRUE)
+                            riskset = "active", extend_riskset_by_type = FALSE)
 
 ts_int <- tomstats(effects, reh = reh_int,
                                attr_actors = info,
                                memory = "decay", memory_value = 1000,
                                first = 2, last = 30,
                                sampling = FALSE)
+dimnames(ts_int)[[3]]
 
 stacked_int <- stack_stats(ts_int, reh_int)
 
@@ -49,7 +50,8 @@ expect_equal(E_int, dim(ts_int)[1],
 expect_true(all(c("time_index", "obs", "dyad", "log_interevent") %in%
                   colnames(df_int)),
   info = "interval: required columns present")
-expect_true(all(c("baseline", "inertia", "indegreeSender", "outdegreeSender") %in%
+expect_true(all(c("baseline", "inertia.social", "inertia.work",
+									"indegreeSender", "outdegreeSender") %in%
                   colnames(df_int)),
   info = "interval: statistic columns present")
 
@@ -202,7 +204,8 @@ expect_equal(stacked_samp$E, dim(ts_samp)[1],
 expect_true(all(c("time_index", "obs", "dyad", "weight", "log_interevent") %in%
                   colnames(df_samp)),
   info = "sampled interval: required columns present")
-expect_true(all(c("inertia", "indegreeSender", "outdegreeSender") %in%
+expect_true(all(c("inertia.social", "inertia.work", "indegreeSender",
+									"outdegreeSender") %in%
                   colnames(df_samp)),
   info = "sampled interval: statistic columns present")
 

@@ -32,7 +32,7 @@ el <- data.frame(
 )
 
 suppressWarnings({
-    reh   <- remify(el, duration = TRUE, directed_end = TRUE, model = "tie")
+    reh   <- remify(el, duration = TRUE, dur_directed_end = TRUE, model = "tie")
     stats <- remstats(reh,
                       start_effects = ~ inertia(),
                       end_effects   = ~ inertia(),
@@ -139,11 +139,11 @@ expect_equal(stacked$stat_names_end[2], "inertia.end",
     info = "stat_names_end = inertia.end")
 
 # ── 10. Undirected end model ──────────────────────────────────────────────────
-# With directed_end = FALSE: end model has N*(N-1)/2 = 3 dyads.
+# With dur_directed_end = FALSE: end model has N*(N-1)/2 = 3 dyads.
 
 suppressWarnings({
-    reh_de    <- remify(el, duration = TRUE, directed_end = TRUE, model = "tie")
-    reh_ude   <- remify(el, duration = TRUE, model = "tie")  # directed_end = FALSE (default)
+    reh_de    <- remify(el, duration = TRUE, dur_directed_end = TRUE, model = "tie")
+    reh_ude   <- remify(el, duration = TRUE, model = "tie")  # dur_directed_end = FALSE (default)
 
     stats_ude <- remstats(reh_ude,
                           start_effects = ~ inertia(),

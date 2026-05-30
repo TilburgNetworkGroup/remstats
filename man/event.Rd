@@ -4,13 +4,12 @@
 \alias{event}
 \title{event}
 \usage{
-event(x, variableName = NULL)
+event(variable, event_attr)
 }
 \arguments{
-\item{x}{vector with the event attribute}
+\item{variable}{string with the name of the column in the event_attr object for which the statistic has to be computed.}
 
-\item{variableName}{optionally, a string indicating the variable name, used
-for the dimnames of the output statistics object}
+\item{event_attr}{an object of class data.frame that contains the attribute}
 }
 \value{
 List with all information required by `remstats::remstats()` to 
@@ -22,15 +21,17 @@ Specifies the statistic for an "event" effect in the tie-oriented model. An
 waiting time between events.
 }
 \details{
-The statistic at timepoint \emph{t} is for all dyads in the risk set equal
-to the attribute of the event at timepoint \emph{t}.
+Because the statistics
+array is indexed by unique timepoint rather than by event, multiple events
+occurring at the same time must be collapsed to a single value; the
+average of the event attribute is taken over these events.
 }
 \examples{
 \donttest{
-  reh_tie <- remify::remify(history, model = "tie")
+  reh_tie <- remify::remify(history, model = "tie", event_attr = "setting")
   data(history, package = "remstats")
   history$work <- ifelse(history$setting == "work", 1, 0)
-  effects <- ~ event(x = history$work, variableName = "setting_is_work")
+  effects <- ~ event("work", event_attr = history)
   remstats(reh = reh_tie, tie_effects = effects)
 }
 

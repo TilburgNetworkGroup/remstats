@@ -57,7 +57,7 @@
     
     # directional flags
     directed_start <- isTRUE(reh$meta$directed)
-    directed_end   <- isTRUE(reh$durem$directed_end)
+    directed_end   <- isTRUE(reh$durem$dur_directed_end)
 
     # Preserve the original extend_riskset_by_type setting
     ext_by_type <- isTRUE(reh$meta$with_type_riskset)
@@ -100,7 +100,7 @@
         )
 
         start_stats <- tomstats(
-            effects          = start_effects,
+            tie_effects      = start_effects,
             reh              = reh_start,
             attr_actors      = attr_actors,
             attr_dyads       = attr_dyads,
@@ -130,7 +130,7 @@
         )
 
         end_stats <- tomstats(
-            effects          = end_effects,
+            tie_effects      = end_effects,
             reh              = reh_end,
             attr_actors      = attr_actors,
             attr_dyads       = attr_dyads,

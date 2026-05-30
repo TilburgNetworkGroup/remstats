@@ -540,7 +540,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	# End columns: same riskset, same ordering
 	if (D_e > 0L) {
 		rs_end  <- attr(es, "riskset")
-		dir_end <- isTRUE(reh$durem$directed_end)
+		dir_end <- isTRUE(reh$durem$dur_directed_end)
 		.ek <- function(a1, a2)
 			if (dir_end) paste(a1, a2, sep = "\t")
 		else paste(pmin(a1, a2), pmax(a1, a2), sep = "\t")
@@ -567,11 +567,11 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	all_s_cols  <- seq_len(D_incl)
 	n_stat_cols <- P_s + P_e
 	
-	# type_exclusive: when TRUE (default), an active event of any type blocks
+	# dur_type_exclusive: when TRUE (default), an active event of any type blocks
 	# starting events of ALL types for the same actor pair (types are mutually
 	# exclusive). When FALSE, types are independent — only the exact typed
 	# dyad column is blocked. Has no effect without ext_by_type.
-	type_excl <- !ext_by_type || !isFALSE(reh$durem$type_exclusive)
+	type_excl <- !ext_by_type || !isFALSE(reh$durem$dur_type_exclusive)
 	
 	# ── Main stacking loop ───────────────────────────────────────────────────────
 	block_list <- vector("list", M)

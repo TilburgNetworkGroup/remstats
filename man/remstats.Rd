@@ -9,8 +9,6 @@ remstats(
   tie_effects = NULL,
   sender_effects = NULL,
   receiver_effects = NULL,
-  attr_actors = NULL,
-  attr_dyads = NULL,
   memory = c("full", "window", "decay", "interval"),
   memory_value = NA,
   first = 2,
@@ -22,7 +20,9 @@ remstats(
   start_effects = NULL,
   end_effects = NULL,
   psi_start = 1,
-  psi_end = 1
+  psi_end = 1,
+  attr_actors = NULL,
+  attr_dyads = NULL
 )
 }
 \arguments{
@@ -44,13 +44,6 @@ which statistics are computed, see `Details'}
 (or one that can be coerced to that class): a symbolic description of the
 effects in the receiver choice step of model for which statistics are
 computed, see `Details'}
-
-\item{attr_actors}{optionally, an object of class
-\code{"\link[base]{data.frame}"} that contains exogenous attributes for 
-actors (see Details).}
-
-\item{attr_dyads}{optionally, an object of class \code{data.frame} or 
-\code{matrix} containing attribute information for dyads (see Details).}
 
 \item{memory}{The memory to be used. See `Details'.}
 
@@ -99,6 +92,13 @@ Only used when \code{reh} is a \code{remify_durem} object.}
 The weight of each past event in the end statistics is
 \code{event_weight * (end - time + 1)^psi_start}. Default \code{1}.
 Only used when \code{reh} is a \code{remify_durem} object.}
+
+\item{attr_actors}{optionally, an object of class
+\code{"\link[base]{data.frame}"} that contains exogenous attributes for 
+actors (see Details).}
+
+\item{attr_dyads}{optionally, an object of class \code{data.frame} or 
+\code{matrix} containing attribute information for dyads (see Details).}
 }
 \value{
 An object of class 'remstats'. In case of the 
@@ -156,41 +156,6 @@ Note that events in the relational event history can be directed or
 undirected. Some statistics are only defined for either directed or
 undirected events (see the documentation of the statistics). Note that
 undirected events are only available for the tie-oriented model.
-}
-
-\section{attr_actors}{
-
-For the computation of the \emph{exogenous} statistics an attributes 
-object with the exogenous covariate information has to be supplied to the
-\code{attr_actors} argument in either \code{remstats()} or in the separate
-effect functions supplied to the \code{..._effects} arguments (e.g., see
-\code{\link{send}}). This \code{attr_actors} object should be constructed as
-follows: A dataframe with rows referring to the attribute value of actor
-\emph{i} at timepoint \emph{t}. A `name` column is required that contains the
-actor name (corresponding to the actor names in the relational event
-history). A `time` column is required that contains the time when attributes
-change (set to zero if none of the attributes vary over time). Subsequent
-columns contain the attributes that are called in the specifications of
-exogenous statistics (column name corresponding to the string supplied to
-the \code{variable} argument in the effect function). Note that the
-procedure for the exogenous effects `tie' and `event' deviates from this,
-here the exogenous covariate information has to be specified in a different
-way, see \code{\link{tie}} and \code{\link{event}}.
-}
-
-\section{attr_dyads}{
-  
-For the computation of the \emph{dyad exogenous} statistics with 
-\code{tie()}, an attributes object with the exogenous covariates information 
-per dyad has to be supplied. This is a \code{data.frame} or \code{matrix} 
-containing attribute information for dyads. If \code{attr_dyads} is a 
-\code{data.frame}, the first two columns should represent "actor1" and 
-"actor2" (for directed events, "actor1" corresponds to the sender, and 
-"actor2" corresponds to the receiver). Additional columns can represent 
-dyads' exogenous attributes. If attributes vary over time, include a column 
-named "time". If \code{attr_dyads} is a \code{matrix}, the rows correspond 
-to "actor1", columns to "actor2", and cells contain dyads' exogenous 
-attributes.
 }
 
 \section{Memory}{

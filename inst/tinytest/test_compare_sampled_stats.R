@@ -196,7 +196,7 @@
 # # tests <- list(
 # # 	# Exogenous
 # # 	exo_send_receive = quote(~ send("extraversion") + receive("extraversion")),
-# # 	exo_event        = quote(~ event(x = work_vec, variableName = "setting_is_work")),
+# # 	exo_event        = quote(~ event(event_attr = work_vec, variable = "setting_is_work")),
 # # 	exo_tie          = quote(~ tie(variable = "both_male", attr_dyads = both_male_long)),
 # # 	exo_userStat     = quote(~ userStat(x = actor101_stat, variableName = "actor101event")),
 # # 

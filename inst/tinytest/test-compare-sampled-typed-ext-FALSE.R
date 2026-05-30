@@ -282,7 +282,7 @@ start_C <- 2; stop_C <- 18
 
 reh_C <- suppressWarnings(
   remify(edgelist = h_C, model = "tie", riskset = "manual",
-        directed = FALSE, manual.riskset = h_C[, c("actor1", "actor2")],
+        directed = FALSE, manual_riskset = h_C[, c("actor1", "actor2")],
         extend_riskset_by_type = FALSE)
 )
 

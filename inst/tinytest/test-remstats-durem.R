@@ -260,3 +260,4 @@ expect_silent(capture.output(print(stats)),
 
 expect_silent(capture.output(print(stats2)),
     info = "print.remstats_durem: different effect counts")
+

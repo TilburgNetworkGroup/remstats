@@ -522,7 +522,7 @@ duremstats <- function(reh,
 	else min(M_total - 1L, as.integer(stop) - 1L)
 	
 	directed_start <- isTRUE(reh$meta$directed)
-	directed_end   <- isTRUE(reh$durem$directed_end)
+	directed_end   <- isTRUE(reh$durem$dur_directed_end)
 	
 	eff_start <- .parse_active_effects(start_effects)
 	eff_end   <- .parse_active_effects(end_effects)

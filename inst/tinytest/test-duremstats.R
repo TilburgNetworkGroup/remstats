@@ -336,7 +336,7 @@ expect_true(all(u_sp[1, , 2] == 0),
     info = "ud: shared partners all zero at row 1")
 
 # ── 13. end_effects produce $end_stats with .end suffix ──────────────────────
-# reh has directed_end = FALSE (default), so end model is undirected.
+# reh has dur_directed_end = FALSE (default), so end model is undirected.
 # activeDegreeActor1 is the second undirected effect (stat_type 2).
 
 suppressWarnings({

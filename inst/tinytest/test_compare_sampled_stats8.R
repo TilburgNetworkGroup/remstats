@@ -24,7 +24,7 @@ check_sampled_equals_full <- function(effects,
 																			tol = 1e-12,
 																			attr_dyads = NULL) {
 	
-	reh <- remify(edgelist = history, model = "tie", riskset = "manual", manual.riskset = history[1:15,2:3])
+	reh <- remify(edgelist = history, model = "tie", riskset = "manual", manual_riskset = history[1:15,2:3])
 	
 	ts_samp <- tomstats(
 		effects, reh = reh, attr_actors = info, attr_dyads = attr_dyads, memory = "decay", memory_value = 1000,

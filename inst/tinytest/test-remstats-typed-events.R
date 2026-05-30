@@ -278,11 +278,11 @@ manual_rs <- data.frame(
 
 reh_manual_T <- suppressWarnings(
   remify(edgelist, model = "tie", riskset = "manual",
-          manual.riskset = manual_rs, extend_riskset_by_type = TRUE)
+          manual_riskset = manual_rs, extend_riskset_by_type = TRUE)
 )
 reh_manual_F <- suppressWarnings(
   remify(edgelist, model = "tie", riskset = "manual",
-          manual.riskset = manual_rs, extend_riskset_by_type = FALSE)
+          manual_riskset = manual_rs, extend_riskset_by_type = FALSE)
 )
 
 stats_TT_man <- remstats(reh_manual_T, tie_effects = ~ inertia(consider_type = "separate"), first = 1)
