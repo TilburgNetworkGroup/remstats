@@ -29,7 +29,7 @@ e.g. \code{~ activeTie() + activeOutdegreeSender()}.}
 }
 \value{
 A list with \code{$start_stats} and \code{$end_stats}: 3-D arrays
-  \[M × D × P\] with effect names suffixed \code{.start} / \code{.end},
+  \[M x D x P\] with effect names suffixed \code{.start} / \code{.end},
   and \code{attr(., "reh")} set to \code{reh}.  The same shape as a
   \code{remstats_durem} object so the two can be combined at estimation time.
 }
@@ -40,32 +40,7 @@ returned by \code{\link{remstats}} and cannot be derived from weighted
 event history alone.
 }
 \details{
-Available effects for directed networks:
-\describe{
-  \item{\code{activeTie()}}{Whether there is a currently active event from
-    actor i to actor j.}
-  \item{\code{activeOutdegreeSender()}}{Number of active events in which
-    actor i (sender) is currently involved as sender.}
-  \item{\code{activeIndegreeReceiver()}}{Number of active events in which
-    actor j (receiver) is currently involved as receiver.}
-  \item{\code{activeTotaldegreeSender()}}{Total active degree (in + out) of
-    actor i.}
-  \item{\code{activeTotaldegreeReceiver()}}{Total active degree of actor j.}
-  \item{\code{activeSharedPartners_otp()}}{Number of actors h for whom
-    i→h and h→j are both currently active (outgoing two-path).}
-  \item{\code{activeSharedPartners_itp()}}{Incoming two-path version.}
-  \item{\code{activeSharedPartners_osp()}}{Outgoing shared partner version.}
-  \item{\code{activeSharedPartners_isp()}}{Incoming shared partner version.}
-}
-
-Available effects for undirected networks:
-\describe{
-  \item{\code{activeTie()}}{Whether there is a currently active event
-    between i and j.}
-  \item{\code{activeDegreeActor1()}}{Active degree of actor i.}
-  \item{\code{activeDegreeActor2()}}{Active degree of actor j.}
-  \item{\code{activeSharedPartners()}}{Number of actors h for whom both
-    (i,h) and (j,h) are currently active.}
-}
+See \code{\link{active_effects}} for the full list of available effects
+and their descriptions.
 }
 \keyword{internal}

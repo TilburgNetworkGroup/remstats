@@ -18,6 +18,13 @@
 
 # ── Effect name → stat_type integer ──────────────────────────────────────────
 
+# Sentinel values >= 96L flag R-level post-processing (no direct C++ stat_type):
+#   98L = activeReciprocalTie  : look up reversed dyad from activeTie (stat_type 1)
+#   97L = activeTotaldegreeDyad: sum of activeTotaldegreeSender + activeTotaldegreeReceiver
+#   (undirected)
+#   98L = activeDegreeMin      : min(stat_type 2, stat_type 3)
+#   97L = activeDegreeMax      : max(stat_type 2, stat_type 3)
+#   96L = activeDegreeDyad     : stat_type 2 + stat_type 3
 .durem_stat_type_directed <- c(
 	activeTie                   = 1L,
 	activeOutdegreeSender       = 2L,
@@ -27,13 +34,16 @@
 	activeSharedPartners_otp    = 6L,
 	activeSharedPartners_itp    = 7L,
 	activeSharedPartners_osp    = 8L,
-	activeSharedPartners_isp    = 9L
+	activeSharedPartners_isp    = 9L,
+	activeReciprocalTie         = 98L,   # R-derived: activeTie on reversed dyad
+	activeTotaldegreeDyad       = 97L    # R-derived: totaldegreeSender + Receiver
 )
 
 .durem_stat_type_undirected <- c(
 	activeTie                   = 1L,
-	activeDegreeActor1          = 2L,
-	activeDegreeActor2          = 3L,
+	activeDegreeMin             = 98L,   # R-derived: min(stat_type 2, stat_type 3)
+	activeDegreeMax             = 97L,   # R-derived: max(stat_type 2, stat_type 3)
+	activeDegreeDyad            = 96L,   # R-derived: stat_type 2 + stat_type 3
 	activeSharedPartners        = 4L
 )
 
@@ -82,7 +92,86 @@
 }
 
 
-# ── Baseline (intercept) helper ───────────────────────────────────────────
+# ── Sentinel helpers ──────────────────────────────────────────────────────────
+
+# Return the pair of real C++ stat_types needed to compute a sentinel effect.
+# Returns a list of two integers, or a single integer if only one call needed.
+#
+# Directed sentinels:
+#   98L = activeReciprocalTie  : needs stat_type 1 (activeTie)
+#   97L = activeTotaldegreeDyad: needs stat_type 4 + stat_type 5
+# Undirected sentinels:
+#   98L = activeDegreeMin      : needs stat_type 2 + stat_type 3
+#   97L = activeDegreeMax      : needs stat_type 2 + stat_type 3
+#   96L = activeDegreeDyad     : needs stat_type 2 + stat_type 3
+.sentinel_base_stypes <- function(stype, directed) {
+	if (directed) {
+		if (stype == 98L) return(1L)          # activeReciprocalTie: one call
+		if (stype == 97L) return(list(4L, 5L)) # activeTotaldegreeDyad: two calls
+	} else {
+		if (stype %in% c(98L, 97L, 96L)) return(list(2L, 3L))
+	}
+	stop("Unknown sentinel stat_type: ", stype, call. = FALSE)
+}
+
+# Given a cached result (matrix or list with $a/$b) and a sentinel stype,
+# return the final [M × D] matrix.
+.apply_sentinel <- function(cached, stype, directed, riskset_mat, rev_lookup) {
+	if (directed && stype == 98L) {
+		# activeReciprocalTie: permute columns of activeTie matrix
+		mat <- if (is.matrix(cached)) cached else cached
+		out <- matrix(0, nrow = nrow(mat), ncol = ncol(mat))
+		for (d in seq_len(ncol(mat))) {
+			rd <- rev_lookup[d]
+			if (!is.null(rd) && length(rd) == 1L && rd > 0L)
+				out[, d] <- mat[, rd]
+		}
+		return(out)
+	}
+	# Two-component sentinels
+	a <- cached$a; b <- cached$b
+	if (directed && stype == 97L) return(a + b)  # activeTotaldegreeDyad
+	if (!directed) {
+		if (stype == 98L) return(pmin(a, b))       # activeDegreeMin
+		if (stype == 97L) return(pmax(a, b))       # activeDegreeMax
+		if (stype == 96L) return(a + b)            # activeDegreeDyad
+	}
+	stop("Unknown sentinel: ", stype, call. = FALSE)
+}
+
+# Compute the [M × D] matrix for a sentinel effect from one C++ batch.
+# full_timeline: if TRUE the C++ call covers the full type-filtered edgelist
+#   and the caller will forward-fill; if FALSE start/stop are used directly
+#   and the extra trailing row is dropped.
+.compute_sentinel <- function(stype, directed, edgelist_mat, riskset_mat,
+                               start_0, stop_0, M, rev_lookup,
+                               full_timeline = FALSE) {
+	base <- .sentinel_base_stypes(stype, directed)
+
+	run_one <- function(st) {
+		mat <- calculate_active_stats(
+			edgelist         = edgelist_mat,
+			risksetMatrix    = riskset_mat,
+			stat_type        = st,
+			directed         = directed,
+			start            = as.integer(start_0),
+			stop             = as.integer(stop_0),
+			display_progress = FALSE
+		)
+		if (full_timeline) mat else mat[seq_len(M), , drop = FALSE]
+	}
+
+	if (is.list(base)) {
+		cached <- list(a = run_one(base[[1L]]), b = run_one(base[[2L]]),
+		               sentinel = stype)
+	} else {
+		cached <- run_one(base)
+	}
+	.apply_sentinel(cached, stype, directed, riskset_mat, rev_lookup)
+}
+
+
+
 
 #' Prepend a baseline column of 1s to a 3-D stats array
 #'
@@ -112,18 +201,24 @@
 
 # ── Argument helpers ─────────────────────────────────────────────────────────
 
-#' Validate consider_type for active-state effects
+#' Normalise and validate consider_type for active-state effects
+#'
+#' Accepts TRUE/FALSE aliases: TRUE -> "separate", FALSE -> "ignore".
+#' @return The normalised character value.
 #' @keywords internal
 .validate_consider_type_durem <- function(consider_type) {
+	if (isTRUE(consider_type))  consider_type <- "separate"
+	if (isFALSE(consider_type)) consider_type <- "ignore"
 	valid <- c("ignore", "separate", "interact")
 	if (!consider_type %in% valid)
 		stop(
 			"`consider_type = \"", consider_type, "\"` is not supported for ",
 			"active-state statistics.\n",
-			"Valid values: \"ignore\", \"separate\", \"interact\".",
+			"Valid values: \"ignore\", \"separate\", \"interact\" ",
+			"(or TRUE / FALSE as aliases for \"separate\" / \"ignore\").",
 			call. = FALSE
 		)
-	invisible(NULL)
+	consider_type
 }
 
 
@@ -141,20 +236,20 @@
 	tt     <- terms(formula)
 	labels <- attr(tt, "term.labels")
 	lapply(labels, function(lbl) {
-		# Evaluate the call in the current search path so that activeTie() etc.
-		# resolve to the exported stub functions and return their config list.
+		fname <- sub("[(].*$", "", lbl)
+		# Distinguish a genuinely unknown effect (the stub function does not
+		# exist) from a stub that exists but errors while evaluating (e.g. a
+		# missing internal helper). The old handler blamed the effect name for
+		# ANY "could not find function" error, masking the real cause.
+		if (!exists(fname, mode = "function")) {
+			stop("Unknown active-state effect '", fname, "'. ",
+					 "See ?active_effects for available effects.", call. = FALSE)
+		}
 		tryCatch(
 			eval(parse(text = lbl)),
-			error = function(e) {
-				if (grepl("could not find function", conditionMessage(e),
-									fixed = TRUE))
-					stop("Unknown active-state effect '",
-							 sub("\\(.*$", "", lbl), "'. ",
-							 "See ?active_effects for available effects.",
-							 call. = FALSE)
+			error = function(e)
 				stop("Could not evaluate active-state effect term '", lbl,
 						 "': ", conditionMessage(e), call. = FALSE)
-			}
 		)
 	})
 }
@@ -196,6 +291,16 @@
 	for (cfg in effect_configs)
 		.validate_consider_type_durem(cfg$consider_type)
 	
+	# ── Warn if activeTie appears in end_effects ─────────────────────────────
+	if (suffix == ".end" && any(eff_names == "activeTie"))
+		warning(
+			"'activeTie' in end_effects is always 1 for all risk-set dyads ",
+			"(all end-risk dyads are active by definition). ",
+			"It carries no information as a predictor and will produce a ",
+			"perfectly collinear column. Consider removing it.",
+			call. = FALSE
+		)
+
 	# Build actor ID lookup (0-based).
 	# reh$meta$dictionary$actors$actorID is 1-based; subtract 1 for C++.
 	actor_dict  <- reh$meta$dictionary$actors
@@ -362,6 +467,44 @@
 	# entries that share the same event_type.
 	interact_cache <- list()
 	
+	# ── Helper: run one C++ call and return [M × D] ───────────────────────────
+	# For "ignore": uses the full edgelist and ignore riskset, drops extra row.
+	# For "separate"/"interact": caller passes type-filtered edgelist and untyped
+	# riskset; result is forward-filled.
+	.call_cpp <- function(stype, edgelist_mat, riskset_mat, start_0, stop_0,
+	                      full_timeline = FALSE) {
+		n_times <- length(unique(edgelist_mat[, "time"]))
+		mat <- calculate_active_stats(
+			edgelist         = edgelist_mat,
+			risksetMatrix    = riskset_mat,
+			stat_type        = stype,
+			directed         = directed,
+			start            = as.integer(start_0),
+			stop             = as.integer(stop_0),
+			display_progress = display_progress
+		)
+		if (full_timeline) mat else mat[seq_len(M), , drop = FALSE]
+	}
+
+	# ── Pre-build reverse-dyad lookup for activeReciprocalTie (directed) ──────
+	# For each column d (dyad i→j in riskset_mat_ignore), find the column for
+	# j→i. -1L means no reverse dyad in the riskset (asymmetric risksets).
+	if (directed && any(eff_names == "activeReciprocalTie")) {
+		nr <- nrow(riskset_mat_ignore)
+		rev_lookup <- integer(D_ignore)
+		for (i in seq_len(nr)) {
+			for (j in seq_len(nr)) {
+				if (i == j) next
+				d_fwd <- riskset_mat_ignore[i, j]
+				d_rev <- riskset_mat_ignore[j, i]
+				if (d_fwd >= 0L && d_rev >= 0L)
+					rev_lookup[d_fwd + 1L] <- d_rev + 1L   # 1-based
+				else if (d_fwd >= 0L)
+					rev_lookup[d_fwd + 1L] <- -1L
+			}
+		}
+	}
+
 	# ── Per-effect computation ────────────────────────────────────────────────
 	for (p_idx in seq_along(expanded)) {
 		e     <- expanded[[p_idx]]
@@ -372,64 +515,71 @@
 			message("Calculating active-state statistic: ", eff,
 							if (!is.na(e$type_label)) paste0(" [type = ", e$type_label, "]") else "")
 		
-		# Choose the right edgelist and riskset, then call C++
+		# ── Dispatch by consider_type / sentinel ────────────────────────────────
 		if (e$consider_type == "interact" && !is.null(e$event_type)) {
-			# C×C interact: compute per event_type (cached), place in dyad_type
-			# column block of [M × D_interact].
+			# C×C interact: compute per event_type (cached), place in dyad_type block
 			cache_key <- paste0(eff, "::", e$event_type)
 			if (is.null(interact_cache[[cache_key]])) {
-				et_idx <- match(e$event_type, type_levels)
-				ed_tc  <- ed_mat_per_type[[et_idx]]
-				n_tc   <- length(unique(ed_tc[, "time"]))
-				mat_tc <- calculate_active_stats(
-					edgelist         = ed_tc,
-					risksetMatrix    = riskset_mat_sep,
-					stat_type        = stype,
-					directed         = directed,
-					start            = 0L,
-					stop             = as.integer(n_tc - 1L),
-					display_progress = FALSE
-				)
-				interact_cache[[cache_key]] <- .expand_to_M(mat_tc, ed_tc)
+				et_idx  <- match(e$event_type, type_levels)
+				ed_tc   <- ed_mat_per_type[[et_idx]]
+				n_tc    <- length(unique(ed_tc[, "time"]))
+				raw_stype <- if (stype >= 96L) .sentinel_base_stypes(stype, directed) else stype
+				if (is.list(raw_stype)) {
+					# Sentinel needing two calls — cache both components
+					mat_a <- .expand_to_M(
+						.call_cpp(raw_stype[[1L]], ed_tc, riskset_mat_sep, 0L, n_tc - 1L, TRUE),
+						ed_tc)
+					mat_b <- .expand_to_M(
+						.call_cpp(raw_stype[[2L]], ed_tc, riskset_mat_sep, 0L, n_tc - 1L, TRUE),
+						ed_tc)
+					interact_cache[[cache_key]] <- list(a = mat_a, b = mat_b,
+					                                   sentinel = stype)
+				} else {
+					mat_tc <- .call_cpp(raw_stype, ed_tc, riskset_mat_sep, 0L, n_tc - 1L, TRUE)
+					interact_cache[[cache_key]] <- .expand_to_M(mat_tc, ed_tc)
+				}
 			}
-			et_mat <- interact_cache[[cache_key]]   # [M × D_sep]
+			cached <- interact_cache[[cache_key]]
+			et_mat <- if (stype >= 96L)
+				.apply_sentinel(cached, stype, directed, riskset_mat_sep, rev_lookup = NULL)
+			else
+				cached
 			dt_idx <- match(e$dyad_type, type_levels)
 			mat    <- matrix(0, nrow = M, ncol = D_interact)
 			col_start <- (dt_idx - 1L) * D_sep + 1L
 			col_end   <- dt_idx * D_sep
 			mat[, col_start:col_end] <- et_mat
+
 		} else if (is.na(e$type_label)) {
-			# "ignore": use full edgelist and (possibly typed) ignore riskset
-			mat <- calculate_active_stats(
-				edgelist         = ed_mat_full,
-				risksetMatrix    = riskset_mat_ignore,
-				stat_type        = stype,
-				directed         = directed,
-				start            = as.integer(start),
-				stop             = as.integer(stop),
-				display_progress = display_progress
-			)
-			# C++ appends a post-last-event row; drop it for the ignore path
-			mat <- mat[seq_len(M), , drop = FALSE]
+			# "ignore": full edgelist, possibly typed riskset
+			if (stype >= 96L) {
+				mat <- .compute_sentinel(stype, directed,
+				                         ed_mat_full, riskset_mat_ignore,
+				                         as.integer(start), as.integer(stop),
+				                         M, rev_lookup,
+				                         full_timeline = FALSE)
+			} else {
+				mat <- .call_cpp(stype, ed_mat_full, riskset_mat_ignore,
+				                 as.integer(start), as.integer(stop))
+			}
+
 		} else {
-			# "separate": use type-filtered edgelist and untyped riskset.
-			# C++ is always called from the beginning (start=0) so it has the
-			# full history; the result is forward-filled into the M-row window.
+			# "separate": type-filtered edgelist, untyped riskset
 			tc_idx <- match(e$type_label, type_levels)
 			ed_tc  <- ed_mat_per_type[[tc_idx]]
 			n_tc   <- length(unique(ed_tc[, "time"]))
-			mat_tc <- calculate_active_stats(
-				edgelist         = ed_tc,
-				risksetMatrix    = riskset_mat_sep,
-				stat_type        = stype,
-				directed         = directed,
-				start            = 0L,
-				stop             = as.integer(n_tc - 1L),
-				display_progress = display_progress
-			)
-			mat_sep <- .expand_to_M(mat_tc, ed_tc)   # [M × D_sep]
+			if (stype >= 96L) {
+				mat_sep <- .compute_sentinel(stype, directed,
+				                             ed_tc, riskset_mat_sep,
+				                             0L, as.integer(n_tc - 1L),
+				                             n_tc, rev_lookup,
+				                             full_timeline = TRUE)
+				mat_sep <- .expand_to_M(mat_sep, ed_tc)
+			} else {
+				mat_tc  <- .call_cpp(stype, ed_tc, riskset_mat_sep, 0L, n_tc - 1L, TRUE)
+				mat_sep <- .expand_to_M(mat_tc, ed_tc)
+			}
 			if (type_riskset) {
-				# Replicate across all C type blocks to fill [M × D_interact]
 				mat <- do.call(cbind, rep(list(mat_sep), C_reh))
 			} else {
 				mat <- mat_sep
@@ -462,33 +612,8 @@
 #' returned by \code{\link{remstats}} and cannot be derived from weighted
 #' event history alone.
 #'
-#' Available effects for directed networks:
-#' \describe{
-#'   \item{\code{activeTie()}}{Whether there is a currently active event from
-#'     actor i to actor j.}
-#'   \item{\code{activeOutdegreeSender()}}{Number of active events in which
-#'     actor i (sender) is currently involved as sender.}
-#'   \item{\code{activeIndegreeReceiver()}}{Number of active events in which
-#'     actor j (receiver) is currently involved as receiver.}
-#'   \item{\code{activeTotaldegreeSender()}}{Total active degree (in + out) of
-#'     actor i.}
-#'   \item{\code{activeTotaldegreeReceiver()}}{Total active degree of actor j.}
-#'   \item{\code{activeSharedPartners_otp()}}{Number of actors h for whom
-#'     i→h and h→j are both currently active (outgoing two-path).}
-#'   \item{\code{activeSharedPartners_itp()}}{Incoming two-path version.}
-#'   \item{\code{activeSharedPartners_osp()}}{Outgoing shared partner version.}
-#'   \item{\code{activeSharedPartners_isp()}}{Incoming shared partner version.}
-#' }
-#'
-#' Available effects for undirected networks:
-#' \describe{
-#'   \item{\code{activeTie()}}{Whether there is a currently active event
-#'     between i and j.}
-#'   \item{\code{activeDegreeActor1()}}{Active degree of actor i.}
-#'   \item{\code{activeDegreeActor2()}}{Active degree of actor j.}
-#'   \item{\code{activeSharedPartners()}}{Number of actors h for whom both
-#'     (i,h) and (j,h) are currently active.}
-#' }
+#' See \code{\link{active_effects}} for the full list of available effects
+#' and their descriptions.
 #'
 #' @param reh A \code{remify_durem} object.
 #' @param start_effects Formula of active-state effects for the start model,
@@ -498,7 +623,7 @@
 #' @param stop  Integer. Index of last  time point to compute (default Inf).
 #' @param display_progress Logical. Show progress messages.
 #' @return A list with \code{$start_stats} and \code{$end_stats}: 3-D arrays
-#'   \[M × D × P\] with effect names suffixed \code{.start} / \code{.end},
+#'   \[M x D x P\] with effect names suffixed \code{.start} / \code{.end},
 #'   and \code{attr(., "reh")} set to \code{reh}.  The same shape as a
 #'   \code{remstats_durem} object so the two can be combined at estimation time.
 #' @keywords internal
@@ -567,14 +692,20 @@ duremstats <- function(reh,
 #' \preformatted{
 #'   remstats(reh,
 #'     start_effects = ~ activeTie() + activeOutdegreeSender(scaling = "std"),
-#'     end_effects   = ~ activeTie())
+#'     end_effects   = ~ activeOutdegreeSender())
 #' }
 #'
 #' \strong{Directed-network effects:}
 #' \describe{
 #'   \item{\code{activeTie()}}{
 #'     Whether there is currently an active event from actor \eqn{i} to actor
-#'     \eqn{j} (binary, 0/1).}
+#'     \eqn{j} (binary, 0/1).
+#'     \emph{Note:} in \code{end_effects} this is always 1 by definition
+#'     (only currently active dyads are at risk of ending) and should not
+#'     be included as a predictor.}
+#'   \item{\code{activeReciprocalTie()}}{
+#'     Whether there is currently an active event from actor \eqn{j} to actor
+#'     \eqn{i} (binary, 0/1). Captures reciprocity in the active network.}
 #'   \item{\code{activeOutdegreeSender()}}{
 #'     Number of currently active events in which actor \eqn{i} (sender) is
 #'     involved as sender (out-degree in the active-event network).}
@@ -586,69 +717,65 @@ duremstats <- function(reh,
 #'     appears as either sender or receiver.}
 #'   \item{\code{activeTotaldegreeReceiver()}}{
 #'     Total active degree of actor \eqn{j}.}
+#'   \item{\code{activeTotaldegreeDyad()}}{
+#'     Sum of the total active degrees of actors \eqn{i} and \eqn{j}:
+#'     \eqn{\deg(i) + \deg(j)}.}
 #'   \item{\code{activeSharedPartners_otp()}}{
-#'     Number of actors \eqn{h} for whom \eqn{i \to h} and \eqn{h \to j} are
-#'     both currently active (outgoing two-path shared partners).}
+#'     \emph{(Advanced)} Number of actors \eqn{h} for whom \eqn{i \to h} and
+#'     \eqn{h \to j} are both currently active (outgoing two-path).
+#'     Rarely informative when the active network is sparse.}
 #'   \item{\code{activeSharedPartners_itp()}}{
-#'     Incoming two-path: actors \eqn{h} with \eqn{h \to i} and \eqn{j \to h}
-#'     both active.}
+#'     \emph{(Advanced)} Incoming two-path: actors \eqn{h} with \eqn{h \to i}
+#'     and \eqn{j \to h} both active.}
 #'   \item{\code{activeSharedPartners_osp()}}{
-#'     Outgoing shared partners: actors \eqn{h} with \eqn{i \to h} and
-#'     \eqn{j \to h} both active.}
+#'     \emph{(Advanced)} Outgoing shared partners: actors \eqn{h} with
+#'     \eqn{i \to h} and \eqn{j \to h} both active.}
 #'   \item{\code{activeSharedPartners_isp()}}{
-#'     Incoming shared partners: actors \eqn{h} with \eqn{h \to i} and
-#'     \eqn{h \to j} both active.}
+#'     \emph{(Advanced)} Incoming shared partners: actors \eqn{h} with
+#'     \eqn{h \to i} and \eqn{h \to j} both active.}
 #' }
 #'
 #' \strong{Undirected-network effects:}
 #' \describe{
 #'   \item{\code{activeTie()}}{
 #'     Whether there is currently an active event between actors \eqn{i} and
-#'     \eqn{j}.}
-#'   \item{\code{activeDegreeActor1()}}{
-#'     Active degree of actor \eqn{i}.}
-#'   \item{\code{activeDegreeActor2()}}{
-#'     Active degree of actor \eqn{j}.}
+#'     \eqn{j}.
+#'     \emph{Note:} in \code{end_effects} this is always 1 by definition
+#'     and should not be included as a predictor.}
+#'   \item{\code{activeDegreeMin()}}{
+#'     Minimum of the active degrees of \eqn{i} and \eqn{j}:
+#'     \eqn{\min(\deg(i), \deg(j))}.}
+#'   \item{\code{activeDegreeMax()}}{
+#'     Maximum of the active degrees of \eqn{i} and \eqn{j}:
+#'     \eqn{\max(\deg(i), \deg(j))}.}
+#'   \item{\code{activeDegreeDyad()}}{
+#'     Sum of the active degrees of \eqn{i} and \eqn{j}:
+#'     \eqn{\deg(i) + \deg(j)}.}
 #'   \item{\code{activeSharedPartners()}}{
-#'     Number of actors \eqn{h} for whom both \eqn{(i,h)} and \eqn{(j,h)} are
-#'     currently active.}
+#'     \emph{(Advanced)} Number of actors \eqn{h} for whom both \eqn{(i,h)}
+#'     and \eqn{(j,h)} are currently active. Rarely informative when the
+#'     active network is sparse.}
 #' }
 #'
-#' @param scaling Scaling applied to the raw C++ counts before returning:
+#' @param scaling Scaling applied to the raw statistic before returning:
 #'   \describe{
 #'     \item{\code{"none"}}{Raw counts (default).}
 #'     \item{\code{"std"}}{Per-time-point standardisation:
 #'       \eqn{(x - \bar{x}) / \mathrm{sd}(x)}, computed over the \eqn{D}
-#'       dyads in the fixed risk set.  \eqn{D} is determined once at
-#'       \code{\link[remify]{remify}} time via the \code{riskset} argument
-#'       (\code{"full"}, \code{"active"}, \code{"active_saturated"}, or
-#'       \code{"manual"}) and does not change over time.  This mirrors the
-#'       behaviour of \code{remstats}, where standardisation is always over
-#'       the fixed risk-set dyads.}
+#'       dyads in the fixed risk set.}
 #'   }
-#'   \code{"prop"} is not defined for active-state statistics because the
-#'   natural denominator (maximum possible active degree) depends on
-#'   modelling assumptions and is not uniquely determined.
-#' @param consider_type Character. How event types are handled:
+#' @param consider_type Character (or logical). How event types are handled:
 #'   \describe{
-#'     \item{\code{"ignore"}}{Aggregate over all event types (default).  The
-#'       statistic counts all currently active events regardless of type.  When
-#'       \code{extend_riskset_by_type = TRUE} in the \code{remify} call, the
-#'       output D matches \code{reh$D} (typed dyads), but the value is the
-#'       same for all type slots of a given actor pair.}
-#'     \item{\code{"separate"}}{Compute one statistic per event type.  For
-#'       each type \eqn{c}, only currently active events of that type
-#'       contribute.  Implemented in R by filtering \code{edgelist_dual} to
-#'       type-\eqn{c} events and calling the C++ function once per type;
-#'       no C++ changes required.  The output effect names are suffixed with
-#'       the type label, e.g. \code{activeTie.X.start}.}
-#'     \item{\code{"interact"}}{Compute one statistic with \eqn{D * C} columns:
-#'       for each (actor-pair, type) combination, only active events of that type
-#'       contribute.  Implemented R-side by filtering \code{edgelist_dual} to
-#'       each type and calling the C++ function once per type; results are
-#'       \code{cbind}-ed in alphabetical type order.  The output has
-#'       \eqn{D_{base} * C} columns and is consistent with a typed
-#'       riskset (\code{extend_riskset_by_type = TRUE}).}
+#'     \item{\code{"ignore"} or \code{FALSE}}{Aggregate over all event types
+#'       (default). Counts all currently active events regardless of type.}
+#'     \item{\code{"separate"} or \code{TRUE}}{Compute one statistic per event
+#'       type. Only active events of that type contribute. Output effect names
+#'       are suffixed with the type label, e.g.
+#'       \code{activeOutdegreeSender.X.start}.}
+#'     \item{\code{"interact"}}{Compute one statistic per (past-event type x
+#'       dyad type) combination (\eqn{C^2} slices). Requires
+#'       \code{extend_riskset_by_type = TRUE} in the \code{remify} call;
+#'       otherwise silently coerced to \code{"separate"}.}
 #'   }
 #'
 #' @return A named list with elements \code{effect}, \code{scaling}, and
@@ -658,10 +785,17 @@ duremstats <- function(reh,
 #' @name active_effects
 NULL
 
-.active_effect_cfg <- function(name, scaling, consider_type) {
+# ── Internal: build an active-effect config list ───────────────────
+# Every exported active-effect stub (activeTie(), activeOutdegreeSender(), ...)
+# delegates here. Returns the config consumed by .parse_active_effects ->
+# .compute_active_stats: a named list with $effect, $scaling, $consider_type.
+.active_effect_cfg <- function(effect, scaling, consider_type) {
 	scaling <- match.arg(scaling, c("none", "std"))
-	.validate_consider_type_durem(consider_type)
-	list(effect = name, scaling = scaling, consider_type = consider_type)
+	list(
+		effect        = effect,
+		scaling       = scaling,
+		consider_type = .validate_consider_type_durem(consider_type)
+	)
 }
 
 #' @rdname active_effects
@@ -669,6 +803,12 @@ NULL
 activeTie <- function(scaling = c("none", "std"),
 											consider_type = "ignore")
 	.active_effect_cfg("activeTie", scaling, consider_type)
+
+#' @rdname active_effects
+#' @export
+activeReciprocalTie <- function(scaling = c("none", "std"),
+                                consider_type = "ignore")
+	.active_effect_cfg("activeReciprocalTie", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
@@ -696,6 +836,12 @@ activeTotaldegreeReceiver <- function(scaling = c("none", "std"),
 
 #' @rdname active_effects
 #' @export
+activeTotaldegreeDyad <- function(scaling = c("none", "std"),
+                                  consider_type = "ignore")
+	.active_effect_cfg("activeTotaldegreeDyad", scaling, consider_type)
+
+#' @rdname active_effects
+#' @export
 activeSharedPartners_otp <- function(scaling = c("none", "std"),
 																		 consider_type = "ignore")
 	.active_effect_cfg("activeSharedPartners_otp", scaling, consider_type)
@@ -720,18 +866,25 @@ activeSharedPartners_isp <- function(scaling = c("none", "std"),
 
 #' @rdname active_effects
 #' @export
-activeDegreeActor1 <- function(scaling = c("none", "std"),
-															 consider_type = "ignore")
-	.active_effect_cfg("activeDegreeActor1", scaling, consider_type)
+activeDegreeMin <- function(scaling = c("none", "std"),
+                            consider_type = "ignore")
+	.active_effect_cfg("activeDegreeMin", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
-activeDegreeActor2 <- function(scaling = c("none", "std"),
-															 consider_type = "ignore")
-	.active_effect_cfg("activeDegreeActor2", scaling, consider_type)
+activeDegreeMax <- function(scaling = c("none", "std"),
+                            consider_type = "ignore")
+	.active_effect_cfg("activeDegreeMax", scaling, consider_type)
+
+#' @rdname active_effects
+#' @export
+activeDegreeDyad <- function(scaling = c("none", "std"),
+                             consider_type = "ignore")
+	.active_effect_cfg("activeDegreeDyad", scaling, consider_type)
 
 #' @rdname active_effects
 #' @export
 activeSharedPartners <- function(scaling = c("none", "std"),
 																 consider_type = "ignore")
 	.active_effect_cfg("activeSharedPartners", scaling, consider_type)
+

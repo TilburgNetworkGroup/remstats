@@ -74,55 +74,31 @@ expect_equal(stacked$model, "durem",
 expect_equal(stacked$D_start, reh$N * (reh$N - 1L),
     info = "D_start = N*(N-1) for directed start model")
 
-# ── 5. Row counts at t=2 ──────────────────────────────────────────────────────
-# Active before t=2: A→B only.
-# State 1 (obs end):    none
-# State 2 (ongoing):    A→B               → 1 end-model row
-# State 3 (obs start):  B→C               → 1 start-model row (obs=1)
-# State 4 (inactive):   A→C, B→A, C→A, C→B → 4 start-model rows (obs=0)
-# Total: 6 rows at event=1
+# ── 5. Row counts and the active-dyad start blocking ──────────────────
+# The start risk set EXCLUDES currently-active dyads. "Active across the interval
+# ending at t" uses end >= t: a dyad ending exactly at t was active throughout
+# that interval and so cannot be at risk to start during it. With start = 2 the
+# first event (A→B start at t=1) is outside the window. Per time point:
+#   t=2: 0 obs-end + 1 ongoing(A→B) + 1 obs-start(B→C) + 4 inactive = 6
+#   t=5: 0        + 2 ongoing(A→B,B→C) + 1 obs-start(A→C) + 3 inactive = 6
+#   t=6: 1 obs-end(A→B) + 2 ongoing(B→C,A→C) + 0 + 3 inactive = 6
+#   t=7: 1 obs-end(B→C) + 1 ongoing(A→C) + 0 + 4 inactive = 6
+#   t=8: 1 obs-end(A→C) + 0 ongoing + 0 + 5 inactive = 6
+# Total = 30. Under the buggy end > t blocking these were 7 at t=6/7/8 (the dyad
+# ending exactly at t was wrongly left in the start risk set) → 33 rows.
+#
+# NB: the stacked df has columns obs/log_interevent/<stats>/time_index/dyad/process
+# (there is no "time" column), so we assert convention-independent aggregates
+# rather than per-time-point selectors.
 
-rows_t2 <- df[df$time == 2L, ]
-expect_equal(nrow(rows_t2), 6L,
-    info = "6 rows at t=2 (1 ongoing + 1 obs-start + 4 inactive)")
-
-# Exactly one obs=1 start row and zero obs=1 end rows
-start_obs_t2 <- rows_t2[rows_t2$obs == 1L & rows_t2$inertia.end == 0, ]
-end_obs_t2   <- rows_t2[rows_t2$obs == 1L & rows_t2$inertia.start == 0, ]
-expect_equal(nrow(start_obs_t2), 1L,
-    info = "exactly 1 observed start at t=2")
-
-# ── 6. Row counts at t=6 ──────────────────────────────────────────────────────
-# Active before t=6: A→B, B→C, A→C (all three started, none ended yet)
-# State 1 (obs end):   A→B (ended at 6)   → 1 end-model row (obs=1)
-# State 2 (ongoing):   B→C, A→C           → 2 end-model rows (obs=0)
-# State 3 (obs start): none (no start at t=6)
-# State 4 (inactive):  B→A, C→A, C→B     → 3 start-model rows (obs=0)
-# Total: 6 rows at event=3
-
-rows_t6 <- df[df$time_index == 4L, ]
-expect_equal(nrow(rows_t6), 7L,
-    info = "6 rows at t=6 (1 obs-end + 2 ongoing + 3 inactive)")
-
-end_obs_t6   <- rows_t6[rows_t6$obs == 1L & rows_t6$inertia.start == 0, ]
-start_obs_t6 <- rows_t6[rows_t6$obs == 1L & rows_t6$inertia.end   == 0, ]
-expect_equal(nrow(end_obs_t6),   1L, info = "exactly 1 observed end at t=6")
-
-# ── 7. Row counts at t=8 ──────────────────────────────────────────────────────
-# Active before t=8: A→C only (B→C ended at 7, A→B ended at 6)
-# State 1 (obs end):   A→C (ended at 8)  → 1 end-model row (obs=1)
-# State 2 (ongoing):   none
-# State 3 (obs start): none
-# State 4 (inactive):  all 6 start dyads  → but A→C is in end model, not start blocking
-#   Actually A→C started at t=5 ≤ t=8 and ends at t=8 (end > t is FALSE for t=8)
-#   So A→C is NOT blocking: blocking uses end > t strictly. A→C ends AT t=8, not after.
-#   Therefore all 6 directed dyads are in state 4 (inactive start risk).
-# Total: 1 + 0 + 0 + 6 = 7 rows at event=5
-
-rows_t8 <- df[df$time == 5L, ]
-end_obs_t8 <- rows_t8[rows_t8$obs == 1L, ]
-expect_equal(nrow(end_obs_t8), 1L,
-    info = "exactly 1 observed end at t=8")
+expect_equal(nrow(df), 30L,
+    info = "30 rows: active dyads (incl. those ending exactly at t) excluded from start risk set")
+expect_equal(sum(df$obs), 5L,
+    info = "5 observed events in window: 2 starts + 3 ends")
+expect_equal(sum(df$process == "start" & df$obs == 1L), 2L,
+    info = "2 observed starts (B→C, A→C; A→B start at t=1 is outside the start=2 window)")
+expect_equal(sum(df$process == "end" & df$obs == 1L), 3L,
+    info = "3 observed ends (A→B, B→C, A→C)")
 
 # ── 8. log_interevent is finite and non-positive-infinite ─────────────────────
 

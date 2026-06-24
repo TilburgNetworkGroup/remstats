@@ -16,7 +16,7 @@
 #'
 #' @param stats A \code{tomstats} object (output of \code{remstats()} or
 #'   \code{tomstats()}).
-#' @param reh A \code{remify} object (output of \code{remify::remify2()}).
+#' @param reh A \code{remify} object (output of \code{remify::remify()}).
 #' @param add_actors Logical (default \code{TRUE}). When \code{TRUE}, two
 #'   extra columns \code{actor1} (sender label) and \code{actor2} (receiver
 #'   label) are appended by looking up \code{reh$index$dyad_map_active} (or
@@ -449,16 +449,31 @@ print.remstats_stacked <- function(x, ...) {
 #' @export
 #' @method stack_stats remstats_durem
 stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
-	
+	# remstats stacks the design at construction time and attaches it as
+	# `stats$stacked`, so the normal case is an already-stacked object: return
+	# the stored design. This is the expected path, not a misuse (no warning).
+	if (!is.null(stats$stacked)) return(stats$stacked)
+	# Legacy / bypassed objects still carry the raw start/end arrays: build now.
+	if (missing(reh) || is.null(reh)) reh <- attr(stats, "reh")
+	.stack_durem(stats, reh, add_actors = add_actors)
+}
+
+# ── DuREM stacking engine ───────────────────────────────────
+# The four-state construction. Called once at construction time by remstats
+# (.finalize_durem -> .stack_durem) and, as a fallback, by the public method
+# above for legacy objects that still carry the raw arrays. Always builds;
+# never short-circuits.
+.stack_durem <- function(stats, reh, add_actors = TRUE) {
+
 	if (missing(reh) || is.null(reh)) reh <- attr(stats, "reh")
 	if (!inherits(reh, "remify_durem"))
 		stop("'reh' must be a remify_durem object.")
-	
+
 	ordinal <- isTRUE(reh$meta$ordinal)
-	
+
 	ss <- stats$start_stats   # [M × D_s × P_s] or NULL
 	es <- stats$end_stats     # [M × D_e × P_e] or NULL
-	
+
 	if (is.null(ss) && is.null(es))
 		stop("Both start_stats and end_stats are NULL.")
 	
@@ -541,6 +556,29 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	if (D_e > 0L) {
 		rs_end  <- attr(es, "riskset")
 		dir_end <- isTRUE(reh$durem$dur_directed_end)
+		if (is.null(rs_end)) {
+			# Active end effects do not attach a riskset (only the tomstats/history
+			# path does, in .remstats_durem). Rebuild it the same way that path
+			# would: a plain remify on the same actors with the end-process
+			# directedness. The riskset depends only on (actors, directedness), and
+			# remify orders dyads via the same get_riskset that orders the active
+			# stat columns -- so both column order and actor representation match.
+			# The active path always uses the full riskset, hence riskset = "full".
+			actors_all <- sort(unique(c(edgelist$actor1, edgelist$actor2)))
+			rs_reh <- suppressWarnings(remify::remify(
+				edgelist = data.frame(time   = c(1, 2),
+									  actor1 = actors_all[c(1L, 1L)],
+									  actor2 = actors_all[c(2L, 2L)]),
+				actors   = actors_all,
+				directed = dir_end,
+				model    = "tie"
+			))
+			rs_end <- rs_reh$riskset_info$included[, c("actor1", "actor2")]
+		}
+		if (is.null(rs_end) || nrow(rs_end) < D_e)
+			stop("could not determine the end riskset for the stacked design ",
+				 "(D_e = ", D_e, ", rs_end rows = ",
+				 if (is.null(rs_end)) 0L else nrow(rs_end), ").", call. = FALSE)
 		.ek <- function(a1, a2)
 			if (dir_end) paste(a1, a2, sep = "\t")
 		else paste(pmin(a1, a2), pmax(a1, a2), sep = "\t")
@@ -580,17 +618,21 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 		t    <- utimes[m]
 		liet <- log_iet[m]
 		
-		# Active events: started before t, end strictly after t.
-		# An event with end == t ends AT t and is no longer active.
-		active_mask <- edgelist$time < t &
-			(is.na(edgelist$end) | edgelist$end > t)
+		# Start-blocking mask: a dyad is active ACROSS the interval ending at t
+		# if it started before t and has not ended by t. Uses `end >= t` (NOT
+		# `> t`): a dyad ending exactly at t was active throughout the interval
+		# interior, so it could not have started during it. The
+		# end-process 'ongoing past t' test (ong_mask, below) is separate and
+		# correctly uses `end > t`.
+		block_mask <- edgelist$time < t &
+			(is.na(edgelist$end) | edgelist$end >= t)
 		
 		# Blocking: exclude active dyads from the start riskset
 		if (type_excl) {
-			blocked_bkeys <- unique(bkey_vec[active_mask])
+			blocked_bkeys <- unique(bkey_vec[block_mask])
 			blocked_scols <- unique(unlist(base_to_cols[blocked_bkeys]))
 		} else {
-			blocked_scols <- unique(s_col[active_mask])
+			blocked_scols <- unique(s_col[block_mask])
 		}
 		
 		# State 1 – observed end (ended exactly at t, started before t)
@@ -707,6 +749,15 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 		),
 		class = c("remstats_stacked_durem", "remstats_stacked")
 	)
+}
+
+#' @export
+#' @method stack_stats remstats_stacked_durem
+stack_stats.remstats_stacked_durem <- function(stats, reh, add_actors = TRUE) {
+	# Already a fit-ready stacked design — stacking is idempotent. This covers
+	# the case where remstats returns the stacked object directly (rather than
+	# attaching it to a remify-shaped object via `$stacked`).
+	stats
 }
 
 

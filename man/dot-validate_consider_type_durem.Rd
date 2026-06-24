@@ -2,11 +2,14 @@
 % Please edit documentation in R/duremstats.R
 \name{.validate_consider_type_durem}
 \alias{.validate_consider_type_durem}
-\title{Validate consider_type for active-state effects}
+\title{Normalise and validate consider_type for active-state effects}
 \usage{
 .validate_consider_type_durem(consider_type)
 }
+\value{
+The normalised character value.
+}
 \description{
-Validate consider_type for active-state effects
+Accepts TRUE/FALSE aliases: TRUE -> "separate", FALSE -> "ignore".
 }
 \keyword{internal}

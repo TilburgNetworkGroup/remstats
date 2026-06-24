@@ -3,20 +3,25 @@
 \name{active_effects}
 \alias{active_effects}
 \alias{activeTie}
+\alias{activeReciprocalTie}
 \alias{activeOutdegreeSender}
 \alias{activeIndegreeReceiver}
 \alias{activeTotaldegreeSender}
 \alias{activeTotaldegreeReceiver}
+\alias{activeTotaldegreeDyad}
 \alias{activeSharedPartners_otp}
 \alias{activeSharedPartners_itp}
 \alias{activeSharedPartners_osp}
 \alias{activeSharedPartners_isp}
-\alias{activeDegreeActor1}
-\alias{activeDegreeActor2}
+\alias{activeDegreeMin}
+\alias{activeDegreeMax}
+\alias{activeDegreeDyad}
 \alias{activeSharedPartners}
 \title{Active-state statistics for Duration Relational Event Models}
 \usage{
 activeTie(scaling = c("none", "std"), consider_type = "ignore")
+
+activeReciprocalTie(scaling = c("none", "std"), consider_type = "ignore")
 
 activeOutdegreeSender(scaling = c("none", "std"), consider_type = "ignore")
 
@@ -26,6 +31,8 @@ activeTotaldegreeSender(scaling = c("none", "std"), consider_type = "ignore")
 
 activeTotaldegreeReceiver(scaling = c("none", "std"), consider_type = "ignore")
 
+activeTotaldegreeDyad(scaling = c("none", "std"), consider_type = "ignore")
+
 activeSharedPartners_otp(scaling = c("none", "std"), consider_type = "ignore")
 
 activeSharedPartners_itp(scaling = c("none", "std"), consider_type = "ignore")
@@ -34,49 +41,35 @@ activeSharedPartners_osp(scaling = c("none", "std"), consider_type = "ignore")
 
 activeSharedPartners_isp(scaling = c("none", "std"), consider_type = "ignore")
 
-activeDegreeActor1(scaling = c("none", "std"), consider_type = "ignore")
+activeDegreeMin(scaling = c("none", "std"), consider_type = "ignore")
 
-activeDegreeActor2(scaling = c("none", "std"), consider_type = "ignore")
+activeDegreeMax(scaling = c("none", "std"), consider_type = "ignore")
+
+activeDegreeDyad(scaling = c("none", "std"), consider_type = "ignore")
 
 activeSharedPartners(scaling = c("none", "std"), consider_type = "ignore")
 }
 \arguments{
-\item{scaling}{Scaling applied to the raw C++ counts before returning:
+\item{scaling}{Scaling applied to the raw statistic before returning:
 \describe{
   \item{\code{"none"}}{Raw counts (default).}
   \item{\code{"std"}}{Per-time-point standardisation:
     \eqn{(x - \bar{x}) / \mathrm{sd}(x)}, computed over the \eqn{D}
-    dyads in the fixed risk set.  \eqn{D} is determined once at
-    \code{\link[remify]{remify}} time via the \code{riskset} argument
-    (\code{"full"}, \code{"active"}, \code{"active_saturated"}, or
-    \code{"manual"}) and does not change over time.  This mirrors the
-    behaviour of \code{remstats}, where standardisation is always over
-    the fixed risk-set dyads.}
-}
-\code{"prop"} is not defined for active-state statistics because the
-natural denominator (maximum possible active degree) depends on
-modelling assumptions and is not uniquely determined.}
+    dyads in the fixed risk set.}
+}}
 
-\item{consider_type}{Character. How event types are handled:
+\item{consider_type}{Character (or logical). How event types are handled:
 \describe{
-  \item{\code{"ignore"}}{Aggregate over all event types (default).  The
-    statistic counts all currently active events regardless of type.  When
-    \code{extend_riskset_by_type = TRUE} in the \code{remify} call, the
-    output D matches \code{reh$D} (typed dyads), but the value is the
-    same for all type slots of a given actor pair.}
-  \item{\code{"separate"}}{Compute one statistic per event type.  For
-    each type \eqn{c}, only currently active events of that type
-    contribute.  Implemented in R by filtering \code{edgelist_dual} to
-    type-\eqn{c} events and calling the C++ function once per type;
-    no C++ changes required.  The output effect names are suffixed with
-    the type label, e.g. \code{activeTie.X.start}.}
-  \item{\code{"interact"}}{Compute one statistic with \eqn{D * C} columns:
-    for each (actor-pair, type) combination, only active events of that type
-    contribute.  Implemented R-side by filtering \code{edgelist_dual} to
-    each type and calling the C++ function once per type; results are
-    \code{cbind}-ed in alphabetical type order.  The output has
-    \eqn{D_{base} * C} columns and is consistent with a typed
-    riskset (\code{extend_riskset_by_type = TRUE}).}
+  \item{\code{"ignore"} or \code{FALSE}}{Aggregate over all event types
+    (default). Counts all currently active events regardless of type.}
+  \item{\code{"separate"} or \code{TRUE}}{Compute one statistic per event
+    type. Only active events of that type contribute. Output effect names
+    are suffixed with the type label, e.g.
+    \code{activeOutdegreeSender.X.start}.}
+  \item{\code{"interact"}}{Compute one statistic per (past-event type x
+    dyad type) combination (\eqn{C^2} slices). Requires
+    \code{extend_riskset_by_type = TRUE} in the \code{remify} call;
+    otherwise silently coerced to \code{"separate"}.}
 }}
 }
 \value{
@@ -96,14 +89,20 @@ The functions are passed inside a formula:
 \preformatted{
   remstats(reh,
     start_effects = ~ activeTie() + activeOutdegreeSender(scaling = "std"),
-    end_effects   = ~ activeTie())
+    end_effects   = ~ activeOutdegreeSender())
 }
 
 \strong{Directed-network effects:}
 \describe{
   \item{\code{activeTie()}}{
     Whether there is currently an active event from actor \eqn{i} to actor
-    \eqn{j} (binary, 0/1).}
+    \eqn{j} (binary, 0/1).
+    \emph{Note:} in \code{end_effects} this is always 1 by definition
+    (only currently active dyads are at risk of ending) and should not
+    be included as a predictor.}
+  \item{\code{activeReciprocalTie()}}{
+    Whether there is currently an active event from actor \eqn{j} to actor
+    \eqn{i} (binary, 0/1). Captures reciprocity in the active network.}
   \item{\code{activeOutdegreeSender()}}{
     Number of currently active events in which actor \eqn{i} (sender) is
     involved as sender (out-degree in the active-event network).}
@@ -115,32 +114,44 @@ The functions are passed inside a formula:
     appears as either sender or receiver.}
   \item{\code{activeTotaldegreeReceiver()}}{
     Total active degree of actor \eqn{j}.}
+  \item{\code{activeTotaldegreeDyad()}}{
+    Sum of the total active degrees of actors \eqn{i} and \eqn{j}:
+    \eqn{\deg(i) + \deg(j)}.}
   \item{\code{activeSharedPartners_otp()}}{
-    Number of actors \eqn{h} for whom \eqn{i \to h} and \eqn{h \to j} are
-    both currently active (outgoing two-path shared partners).}
+    \emph{(Advanced)} Number of actors \eqn{h} for whom \eqn{i \to h} and
+    \eqn{h \to j} are both currently active (outgoing two-path).
+    Rarely informative when the active network is sparse.}
   \item{\code{activeSharedPartners_itp()}}{
-    Incoming two-path: actors \eqn{h} with \eqn{h \to i} and \eqn{j \to h}
-    both active.}
+    \emph{(Advanced)} Incoming two-path: actors \eqn{h} with \eqn{h \to i}
+    and \eqn{j \to h} both active.}
   \item{\code{activeSharedPartners_osp()}}{
-    Outgoing shared partners: actors \eqn{h} with \eqn{i \to h} and
-    \eqn{j \to h} both active.}
+    \emph{(Advanced)} Outgoing shared partners: actors \eqn{h} with
+    \eqn{i \to h} and \eqn{j \to h} both active.}
   \item{\code{activeSharedPartners_isp()}}{
-    Incoming shared partners: actors \eqn{h} with \eqn{h \to i} and
-    \eqn{h \to j} both active.}
+    \emph{(Advanced)} Incoming shared partners: actors \eqn{h} with
+    \eqn{h \to i} and \eqn{h \to j} both active.}
 }
 
 \strong{Undirected-network effects:}
 \describe{
   \item{\code{activeTie()}}{
     Whether there is currently an active event between actors \eqn{i} and
-    \eqn{j}.}
-  \item{\code{activeDegreeActor1()}}{
-    Active degree of actor \eqn{i}.}
-  \item{\code{activeDegreeActor2()}}{
-    Active degree of actor \eqn{j}.}
+    \eqn{j}.
+    \emph{Note:} in \code{end_effects} this is always 1 by definition
+    and should not be included as a predictor.}
+  \item{\code{activeDegreeMin()}}{
+    Minimum of the active degrees of \eqn{i} and \eqn{j}:
+    \eqn{\min(\deg(i), \deg(j))}.}
+  \item{\code{activeDegreeMax()}}{
+    Maximum of the active degrees of \eqn{i} and \eqn{j}:
+    \eqn{\max(\deg(i), \deg(j))}.}
+  \item{\code{activeDegreeDyad()}}{
+    Sum of the active degrees of \eqn{i} and \eqn{j}:
+    \eqn{\deg(i) + \deg(j)}.}
   \item{\code{activeSharedPartners()}}{
-    Number of actors \eqn{h} for whom both \eqn{(i,h)} and \eqn{(j,h)} are
-    currently active.}
+    \emph{(Advanced)} Number of actors \eqn{h} for whom both \eqn{(i,h)}
+    and \eqn{(j,h)} are currently active. Rarely informative when the
+    active network is sparse.}
 }
 }
 \seealso{

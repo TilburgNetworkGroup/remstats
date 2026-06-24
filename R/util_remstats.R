@@ -398,6 +398,31 @@ select_stats <- function(object,
 }
 
 .select_stats_durem <- function(object, start, end) {
+	st <- object$stacked
+	if (!is.null(st)) {
+		# Subset the fit-ready stacked design (the raw start/end arrays are
+		# dropped at construction). `start`/`end` name the statistics to keep;
+		# NULL keeps all for that process. Matching the array-era contract, only
+		# the named statistics are retained — to keep the intercept, name
+		# "baseline.start" / "baseline.end" explicitly.
+		keep_s <- if (is.null(start)) st$stat_names_start else start
+		keep_e <- if (is.null(end))   st$stat_names_end   else end
+		bad <- c(setdiff(keep_s, st$stat_names_start),
+				 setdiff(keep_e, st$stat_names_end))
+		if (length(bad) > 0L)
+			stop("statistic(s) not found: ", paste(bad, collapse = ", "))
+		drop_cols <- c(setdiff(st$stat_names_start, keep_s),
+					   setdiff(st$stat_names_end,   keep_e))
+		keep_cols <- setdiff(names(st$remstats_stack), drop_cols)
+		st$remstats_stack   <- st$remstats_stack[, keep_cols, drop = FALSE]
+		st$stat_names_start <- keep_s
+		st$stat_names_end   <- keep_e
+		st$stat_names       <- c(keep_s, keep_e)
+		object$stacked <- st
+		attr(object, "formula") <- NULL
+		return(object)
+	}
+	# Legacy fallback: object still carries the raw arrays.
 	object$start_stats <- .subset_array(object$start_stats, start)
 	object$end_stats   <- .subset_array(object$end_stats,   end)
 	attr(object, "formula") <- NULL

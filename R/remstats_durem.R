@@ -212,6 +212,26 @@
 #' @param display_progress Logical.
 #' @return A \code{remstats_durem} object.
 #' @keywords internal
+
+# ── Finalize a durem stats object ──────────────────────────────────────────────
+# Build the fit-ready stacked design once, at construction time, attach it as
+# `$stacked`, and drop the full `start_stats` / `end_stats` arrays to keep the
+# object small. The arrays are fully recomputable from (reh, formula); the
+# stacked design is the minimal sufficient representation for fitting, so the
+# arrays are pure overhead once it exists.
+#
+# `add_actors = FALSE` mirrors what remstimate's durem branch historically
+# requested, so the GLM design is byte-for-byte unchanged. (When the durem +
+# GLMM path is wired, that backend will need actor columns — add them there on
+# demand rather than carrying them in every durem object.)
+.finalize_durem <- function(out, reh) {
+    design <- .stack_durem(out, reh, add_actors = FALSE)
+    out$stacked     <- design
+    out$start_stats <- NULL
+    out$end_stats   <- NULL
+    out
+}
+
 .remstats_durem_dispatch <- function(reh,
                                    start_effects    = NULL,
                                    end_effects      = NULL,
@@ -269,7 +289,7 @@
 
     # ── Regular tomstats ─────────────────────────────────────────────────────
     if (!use_durem) {
-        return(.remstats_durem(
+        return(.finalize_durem(.remstats_durem(
             reh              = reh,
             start_effects    = start_effects,
             end_effects      = end_effects,
@@ -282,19 +302,19 @@
             start            = start,
             stop             = stop,
             display_progress = display_progress
-        ))
+        ), reh))
     }
 
     # ── Pure active-state ─────────────────────────────────────────────────────
     if (!use_history) {
-        return(duremstats(
+        return(.finalize_durem(duremstats(
             reh              = reh,
             start_effects    = start_effects,
             end_effects      = end_effects,
             start            = start,
             stop             = stop,
             display_progress = display_progress
-        ))
+        ), reh))
     }
 
     # ── Mixed: split, compute each half, combine ──────────────────────────────
@@ -333,7 +353,7 @@
     # attr(out_stats, "method") <- attr(ref_arr, "method")
     # attr(out_stats, "dyad_keys") <- attr(ref_arr, "dyad_keys")
     
-    out_stats
+    .finalize_durem(out_stats, reh)
     
 }
 
@@ -354,36 +374,46 @@ is.remstats_durem <- function(x) inherits(x, "remstats_durem")
 #' @param ... Ignored.
 #' @export
 print.remstats_durem <- function(x, ...) {
-    ss  <- x$start_stats
-    es  <- x$end_stats
+    st  <- x$stacked
     reh <- attr(x, "reh")
 
     cat("Relational Event Network Statistics\n")
     cat("> Model: tie-oriented (duration)\n")
     cat("> Computation method: per time point\n")
 
+    # Prefer the attached stacked design (post-shrink); fall back to the raw
+    # arrays when an object still carries them (pre-shrink / legacy objects).
+    if (!is.null(st)) {
+        nms_s <- st$stat_names_start
+        nms_e <- st$stat_names_end
+        dims_s <- if (length(nms_s)) c(st$E, st$D_start, length(nms_s)) else NULL
+        dims_e <- if (length(nms_e)) c(st$E, st$D_end,   length(nms_e)) else NULL
+    } else {
+        ss <- x$start_stats; es <- x$end_stats
+        nms_s  <- if (!is.null(ss)) dimnames(ss)[[3]] else character(0)
+        nms_e  <- if (!is.null(es)) dimnames(es)[[3]] else character(0)
+        dims_s <- if (!is.null(ss)) dim(ss) else NULL
+        dims_e <- if (!is.null(es)) dim(es) else NULL
+    }
+
     # ── Start model ────────────────────────────────────────────────────────────
-    if (!is.null(ss)) {
-        d <- dim(ss)
+    if (!is.null(dims_s)) {
         cat(sprintf("> Start dimensions: %d time points x %d dyads x %d statistics\n",
-                    d[1], d[2], d[3]))
+                    dims_s[1], dims_s[2], dims_s[3]))
         cat("> Start statistics:\n")
-        nms <- dimnames(ss)[[3]]
-        for (i in seq_along(nms))
-            cat(sprintf("\t >> %d: %s\n", i, nms[i]))
+        for (i in seq_along(nms_s))
+            cat(sprintf("\t >> %d: %s\n", i, nms_s[i]))
     } else {
         cat("> Start statistics: (none)\n")
     }
 
     # ── End model ──────────────────────────────────────────────────────────────
-    if (!is.null(es)) {
-        d <- dim(es)
+    if (!is.null(dims_e)) {
         cat(sprintf("> End dimensions: %d time points x %d dyads x %d statistics\n",
-                    d[1], d[2], d[3]))
+                    dims_e[1], dims_e[2], dims_e[3]))
         cat("> End statistics:\n")
-        nms <- dimnames(es)[[3]]
-        for (i in seq_along(nms))
-            cat(sprintf("\t >> %d: %s\n", i, nms[i]))
+        for (i in seq_along(nms_e))
+            cat(sprintf("\t >> %d: %s\n", i, nms_e[i]))
     } else {
         cat("> End statistics: (none)\n")
     }
@@ -400,7 +430,26 @@ print.remstats_durem <- function(x, ...) {
 #' @param ... Ignored.
 #' @export
 summary.remstats_durem <- function(object, ...) {
+    st  <- object$stacked
     out <- list()
+
+    if (!is.null(st)) {
+        # Summaries over the at-risk rows actually entering the likelihood,
+        # split by process. This is the riskset-relevant view: start statistics
+        # over start-process rows, end statistics over end-process rows.
+        df <- st$remstats_stack
+        if (length(st$stat_names_start)) {
+            sd <- df[df$process == "start", st$stat_names_start, drop = FALSE]
+            out$start <- sapply(sd, summary)
+        }
+        if (length(st$stat_names_end)) {
+            ed <- df[df$process == "end", st$stat_names_end, drop = FALSE]
+            out$end <- sapply(ed, summary)
+        }
+        return(out)
+    }
+
+    # Fallback for objects that still carry the raw arrays.
     if (!is.null(object$start_stats))
         out$start <- apply(object$start_stats, 3, function(y) summary(as.vector(y)))
     if (!is.null(object$end_stats))

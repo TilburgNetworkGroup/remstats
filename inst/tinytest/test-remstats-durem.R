@@ -2,7 +2,7 @@
 ##
 ## Covers:
 ##   - remstats(reh_durem, ...) dispatches to .remstats_durem()
-##   - Returns remstats_durem class with $start_stats and $end_stats arrays
+##   - Returns remstats_durem with a fit-ready stacked design ($stacked)
 ##   - Effect name suffixes (.start / .end)
 ##   - psi_start / psi_end stored and affect statistics
 ##   - Different effects for start and end models
@@ -46,26 +46,25 @@ expect_inherits(stats, "remstats_durem",
 expect_true(is.remstats_durem(stats),
     info = "is.remstats_durem() TRUE")
 
-# ── 2. $start_stats and $end_stats are 3-D arrays ─────────────────────────────
+# ── 2. raw arrays dropped, fit-ready stacked design attached ────────────────────
 
-expect_true(is.array(stats$start_stats),
-    info = "$start_stats is an array")
-expect_equal(length(dim(stats$start_stats)), 3L,
-    info = "$start_stats is 3-dimensional")
-
-expect_true(is.array(stats$end_stats),
-    info = "$end_stats is an array")
-expect_equal(length(dim(stats$end_stats)), 3L,
-    info = "$end_stats is 3-dimensional")
+expect_true(is.null(stats$start_stats),
+    info = "raw start array dropped after stacking")
+expect_true(is.null(stats$end_stats),
+    info = "raw end array dropped after stacking")
+expect_inherits(stats$stacked, "remstats_stacked_durem",
+    info = "fit-ready stacked design attached as $stacked")
+expect_true(is.data.frame(stats$stacked$remstats_stack),
+    info = "stacked design is a data.frame")
 
 # ── 3. Effect name suffixes ───────────────────────────────────────────────────
 
 expect_true(
-    all(endsWith(dimnames(stats$start_stats)[[3]], ".start")),
+    all(endsWith(stats$stacked$stat_names_start, ".start")),
     info = "start effect names end with .start"
 )
 expect_true(
-    all(endsWith(dimnames(stats$end_stats)[[3]], ".end")),
+    all(endsWith(stats$stacked$stat_names_end, ".end")),
     info = "end effect names end with .end"
 )
 
@@ -96,7 +95,7 @@ suppressWarnings({
 })
 
 expect_false(
-    identical(stats_p0$start_stats, stats_p1$start_stats),
+    identical(stats_p0$stacked$remstats_stack, stats_p1$stacked$remstats_stack),
     info = "psi_start = 0 vs 1 produces different start statistics"
 )
 
@@ -108,10 +107,10 @@ suppressWarnings({
                        end_effects   = ~ remstats::inertia())
 })
 
-expect_equal(dim(stats2$start_stats)[3], 3L,
-    info = "start_stats has 1+2 effects (inertia + reciprocity)")
-expect_equal(dim(stats2$end_stats)[3], 2L,
-    info = "end_stats has 1+1 effect (inertia)")
+expect_equal(length(stats2$stacked$stat_names_start), 3L,
+    info = "start design has baseline + inertia + reciprocity")
+expect_equal(length(stats2$stacked$stat_names_end), 2L,
+    info = "end design has baseline + inertia")
 
 # ── 7. attr(stats, "reh") is the remify_durem object ─────────────────────────
 
@@ -131,13 +130,16 @@ suppressWarnings({
 
 expect_inherits(stats_cens, "remstats_durem",
     info = "censored data: remstats_durem class returned")
-expect_true(is.array(stats_cens$end_stats),
-    info = "censored data: $end_stats is still an array")
+expect_true(is.data.frame(stats_cens$stacked$remstats_stack),
+    info = "censored data: stacked design is still a data.frame")
 
-# end model has fewer time points than start model (one end missing)
+# the censored event is never observed to end -> fewer observed-end rows
 expect_true(
-    dim(stats_cens$end_stats)[1] < dim(stats$end_stats)[1],
-    info = "censored data: end_stats has fewer time points than uncensored"
+    sum(stats_cens$stacked$remstats_stack$process == "end" &
+        stats_cens$stacked$remstats_stack$obs == 1L) <
+    sum(stats$stacked$remstats_stack$process == "end" &
+        stats$stacked$remstats_stack$obs == 1L),
+    info = "censored data: fewer observed end events than uncensored"
 )
 
 # ── 9. Undirected start ───────────────────────────────────────────────────────
@@ -153,8 +155,8 @@ expect_inherits(stats_ud, "remstats_durem",
 
 # undirected riskset is smaller than directed
 expect_true(
-    dim(stats_ud$start_stats)[2] < dim(stats$start_stats)[2],
-    info = "undirected start: fewer dyads in start_stats than directed"
+    stats_ud$stacked$D_start < stats$stacked$D_start,
+    info = "undirected start: fewer dyads than directed"
 )
 
 # ── 10. is.remstats_durem FALSE for regular remstats ─────────────────────────
@@ -183,8 +185,8 @@ suppressWarnings({
 
 expect_inherits(stats_tw, "remstats_durem",
     info = "typed + weighted: remstats_durem returned")
-expect_true(is.array(stats_tw$start_stats),
-    info = "typed + weighted: start_stats is array")
+expect_true(is.data.frame(stats_tw$stacked$remstats_stack),
+    info = "typed + weighted: stacked design present")
 
 # type column must still be present in reh$edgelist (not overwritten)
 expect_true("type" %in% names(reh_tw$edgelist),
@@ -226,19 +228,19 @@ suppressWarnings({
 
 # (a) vs (c): same weights, different psi — must differ
 expect_false(
-    identical(stats_w_p0$start_stats, stats_w_p1$start_stats),
+    identical(stats_w_p0$stacked$remstats_stack, stats_w_p1$stacked$remstats_stack),
     info = "user weights: psi=0 vs psi=1 produces different start statistics"
 )
 
 # (b) vs (c): same psi, different weights — must differ
 expect_false(
-    identical(stats_nw_p1$start_stats, stats_w_p1$start_stats),
+    identical(stats_nw_p1$stacked$remstats_stack, stats_w_p1$stacked$remstats_stack),
     info = "psi=1: with vs without user weights produces different start statistics"
 )
 
 # (a) vs (b): different weights AND different psi — must differ
 expect_false(
-    identical(stats_w_p0$start_stats, stats_nw_p1$start_stats),
+    identical(stats_w_p0$stacked$remstats_stack, stats_nw_p1$stacked$remstats_stack),
     info = "event weights only vs duration scaling only produces different start statistics"
 )
 
