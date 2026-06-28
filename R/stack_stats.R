@@ -558,6 +558,7 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 										 function(k) .bkey(edgelist$actor1[k],
 										 									 edgelist$actor2[k]),
 										 character(1L))
+	end_typed <- FALSE
 	
 	# End columns: same riskset, same ordering
 	if (D_e > 0L) {
@@ -586,12 +587,21 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 			stop("could not determine the end riskset for the stacked design ",
 				 "(D_e = ", D_e, ", rs_end rows = ",
 				 if (is.null(rs_end)) 0L else nrow(rs_end), ").", call. = FALSE)
-		.ek <- function(a1, a2)
+		# Typed end: rs_end is (base pairs) x C, so the key is (pair, type).
+		# Keying on pair alone collapses the C slices of each pair onto one
+		# column (last-wins) and drops the rest -- the 11-row riskset shrinks
+		# back to ~6 referenced columns, which is the corruption seen.
+		end_typed <- ext_by_type && has_types && "type" %in% names(rs_end)
+		.pk <- function(a1, a2)
 			if (dir_end) paste(a1, a2, sep = "\t")
 		else paste(pmin(a1, a2), pmax(a1, a2), sep = "\t")
+		.ek <- function(a1, a2, tp = NULL)
+			if (end_typed) paste(.pk(a1, a2), tp, sep = "\t") else .pk(a1, a2)
 		end_lookup <- setNames(seq_len(nrow(rs_end)),
-													 .ek(rs_end$actor1, rs_end$actor2))
-		e_col <- unname(end_lookup[.ek(edgelist$actor1, edgelist$actor2)])
+													 .ek(rs_end$actor1, rs_end$actor2,
+													 		if (end_typed) rs_end$type))
+		e_col <- unname(end_lookup[.ek(edgelist$actor1, edgelist$actor2,
+																	 if (end_typed) edgelist$type)])
 	} else {
 		e_col <- rep(0L, ne)
 	}
@@ -726,16 +736,28 @@ stack_stats.remstats_durem <- function(stats, reh, add_actors = TRUE) {
 	df$process <- ifelse(df$process == 0L, "start", "end")
 	if (ordinal) df$log_interevent <- NULL
 	
-	# ── Optional actor name columns ───────────────────────────────────────────
+	# `dyad` indexes a different riskset per process: start rows -> `incl`
+	# (typed start riskset), end rows -> `rs_end` (typed end riskset). Resolve
+	# each against its own riskset; with a typed end every row has a real type.
+	is_end <- df$process == "end"
+	
 	if (ext_by_type && "type" %in% names(incl)) {
-		df$type <- incl$type[df$dyad]
+		df$type <- NA_character_
+		df$type[!is_end] <- incl$type[df$dyad[!is_end]]
+		if (end_typed) df$type[is_end] <- rs_end$type[df$dyad[is_end]]
 	} else if (has_types) {
 		df$type <- NA_character_
 	}
 	
 	if (add_actors) {
-		df$actor1 <- incl$actor1[df$dyad]
-		df$actor2 <- incl$actor2[df$dyad]
+		df$actor1 <- NA_character_
+		df$actor2 <- NA_character_
+		df$actor1[!is_end] <- incl$actor1[df$dyad[!is_end]]
+		df$actor2[!is_end] <- incl$actor2[df$dyad[!is_end]]
+		if (D_e > 0L) {
+			df$actor1[is_end] <- rs_end$actor1[df$dyad[is_end]]
+			df$actor2[is_end] <- rs_end$actor2[df$dyad[is_end]]
+		}
 	}
 	
 	stat_names_all <- c(names_s, names_e)
