@@ -459,10 +459,13 @@ tomstats <- function(
 		# appear in both types). Use row index as 1-based id into sample_riskset.
 		rs_key      <- make_key_untyped(sample_riskset[, 1], sample_riskset[, 2])
 		key_to_base <- setNames(seq_len(nrow(sample_riskset)), rs_key)
-	} else {
-		# Typed sampling: build key directly from 0-based integer cols of riskset.
-		# riskset col 4 is 0-based dyadID; convert to 1-based for key_to_base.
+	} else if (C > 1L && ncol(edgelist) >= 4L) {
+		# Typed sampling: 3-part key — must match the typed case keys below.
 		rs_key      <- make_key_typed(riskset[, 1], riskset[, 2], riskset[, 3])
+		key_to_base <- setNames(riskset[, 4] + 1L, rs_key)
+	} else {
+		# Untyped model (C == 1): 2-part key — must match make_key_untyped case keys.
+		rs_key      <- make_key_untyped(riskset[, 1], riskset[, 2])
 		key_to_base <- setNames(riskset[, 4] + 1L, rs_key)
 	}
 

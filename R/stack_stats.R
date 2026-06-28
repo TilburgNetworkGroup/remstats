@@ -60,23 +60,24 @@ if (!exists("%||%")) {
 # ---------------------------------------------------------------------------
 .get_riskset_actors <- function(reh, D) {
 
-  rs <- NULL
-
-  # ── Primary: reh$index$dyad_map_active ──────────────────────────────────────
-  if (!is.null(reh$index$dyad_map_active)) {
-    dm <- reh$index$dyad_map_active
-    if (NROW(dm) >= D && all(c("actor1", "actor2") %in% names(dm))) {
-      rs <- dm[seq_len(D), c("actor1", "actor2"), drop = FALSE]
-    }
-  }
-
-  # ── Fallback: reh$riskset_info$included ─────────────────────────────────────
-  if (is.null(rs) && !is.null(reh$riskset_info$included)) {
-    inc <- reh$riskset_info$included
-    if (NROW(inc) >= D && all(c("actor1", "actor2") %in% names(inc))) {
-      rs <- inc[seq_len(D), c("actor1", "actor2"), drop = FALSE]
-    }
-  }
+	rs <- NULL
+	want <- c("actor1", "actor2", "type")   # carry `type` too when it exists
+	
+	# ── Primary: reh$index$dyad_map_active ──────────────────────────────────────
+	if (!is.null(reh$index$dyad_map_active)) {
+		dm <- reh$index$dyad_map_active
+		if (NROW(dm) >= D && all(c("actor1", "actor2") %in% names(dm))) {
+			rs <- dm[seq_len(D), intersect(want, names(dm)), drop = FALSE]
+		}
+	}
+	
+	# ── Fallback: reh$riskset_info$included ─────────────────────────────────────
+	if (is.null(rs) && !is.null(reh$riskset_info$included)) {
+		inc <- reh$riskset_info$included
+		if (NROW(inc) >= D && all(c("actor1", "actor2") %in% names(inc))) {
+			rs <- inc[seq_len(D), intersect(want, names(inc)), drop = FALSE]
+		}
+	}
 
   if (is.null(rs)) return(NULL)
 
@@ -147,12 +148,16 @@ stack_stats.tomstats <- function(stats, reh, add_actors = TRUE) {
 
   # ── Actor labels: actor1 (sender) and actor2 (receiver) per row ──────────────
   if (add_actors) {
-    rs_actors <- .get_riskset_actors(reh, D)
-    if (!is.null(rs_actors)) {
-      stat_glm$actor1 <- rs_actors$actor1[ stat_glm$dyad ]
-      stat_glm$actor2 <- rs_actors$actor2[ stat_glm$dyad ]
-    }
+  	rs_actors <- .get_riskset_actors(reh, D)
+  	if (!is.null(rs_actors)) {
+  		stat_glm$actor1 <- rs_actors$actor1[ stat_glm$dyad ]
+  		stat_glm$actor2 <- rs_actors$actor2[ stat_glm$dyad ]
+  		if (!is.null(rs_actors$type))
+  			stat_glm$type <- rs_actors$type[ stat_glm$dyad ]
+  	}
   }
+  
+  reserved <- c("time_index", "obs", "log_interevent", "dyad", "actor1", "actor2", "type")
 
   reserved <- c("time_index", "obs", "log_interevent", "dyad", "actor1", "actor2")
   structure(
@@ -229,15 +234,17 @@ stack_stats.tomstats_sampled <- function(stats, reh, add_actors = TRUE) {
   # sample_map holds 1-based indices into the full active riskset, so use the
   # maximum observed dyad index as the riskset size.
   if (add_actors) {
-    D_full <- max(sample_map, na.rm = TRUE)
-    rs_actors <- .get_riskset_actors(reh, D_full)
-    if (!is.null(rs_actors)) {
-      stat_glm$actor1 <- rs_actors$actor1[ stat_glm$dyad ]
-      stat_glm$actor2 <- rs_actors$actor2[ stat_glm$dyad ]
-    }
+  	D_full <- max(sample_map, na.rm = TRUE)
+  	rs_actors <- .get_riskset_actors(reh, D_full)
+  	if (!is.null(rs_actors)) {
+  		stat_glm$actor1 <- rs_actors$actor1[ stat_glm$dyad ]
+  		stat_glm$actor2 <- rs_actors$actor2[ stat_glm$dyad ]
+  		if (!is.null(rs_actors$type))
+  			stat_glm$type <- rs_actors$type[ stat_glm$dyad ]
+  	}
   }
-
-  reserved <- c("time_index", "obs", "log_interevent", "dyad", "actor1", "actor2", "weight")
+  
+  reserved <- c("time_index", "obs", "log_interevent", "dyad", "actor1", "actor2", "weight", "type")
   structure(
     list(
       remstats_stack = stat_glm,

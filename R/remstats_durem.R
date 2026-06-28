@@ -220,12 +220,13 @@
 # stacked design is the minimal sufficient representation for fitting, so the
 # arrays are pure overhead once it exists.
 #
-# `add_actors = FALSE` mirrors what remstimate's durem branch historically
-# requested, so the GLM design is byte-for-byte unchanged. (When the durem +
-# GLMM path is wired, that backend will need actor columns — add them there on
-# demand rather than carrying them in every durem object.)
+# Actor columns (actor1/actor2) are carried on the stacked design so that
+# downstream analyses needing dyad identity have it. This does not perturb
+# the GLM design: remstimate selects predictors by name via stat_names_*,
+# and .select_stats_durem subsets remstats_stack by column name (not
+# position), so the two trailing character columns are inert for fitting.
 .finalize_durem <- function(out, reh) {
-    design <- .stack_durem(out, reh, add_actors = FALSE)
+    design <- .stack_durem(out, reh, add_actors = TRUE)
     out$stacked     <- design
     out$start_stats <- NULL
     out$end_stats   <- NULL
