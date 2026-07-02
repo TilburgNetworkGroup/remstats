@@ -1099,7 +1099,7 @@ totaldegreeReceiver <- function(scaling = c("none", "prop", "std"),
 #' The 'totaldegreeDyad' effect refers to the tendency of pairs of actors
 #' (dyads) to increase their interaction rate as the total degree (number of
 #' interactions) of both actors in the pair goes up over time. To calculate this effect
-#' for a specific pair (i,j) at a given timepoint (t), we sum the degrees of
+#' for a specific pair (i,j) at a given timepoint (t), we sum the inertias of
 #' the two actors in the dyad (i,j) across all events up to \code{t}.
 #'
 #' Additionally, there is an optional scaling method, which can be chosen using
