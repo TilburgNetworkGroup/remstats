@@ -16,3 +16,4 @@
 ^Meta$
 ^NEWS\.md$
 ^man/figures/
+^regression_EVS_Germany\.csv$

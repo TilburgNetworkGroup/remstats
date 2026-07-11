@@ -175,8 +175,27 @@
 }
 
 
-# ── remstats.remify_durem dispatch ───────────────────────────────────────────
+# ── Finalize a durem stats object ──────────────────────────────────────────────
+# Build the fit-ready stacked design once, at construction time, attach it as
+# `$stacked`, and drop the full `start_stats` / `end_stats` arrays to keep the
+# object small. The arrays are fully recomputable from (reh, formula); the
+# stacked design is the minimal sufficient representation for fitting, so the
+# arrays are pure overhead once it exists.
+#
+# Actor columns (actor1/actor2) are carried on the stacked design so that
+# downstream analyses needing dyad identity have it. This does not perturb
+# the GLM design: remstimate selects predictors by name via stat_names_*,
+# and .select_stats_durem subsets remstats_stack by column name (not
+# position), so the two trailing character columns are inert for fitting.
+.finalize_durem <- function(out, reh) {
+    design <- .stack_durem(out, reh, add_actors = TRUE)
+    out$stacked     <- design
+    out$start_stats <- NULL
+    out$end_stats   <- NULL
+    out
+}
 
+# ── remstats.remify_durem dispatch ───────────────────────────────────────────
 #' Internal dispatch for \code{remify_durem} objects
 #'
 #' Called by \code{\link{remstats}} when \code{reh} inherits from
@@ -212,27 +231,6 @@
 #' @param display_progress Logical.
 #' @return A \code{remstats_durem} object.
 #' @keywords internal
-
-# ── Finalize a durem stats object ──────────────────────────────────────────────
-# Build the fit-ready stacked design once, at construction time, attach it as
-# `$stacked`, and drop the full `start_stats` / `end_stats` arrays to keep the
-# object small. The arrays are fully recomputable from (reh, formula); the
-# stacked design is the minimal sufficient representation for fitting, so the
-# arrays are pure overhead once it exists.
-#
-# Actor columns (actor1/actor2) are carried on the stacked design so that
-# downstream analyses needing dyad identity have it. This does not perturb
-# the GLM design: remstimate selects predictors by name via stat_names_*,
-# and .select_stats_durem subsets remstats_stack by column name (not
-# position), so the two trailing character columns are inert for fitting.
-.finalize_durem <- function(out, reh) {
-    design <- .stack_durem(out, reh, add_actors = TRUE)
-    out$stacked     <- design
-    out$start_stats <- NULL
-    out$end_stats   <- NULL
-    out
-}
-
 .remstats_durem_dispatch <- function(reh,
                                    start_effects    = NULL,
                                    end_effects      = NULL,
