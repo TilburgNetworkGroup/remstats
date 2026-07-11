@@ -1,3 +1,7 @@
+## remstats 4.1.0
+
+- remstats for stats with duration
+
 ## remstats 4.0.0
 
 - Version ready for remverse

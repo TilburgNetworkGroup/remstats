@@ -1,5 +1,5 @@
-# remstats 4.0.0
-Date: 2026-04-30
+# remstats 4.1.0
+Date: 2026-06-12
 
 ## Coordinated submission
 This is a coordinated submission together with remify (4.0.0) and 
@@ -7,7 +7,7 @@ remstimate (3.0.0). These packages are interdependent and need to be
 processed in order: remify first, then remstats, then remstimate.
 
 ## Updates
-* Extended functionality of remstats().
+* Extended functionality of remstats() for events with duration.
 
 ## Test environments
 * Local macOS Tahoe 26.2, R version 4.5.3 
