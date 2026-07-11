@@ -64,6 +64,6 @@ Suggests:
     remify (>= 4.0.0),
     knitr,
     rmarkdown
- Remotes: TilburgNetworkGroup/remify
+Remotes: TilburgNetworkGroup/remify
 VignetteBuilder: knitr
 LazyDataCompression: gzip
