@@ -1829,16 +1829,16 @@ prepare_subset <- function(start, stop, edgelist, method, model) {
   }
   stop <- stop - 1
   if (stop < start) {
-    stop("The 'stop' value cannot be smaller than the 'start' value.")
+    stop("The 'first' value cannot be smaller than the 'last' value.")
   }
   if (method == "pe") {
     if (stop > nrow(edgelist)) {
-      stop("The 'stop' value cannot be larger than the number of events in 'reh'.")
+      stop("The 'first' value cannot be larger than the number of events in 'reh'.")
     }
   }
   if (method == "pt") {
     if (stop > NROW(unique(edgelist[, 1]))) {
-      stop("The 'stop' value cannot be larger than the number of unique time points in 'reh'.")
+      stop("The 'first' value cannot be larger than the number of unique time points in 'reh'.")
     }
   }
   if (model == "receiver" & method == "pt") {

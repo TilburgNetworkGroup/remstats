@@ -36,11 +36,11 @@ is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 parameter required). See `Details'.}
 
 \item{first}{an optional integer value, specifying the index of the first
-time or event in the relational event history for which statistics must be 
+unique time point event in the relational event history for which statistics must be 
 computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.}
 
 \item{last}{an optional integer value, specifying the index of the last
-time or event in the relational event history for which statistics must be 
+unique time point in the relational event history for which statistics must be 
 computed (see 'Details')}
 
 \item{display_progress}{should a progress bar for the computation of the
@@ -145,7 +145,8 @@ sequence, based on the entire event history. This is done by specifying the
 'first' and 'last' values as the indices for the first and last event times 
 for which statistics are needed. For instance, setting 'first = 5' and 'last 
 = 5' calculates statistics for the 5th event in the relational event 
-sequence, considering events 1-4 in the history.
+sequence. Note that in cases of simultaneous events, 'first' and 'last'
+correspond to the indices of the first and last unique event timepoints.
 \emph{unique} event timepoints for which statistics are needed. For example, 
 if 'first = 5' and 'last = 5', statistics are computed for the 5th unique 
 timepoint in the relational event sequence, considering all events occurring 

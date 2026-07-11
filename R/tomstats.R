@@ -294,7 +294,8 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 #' 'first' and 'last' values as the indices for the first and last event times 
 #' for which statistics are needed. For instance, setting 'first = 5' and 'last 
 #' = 5' calculates statistics for the 5th event in the relational event 
-#' sequence, considering events 1-4 in the history.
+#' sequence. Note that in cases of simultaneous events, 'first' and 'last'
+#' correspond to the indices of the first and last unique event timepoints.
 #' \emph{unique} event timepoints for which statistics are needed. For example, 
 #' if 'first = 5' and 'last = 5', statistics are computed for the 5th unique 
 #' timepoint in the relational event sequence, considering all events occurring 

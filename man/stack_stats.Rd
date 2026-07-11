@@ -10,7 +10,7 @@ stack_stats(stats, reh, add_actors = TRUE)
 \item{stats}{A \code{tomstats} object (output of \code{remstats()} or
 \code{tomstats()}).}
 
-\item{reh}{A \code{remify} object (output of \code{remify::remify2()}).}
+\item{reh}{A \code{remify} object (output of \code{remify::remify()}).}
 
 \item{add_actors}{Logical (default \code{TRUE}). When \code{TRUE}, two
 extra columns \code{actor1} (sender label) and \code{actor2} (receiver

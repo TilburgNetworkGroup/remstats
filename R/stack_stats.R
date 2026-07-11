@@ -122,7 +122,7 @@ stack_stats.tomstats <- function(stats, reh, add_actors = TRUE) {
   # dyad_active / dyad contain 1-based column indices into the stats array
   if (!is.null(reh$ids)) {
     # New remify2 format
-    if (riskset %in% c("active", "manual")) {
+    if (grepl("^active", riskset) || identical(riskset, "manual")) {
       # dyad_active is [N x 1] matrix — flatten to vector, then subset
       dyad_vec <- as.vector(reh$ids$dyad_active)
     } else {
@@ -130,7 +130,7 @@ stack_stats.tomstats <- function(stats, reh, add_actors = TRUE) {
     }
   } else {
     # Old remify format
-    if (riskset %in% c("active", "manual")) {
+    if (grepl("^active", riskset) || identical(riskset, "manual")) {
       dyad_vec <- as.vector(attr(reh, "dyadIDactive") %||% attr(reh, "dyadID"))
     } else {
       dyad_vec <- as.vector(attr(reh, "dyadID"))

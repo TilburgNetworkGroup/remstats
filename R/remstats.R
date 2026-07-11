@@ -115,10 +115,10 @@
 #' is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 #' parameter required). See `Details'.
 #' @param first an optional integer value, specifying the index of the first
-#' time or event in the relational event history for which statistics must be 
+#' unique time point event in the relational event history for which statistics must be 
 #' computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.
 #' @param last an optional integer value, specifying the index of the last
-#' time or event in the relational event history for which statistics must be 
+#' unique time point in the relational event history for which statistics must be 
 #' computed (see 'Details')
 #' @param sampling Logical. If \code{TRUE}, statistics are computed using
 #'   case–control (dyad) sampling rather than the full risk set. Default \code{FALSE}.
