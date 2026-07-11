@@ -63,6 +63,5 @@ Suggests:
     tinytest,
     knitr,
     rmarkdown
-Remotes: TilburgNetworkGroup/remify
 VignetteBuilder: knitr
 LazyDataCompression: gzip
