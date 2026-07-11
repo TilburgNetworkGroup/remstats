@@ -64,5 +64,6 @@ Suggests:
     remify (>= 4.0.0),
     knitr,
     rmarkdown
+Remotes: jomulder/remify
 VignetteBuilder: knitr
 LazyDataCompression: gzip
