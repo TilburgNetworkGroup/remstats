@@ -194,7 +194,7 @@ remstats <- function(
     last             = Inf,
     display_progress = FALSE,
     sampling         = FALSE,
-    samp_num         = NULL,
+    samp_num         = 10L,
     seed             = NULL,
     # ── Duration REM arguments ────────────────────────────────────────────────
     start_effects    = NULL,

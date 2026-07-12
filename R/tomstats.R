@@ -325,7 +325,7 @@ tomstats <- function(
 		display_progress = FALSE,
 		# new
 		sampling = FALSE, # sampling = TRUE
-		samp_num = NULL, # samp_num = 20
+		samp_num = 10L, # samp_num = 20
 		seed = NULL,
 		attr_actors = NULL,
 		attr_dyads = NULL
