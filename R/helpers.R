@@ -399,13 +399,13 @@ prepare_tomstats <- function(
   # Check correct specification effects
   if (!reh$meta$directed) {
     if (!all(effectNames %in% tie_effects(directed = FALSE))) {
-      stop("Attempting to request effects that are not (yet) defined for undirected events")
+      stop("Attempting to request effects that are currently not defined for undirected events")
     }
   }
 
   if (reh$meta$directed) {
     if (!all(effectNames %in% tie_effects(directed = TRUE))) {
-      stop("Attempting to request effects that are not (yet) defined for directed events")
+      stop("Attempting to request effects that are currently not defined for directed events")
     }
   }
 
