@@ -5,14 +5,21 @@
 #'
 #' @section Effects:
 #' The statistics to be computed are defined symbolically and should be
-#' supplied to the \code{tie_effects} (for the tie-oriented model), or
+#' supplied to the \code{tie_effects} (for the tie-oriented model),
 #' \code{sender_effects} and/or \code{receiver_effects} (for the actor-oriented
-#' model) argument in the form \code{~ effects}. The terms are separated by +
+#' model) argument in the form \code{~ effects}. In case of events with a
+#' duration (where \code{reh} is a \code{remify_durem} object, created with
+#' \code{remify(..., duration = TRUE)}), statistics should instead be supplied
+#' to \code{start_effects} and \code{end_effects}; note that events with a
+#' duration are only supported for the tie-oriented model. The statistics terms
+#' are separated by +
 #' operators. For example: \code{effects = ~ inertia() + otp()}. Interactions
 #' between two effects can be included with * or : operators. For example:
-#' \code{effects = ~ inertia():otp()}. A list of available effects
-#' can be obtained with \code{\link{tie_effects}()} and
-#' \code{\link{actor_effects}()}.
+#' \code{effects = ~ inertia():otp()}. A list of the available effects can be
+#' obtained with \code{\link{tie_effects}()} (tie-oriented model),
+#' \code{\link{actor_effects}()} (actor-oriented model), and, for models of
+#' events with a duration, \code{\link{active_effects}()} (statistics that
+#' depend on which actors or dyads are currently active).
 #'
 #' The majority of the statistics can be scaled in some way, see
 #' the documentation of the \code{scaling} argument in the separate effect
@@ -40,7 +47,7 @@
 #' 100 time units ago are included in the computation of the statistics.
 #' A third option is to set `memory` to `"interval"`. In this case, the past
 #' event history within a given time interval is considered. For example, when
-#' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+#' `"memory_value" = c(50, 100)` and `memory = "interval"`, at time point $t$
 #' only the past events that happened between 50 and 100 time units ago are
 #' included in the computation of the statistics. Finally, the fourth option is
 #' to set `memory` to `"decay"`. In this case, the weight of the past event in
@@ -55,27 +62,19 @@
 #' that follow logically from their definition (e.g., the recenyContinue
 #' statistic does depend on time since the event and not on event weights).
 #'
-#' @section Subset the event history using 'start' and 'stop':
+#' @section Subset the event history using 'first' and 'last':
 #' It is possible to compute statistics for a segment of the relational event 
 #' sequence, based on the entire event history. This is done by specifying the 
-#' 'start' and 'stop' values as the indices for the first and last event times 
-#' for which statistics are needed. For instance, setting 'start = 5' and 'stop 
+#' 'first' and 'last' values as the indices for the first and last event times 
+#' for which statistics are needed. For instance, setting 'first = 5' and 'last 
 #' = 5' calculates statistics for the 5th event in the relational event 
 #' sequence, considering events 1-4 in the history. Note that in cases of 
-#' simultaneous events with the 'method' set to 'pt' (per timepoint), 'start' 
-#' and 'stop' should correspond to the indices of the first and last 
-#' \emph{unique} event timepoints for which statistics are needed. For example, 
-#' if 'start = 5' and 'stop = 5', statistics are computed for the 5th unique 
-#' timepoint in the relational event sequence, considering all events occurring 
-#' at unique timepoints 1-4.
+#' simultaneous events 'first' and 'last' refer to indices of unique time
+#' points.
 #'
-#' @section Adjacency matrix:
-#' Optionally, a previously computed adjacency matrix can be supplied. Note
-#' that the endogenous statistics will be computed based on this adjacency
-#' matrix. Hence, supplying a previously computed adjacency matrix can reduce
-#' computation time but the user should be absolutely sure the adjacency matrix
-#' is accurate.
-#'
+#' @param reh an object of class \code{"\link[remify]{remify}"} characterizing
+#' the relational event history. May also be a \code{remify_durem} object for
+#' duration relational event models.
 #' @param tie_effects an object of class \code{"\link[stats]{formula}"} (or one
 #' that can be coerced to that class): a symbolic description of the effects in
 #' the tie-oriented model for which statistics are computed, see 'Details' for
@@ -91,29 +90,28 @@
 #' @param start_effects Formula for the start sub-model statistics. Only used
 #'   when \code{reh} is a \code{remify_durem} object (i.e. when
 #'   \code{remify(..., duration = TRUE)} was called). Equivalent to
-#'   \code{tie_effects} but applied to the start process.
+#'   \code{tie_effects} but applied to the start process. Only supported for the
+#'   tie-oriented model.
 #' @param end_effects Formula for the end sub-model statistics. Only used when
-#'   \code{reh} is a \code{remify_durem} object.
+#'   \code{reh} is a \code{remify_durem} object. Only supported for the
+#'   tie-oriented model.
+#' @param memory The memory to be used. See `Details'.
+#' @param memory_value Numeric value indicating the memory parameter. Default
+#' is \code{NA}, which is only valid for \code{memory = "full"} (no memory
+#' parameter required). See `Details'.
 #' @param psi_start Numeric. Duration exponent for start-model history
 #'   weighting. The weight of each past event in the start statistics is
 #'   \code{event_weight * (end - time + 1)^psi_start}. Default \code{1}.
 #'   Only used when \code{reh} is a \code{remify_durem} object.
 #' @param psi_end Numeric. Duration exponent for end-model history weighting.
 #'   The weight of each past event in the end statistics is
-#'   \code{event_weight * (end - time + 1)^psi_start}. Default \code{1}.
+#'   \code{event_weight * (end - time + 1)^psi_end}. Default \code{1}.
 #'   Only used when \code{reh} is a \code{remify_durem} object.
-#' @param reh an object of class \code{"\link[remify]{remify}"} characterizing
-#' the relational event history. May also be a \code{remify_durem} object for
-#' duration relational event models.
 #' @param attr_actors optionally, an object of class
-#' \code{"\link[base]{data.frame}"} that contains exogenous attributes for 
+#' \code{"\link[base]{data.frame}"} that contains exogenous attributes for
 #' actors (see Details).
-#' @param attr_dyads optionally, an object of class \code{data.frame} or 
+#' @param attr_dyads optionally, an object of class \code{data.frame} or
 #' \code{matrix} containing attribute information for dyads (see Details).
-#' @param memory The memory to be used. See `Details'.
-#' @param memory_value Numeric value indicating the memory parameter. Default 
-#' is \code{NA}, which is only valid for \code{memory = "full"} (no memory
-#' parameter required). See `Details'.
 #' @param first an optional integer value, specifying the index of the first
 #' unique time point event in the relational event history for which statistics must be 
 #' computed (see 'Details'). Default is \code{2}: the first event has no history and is used only to initialize statistics, not to fit the model.
@@ -162,18 +160,27 @@
 #' library(remstats)
 #'
 #' # Tie-oriented model
-#' eff <- ~ inertia():send("extraversion") + otp()
+#' eff <- ~ inertia():send("extraversion", attr_actors = info) + otp()
 #' reh_tie <- remify::remify(edgelist = history, model = "tie")
-#' remstats(reh = reh_tie, tie_effects = eff, attr_actors = info)
+#' remstats(reh = reh_tie, tie_effects = eff)
 #'
 #' # Actor-oriented model
-#' seff <- ~ send("extraversion")
-#' reff <- ~ receive("agreeableness") + inertia() + otp()
+#' seff <- ~ send("extraversion", attr_actors = info)
+#' reff <- ~ receive("agreeableness", attr_actors = info) + inertia() + otp()
 #' reh_actor <- remify::remify(edgelist = history, model = "actor")
-#' remstats(
-#'     reh = reh_actor, sender_effects = seff, receiver_effects = reff,
-#'     attr_actors = info
-#' )
+#' remstats(reh = reh_actor, sender_effects = seff, receiver_effects = reff)
+#' 
+#' # Model for events with a duration (tie-oriented only)
+#' # (the randomDur dataset is provided by the 'remdata' package)
+#' if (requireNamespace("remdata", quietly = TRUE)) {
+#'   data(randomDur, package = "remdata")
+#'   reh_dur <- remify::remify(randomDur, model = "tie", duration = TRUE)
+#'   remstats(reh_dur,
+#'     start_effects = ~ inertia(scaling = "std") +
+#'       reciprocity(scaling = "std") + activeOutdegreeSender(scaling = "std"),
+#'     end_effects = ~ totaldegreeDyad(scaling = "std"),
+#'     first = 50)
+#' }
 #'
 #' @references Butts, C. T. (2008). A relational event framework for social
 #' action. Sociological Methodology, 38(1), 155–200.
@@ -185,22 +192,25 @@
 #' @export
 remstats <- function(
     reh,
-    tie_effects      = NULL,
-    sender_effects   = NULL,
-    receiver_effects = NULL,
+    # ── Effect formulas (tie / actor / duration models) ───────────────────────
+    tie_effects      = NULL,   # tie-oriented model
+    sender_effects   = NULL,   # actor-oriented model (sender activity step)
+    receiver_effects = NULL,   # actor-oriented model (receiver choice step)
+    start_effects    = NULL,   # duration model (start process), tie-oriented only
+    end_effects      = NULL,   # duration model (end process), tie-oriented only
+    # ── Memory ────────────────────────────────────────────────────────────────
     memory           = c("full", "window", "decay", "interval"),
     memory_value     = NA,
+    # ── Duration weighting (only for remify_durem objects) ────────────────────
+    psi_start        = 1,
+    psi_end          = 1,
+    # ── Event-history subset and computation controls ─────────────────────────
     first            = 2,
     last             = Inf,
     display_progress = FALSE,
     sampling         = FALSE,
     samp_num         = 10L,
     seed             = NULL,
-    # ── Duration REM arguments ────────────────────────────────────────────────
-    start_effects    = NULL,
-    end_effects      = NULL,
-    psi_start        = 1,
-    psi_end          = 1,
     attr_actors      = NULL,
     attr_dyads       = NULL
 ) {

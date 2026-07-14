@@ -155,5 +155,8 @@ The functions are passed inside a formula:
 }
 }
 \seealso{
-\code{\link{remstats}}
+\code{\link{remstats}} for computing the statistics, and
+  \code{\link{tie_effects}} / \code{\link{actor_effects}} for the standard
+  (non-duration) effect overviews. Active-state effects are only available
+  for the tie-oriented model of events with a duration.
 }

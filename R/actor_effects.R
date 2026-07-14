@@ -65,8 +65,12 @@
 #' actor_effects(step = "receiver")
 #' 
 #' @return
-#' Returns a list of available effects and their corresponding statistics based 
+#' Returns a list of available effects and their corresponding statistics based
 #' on the specified `step` (sender or receiver).
+#'
+#' @seealso \code{\link{tie_effects}} for the tie-oriented model. Note that
+#' models of events with a duration (and the associated
+#' \code{\link{active_effects}}) are only supported for the tie-oriented model.
 #'
 #' @export
 actor_effects <- function(step = NULL) {

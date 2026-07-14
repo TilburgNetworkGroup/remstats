@@ -13,7 +13,7 @@ tomstats(
   last = Inf,
   display_progress = FALSE,
   sampling = FALSE,
-  samp_num = NULL,
+  samp_num = 10L,
   seed = NULL,
   attr_actors = NULL,
   attr_dyads = NULL
@@ -31,7 +31,7 @@ duration relational event models.}
 
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. Default 
+\item{memory_value}{Numeric value indicating the memory parameter. Default
 is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 parameter required). See `Details'.}
 
@@ -58,10 +58,10 @@ this ensures reproducible sampling across calls. If \code{NULL}, the
 current RNG state is used.}
 
 \item{attr_actors}{optionally, an object of class
-\code{"\link[base]{data.frame}"} that contains exogenous attributes for 
+\code{"\link[base]{data.frame}"} that contains exogenous attributes for
 actors (see Details).}
 
-\item{attr_dyads}{optionally, an object of class \code{data.frame} or 
+\item{attr_dyads}{optionally, an object of class \code{data.frame} or
 \code{matrix} containing attribute information for dyads (see Details).}
 }
 \value{
@@ -120,7 +120,7 @@ Mulders & Leenders, 2019). This length of this time window is set by the
 100 time units ago are included in the computation of the statistics.
 A third option is to set `memory` to `"interval"`. In this case, the past
 event history within a given time interval is considered. For example, when
-`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+`"memory_value" = c(50, 100)` and `memory = "interval"`, at time point $t$
 only the past events that happened between 50 and 100 time units ago are
 included in the computation of the statistics. Finally, the fourth option is
 to set `memory` to `"decay"`. In this case, the weight of the past event in
@@ -153,3 +153,17 @@ timepoint in the relational event sequence, considering all events occurring
 at unique timepoints 1-4.
 }
 
+\examples{
+library(remstats)
+
+# Tie-oriented model
+eff <- ~ inertia():send("extraversion", attr_actors = info) + otp()
+reh_tie <- remify::remify(edgelist = history, model = "tie")
+remstats(reh = reh_tie, tie_effects = eff)
+
+# Tie-oriented model with case control sampling
+eff <- ~ inertia():send("extraversion", attr_actors = info) + otp()
+reh_tie <- remify::remify(edgelist = history, model = "tie")
+remstats(reh = reh_tie, tie_effects = eff, sampling = TRUE, samp_num = 5L)
+
+}

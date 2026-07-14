@@ -34,7 +34,7 @@ computed, see `Details'}
 
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. Default 
+\item{memory_value}{Numeric value indicating the memory parameter. Default
 is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 parameter required). See `Details'.}
 
@@ -50,10 +50,10 @@ computed (see 'Details')}
 endogenous statistics be shown (TRUE) or not (FALSE)?}
 
 \item{attr_actors}{optionally, an object of class
-\code{"\link[base]{data.frame}"} that contains exogenous attributes for 
+\code{"\link[base]{data.frame}"} that contains exogenous attributes for
 actors (see Details).}
 
-\item{attr_dyads}{optionally, an object of class \code{data.frame} or 
+\item{attr_dyads}{optionally, an object of class \code{data.frame} or
 \code{matrix} containing attribute information for dyads (see Details).}
 }
 \value{
@@ -104,7 +104,7 @@ Mulders & Leenders, 2019). This length of this time window is set by the
 100 time units ago are included in the computation of the statistics.
 A third option is to set `memory` to `"interval"`. In this case, the past
 event history within a given time interval is considered. For example, when
-`"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+`"memory_value" = c(50, 100)` and `memory = "interval"`, at time point $t$
 only the past events that happened between 50 and 100 time units ago are
 included in the computation of the statistics. Finally, the fourth option is
 to set `memory` to `"decay"`. In this case, the weight of the past event in
@@ -159,4 +159,9 @@ aomstats(
 Stadtfeld, C., & Block, P. (2017). Interactions, actors, and
 time: Dynamic network actor models for relational events. Sociological
 Science, 4, 318–352. \doi{10.15195/v4.a14}
+
+Meijerink-Bosman, M., Back, M., Geukes, K., Leenders, R., & Mulder, J.
+(2023). Discovering trends of social interaction behavior over time: An
+introduction to relational event modeling: Trends of social interaction.
+Behavior Research Methods, 55(3), 997-1023. \doi{10.3758/s13428-022-01821-8}
 }

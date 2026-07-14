@@ -108,3 +108,8 @@ tie_effects(directed = FALSE)
 tie_effects(directed = FALSE, endogenous = TRUE)
 
 }
+\seealso{
+\code{\link{actor_effects}} for the actor-oriented model, and
+\code{\link{active_effects}} for the additional active-state statistics
+available in models of events with a duration.
+}

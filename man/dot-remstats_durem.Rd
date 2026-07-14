@@ -34,15 +34,15 @@ Default \code{1}.}
 Default \code{1}.}
 
 \item{attr_actors}{optionally, an object of class
-\code{"\link[base]{data.frame}"} that contains exogenous attributes for 
+\code{"\link[base]{data.frame}"} that contains exogenous attributes for
 actors (see Details).}
 
-\item{attr_dyads}{optionally, an object of class \code{data.frame} or 
+\item{attr_dyads}{optionally, an object of class \code{data.frame} or
 \code{matrix} containing attribute information for dyads (see Details).}
 
 \item{memory}{The memory to be used. See `Details'.}
 
-\item{memory_value}{Numeric value indicating the memory parameter. Default 
+\item{memory_value}{Numeric value indicating the memory parameter. Default
 is \code{NA}, which is only valid for \code{memory = "full"} (no memory
 parameter required). See `Details'.}
 

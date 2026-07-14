@@ -59,9 +59,10 @@ Imports:
     graphics,
     grDevices
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress
-Suggests: 
+Suggests:
     tinytest,
     knitr,
-    rmarkdown
+    rmarkdown,
+    remdata
 VignetteBuilder: knitr
 LazyDataCompression: gzip

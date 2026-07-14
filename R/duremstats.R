@@ -781,7 +781,10 @@ duremstats <- function(reh,
 #' @return A named list with elements \code{effect}, \code{scaling}, and
 #'   \code{consider_type}, consumed by \code{\link{duremstats}}.
 #'
-#' @seealso \code{\link{remstats}}
+#' @seealso \code{\link{remstats}} for computing the statistics, and
+#'   \code{\link{tie_effects}} / \code{\link{actor_effects}} for the standard
+#'   (non-duration) effect overviews. Active-state effects are only available
+#'   for the tie-oriented model of events with a duration.
 #' @name active_effects
 NULL
 

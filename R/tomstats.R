@@ -219,7 +219,6 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
   statistics
 }
 
-
 #' tomstats
 #'
 #' Computes statistics for modeling relational event history data
@@ -273,7 +272,7 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 #' 100 time units ago are included in the computation of the statistics.
 #' A third option is to set `memory` to `"interval"`. In this case, the past
 #' event history within a given time interval is considered. For example, when
-#' `"memory_value" = c(50, 100)` and `memory = "window"`, at time point $t$
+#' `"memory_value" = c(50, 100)` and `memory = "interval"`, at time point $t$
 #' only the past events that happened between 50 and 100 time units ago are
 #' included in the computation of the statistics. Finally, the fourth option is
 #' to set `memory` to `"decay"`. In this case, the weight of the past event in
@@ -314,6 +313,19 @@ tomstats0 <- function(effects, reh, attr_actors = NULL, attr_dyads = NULL,
 #'     \item{\code{formula}}{Model formula, obtained from the formula inputted to 'tie_effects'.}
 #'     \item{\code{riskset}}{The risk set used to construct the statistics.}
 #'   }
+#' @examples
+#' library(remstats)
+#' 
+#' # Tie-oriented model
+#' eff <- ~ inertia():send("extraversion", attr_actors = info) + otp()
+#' reh_tie <- remify::remify(edgelist = history, model = "tie")
+#' remstats(reh = reh_tie, tie_effects = eff)
+#' 
+#' # Tie-oriented model with case control sampling
+#' eff <- ~ inertia():send("extraversion", attr_actors = info) + otp()
+#' reh_tie <- remify::remify(edgelist = history, model = "tie")
+#' remstats(reh = reh_tie, tie_effects = eff, sampling = TRUE, samp_num = 5L)
+#' 
 #' @export
 tomstats <- function(
 		tie_effects,

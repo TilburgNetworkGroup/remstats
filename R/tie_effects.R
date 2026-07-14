@@ -97,7 +97,11 @@
 #' 
 #' @return
 #' Returns a list of available effects and their corresponding statistics.
-#' 
+#'
+#' @seealso \code{\link{actor_effects}} for the actor-oriented model, and
+#' \code{\link{active_effects}} for the additional active-state statistics
+#' available in models of events with a duration.
+#'
 #' @export
 tie_effects <- function(directed = NULL, endogenous = NULL) {
   # Name all effects
