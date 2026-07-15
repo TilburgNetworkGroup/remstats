@@ -224,14 +224,14 @@ reh_actor <- remify::remify(edgelist = history, model = "actor")
 remstats(reh = reh_actor, sender_effects = seff, receiver_effects = reff)
 
 # Model for events with a duration (tie-oriented only)
-# (the baboons_obs dataset is provided by the 'remdata' package)
+# (the baboons dataset is provided by the 'remdata' package)
 if (requireNamespace("remdata", quietly = TRUE)) {
   data(baboons_obs, package = "remdata")
   reh_dur <- remify::remify(baboons_obs$edgelist[1:1000,], model = "tie",
   directed = FALSE, duration = TRUE)
   remstats(reh_dur,
     start_effects = ~ inertia(scaling = "std") +
-      reciprocity(scaling = "std") + activeOutdegreeSender(scaling = "std"),
+      activeDegreeDyad(scaling = "std"),
     end_effects = ~ totaldegreeDyad(scaling = "std"),
     first = 50)
 }
